@@ -1,0 +1,39 @@
+{
+  "repo_id": "example_vuln_repo",
+  "notes": "Ground truth for the golden harness. Keyed by (file, severity, source_lens); line numbers are approximate anchors, not exact-match assertions. `expected_unresolved` lists candidates the reliability layer should escalate to unresolved (low-confidence falsification) rather than guess.",
+  "expected_unresolved": [
+    {"file": "app.py", "citation_contains": "request.args.get(\"id\")"}
+  ],
+  "findings": [
+    {
+      "title": "Hardcoded API token",
+      "file": "app.py",
+      "line_start": 17,
+      "line_end": 17,
+      "source_lens": "owasp",
+      "severity": "high",
+      "falsification_status": "confirmed",
+      "citation_contains": "sk_live_"
+    },
+    {
+      "title": "SQL injection via unsanitized query parameter",
+      "file": "app.py",
+      "line_start": 24,
+      "line_end": 25,
+      "source_lens": "owasp",
+      "severity": "critical",
+      "falsification_status": "confirmed",
+      "citation_contains": "SELECT * FROM users WHERE id"
+    },
+    {
+      "title": "Server-side request forgery (SSRF)",
+      "file": "app.py",
+      "line_start": 33,
+      "line_end": 34,
+      "source_lens": "owasp",
+      "severity": "high",
+      "falsification_status": "confirmed",
+      "citation_contains": "requests.get(url)"
+    }
+  ]
+}

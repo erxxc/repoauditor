@@ -1,0 +1,26 @@
+{
+  "repo_id": "command_injection_svc",
+  "notes": "Ground truth for the golden harness. Matched on (file, severity, source_lens, citation substring); line numbers are approximate anchors, not exact-match assertions.",
+  "findings": [
+    {
+      "title": "Hardcoded database credential",
+      "file": "service.py",
+      "line_start": 14,
+      "line_end": 14,
+      "source_lens": "owasp",
+      "severity": "high",
+      "falsification_status": "confirmed",
+      "citation_contains": "hunter2"
+    },
+    {
+      "title": "Command injection via unsanitized host parameter",
+      "file": "service.py",
+      "line_start": 21,
+      "line_end": 21,
+      "source_lens": "owasp",
+      "severity": "critical",
+      "falsification_status": "confirmed",
+      "citation_contains": "os.popen"
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+# repoauditor configuration.
+# Loaded exclusively by src/repoauditor/config.py. No other module reads this file.
+
+[scan]
+# Repositories to audit this run. `watchlist` are repos of standing interest
+# (e.g. active due-diligence targets) surfaced by tooling but not auto-scanned.
+targets = []
+watchlist = []
+
+[model]
+# Detection / falsification / normalization model. No LLM logic is wired yet —
+# these values are read but unused until the detect/falsify/normalize stages land.
+name = "claude-opus-4-8"
+temperature = 0.0
+max_tokens = 4096
+
+[llm]
+# Reliability layer (src/repoauditor/llm/client.py).
+# Results the model reports below this confidence are not asserted outright — the
+# calling stage re-scores with broader context or persists `unresolved`.
+confidence_threshold = 0.5
+# Bounded retries on parse/validation failure before a ValidationFailure is logged.
+max_retries = 2
+
+[falsify]
+# Falsification challenger loop (src/repoauditor/falsify/challenger.py).
+# Max observe-think-act-reflect rounds per candidate before it degrades to
+# `unresolved`. Small by design; the loop never forces a verdict past this.
+max_iterations = 3
+
+[review]
+# Human-review checkpoint (src/repoauditor/review/checkpoint.py).
+# A triage result whose winning-class probability max(p, 1-p) is below this is
+# too uncertain to auto-act on and is routed to a human reviewer. Operational
+# gate, not a risk prior — priors live in priors.yaml.
+triage_confidence_threshold = 0.65
+
+[rate_limits]
+requests_per_minute = 30
+max_concurrency = 4
+
+[paths]
+# Relative paths are resolved against the repo root by config.py.
+# The entire `data/` tree is gitignored.
+data_dir = "data"
+raw_dir = "data/raw"
+db_path = "data/repoauditor.db"

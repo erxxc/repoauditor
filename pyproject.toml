@@ -1,0 +1,60 @@
+[project]
+name = "repoauditor"
+version = "0.1.0"
+description = "CLI pipeline for auditing acquired codebases: architecture/trust-boundary mapping, multi-lens AI-assisted vulnerability detection with a falsification pass, and dual-projection reporting from one findings store."
+readme = "README.md"
+requires-python = ">=3.12"
+license = { file = "LICENSE" }
+authors = [{ name = "erxxc" }]
+
+dependencies = [
+    "typer>=0.12",
+    "httpx>=0.27",
+    "pydantic>=2.7",
+    "pyyaml>=6.0",
+    "gitpython>=3.1",
+    "anthropic>=0.40",
+    # triage/ + analyze/risk_quant.py. Classical ML + numerics only — no deep
+    # learning (a CLAUDE.md constraint): scikit-learn, XGBoost, NumPy, SciPy,
+    # matplotlib, and shap for feature attribution.
+    "scikit-learn>=1.4",
+    "xgboost>=2.0",
+    "numpy>=1.26",
+    "scipy>=1.11",
+    "matplotlib>=3.8",
+    "shap>=0.44",
+    # shap pulls in numba; floor it so the resolver picks a modern wheel rather than
+    # backtracking to an ancient build that only supports Python <3.10.
+    "numba>=0.60",
+]
+
+[project.scripts]
+repoauditor = "repoauditor.cli:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/repoauditor"]
+
+# Prompt/template/DDL assets live inside the package and must ship with it.
+[tool.hatch.build.targets.wheel.force-include]
+"src/repoauditor/map/prompts" = "repoauditor/map/prompts"
+"src/repoauditor/detect/lenses" = "repoauditor/detect/lenses"
+"src/repoauditor/falsify/prompts" = "repoauditor/falsify/prompts"
+"src/repoauditor/normalize/prompts" = "repoauditor/normalize/prompts"
+"src/repoauditor/report/templates" = "repoauditor/report/templates"
+"src/repoauditor/store/ddl" = "repoauditor/store/ddl"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+markers = [
+    "live: hits the real Anthropic API (opt in with REPOAUDITOR_LLM=live). Deselected by default.",
+]
