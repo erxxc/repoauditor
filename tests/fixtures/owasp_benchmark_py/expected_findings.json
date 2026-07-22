@@ -1,0 +1,231 @@
+{
+  "repo_id": "owasp_benchmark_py",
+  "source": {
+    "project": "OWASP Benchmark for Python",
+    "repo": "https://github.com/OWASP-Benchmark/BenchmarkPython",
+    "commit": "f1291485808b66e20ddb6b01b10dc71b3df8c8ba",
+    "benchmark_version": "0.1",
+    "ground_truth_file": "expectedresults-0.1.csv",
+    "license": "GNU GPL v3 (OWASP Benchmark)"
+  },
+  "notes": "Ground truth is the OWASP Benchmark's own expectedresults-0.1.csv (authoritative, not hand-labelled). `findings` = the 15 real-vulnerability (real=true) cases across five categories \u2014 the RECALL ground truth. The snapshot ALSO contains 10 real=false 'precision-trap' cases (listed in `precision_traps`) that are deliberately OMITTED from `findings`: under the existing scorer any finding the pipeline raises on those files is unmatched and counts as a false positive, which is exactly how OWASP Benchmark measures FP rate. `source_lens` is intentionally omitted so a case matches whether it is flagged by the owasp LLM lens or by semgrep (source-agnostic). severity is category-canonical and, per the harness convention, an approximate anchor. This corpus needs the live model (REPOAUDITOR_LLM=live) and/or semgrep to score; neither runs in a bare CI env.",
+  "precision_traps": [
+    {
+      "file": "testcode/BenchmarkTest00011.py",
+      "category": "sqli",
+      "cwe": "CWE-89"
+    },
+    {
+      "file": "testcode/BenchmarkTest00012.py",
+      "category": "sqli",
+      "cwe": "CWE-89"
+    },
+    {
+      "file": "testcode/BenchmarkTest00082.py",
+      "category": "xss",
+      "cwe": "CWE-79"
+    },
+    {
+      "file": "testcode/BenchmarkTest00083.py",
+      "category": "xss",
+      "cwe": "CWE-79"
+    },
+    {
+      "file": "testcode/BenchmarkTest00004.py",
+      "category": "pathtraver",
+      "cwe": "CWE-22"
+    },
+    {
+      "file": "testcode/BenchmarkTest00005.py",
+      "category": "pathtraver",
+      "cwe": "CWE-22"
+    },
+    {
+      "file": "testcode/BenchmarkTest00350.py",
+      "category": "cmdi",
+      "cwe": "CWE-78"
+    },
+    {
+      "file": "testcode/BenchmarkTest00512.py",
+      "category": "cmdi",
+      "cwe": "CWE-78"
+    },
+    {
+      "file": "testcode/BenchmarkTest00055.py",
+      "category": "hash",
+      "cwe": "CWE-328"
+    },
+    {
+      "file": "testcode/BenchmarkTest00056.py",
+      "category": "hash",
+      "cwe": "CWE-328"
+    }
+  ],
+  "findings": [
+    {
+      "title": "SQL injection via tainted request value",
+      "file": "testcode/BenchmarkTest00099.py",
+      "line_start": 49,
+      "line_end": 49,
+      "severity": "critical",
+      "falsification_status": "confirmed",
+      "cwe": "CWE-89",
+      "category": "sqli",
+      "citation_contains": "cur.execute(sql)"
+    },
+    {
+      "title": "SQL injection via tainted request value",
+      "file": "testcode/BenchmarkTest00283.py",
+      "line_start": 49,
+      "line_end": 49,
+      "severity": "critical",
+      "falsification_status": "confirmed",
+      "cwe": "CWE-89",
+      "category": "sqli",
+      "citation_contains": "cur.execute(sql)"
+    },
+    {
+      "title": "SQL injection via tainted request value",
+      "file": "testcode/BenchmarkTest00284.py",
+      "line_start": 47,
+      "line_end": 47,
+      "severity": "critical",
+      "falsification_status": "confirmed",
+      "cwe": "CWE-89",
+      "category": "sqli",
+      "citation_contains": "cur.execute(sql)"
+    },
+    {
+      "title": "Reflected XSS \u2014 tainted value written to response unescaped",
+      "file": "testcode/BenchmarkTest00096.py",
+      "line_start": 51,
+      "line_end": 51,
+      "severity": "high",
+      "falsification_status": "confirmed",
+      "cwe": "CWE-79",
+      "category": "xss",
+      "citation_contains": "bar is"
+    },
+    {
+      "title": "Reflected XSS \u2014 tainted value written to response unescaped",
+      "file": "testcode/BenchmarkTest00097.py",
+      "line_start": 42,
+      "line_end": 42,
+      "severity": "high",
+      "falsification_status": "confirmed",
+      "cwe": "CWE-79",
+      "category": "xss",
+      "citation_contains": "bar is"
+    },
+    {
+      "title": "Reflected XSS \u2014 tainted value written to response unescaped",
+      "file": "testcode/BenchmarkTest00098.py",
+      "line_start": 25,
+      "line_end": 25,
+      "severity": "high",
+      "falsification_status": "confirmed",
+      "cwe": "CWE-79",
+      "category": "xss",
+      "citation_contains": "bar is"
+    },
+    {
+      "title": "Path traversal via tainted request value",
+      "file": "testcode/BenchmarkTest00001.py",
+      "line_start": 47,
+      "line_end": 47,
+      "severity": "high",
+      "falsification_status": "confirmed",
+      "cwe": "CWE-22",
+      "category": "pathtraver",
+      "citation_contains": "codecs.open(f'"
+    },
+    {
+      "title": "Path traversal via tainted request value",
+      "file": "testcode/BenchmarkTest00002.py",
+      "line_start": 49,
+      "line_end": 49,
+      "severity": "high",
+      "falsification_status": "confirmed",
+      "cwe": "CWE-22",
+      "category": "pathtraver",
+      "citation_contains": "codecs.open(f'"
+    },
+    {
+      "title": "Path traversal via tainted request value",
+      "file": "testcode/BenchmarkTest00003.py",
+      "line_start": 50,
+      "line_end": 50,
+      "severity": "high",
+      "falsification_status": "confirmed",
+      "cwe": "CWE-22",
+      "category": "pathtraver",
+      "citation_contains": "codecs.open(f'"
+    },
+    {
+      "title": "OS command injection via tainted request value",
+      "file": "testcode/BenchmarkTest00165.py",
+      "line_start": 57,
+      "line_end": 57,
+      "severity": "critical",
+      "falsification_status": "confirmed",
+      "cwe": "CWE-78",
+      "category": "cmdi",
+      "citation_contains": "subprocess.run("
+    },
+    {
+      "title": "OS command injection via tainted request value",
+      "file": "testcode/BenchmarkTest00166.py",
+      "line_start": 53,
+      "line_end": 53,
+      "severity": "critical",
+      "falsification_status": "confirmed",
+      "cwe": "CWE-78",
+      "category": "cmdi",
+      "citation_contains": "subprocess.run("
+    },
+    {
+      "title": "OS command injection via tainted request value",
+      "file": "testcode/BenchmarkTest00167.py",
+      "line_start": 53,
+      "line_end": 53,
+      "severity": "critical",
+      "falsification_status": "confirmed",
+      "cwe": "CWE-78",
+      "category": "cmdi",
+      "citation_contains": "subprocess.run("
+    },
+    {
+      "title": "Weak / broken cryptographic hash on sensitive data",
+      "file": "testcode/BenchmarkTest00054.py",
+      "line_start": 64,
+      "line_end": 64,
+      "severity": "medium",
+      "falsification_status": "confirmed",
+      "cwe": "CWE-328",
+      "category": "hash",
+      "citation_contains": "hashlib.new('md5')"
+    },
+    {
+      "title": "Weak / broken cryptographic hash on sensitive data",
+      "file": "testcode/BenchmarkTest00057.py",
+      "line_start": 65,
+      "line_end": 65,
+      "severity": "medium",
+      "falsification_status": "confirmed",
+      "cwe": "CWE-328",
+      "category": "hash",
+      "citation_contains": "hashlib.md5()"
+    },
+    {
+      "title": "Weak / broken cryptographic hash on sensitive data",
+      "file": "testcode/BenchmarkTest00058.py",
+      "line_start": 65,
+      "line_end": 65,
+      "severity": "medium",
+      "falsification_status": "confirmed",
+      "cwe": "CWE-328",
+      "category": "hash",
+      "citation_contains": "hashlib.sha1()"
+    }
+  ]
+}

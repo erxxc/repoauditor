@@ -22,11 +22,40 @@ confidence_threshold = 0.5
 # Bounded retries on parse/validation failure before a ValidationFailure is logged.
 max_retries = 2
 
+[detect]
+# Deterministic tool adapters (src/repoauditor/detect/deterministic/).
+# Run Semgrep / pip-audit / OSV-Scanner / gitleaks alongside the LLM lenses. Each
+# adapter degrades to no findings when its binary is absent, so a partial toolchain
+# never breaks a run. Set false for LLM-only detection.
+run_deterministic_tools = true
+# Per-tool subprocess timeout (seconds).
+tool_timeout_seconds = 180
+
 [falsify]
 # Falsification challenger loop (src/repoauditor/falsify/challenger.py).
 # Max observe-think-act-reflect rounds per candidate before it degrades to
 # `unresolved`. Small by design; the loop never forces a verdict past this.
 max_iterations = 3
+# LLM budget per falsify run: max candidates put through the loop, taken in triage
+# priority order (highest P(actionable) first). Candidates beyond the budget are
+# persisted `deferred` and resumed by a later run. 0 = unlimited.
+max_findings_per_run = 0
+
+[triage]
+# Triage classifier training corpus (src/repoauditor/triage/). How the synthetic
+# teacher is blended with real accumulated TriageLabels as they grow. Operational
+# training knobs, not risk priors — but the weighting is Beta-Binomial shrinkage
+# (see triage/priors.py) lifted to the corpus, documented in config.TriageConfig,
+# so it is principled rather than a magic number.
+synthetic_corpus_size = 2000
+# Synthetic pool's total effective weight in pseudo-observations. Its share of the
+# training mass = pseudocount / (pseudocount + n_real) -> shrinks to 0 as real grows.
+synthetic_pseudocount = 200.0
+# At/above this many real labels, drop synthetic entirely (real fully specifies it).
+synthetic_cutoff_labels = 2000
+# Min real labels before held-out PR/Brier is computed on a real split (else synthetic,
+# flagged as such). 40 -> ~10-row stratified test set, the floor for a usable estimate.
+min_real_labels_for_holdout_eval = 40
 
 [review]
 # Human-review checkpoint (src/repoauditor/review/checkpoint.py).

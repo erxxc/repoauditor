@@ -34,9 +34,15 @@ from xgboost import XGBClassifier
 
 from ..config import Config, get_config
 from ..store import db
-from ..store.models import FalsificationStatus, Finding, Severity, TriageResult
+from ..store.models import (
+    FalsificationStatus,
+    Finding,
+    TriageFeatureRecord,
+    TriageResult,
+)
+from . import labels as triage_labels
 from . import priors as triage_priors
-from . import synthetic
+from . import training
 from .features import (
     FEATURE_NAMES,
     SarifFinding,
@@ -44,6 +50,8 @@ from .features import (
     extract_feature_vector,
     git_churn,
     load_sarif,
+    sarif_severity,
+    sarif_tool_confidence,
 )
 
 
@@ -55,6 +63,39 @@ class ModelEvaluation:
     average_precision: float  # area under the precision-recall curve
     brier: float              # calibration quality (lower is better)
     calibration: str          # "isotonic" | "sigmoid"
+    # Whether the held-out set was carved from *real* labels (an honest real-performance
+    # number) or from the synthetic corpus (a statement about the generator, never
+    # presented as real performance). Flagged so the two are never conflated.
+    eval_on: str = "synthetic"   # "real" | "synthetic"
+    n_eval: int = 0              # size of the held-out set behind these metrics
+
+
+def _holdout_split(
+    y: np.ndarray, real_mask: np.ndarray, min_real_holdout: int, seed: int
+) -> tuple[np.ndarray, np.ndarray, str]:
+    """Pick train/test indices, preferring a REAL held-out set when there are enough.
+
+    Returns (train_idx, test_idx, eval_on). When `real_mask` marks >= `min_real_holdout`
+    real rows with both classes present, the test set is a stratified 25% sample of the
+    *real* rows and everything else (remaining real + all synthetic) trains — so the
+    reported PR/Brier are measured on real labels. Otherwise it degrades to a stratified
+    split of the whole corpus, flagged `eval_on='synthetic'` (dominated by / only synthetic
+    — a generator-quality number, not a real-performance claim).
+    """
+    n = len(y)
+    all_idx = np.arange(n)
+    real_idx = np.where(real_mask)[0]
+    if (min_real_holdout > 0 and len(real_idx) >= min_real_holdout
+            and len(np.unique(y[real_idx])) == 2):
+        _, te_idx = train_test_split(
+            real_idx, test_size=0.25, stratify=y[real_idx], random_state=seed
+        )
+        tr_idx = np.setdiff1d(all_idx, te_idx)
+        return tr_idx, te_idx, "real"
+    tr_idx, te_idx = train_test_split(
+        all_idx, test_size=0.25, stratify=y, random_state=seed
+    )
+    return tr_idx, te_idx, "synthetic"
 
 
 def _make_base(model_name: str, seed: int):
@@ -81,46 +122,69 @@ class TriageClassifier:
     _explainer: object = None
 
     @classmethod
-    def train(cls, X: np.ndarray, y: np.ndarray, seed: int = 0) -> "TriageClassifier":
-        """Train + calibrate RF and XGB, compare on held-out PR/Brier, keep the winner."""
+    def train(
+        cls,
+        X: np.ndarray,
+        y: np.ndarray,
+        seed: int = 0,
+        *,
+        sample_weight: np.ndarray | None = None,
+        real_mask: np.ndarray | None = None,
+        min_real_holdout: int = 0,
+    ) -> "TriageClassifier":
+        """Train + calibrate RF and XGB, compare on held-out PR/Brier, keep the winner.
+
+        `sample_weight` lets the synthetic teacher be down-weighted as real labels
+        accumulate (see `triage/training.py`). `real_mask` marks which rows are real: when
+        at least `min_real_holdout` real rows exist (both classes present), the held-out
+        eval set is carved *entirely from real rows* so PR/Brier are an honest real-
+        performance number; otherwise the eval falls back to a split of the full corpus and
+        is flagged `eval_on='synthetic'` — never passed off as real performance.
+        """
         X = np.asarray(X, dtype=float)
         y = np.asarray(y, dtype=int)
+        n = len(y)
+        if sample_weight is None:
+            sample_weight = np.ones(n, dtype=float)
+        else:
+            sample_weight = np.asarray(sample_weight, dtype=float)
+        real_mask = (np.zeros(n, dtype=bool) if real_mask is None
+                     else np.asarray(real_mask, dtype=bool))
+
         # Isotonic needs a fair amount of data to avoid overfitting the calibration
         # map; below ~1000 rows fall back to Platt scaling (sigmoid).
-        method = "isotonic" if len(y) >= 1000 else "sigmoid"
-        X_tr, X_te, y_tr, y_te = train_test_split(
-            X, y, test_size=0.25, stratify=y, random_state=seed
-        )
+        method = "isotonic" if n >= 1000 else "sigmoid"
+        tr_idx, te_idx, eval_on = _holdout_split(y, real_mask, min_real_holdout, seed)
 
         evaluations: list[ModelEvaluation] = []
-        fitted: dict[str, CalibratedClassifierCV] = {}
         for name in ("randomforest", "xgboost"):
             calibrated = CalibratedClassifierCV(
                 _make_base(name, seed), method=method, cv=3
             )
-            calibrated.fit(X_tr, y_tr)
-            p = calibrated.predict_proba(X_te)[:, 1]
+            calibrated.fit(X[tr_idx], y[tr_idx], sample_weight=sample_weight[tr_idx])
+            p = calibrated.predict_proba(X[te_idx])[:, 1]
             evaluations.append(
                 ModelEvaluation(
                     model_name=name,
-                    average_precision=float(average_precision_score(y_te, p)),
-                    brier=float(brier_score_loss(y_te, p)),
+                    average_precision=float(average_precision_score(y[te_idx], p)),
+                    brier=float(brier_score_loss(y[te_idx], p)),
                     calibration=method,
+                    eval_on=eval_on,
+                    n_eval=int(len(te_idx)),
                 )
             )
-            fitted[name] = calibrated
 
         # Winner: lowest Brier, tie-broken by highest average precision.
         winner = min(evaluations, key=lambda e: (e.brier, -e.average_precision))
         winning_name = winner.model_name
 
-        # Refit the calibrated model on ALL data for deployment.
+        # Refit the calibrated model on ALL data (weighted) for deployment.
         final = CalibratedClassifierCV(_make_base(winning_name, seed), method=method, cv=3)
-        final.fit(X, y)
+        final.fit(X, y, sample_weight=sample_weight)
         # Separate plain model on all data for SHAP attribution (calibration wrappers
         # don't expose a single tree ensemble cleanly).
         attribution_model = _make_base(winning_name, seed)
-        attribution_model.fit(X, y)
+        attribution_model.fit(X, y, sample_weight=sample_weight)
 
         clf = cls(
             calibrated=final,
@@ -195,32 +259,18 @@ class TriageOutcome:
     ranked: list[TriageResult]
     action_threshold: float
     n_suppressed: int
+    # Closed-loop training state: how many real labels trained this run and the synthetic
+    # teacher's remaining share of the training mass (1.0 cold start -> 0.0 once real data
+    # dominates / is past the cutoff). Surfaced so the CLI can show the loop maturing.
+    n_real_labels: int = 0
+    synthetic_share: float = 1.0
+    synthetic_dropped: bool = False
 
 
-# --------------------------------------------------------------------------- #
-# Severity mapping (deterministic tool signal -> canonical Severity)
-# --------------------------------------------------------------------------- #
-def _severity_of(finding: SarifFinding) -> Severity:
-    ss = finding.security_severity
-    if ss is not None:
-        if ss >= 9.0:
-            return Severity.CRITICAL
-        if ss >= 7.0:
-            return Severity.HIGH
-        if ss >= 4.0:
-            return Severity.MEDIUM
-        if ss >= 0.1:
-            return Severity.LOW
-        return Severity.INFO
-    return {"error": Severity.HIGH, "warning": Severity.MEDIUM,
-            "note": Severity.LOW, "none": Severity.INFO}.get(finding.level, Severity.MEDIUM)
-
-
-def _tool_confidence(finding: SarifFinding) -> float:
-    """Nominal *tool* confidence (distinct from triage P(actionable))."""
-    if finding.security_severity is not None:
-        return min(max(finding.security_severity / 10.0, 0.0), 1.0)
-    return {"error": 0.7, "warning": 0.5, "note": 0.3, "none": 0.2}.get(finding.level, 0.5)
+# Severity / tool-confidence mapping lives in `features` so the detect-stage SAST
+# adapter and this classifier derive a deterministic tool's signal the same way.
+_severity_of = sarif_severity
+_tool_confidence = sarif_tool_confidence
 
 
 def _discover_sarif(repo_id: str, config: Config) -> Path | None:
@@ -289,11 +339,13 @@ def triage_repo(
     """Triage a repo's SAST findings: rank by calibrated P(actionable), persist results.
 
     Library entry point behind `repoauditor triage <repo-id>` (the CLI stays thin).
-    Steps: load SARIF -> refresh per-rule Beta-Binomial priors from accumulated labels
-    -> build features (the store/git signals are the seam where *real* labels influence
-    scoring) -> train+compare RF/XGB on the synthetic corpus (until enough real labelled
-    feature-rows exist) -> score, rank, and persist a `TriageResult` per finding. Nothing
-    is deleted; findings below `action_threshold` are marked `suppressed` but kept.
+    Steps: load SARIF -> derive labels from downstream falsify/review outcomes (the closed
+    loop) -> refresh per-rule Beta-Binomial priors from accumulated labels -> build features
+    (the store/git signals are one seam where *real* labels influence scoring) -> assemble a
+    training corpus that blends the synthetic teacher with real labelled feature-rows,
+    synthetic shrinking as real data grows (triage/training.py) -> train+compare RF/XGB ->
+    score, rank, persist a `TriageResult` and the feature vector per finding. Nothing is
+    deleted; findings below `action_threshold` are marked `suppressed` but kept.
     """
     config = config or get_config()
 
@@ -306,6 +358,11 @@ def triage_repo(
     findings = load_sarif(Path(resolved))
     if not findings:
         return TriageOutcome(repo_id, "none", [], [], action_threshold, 0)
+
+    # Closed loop: harvest any new falsify verdicts / review decisions (this repo's prior
+    # runs and every other engagement) into TriageLabels before we build priors or train,
+    # so the freshest ground truth feeds both. Manual labels are protected from overwrite.
+    triage_labels.derive_labels(config)
 
     # Per-rule priors from accumulated labels — this is where real analyst labels feed
     # the classifier (via features), the cross-engagement learning seam.
@@ -341,9 +398,16 @@ def triage_repo(
     )
     X = np.array([extract_feature_vector(f, ctx) for f in findings], dtype=float)
 
-    # Train on the synthetic corpus (documented stand-in until real labelled feature
-    # rows accumulate); real per-rule labels already influence X via the features above.
-    clf = classifier or TriageClassifier.train(*_training_data(seed), seed=seed)
+    # Assemble the training corpus: the synthetic teacher blended with real accumulated
+    # labels, whose share grows (and synthetic's shrinks) as real labels arrive — see
+    # triage/training.py. Real labels also already influence X above via the per-rule
+    # prior-mean + historical-FP-rate features; this is the third, most direct channel.
+    corpus = training.assemble_training_data(config, seed=seed)
+    clf = classifier or TriageClassifier.train(
+        corpus.X, corpus.y, seed=seed,
+        sample_weight=corpus.sample_weight, real_mask=corpus.real_mask,
+        min_real_holdout=config.triage.min_real_labels_for_holdout_eval,
+    )
 
     probs = clf.predict_proba(X)
     attrs = clf.attributions(X)
@@ -354,6 +418,19 @@ def triage_repo(
     n_suppressed = 0
     for rank, i in enumerate(ranked_idx, start=1):
         fid = _persist_finding(findings[i], repo_id, config, existing)
+        # Persist the exact feature vector so this finding is rejoinable to a label
+        # collected later (manual or derived) — the bridge to real cross-engagement training.
+        db.upsert_triage_features(
+            TriageFeatureRecord(
+                finding_id=fid,
+                engagement=repo_id,
+                rule_id=findings[i].rule_id,
+                fingerprint=findings[i].fingerprint,
+                features=[float(v) for v in X[i]],
+                feature_names=list(FEATURE_NAMES),
+            ),
+            config,
+        )
         suppressed = bool(probs[i] < action_threshold)
         n_suppressed += int(suppressed)
         result = TriageResult(
@@ -374,13 +451,10 @@ def triage_repo(
         ranked=results,
         action_threshold=action_threshold,
         n_suppressed=n_suppressed,
+        n_real_labels=corpus.n_real,
+        synthetic_share=corpus.synthetic_share,
+        synthetic_dropped=corpus.synthetic_dropped,
     )
-
-
-def _training_data(seed: int) -> tuple[np.ndarray, np.ndarray]:
-    """Synthetic training corpus (X, y). Marked synthetic at the source."""
-    ds = synthetic.generate(n=2000, seed=seed)
-    return ds.X, ds.y
 
 
 def _existing_findings_index(repo_id: str, config: Config) -> dict[tuple, int]:

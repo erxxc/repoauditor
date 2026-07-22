@@ -1,9 +1,18 @@
 """Analyze stage — cross-source corroboration/divergence + deal-relevant weighting.
 
-Corroboration/deal-risk weighting is future work (see `corroboration.py`,
-`deal_risk.py`). The FAIR-style risk quantification is implemented in `risk_quant.py`.
+`corroboration.py` matches findings across sources and scores their agreement;
+`deal_risk.py` re-weights findings into a deal-relevant risk distinct from technical
+severity. The FAIR-style risk quantification is in `risk_quant.py`.
 """
 
+from .corroboration import (
+    SEVERITY_UPGRADE_GAP,
+    CorroborationResult,
+    Divergence,
+    agreement_score,
+    corroborate,
+)
+from .deal_risk import DealRiskResult, weigh_deal_risk
 from .risk_quant import (
     build_scenarios,
     calibrate_lognormal,
@@ -13,6 +22,13 @@ from .risk_quant import (
 )
 
 __all__ = [
+    "corroborate",
+    "agreement_score",
+    "CorroborationResult",
+    "Divergence",
+    "SEVERITY_UPGRADE_GAP",
+    "weigh_deal_risk",
+    "DealRiskResult",
     "build_scenarios",
     "calibrate_lognormal",
     "generate_appendix",

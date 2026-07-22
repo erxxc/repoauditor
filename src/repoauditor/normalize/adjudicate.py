@@ -1,21 +1,32 @@
-"""Severity adjudication / normalization — with debate framing.
+"""Severity adjudication / normalization — with debate framing and enforced upgrade licensing.
 
-When several sources (deterministic tools and/or ensemble lenses) flag the same
-region but disagree on severity, this stage resolves the conflict into one canonical
-`Finding`. It implements a **debate-style adjudication** (structured deliberation
-before commit, in the LLM-debate lineage): the conflicting sources' *reasoning* — not
-just their severity values — is laid out together, and the adjudicator produces either
-a synthesized consensus with documented rationale or an explicit non-consensus. A
-non-consensus (or a low-confidence one) is routed to the review/ checkpoint as
-`unresolved` rather than being silently resolved to one value. The full debate trail
-(every position + the outcome) is persisted so a reviewer can see *why* the sources
-disagreed, not just that they did.
+When several sources (deterministic tools and/or ensemble lenses) flag the **same underlying
+issue** but disagree on severity, this stage resolves the conflict into one canonical
+`Finding`. "The same issue" is decided by the shared `repoauditor.matching` module — the very
+same matcher `analyze/corroboration.py` uses — so grouping here is CWE-aware and vetoes
+co-located-but-different-CWE findings, rather than the old line-overlap-only heuristic that
+could treat two distinct issues as one conflict.
 
-The core rule is enforced in code, not just the prompt: the adjudicated severity is
-**capped at the strongest severity any single source actually asserted** — evidence
-is never manufactured. Because a conflict group has ≥2 independent sources, that
-corroboration is what licenses keeping the higher end of the range; single-source
-findings are passed through unchanged (no upgrade without corroboration).
+It implements a **debate-style adjudication** (structured deliberation before commit): the
+conflicting sources' *reasoning* — not just their severity values — is laid out together, and
+the adjudicator produces either a synthesized consensus with documented rationale or an
+explicit non-consensus. A non-consensus (or a low-confidence one) routes to review/ as
+`unresolved` rather than being silently resolved.
+
+The core CLAUDE.md rule is **enforced here, in code, at the right point in the pipeline**:
+severity is never upgraded without a license, and there are exactly two licenses —
+  (a) a corroborating match from an *independent* source (≥2 distinct sources on the matched
+      group), or
+  (b) a falsification pass that confirmed reachability (a group member is `confirmed`).
+A conflicting-severity group with *neither* license cannot have its higher severity kept: it
+routes to `unresolved` → review/. A licensed group runs the debate and the result is **capped
+at the strongest severity any single source actually asserted** — evidence is never
+manufactured. Single-source (or already-agreeing) groups pass through unchanged.
+
+Because normalize/ runs *before* review/, the resolved severity is **persisted here**
+(`db.apply_adjudication`) so it is final and visible to the human reviewer — the licensing
+decision is made once, before review, not re-litigated after. (`analyze/corroboration.py`
+runs after review and only *scores* agreement; it never changes severity.)
 """
 
 from __future__ import annotations
@@ -26,6 +37,7 @@ from pydantic import BaseModel
 
 from ..config import Config, get_config
 from ..llm import LLMClient, get_llm_client
+from ..matching import MatchGroup, find_matches, source_of
 from ..store import db
 from ..store.models import (
     AdjudicationDebate,
@@ -34,7 +46,6 @@ from ..store.models import (
     FalsificationStatus,
     Finding,
     Severity,
-    SourceType,
     cap_severity,
     severity_rank,
 )
@@ -57,43 +68,20 @@ class Adjudication(BaseModel):
     confidence: float = 1.0
 
 
-def _overlaps(a: Finding, b: Finding) -> bool:
-    return a.file == b.file and a.line_start <= b.line_end and b.line_start <= a.line_end
-
-
-def _group_overlapping(findings: list[Finding]) -> list[list[Finding]]:
-    """Cluster findings that cover the same file+overlapping lines (order-stable)."""
-    groups: list[list[Finding]] = []
-    for finding in findings:
-        for group in groups:
-            if any(_overlaps(finding, member) for member in group):
-                group.append(finding)
-                break
-        else:
-            groups.append([finding])
-    return groups
-
-
-def _source_of(finding: Finding) -> tuple[SourceType, str]:
-    if finding.source_tool is not None:
-        return SourceType.TOOL, finding.source_tool
-    return SourceType.LENS, finding.source_lens or "unknown"
-
-
 def _reasoning_of(finding: Finding) -> str:
     """The argument a source made for its severity — its description, else its title."""
     return (finding.description or finding.title or "").strip()
 
 
-def _positions(group: list[Finding]) -> list[DebatePosition]:
+def _positions(members: list[Finding]) -> list[DebatePosition]:
     """Each source's stance in the debate: its severity call *and* its reasoning."""
     positions: list[DebatePosition] = []
-    for finding in group:
-        source_type, source_name = _source_of(finding)
+    for finding in members:
+        src = source_of(finding)
         positions.append(
             DebatePosition(
-                source_type=source_type,
-                source_name=source_name,
+                source_type=src.source_type,
+                source_name=src.source_name,
                 severity=finding.severity,
                 reasoning=_reasoning_of(finding),
             )
@@ -101,97 +89,166 @@ def _positions(group: list[Finding]) -> list[DebatePosition]:
     return positions
 
 
+def _license(group: MatchGroup) -> str | None:
+    """The license (if any) permitting an upgrade for a conflicting group.
+
+    (a) `corroboration` — ≥2 distinct independent sources flagged the same issue; or
+    (b) `falsification` — a member was confirmed reachable by the falsify stage.
+    `None` means no upgrade may be kept — route the conflict to review as unresolved.
+    """
+    if group.is_corroborated:
+        return "corroboration"
+    if any(f.falsification_status is FalsificationStatus.CONFIRMED for f in group.findings):
+        return "falsification"
+    return None
+
+
 def adjudicate(
     candidates: list[Finding],
     config: Config | None = None,
     llm: LLMClient | None = None,
+    *,
+    persist: bool = True,
 ) -> list[Finding]:
-    """Resolve conflicting severities across overlapping findings into canonical ones.
+    """Resolve conflicting severities across same-issue findings into canonical ones.
 
-    Single-source (or already-agreeing) groups pass through unchanged. For a group
-    where sources disagree, the model proposes a resolution which is then capped at
-    the strongest asserted severity; the other sources become corroborations.
+    Groups with the shared matcher, then per group: single-source / already-agreeing groups
+    pass through unchanged (no upgrade); a conflicting group may keep its higher severity
+    only if licensed (independent corroboration or a falsification confirmation), else it
+    routes to review as `unresolved`. A licensed resolution is capped at the strongest
+    asserted severity; the other sources become corroborations. Resolved severities are
+    persisted (so review/ sees them) for findings that carry an id.
     """
     config = config or get_config()
     normalized: list[Finding] = []
 
-    for group in _group_overlapping(candidates):
-        severities = {f.severity for f in group}
-        if len(group) == 1 or len(severities) == 1:
-            normalized.append(_merge(group, group[0].severity, rationale=None))
+    live = [f for f in candidates if f.falsification_status is not FalsificationStatus.KILLED]
+    for group in find_matches(live).groups:
+        members = group.findings
+        severities = {f.severity for f in members}
+
+        # No conflict: single finding or unanimous severity — pass through, no upgrade, no LLM.
+        if len(members) == 1 or len(severities) == 1:
+            resolved = _merge(members, group.representative.severity, rationale=None)
+            _persist_resolution(resolved, config, persist)
+            normalized.append(resolved)
             continue
 
-        # Genuine conflict — run the debate, then cap at the evidence ceiling.
+        # Conflicting severities: keeping the higher end is an upgrade that needs a license.
+        positions = _positions(members)
+        ceiling = max(severities, key=severity_rank)
+        licensed_by = _license(group)
+
+        if licensed_by is None:
+            # No independent corroboration and no falsification confirmation — cannot license
+            # an upgrade. Route to review as unresolved rather than forcing the higher value.
+            resolved = _merge_unresolved(
+                members, confidence=None, consensus=False,
+                cause="severity conflict with no independent corroboration and no "
+                      "falsification confirmation to license an upgrade",
+            )
+            _record_debate(config, members, positions, outcome="unresolved",
+                           resolved_severity=None,
+                           rationale="unlicensed severity upgrade — routed to review")
+            _persist_resolution(resolved, config, persist)
+            normalized.append(resolved)
+            continue
+
+        # Licensed — run the debate, then cap at the evidence ceiling.
         llm = llm or get_llm_client(config)
-        ceiling = max((f.severity for f in group), key=severity_rank)
-        positions = _positions(group)
         completion = llm.call(
             module="normalize",
             prompt_version=PROMPT_VERSION,
             system=PROMPT,
-            user=_debate_prompt(group, positions),
+            user=_debate_prompt(members, positions),
             schema=Adjudication,
-            context={"stage": "normalize", "repo_id": group[0].repo_id,
-                     "file": group[0].file, "severities": sorted(str(s) for s in severities)},
+            context={"stage": "normalize", "repo_id": members[0].repo_id,
+                     "file": members[0].file, "license": licensed_by,
+                     "severities": sorted(str(s) for s in severities)},
         )
 
-        # No consensus, or a shaky one, is routed to review as `unresolved` — never a
-        # forced pick. A synthesized, confident consensus is committed (capped).
         if not completion.value.consensus or completion.low_confidence:
-            resolved_finding = _merge_unresolved(
-                group, completion.confidence, consensus=completion.value.consensus
+            resolved = _merge_unresolved(
+                members, completion.confidence, consensus=completion.value.consensus
             )
             outcome, resolved_severity = "unresolved", None
         else:
-            resolved = cap_severity(completion.value.severity, ceiling)
-            resolved_finding = _merge(group, resolved, rationale=completion.value.rationale)
-            outcome, resolved_severity = "consensus", resolved
+            resolved_severity = cap_severity(completion.value.severity, ceiling)
+            resolved = _merge(members, resolved_severity, rationale=completion.value.rationale)
+            outcome = "consensus"
 
-        # Persist the full debate trail — not just the final severity — so a reviewer
-        # can see why the sources disagreed. Keyed to the representative finding's
-        # region, so review/ can look it up from the persisted finding.
-        representative = max(group, key=lambda f: f.confidence)
-        db.insert_adjudication_debate(
-            AdjudicationDebate(
-                repo_id=representative.repo_id,
-                file=representative.file,
-                line_start=representative.line_start,
-                line_end=representative.line_end,
-                positions=positions,
-                outcome=outcome,
-                resolved_severity=resolved_severity,
-                synthesis_rationale=completion.value.rationale,
-            ),
-            config,
-        )
-        normalized.append(resolved_finding)
+        _record_debate(config, members, positions, outcome, resolved_severity,
+                       completion.value.rationale)
+        _persist_resolution(resolved, config, persist)
+        normalized.append(resolved)
 
+    # Killed candidates are not adjudicated — passed through untouched.
+    normalized.extend(f for f in candidates
+                      if f.falsification_status is FalsificationStatus.KILLED)
     return normalized
 
 
-def _merge_unresolved(
-    group: list[Finding], confidence: float | None, consensus: bool
-) -> Finding:
-    """Non-consensus adjudication: preserve both original severities, status unresolved.
+def _persist_resolution(resolved: Finding, config: Config, persist: bool) -> None:
+    """Write the resolved severity + corroborations to the store (if the finding is persisted).
 
-    Triggered when the debate produced no consensus, or a consensus the model was not
-    confident in. Each source's proposed severity is recorded as a corroboration note,
-    so both calls survive rather than being silently collapsed to one value; the finding
-    is routed to review/ as `unresolved`.
+    In-memory candidates (id is None) — e.g. unit tests exercising the pure logic — are left
+    alone; store-backed findings have their resolved severity made final before review/.
     """
-    representative = max(group, key=lambda f: f.confidence)
-    proposed = ", ".join(f"{name}={f.severity}" for f in group for _, name in [_source_of(f)])
-    corroborations = [
-        Corroboration(source_type=st, source_name=name, note=str(f.severity))
-        for f in group
-        for st, name in [_source_of(f)]
-    ]
-    conf = f"{confidence:.2f}" if confidence is not None else "n/a"
-    cause = (
-        "sources genuinely conflict (no consensus)"
-        if not consensus
-        else f"consensus confidence {conf} below threshold"
+    if persist and resolved.id is not None:
+        db.apply_adjudication(resolved, config)
+
+
+def _record_debate(
+    config: Config,
+    members: list[Finding],
+    positions: list[DebatePosition],
+    outcome: str,
+    resolved_severity: Severity | None,
+    rationale: str | None,
+) -> None:
+    """Persist the full debate trail (positions + outcome), keyed to the representative region."""
+    representative = max(members, key=lambda f: f.confidence)
+    db.insert_adjudication_debate(
+        AdjudicationDebate(
+            repo_id=representative.repo_id,
+            file=representative.file,
+            line_start=representative.line_start,
+            line_end=representative.line_end,
+            positions=positions,
+            outcome=outcome,
+            resolved_severity=resolved_severity,
+            synthesis_rationale=rationale,
+        ),
+        config,
     )
+
+
+def _merge_unresolved(
+    members: list[Finding],
+    confidence: float | None,
+    consensus: bool,
+    cause: str | None = None,
+) -> Finding:
+    """Non-consensus / unlicensed adjudication: preserve both severities, status unresolved.
+
+    Each source's proposed severity is recorded as a corroboration note, so both calls survive
+    rather than being silently collapsed to one value; the finding routes to review/ as
+    `unresolved`.
+    """
+    representative = max(members, key=lambda f: f.confidence)
+    proposed = ", ".join(f"{source_of(f).source_name}={f.severity}" for f in members)
+    corroborations = [
+        Corroboration(source_type=source_of(f).source_type,
+                      source_name=source_of(f).source_name, note=str(f.severity))
+        for f in members
+    ]
+    if cause is None:
+        conf = f"{confidence:.2f}" if confidence is not None else "n/a"
+        cause = (
+            "sources genuinely conflict (no consensus)"
+            if not consensus
+            else f"consensus confidence {conf} below threshold"
+        )
     description = (
         f"{representative.description or ''}\n"
         f"[adjudication unresolved: {cause}; routed to review; "
@@ -206,22 +263,24 @@ def _merge_unresolved(
     )
 
 
-def _merge(group: list[Finding], severity: Severity, rationale: str | None) -> Finding:
+def _merge(members: list[Finding], severity: Severity, rationale: str | None) -> Finding:
     """Collapse a group into one canonical finding at `severity`.
 
-    The representative is the highest-confidence finding; the *other* sources in the
-    group become its corroborations (this is the cross-source agreement the severity
-    rule relies on).
+    The representative is the highest-confidence finding; the *other* independent sources in
+    the group become its corroborations (the cross-source agreement the severity rule relies on).
     """
-    representative = max(group, key=lambda f: f.confidence)
-    rep_source = _source_of(representative)
-    corroborations = [
-        Corroboration(source_type=st, source_name=name)
-        for f in group
-        if f is not representative
-        for st, name in [_source_of(f)]
-        if (st, name) != rep_source
-    ]
+    representative = max(members, key=lambda f: f.confidence)
+    rep_source = source_of(representative)
+    corroborations: list[Corroboration] = []
+    seen = {rep_source}
+    for finding in members:
+        src = source_of(finding)
+        if src in seen:
+            continue
+        seen.add(src)
+        corroborations.append(
+            Corroboration(source_type=src.source_type, source_name=src.source_name)
+        )
     description = representative.description
     if rationale:
         description = f"{description or ''}\n[adjudication] {rationale}".strip()
@@ -234,11 +293,11 @@ def _merge(group: list[Finding], severity: Severity, rationale: str | None) -> F
     )
 
 
-def _debate_prompt(group: list[Finding], positions: list[DebatePosition]) -> str:
+def _debate_prompt(members: list[Finding], positions: list[DebatePosition]) -> str:
     """Lay out every source's severity *and its reasoning* together, for the debate."""
     lines = [
-        f"Overlapping findings on {group[0].file} "
-        f"lines {min(f.line_start for f in group)}-{max(f.line_end for f in group)}. "
+        f"Overlapping findings on {members[0].file} "
+        f"lines {min(f.line_start for f in members)}-{max(f.line_end for f in members)}. "
         f"Each source's proposed severity and its reasoning:",
     ]
     for pos in positions:
@@ -246,5 +305,5 @@ def _debate_prompt(group: list[Finding], positions: list[DebatePosition]) -> str
             f"- source={pos.source_name} ({pos.source_type}) "
             f"severity={pos.severity}\n  reasoning: {pos.reasoning or '(none given)'}"
         )
-    lines.append("\nShared citation:\n" + group[0].citation_snippet)
+    lines.append("\nShared citation:\n" + members[0].citation_snippet)
     return "\n".join(lines)

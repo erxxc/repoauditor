@@ -1,0 +1,31 @@
+{
+  "repo_id": "cve_gunicorn_smuggling",
+  "source": {
+    "kind": "in-code CVE (SAST / LLM-lens path)",
+    "project": "Gunicorn",
+    "repo": "https://github.com/benoitc/gunicorn",
+    "pinned_ref": "21.2.0",
+    "vulnerable_file": "gunicorn/http/message.py",
+    "cve": "CVE-2024-1135",
+    "ghsa": "GHSA-w3h3-4rj7-4ph4",
+    "pysec": "PYSEC-2026-1434",
+    "cwe": "CWE-444",
+    "fixed_in": "22.0.0",
+    "verified_via": "https://api.osv.dev/v1/query",
+    "description": "Real, unmodified snapshot of Gunicorn's HTTP message parser at the pre-fix release 21.2.0. `set_body_reader` accepts conflicting/duplicate Content-Length and Transfer-Encoding headers leniently, enabling HTTP request smuggling and endpoint-restriction bypass (fixed in 22.0.0). A single vulnerable file is snapshotted (the faithful minimal slice), not the whole 9 MB repo."
+  },
+  "notes": "This is a deliberately HARD real-world case: request smuggling is a protocol-level flaw with no single obvious sink, so it stress-tests recall of the LLM lens / semgrep (which are not available in a bare CI env — this fixture's score is deferred to a live/tooled run). The citation anchors to the lenient Transfer-Encoding handling in set_body_reader. severity high; source_lens omitted (source-agnostic match).",
+  "findings": [
+    {
+      "title": "HTTP request smuggling via lenient Content-Length / Transfer-Encoding parsing",
+      "file": "gunicorn/http/message.py",
+      "line_start": 125,
+      "line_end": 145,
+      "severity": "high",
+      "falsification_status": "confirmed",
+      "cwe": "CWE-444",
+      "cve": "CVE-2024-1135",
+      "citation_contains": "chunked"
+    }
+  ]
+}

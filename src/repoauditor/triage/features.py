@@ -22,6 +22,8 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from ..store.models import Severity
+
 # --------------------------------------------------------------------------- #
 # Canonical feature order. `synthetic.py` MUST emit these same names so training
 # rows and scored rows share one schema. Keep additions append-only.
@@ -171,6 +173,39 @@ def load_sarif(source: str | Path) -> list[SarifFinding]:
                 )
             )
     return findings
+
+
+def sarif_severity(finding: SarifFinding) -> Severity:
+    """Map a SARIF finding to a canonical `Severity`.
+
+    Shared by the triage classifier and the detect-stage SAST adapter so a deterministic
+    tool's severity is derived one way everywhere. Prefers the `security-severity` score
+    (SARIF's 0..10 convention), falling back to the SARIF result level.
+    """
+    ss = finding.security_severity
+    if ss is not None:
+        if ss >= 9.0:
+            return Severity.CRITICAL
+        if ss >= 7.0:
+            return Severity.HIGH
+        if ss >= 4.0:
+            return Severity.MEDIUM
+        if ss >= 0.1:
+            return Severity.LOW
+        return Severity.INFO
+    return {"error": Severity.HIGH, "warning": Severity.MEDIUM,
+            "note": Severity.LOW, "none": Severity.INFO}.get(finding.level, Severity.MEDIUM)
+
+
+def sarif_tool_confidence(finding: SarifFinding) -> float:
+    """Nominal *tool* confidence for a SARIF finding (distinct from triage P(actionable)).
+
+    Shared by triage and the SAST adapter. Derived from `security-severity` when present,
+    else from the SARIF level.
+    """
+    if finding.security_severity is not None:
+        return min(max(finding.security_severity / 10.0, 0.0), 1.0)
+    return {"error": 0.7, "warning": 0.5, "note": 0.3, "none": 0.2}.get(finding.level, 0.5)
 
 
 def _to_float(value) -> float | None:

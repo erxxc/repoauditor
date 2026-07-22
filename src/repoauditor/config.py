@@ -13,12 +13,13 @@ from functools import lru_cache
 from pathlib import Path
 
 import yaml
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 # src/repoauditor/config.py -> parents[2] == repo root.
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_CONFIG_PATH = REPO_ROOT / "config.toml"
 DEFAULT_PRIORS_PATH = REPO_ROOT / "priors.yaml"
+DEFAULT_DEAL_RISK_PATH = REPO_ROOT / "deal_risk.yaml"
 
 
 class ScanConfig(BaseModel):
@@ -53,6 +54,26 @@ class FalsifyConfig(BaseModel):
     """
 
     max_iterations: int = 3
+    # LLM budget for a single falsify run: the maximum number of candidate findings put
+    # through the (expensive) observe-think-act-reflect loop this run. Candidates are
+    # taken in triage-priority order (highest P(actionable) first); any beyond the budget
+    # are persisted `deferred` — not dropped — and resumed by a later run. `0` means
+    # unlimited (challenge every unresolved candidate, the pre-budget behavior).
+    max_findings_per_run: int = 0
+
+
+class DetectConfig(BaseModel):
+    """Knobs for the detect stage's deterministic tool adapters (detect/deterministic).
+
+    Operational, not risk priors. The adapters shell out to external scanners (Semgrep,
+    pip-audit, OSV-Scanner, gitleaks); each degrades to no findings when its binary is
+    absent, so a partial toolchain never breaks a run.
+    """
+
+    # Run the deterministic tool adapters alongside the LLM lenses. Off = LLM-only detect.
+    run_deterministic_tools: bool = True
+    # Per-tool subprocess timeout (seconds). A tool exceeding it contributes no findings.
+    tool_timeout_seconds: int = 180
 
 
 class ReviewConfig(BaseModel):
@@ -67,6 +88,55 @@ class ReviewConfig(BaseModel):
     # too uncertain to auto-act on and is routed to human review rather than silently
     # suppressed or promoted.
     triage_confidence_threshold: float = 0.65
+
+
+class TriageConfig(BaseModel):
+    """How the triage classifier blends the synthetic teacher with real accumulated labels.
+
+    These are *operational* training-procedure knobs (like `llm.max_retries` or the review
+    thresholds), not risk distribution priors — but the synthetic-vs-real weighting still
+    carries a documented `basis` so it is principled, not a magic number.
+
+    Weighting scheme (documented rationale, mirrors the Beta-Binomial shrinkage in
+    triage/priors.py, lifted from the per-rule rate to the whole training corpus):
+
+      * The synthetic corpus is treated as a fixed pool of *pseudo-observations* of total
+        weight `synthetic_pseudocount`. Each real label carries weight 1.0. So synthetic's
+        share of the effective training mass is
+              synthetic_pseudocount / (synthetic_pseudocount + n_real)
+        which starts at 1.0 when there are no real labels and shrinks monotonically toward
+        0 as real labels accumulate — exactly the shrinkage a Beta(α₀+a, β₀+b) posterior
+        applies as observations arrive. Real data is never merely co-equal; it dominates
+        once `n_real` exceeds `synthetic_pseudocount`.
+      * `synthetic_cutoff_labels` is a hard stop: at/above this many real labels the
+        synthetic pool is dropped entirely (weight 0). Beyond a corpus this size the
+        synthetic teacher can only inject its own generative bias, so it is retired.
+      * Held-out precision-recall + Brier are computed on a *real* label split once at least
+        `min_real_labels_for_holdout_eval` real labels exist; below that the eval runs on a
+        synthetic split and is flagged `eval_on='synthetic'` — a statement about the
+        generator, never presented as a real-performance number.
+    """
+
+    # Size of the synthetic teacher corpus generated per training run.
+    synthetic_corpus_size: int = 2000
+    # Total effective weight (pseudo-observations) assigned to the whole synthetic pool.
+    # ~200: enough to define the decision surface at cold start, matched then overtaken by
+    # a few hundred real labels — the same "weak prior, ~N real obs dominate" calibration
+    # as priors.yaml's Beta(3,7) (10 pseudo-obs per rule), scaled up for a 21-feature space.
+    synthetic_pseudocount: float = 200.0
+    # At/above this many real labels, stop using synthetic data at all (comparable to the
+    # synthetic corpus size — real data then fully specifies the problem).
+    synthetic_cutoff_labels: int = 2000
+    # Minimum real labels before held-out PR/Brier is computed on a real split. 40 gives a
+    # stratified 25% test set of ~10 rows with ~3 positives at the ~0.30 base rate — the
+    # floor for a non-degenerate estimate; below it the eval is synthetic (and flagged).
+    min_real_labels_for_holdout_eval: int = 40
+    basis: str = (
+        "Synthetic-vs-real weighting = Beta-Binomial shrinkage (triage/priors.py) applied "
+        "to the training corpus: synthetic is a fixed pseudo-observation pool whose share "
+        "decays as 1/(1+n_real/pseudocount), retired entirely past a real-corpus-sized "
+        "cutoff. SME-calibrated, editable in config.toml [triage]; not a magic number."
+    )
 
 
 class RateLimitConfig(BaseModel):
@@ -144,15 +214,140 @@ class PriorsConfig(BaseModel):
     sme_estimates: dict[str, MagnitudePrior] = Field(default_factory=dict)
 
 
+# --------------------------------------------------------------------------- #
+# Deal-risk weighting config (analyze/deal_risk.py) — sourced, editable mapping.
+# --------------------------------------------------------------------------- #
+# This is the config-driven layer behind `analyze/deal_risk.py`: it turns a finding's
+# type + trust-boundary context into a deal-relevant weight distinct from technical
+# severity. Like `priors.yaml`, the risk-bearing parameters carry a documented basis so
+# nothing is a silently-invented magic number (CLAUDE.md "no unsourced priors"). The
+# scalar priors (blend weights, ordinal scores, band cutoffs) default here in code — a
+# documented fallback so the module works even if `deal_risk.yaml` is absent — while the
+# richer, per-engagement-editable taxonomy (categories + rep-&-warranty mapping) lives in
+# `deal_risk.yaml` and overrides these defaults.
+class DealWeightBlend(BaseModel):
+    """The four weights blending a finding into its deal-risk score. Must sum to ~1.0."""
+
+    severity: float = Field(ge=0.0, le=1.0, default=0.30)
+    production_exposure: float = Field(ge=0.0, le=1.0, default=0.30)
+    remediation: float = Field(ge=0.0, le=1.0, default=0.20)
+    rep_warranty: float = Field(ge=0.0, le=1.0, default=0.20)
+    basis: str = (
+        "Analyst-calibrated diligence blend (stated assumption, not empirical): a deal "
+        "reviewer weights 'is it on a production/customer-data path' and 'how impactful' "
+        "roughly equally, with remediation burden and rep-&-warranty exposure as secondary "
+        "modifiers. Editable per engagement in deal_risk.yaml."
+    )
+
+    @model_validator(mode="after")
+    def _weights_sum_to_one(self) -> "DealWeightBlend":
+        total = self.severity + self.production_exposure + self.remediation + self.rep_warranty
+        if abs(total - 1.0) > 1e-6:
+            raise ValueError(f"deal-risk blend weights must sum to 1.0 (got {total})")
+        return self
+
+
+class ExposureConfig(BaseModel):
+    """How a finding's map linkage becomes a production/customer-data exposure score."""
+
+    # Score by the kind of entity the finding is anchored to (data at rest / edge / etc.).
+    entity_kind_scores: dict[str, float] = Field(
+        default_factory=lambda: {
+            "data_store": 1.0, "entry_point": 0.9, "integration": 0.5, "component": 0.2,
+        }
+    )
+    # Keywords in a trust-boundary/entity name or description that signal a production or
+    # customer-data path directly.
+    production_indicators: list[str] = Field(
+        default_factory=lambda: [
+            "production", "prod", "customer", "pii", "personal data", "public", "internet",
+            "external", "payment", "card", "phi", "user data", "sensitive",
+        ]
+    )
+    matched_score: float = 1.0  # exposure when a production indicator matches
+    default_score: float = 0.5  # no map linkage / no signal — conservative moderate
+    basis: str = (
+        "Data-at-rest and internet-facing edges are the diligence-relevant production/"
+        "customer-data surfaces; internal components score low. 'Unknown' is treated as "
+        "moderate (0.5), not zero — deal risk should not under-report on missing context."
+    )
+
+
+class RepWarrantyEntry(BaseModel):
+    """Whether a finding category falls under a standard acquisition security rep."""
+
+    relevant: bool = False
+    weight: float = Field(ge=0.0, le=1.0, default=0.0)
+    rep_clause: str = ""  # which standard rep it maps to
+    source: str = ""  # documented basis for the mapping
+
+
+class DealCategory(BaseModel):
+    """One finding category: how to recognise it + its remediation/rep-&-warranty profile."""
+
+    cwes: list[str] = Field(default_factory=list)
+    keywords: list[str] = Field(default_factory=list)
+    source_tools: list[str] = Field(default_factory=list)
+    remediation: str = "moderate"  # fast | moderate | major | redesign
+    rep_warranty: RepWarrantyEntry = Field(default_factory=RepWarrantyEntry)
+
+    @field_validator("cwes", mode="before")
+    @classmethod
+    def _cwes_to_str(cls, v: object) -> object:
+        # Allow bare integers in YAML (cwes: [798, 89]) — normalise to "798"/"89".
+        if isinstance(v, list):
+            return [str(item).removeprefix("CWE-").removeprefix("cwe-") for item in v]
+        return v
+
+
+class DealRiskConfig(BaseModel):
+    """Parsed `deal_risk.yaml` — the config-driven mapping behind analyze/deal_risk.py.
+
+    `categories` is the editable taxonomy (recognition rules + remediation cost class +
+    rep-&-warranty relevance, each with a documented `source`); it defaults to a single
+    `other` bucket in code so a bare Config still runs, and is populated from
+    `deal_risk.yaml` for a real audit. `remediation_scores` maps each remediation class to
+    an ordinal burden in [0,1] (harder/longer to fix == higher deal risk); `bands` bucket
+    the final weight for reporting.
+    """
+
+    blend: DealWeightBlend = Field(default_factory=DealWeightBlend)
+    exposure: ExposureConfig = Field(default_factory=ExposureConfig)
+    remediation_scores: dict[str, float] = Field(
+        default_factory=lambda: {
+            "fast": 0.25, "moderate": 0.5, "major": 0.75, "redesign": 1.0,
+        }
+    )
+    bands: dict[str, float] = Field(
+        default_factory=lambda: {"elevated": 0.4, "high": 0.6, "critical": 0.8}
+    )
+    default_category: str = "other"
+    categories: dict[str, DealCategory] = Field(
+        default_factory=lambda: {
+            "other": DealCategory(
+                remediation="moderate",
+                rep_warranty=RepWarrantyEntry(
+                    relevant=False, weight=0.3,
+                    rep_clause="not squarely under a standard security rep",
+                    source="Default fallback (see deal_risk.yaml).",
+                ),
+            )
+        }
+    )
+
+
 class Config(BaseModel):
     scan: ScanConfig = Field(default_factory=ScanConfig)
     model: ModelConfig = Field(default_factory=ModelConfig)
     llm: LLMConfig = Field(default_factory=LLMConfig)
+    detect: DetectConfig = Field(default_factory=DetectConfig)
     falsify: FalsifyConfig = Field(default_factory=FalsifyConfig)
+    triage: TriageConfig = Field(default_factory=TriageConfig)
     review: ReviewConfig = Field(default_factory=ReviewConfig)
     rate_limits: RateLimitConfig = Field(default_factory=RateLimitConfig)
     paths: PathsConfig = Field(default_factory=PathsConfig)
     priors: PriorsConfig = Field(default_factory=PriorsConfig)
+    deal_risk: DealRiskConfig = Field(default_factory=DealRiskConfig)
 
     # Root against which relative `paths` are resolved. Not read from TOML.
     root: Path = REPO_ROOT
@@ -185,12 +380,28 @@ def load_priors(path: Path | str | None = None) -> PriorsConfig:
     return PriorsConfig(**raw)
 
 
+def load_deal_risk(path: Path | str | None = None) -> DealRiskConfig:
+    """Load and validate `deal_risk.yaml`. Missing file -> code defaults (documented).
+
+    Same pattern as `load_priors`: the file is the editable source of truth for the
+    deal-risk taxonomy, but its absence falls back to the model defaults so the tool still
+    runs (degraded to the coarse `other` category) without a code change.
+    """
+    deal_risk_path = Path(path) if path is not None else DEFAULT_DEAL_RISK_PATH
+    if not deal_risk_path.is_file():
+        return DealRiskConfig()
+    with deal_risk_path.open("r", encoding="utf-8") as fh:
+        raw = yaml.safe_load(fh) or {}
+    # Allow either a top-level `deal_risk:` block or the bare mapping.
+    return DealRiskConfig(**raw.get("deal_risk", raw))
+
+
 def load_config(path: Path | str | None = None) -> Config:
     """Load and validate configuration from a TOML file.
 
     Missing file falls back to model defaults, so the tool works before a
     `config.toml` exists. Pass an explicit `path` (e.g. in tests) to override.
-    `priors.yaml` is loaded from the same root alongside the TOML.
+    `priors.yaml` and `deal_risk.yaml` are loaded from the same root alongside the TOML.
     """
     config_path = Path(path) if path is not None else DEFAULT_CONFIG_PATH
     if config_path.is_file():
@@ -201,7 +412,8 @@ def load_config(path: Path | str | None = None) -> Config:
 
     root = config_path.resolve().parent if config_path.is_file() else REPO_ROOT
     priors = load_priors(root / "priors.yaml")
-    return Config(**raw, root=root, priors=priors)
+    deal_risk = load_deal_risk(root / "deal_risk.yaml")
+    return Config(**raw, root=root, priors=priors, deal_risk=deal_risk)
 
 
 @lru_cache(maxsize=1)

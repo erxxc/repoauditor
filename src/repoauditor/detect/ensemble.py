@@ -13,6 +13,8 @@ survive. Severity from a lens is a *relative* signal, never treated as absolute.
 
 from __future__ import annotations
 
+import logging
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from pydantic import BaseModel, Field
@@ -25,6 +27,8 @@ from ..sourcefiles import iter_source_files, read_numbered
 from ..store import db
 from ..store.models import FalsificationStatus, Finding, Severity
 from .retrieval import RetrievalIndex
+
+logger = logging.getLogger(__name__)
 
 # Lens name -> versioned prompt file. Order is stable so runs are reproducible.
 LENSES: dict[str, str] = {
@@ -134,7 +138,67 @@ def run_ensemble(
                 persisted.append(
                     _persist_candidate(cand, lens, repo_id, architecture, config, low)
                 )
+
+    # Deterministic tool findings land in the same table as the lens findings, tagged
+    # with `source_tool`, so triage / falsify / (later) corroboration see one unified set.
+    if config.detect.run_deterministic_tools:
+        for cand in _run_deterministic_adapters(snapshot_path, config):
+            persisted.append(_persist_tool_candidate(cand, repo_id, architecture, config))
     return persisted
+
+
+def _run_deterministic_adapters(snapshot_path: Path, config: Config) -> list[CandidateFinding]:
+    """Run the SAST / SCA / secret adapters over the snapshot, in parallel.
+
+    Each adapter shells out to an external scanner and already degrades to no findings
+    when its binary is absent; `_safe_run` adds a belt-and-suspenders guard so one
+    adapter failing never sinks the others (or the whole detect run).
+    """
+    from .deterministic import SastAdapter, ScaAdapter, SecretsAdapter
+
+    timeout = config.detect.tool_timeout_seconds
+    adapters = [SastAdapter(timeout), ScaAdapter(timeout), SecretsAdapter(timeout)]
+    candidates: list[CandidateFinding] = []
+    with ThreadPoolExecutor(max_workers=len(adapters)) as pool:
+        for cands in pool.map(lambda a: _safe_run(a, snapshot_path), adapters):
+            candidates.extend(cands)
+    return candidates
+
+
+def _safe_run(adapter, snapshot_path: Path) -> list[CandidateFinding]:
+    try:
+        return adapter.run(snapshot_path)
+    except Exception as exc:  # an adapter must never break the detect run
+        logger.warning("deterministic adapter %s failed: %s", adapter.tool_name, exc)
+        return []
+
+
+def _persist_tool_candidate(
+    cand: CandidateFinding, repo_id: str, architecture: ArchitectureMap, config: Config,
+) -> Finding:
+    """Persist a deterministic-tool candidate as an `unresolved` finding (source_tool set).
+
+    Tool findings carry no trust-boundary reference, so they fall back to the primary
+    boundary (`trust_boundary_id(None)`) — the foreign-key link is never null, per the
+    architecture-first rule. Severity is a raw tool signal here; it is only ever raised
+    later given corroboration or a confirming falsification pass.
+    """
+    finding = Finding(
+        repo_id=repo_id,
+        title=cand.title,
+        file=cand.file,
+        line_start=cand.line_start,
+        line_end=max(cand.line_end, cand.line_start),
+        citation_snippet=cand.citation_snippet,
+        source_tool=cand.source_tool,
+        confidence=min(max(cand.confidence, 0.0), 1.0),
+        severity=cand.severity,
+        falsification_status=FalsificationStatus.UNRESOLVED,
+        trust_boundary_id=architecture.trust_boundary_id(cand.trust_boundary_ref),
+        description=cand.rationale,
+    )
+    finding_id = db.insert_finding(finding, config)
+    return finding.model_copy(update={"id": finding_id})
 
 
 def _resolve_confidence(cand, lens, prompt, index, repo_id, llm, threshold):

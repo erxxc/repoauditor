@@ -30,7 +30,13 @@ from ..ingest import latest_snapshot
 from ..llm import LLMClient, get_llm_client
 from ..map import ArchitectureMap, load_architecture
 from ..store import db
-from ..store.models import FalsificationIteration, FalsificationStatus, Finding
+from ..store.models import (
+    FalsificationIteration,
+    FalsificationStatus,
+    Finding,
+    TriageResult,
+    severity_rank,
+)
 from ..detect.retrieval import RetrievalIndex
 
 # Re-exported: the model's structured output shape for a falsification verdict.
@@ -109,6 +115,7 @@ def challenge_finding(
     llm: LLMClient,
     index: RetrievalIndex | None = None,
     config: Config | None = None,
+    self_critique: bool = True,
 ) -> FalsificationOutcome:
     """Attempt to disprove one candidate finding via the bounded loop. Returns a verdict.
 
@@ -117,6 +124,13 @@ def challenge_finding(
     otherwise the loop broadens its evidence and retries. On budget exhaustion it
     degrades to `unresolved`. Every round is persisted (when the finding has an id) so
     the reasoning trace survives for the review stage.
+
+    `self_critique` gates the REFLECT step. The default (`True`) is the round-5 behavior
+    (`falsification_selfcritique_v1`). Setting it `False` reconstructs the *immediately
+    prior* falsify behavior — commit on a confident terminal verdict alone, with no
+    reflect step — which the eval harness uses as the honest baseline to benchmark the
+    net-new self-critique prompt against (it has no predecessor prompt file). It is an
+    eval knob only; production callers leave it on.
     """
     config = config or get_config()
     threshold = config.llm.confidence_threshold
@@ -146,21 +160,31 @@ def challenge_finding(
         verdict = verdict_completion.value
 
         # REFLECT — self-critique the verdict against the evidence before committing.
-        critique_completion = llm.call(
-            module="falsify",
-            prompt_version=CRITIQUE_PROMPT_VERSION,
-            system=CRITIQUE_PROMPT,
-            user=_critique_prompt(finding, verdict, evidence_block),
-            schema=SelfCritique,
-            context={
-                "stage": "falsify", "repo_id": finding.repo_id,
-                "finding_id": finding.id, "citation": finding.citation_snippet,
-                "iteration": iteration, "critique": True,
-            },
-        )
-        critique = critique_completion.value
+        if self_critique:
+            critique_completion = llm.call(
+                module="falsify",
+                prompt_version=CRITIQUE_PROMPT_VERSION,
+                system=CRITIQUE_PROMPT,
+                user=_critique_prompt(finding, verdict, evidence_block),
+                schema=SelfCritique,
+                context={
+                    "stage": "falsify", "repo_id": finding.repo_id,
+                    "finding_id": finding.id, "citation": finding.citation_snippet,
+                    "iteration": iteration, "critique": True,
+                },
+            )
+            critique = critique_completion.value
+            upheld = critique.upholds and not critique_completion.low_confidence
+        else:
+            # Prior-version baseline: no reflect step. Recorded honestly in the trace so
+            # the disabled critique is auditable rather than implied.
+            critique = SelfCritique(
+                upholds=True,
+                concern="self-critique step disabled (prior-version eval baseline)",
+                confidence=1.0,
+            )
+            upheld = True
 
-        upheld = critique.upholds and not critique_completion.low_confidence
         committed = (
             verdict.status in _TERMINAL
             and not verdict_completion.low_confidence
@@ -238,11 +262,25 @@ def challenge(
     config: Config | None = None,
     llm: LLMClient | None = None,
     index: RetrievalIndex | None = None,
+    self_critique: bool = True,
 ) -> list[FalsificationOutcome]:
-    """Run the falsification pass over every unresolved finding for a repo.
+    """Run the falsification pass over a repo's not-yet-examined findings, within budget.
 
-    Repo-level entry point: challenges each unresolved finding and persists the
-    verdict + reason back to the store (killed findings kept, not deleted).
+    Repo-level entry point. Candidates are the findings the loop has not examined yet —
+    `unresolved` (fresh from detect) or `deferred` (set aside by a prior run) with no
+    logged iterations. They are taken in **triage priority order** — triaged findings
+    first, highest P(actionable) first (the triage->falsify seam the scaffold calls for),
+    then untriaged findings (e.g. LLM-lens findings, which triage does not score) by
+    severity then confidence.
+
+    `config.falsify.max_findings_per_run` caps how many get the (expensive) loop this
+    run. Candidates beyond the cap are persisted `deferred` — never dropped — and resumed
+    by a later run. `0` means unlimited (challenge every candidate). Findings the loop
+    already examined (they carry iteration rows) are left untouched, so a resumed run
+    never re-litigates a verdict it already reached.
+
+    `self_critique` is forwarded to `challenge_finding` (default on = round-5 behavior);
+    the eval harness sets it `False` to benchmark the reflect step against its prior.
     """
     config = config or get_config()
     llm = llm or get_llm_client(config)
@@ -250,11 +288,56 @@ def challenge(
     architecture = load_architecture(repo_id, commit, config)
     index = index or RetrievalIndex().build(snapshot_path)
 
+    already_examined = db.finding_ids_with_iterations(repo_id, config)
+    triage = {tr.finding_id: tr for tr in db.list_triage_results(repo_id, config)}
+    pending = [
+        f for f in db.list_findings(repo_id, config)
+        if f.falsification_status in _PENDING_STATUSES and f.id not in already_examined
+    ]
+    pending = _budget_order(pending, triage)
+
+    budget = config.falsify.max_findings_per_run
+    if budget and budget > 0:
+        selected, deferred = pending[:budget], pending[budget:]
+    else:
+        selected, deferred = pending, []
+
     outcomes: list[FalsificationOutcome] = []
-    for finding in db.list_findings(repo_id, config):
-        if finding.falsification_status is not FalsificationStatus.UNRESOLVED:
-            continue
-        outcome = challenge_finding(finding, architecture, llm, index, config)
+    for finding in selected:
+        outcome = challenge_finding(finding, architecture, llm, index, config,
+                                    self_critique=self_critique)
         db.update_falsification(finding.id, outcome.status, outcome.rationale, config)
         outcomes.append(outcome)
+
+    # Everything past the budget cutoff is set aside explicitly (null-result logging),
+    # not silently skipped, so review/analyze can tell "not yet examined" from a verdict.
+    for finding in deferred:
+        db.update_falsification(
+            finding.id, FalsificationStatus.DEFERRED,
+            f"Deferred: outside this falsify run's budget of {budget} finding(s); ranked "
+            f"below the cutoff and will be resumed by a later run.",
+            config,
+        )
     return outcomes
+
+
+_PENDING_STATUSES = (FalsificationStatus.UNRESOLVED, FalsificationStatus.DEFERRED)
+
+
+def _budget_order(
+    pending: list[Finding], triage: dict[int, TriageResult]
+) -> list[Finding]:
+    """Order candidates for the falsify budget: triaged first, then untriaged fallback.
+
+    Tier 0 — findings triage scored — sorts by P(actionable) descending (rank as a
+    tiebreak): the highest-value deterministic-tool findings are falsified first. Tier 1
+    — findings with no triage result (LLM-lens findings) — falls back to severity
+    descending, then confidence, so nothing untriaged is starved arbitrarily.
+    """
+    def key(f: Finding):
+        tr = triage.get(f.id)
+        if tr is not None:
+            return (0, -tr.p_actionable, tr.rank)
+        return (1, -severity_rank(f.severity), -f.confidence)
+
+    return sorted(pending, key=key)

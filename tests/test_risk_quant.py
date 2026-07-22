@@ -11,6 +11,7 @@ import pytest
 from repoauditor.analyze import risk_quant
 from repoauditor.analyze.risk_quant import ScenarioParams
 from repoauditor.config import load_priors
+from repoauditor.review import correct_decision, raise_review_requests, record_decision
 from repoauditor.store import db
 from repoauditor.store.models import FalsificationStatus, Finding
 
@@ -150,6 +151,67 @@ def test_build_scenarios_excludes_killed_and_writes_prior_sources(cfg):
     paths = {ps.param_path for ps in sources}
     assert any(p.startswith("magnitude.") for p in paths)
     assert any(p.startswith("frequency.") for p in paths)
+
+
+def test_build_scenarios_counts_a_merged_group_once(cfg):
+    """Regression: two sources flagging the SAME issue (a MatchGroup with 2 members) must
+    contribute exactly one countable finding to build_scenarios — not be double-counted as
+    two. Guards the fix for apply_adjudication leaving non-representative rows in the store."""
+    db.init_db(cfg)
+    rep = db.insert_finding(Finding(
+        repo_id="r", title="SQL injection", file="app.py", line_start=24, line_end=24,
+        citation_snippet="code", source_lens="owasp", confidence=0.9,
+        severity="critical", description="sqli [CWE-89]"), cfg)
+    db.insert_finding(Finding(  # independent source, same file+line, same CWE -> merged
+        repo_id="r", title="SQL injection", file="app.py", line_start=24, line_end=24,
+        citation_snippet="code", source_tool="sast", confidence=0.6,
+        severity="high", description="sqli [CWE-89]"), cfg)
+
+    scenarios = risk_quant.build_scenarios("r", cfg, persist=False)
+    all_ids = [fid for s in scenarios for fid in s.finding_ids]
+    assert all_ids == [rep]   # counted once, as the max-confidence representative
+
+
+def test_build_scenarios_enforces_the_review_gate(cfg):
+    """A finding held at the human-review checkpoint is unreachable by the MC scenario
+    builder until a reviewer confirms it — the gate is enforced *from within* analyze,
+    not just available as a separate query."""
+    db.init_db(cfg)
+    held = _persist_finding(cfg, "SQL Injection", "critical", "sqli [CWE-89]",
+                            status=FalsificationStatus.UNRESOLVED)
+    released = _persist_finding(cfg, "Command Injection", "critical", "os command [CWE-78]",
+                                status=FalsificationStatus.UNRESOLVED)
+
+    # Both unresolved findings are routed to review; each gets an open ReviewRequest.
+    raise_review_requests("r", cfg)
+
+    # A reviewer confirms only the second one; the first stays open (no decision).
+    request = db.get_review_request(released, cfg)
+    record_decision(request.id, reviewer="alice", disposition="confirm",
+                    rationale="Traced the sink; it is reachable.", config=cfg)
+
+    scenarios = risk_quant.build_scenarios("r", cfg, persist=True)
+    scenario_ids = {fid for s in scenarios for fid in s.finding_ids}
+
+    # The still-open finding is excluded; only the confirmed one drives loss.
+    assert held not in scenario_ids
+    assert released in scenario_ids
+    assert scenario_ids == {released}
+
+    # A dismissal of the open one keeps it out (a decision that isn't `confirm` does not
+    # release the finding); an append-only correction to `confirm` then lets it through.
+    held_request = db.get_review_request(held, cfg)
+    dismissed = record_decision(held_request.id, reviewer="bob", disposition="dismiss",
+                                rationale="Constant input; not exploitable.", config=cfg)
+    after_dismiss = {fid for s in risk_quant.build_scenarios("r", cfg, persist=False)
+                     for fid in s.finding_ids}
+    assert held not in after_dismiss
+
+    correct_decision(dismissed.id, reviewer="carol", disposition="confirm",
+                     rationale="On review the input is attacker-controlled.", config=cfg)
+    after_confirm = {fid for s in risk_quant.build_scenarios("r", cfg, persist=False)
+                     for fid in s.finding_ids}
+    assert held in after_confirm and released in after_confirm
 
 
 def test_generate_appendix_writes_artifact_and_simulation_run(cfg, tmp_path):

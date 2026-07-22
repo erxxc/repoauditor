@@ -141,7 +141,14 @@ def build_scenarios(
     `PriorSource` row (no unsourced numbers).
     """
     config = config or get_config()
-    findings = db.list_findings(repo_id, config)
+    # Review gate + de-duplication: the analyze stage consumes only findings that cleared the
+    # human-review checkpoint, and it must count each *issue* once. `list_countable_findings`
+    # composes both: it applies the review gate (dropping KILLED/deferred and anything held at
+    # review, so an `unresolved` finding cannot reach the Monte Carlo builder until confirmed)
+    # AND collapses a merged MatchGroup to its single representative, so a finding corroborated
+    # by N sources is one scenario contribution, not N. See db.list_countable_findings for why
+    # this is a read-side view (Option B) rather than a persisted supersede flag.
+    findings = db.list_countable_findings(repo_id, config)
     triage = {tr.finding_id: tr for tr in db.list_triage_results(repo_id, config)}
 
     # Default P(actionable) when a finding was never triaged: the sourced global prior

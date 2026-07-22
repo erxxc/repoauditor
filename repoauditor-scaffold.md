@@ -87,12 +87,18 @@ src/repoauditor/
       sca_adapter.py
       secrets_adapter.py
     retrieval/
-      index.py                 # AST or embedding index, callers/callees lookup
+      index.py                 # multi-language AST index, callers/callees +
+                                 # similar-pattern lookup. Python via stdlib `ast`;
+                                 # JS/TS/Java/Ruby via tree-sitter grammars; any other
+                                 # language falls back to a logged lexical index (never a
+                                 # silent gap). One public interface across all of them.
 
   triage/
     classifier.py                # RandomForest/XGBoost SAST finding triage,
                                    # tool-agnostic ingestion (SARIF/Semgrep first),
-                                   # calibrated P(actionable), rank, SHAP attribution
+                                   # calibrated P(actionable), rank, SHAP attribution.
+                                   # Persists each finding's feature vector so a label
+                                   # collected later is rejoinable for real training.
     priors.py                      # Beta-Binomial per-rule cold-start priors +
                                      # Bayesian shrinkage as labels accumulate
     features.py                     # feature extraction: rule/CWE, severity, file
@@ -101,6 +107,15 @@ src/repoauditor/
                                       # FP rate, finding density
     synthetic.py                     # synthetic labeled dataset generator for
                                        # development/testing, clearly marked synthetic
+    labels.py                         # ground-truth TriageLabel generation: DERIVED from
+                                       # falsify verdicts + review decisions (closed loop,
+                                       # review overrides falsify) and MANUAL analyst
+                                       # override (triage-label CLI; manual wins over derived)
+    training.py                        # assembles the training corpus: synthetic teacher
+                                        # blended with real accumulated labels, synthetic's
+                                        # share shrinking as real data grows (Beta-Binomial
+                                        # shrinkage lifted to the corpus); marks real rows
+                                        # for an honest real held-out PR/Brier split
 
   falsify/
     challenger.py               # interface stub: candidate finding -> confirmed | killed
@@ -134,9 +149,18 @@ src/repoauditor/
 
   report/
     engineering.py                        # backlog/ticket projection
-    memo.py                                 # leadership risk memo projection
+    memo.py                                 # leadership risk memo projection —
+                                              # composed PROGRAMMATICALLY (see below)
     templates/
-      memo_v1.md
+      memo_v1.md                             # UNUSED placeholder (versioned artifact).
+                                              # The memo's top-risks + embedded FAIR
+                                              # appendix are variable-length generated
+                                              # blocks a flat template can't hold, so
+                                              # memo.py builds the markdown directly
+                                              # (mirroring risk_quant._appendix_markdown).
+                                              # Kept, not edited in place, per the
+                                              # prompt/template-versioning rule; a future
+                                              # memo_v2.md could supersede it.
 
   cli.py                                    # typer app, thin: ingest/map/detect/
                                               # falsify/report/db init
@@ -181,10 +205,14 @@ tests/
 - **EvalRun** — one row per golden-harness execution: prompt versions used
   across all stages, precision/recall against the benchmark corpus, and a
   `regressed_from_prior` flag computed by `eval/regression.py`.
-- **TriageLabel** — analyst disposition (true/false positive) on a past
-  finding, keyed by rule ID and engagement. Accumulates across engagements,
-  not just within one — this is the label store the classifier learns from
-  over time.
+- **TriageLabel** — disposition (true/false positive) on a past finding, keyed
+  by rule ID and engagement. Accumulates across engagements, not just within one
+  — the label store the classifier learns from over time. `source` records
+  provenance: `manual` (analyst, via `triage-label`) or `derived_falsify` /
+  `derived_review` (harvested from downstream outcomes — the closed loop, review
+  overriding falsify). Manual outranks derived. A sibling **triage_features** table
+  persists each triaged finding's feature vector (+ column order), the bridge that
+  turns an accumulated label into a real cross-engagement training row.
 - **RulePrior** — per-rule Beta-Binomial hyperparameters (alpha, beta) for
   cold-start P(actionable); shrinks toward observed `TriageLabel` data as
   labels accumulate. Hyperparameter choices documented, not arbitrary.
@@ -252,6 +280,7 @@ repoauditor ingest <repo-url>
 repoauditor map <repo-id>
 repoauditor detect <repo-id>
 repoauditor triage <repo-id>
+repoauditor triage-label <finding-id> --disposition=true_positive|false_positive
 repoauditor falsify <repo-id>
 repoauditor quantify <repo-id>
 repoauditor report <repo-id> --mode=engineering

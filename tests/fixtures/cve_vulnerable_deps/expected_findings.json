@@ -1,0 +1,36 @@
+{
+  "repo_id": "cve_vulnerable_deps",
+  "source": {
+    "kind": "dependency-manifest (SCA path)",
+    "description": "A minimal requirements.txt pinning two real, CVE-affected dependency versions. Not a synthetic vulnerability — the CVEs are real and sourced to OSV; the manifest models the common acquisition scenario of inherited vulnerable pins. Scored by the SCA adapter (pip-audit / OSV-Scanner), which is not installed in a bare CI env, so this fixture's score is deferred to a tooled run.",
+    "advisories": [
+      {"package": "PyYAML", "version": "5.3.1", "cve": "CVE-2020-14343", "ghsa": "GHSA-8q59-q68h-6hv4", "pysec": "PYSEC-2021-142", "affected": "<5.4", "verified_via": "https://api.osv.dev/v1/query"},
+      {"package": "Flask", "version": "0.12.2", "cve": "CVE-2018-1000656", "ghsa": "GHSA-562c-5r94-xh97", "pysec": "PYSEC-2018-66", "affected": "<0.12.3", "verified_via": "https://api.osv.dev/v1/query"}
+    ]
+  },
+  "notes": "SCA findings anchor to line 1 of the manifest (the adapter's honest 'whole manifest' convention — see sca_adapter.py). severity is the SCA adapter's default (medium). source_lens is omitted so a case matches whether flagged by pip-audit or OSV-Scanner. citation_contains uses the package name, which (with file=requirements.txt) uniquely identifies each pinned advisory.",
+  "findings": [
+    {
+      "title": "Vulnerable dependency PyYAML (CVE-2020-14343)",
+      "file": "requirements.txt",
+      "line_start": 1,
+      "line_end": 1,
+      "severity": "medium",
+      "falsification_status": "confirmed",
+      "cwe": "CWE-20",
+      "cve": "CVE-2020-14343",
+      "citation_contains": "PyYAML"
+    },
+    {
+      "title": "Vulnerable dependency Flask (CVE-2018-1000656)",
+      "file": "requirements.txt",
+      "line_start": 1,
+      "line_end": 1,
+      "severity": "medium",
+      "falsification_status": "confirmed",
+      "cwe": "CWE-20",
+      "cve": "CVE-2018-1000656",
+      "citation_contains": "Flask"
+    }
+  ]
+}

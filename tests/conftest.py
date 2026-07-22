@@ -205,27 +205,69 @@ def tmp_config(tmp_path: Path) -> Config:
 
 
 @pytest.fixture
-def scripted_llm(tmp_config) -> LLMClient:
+def scripted_backend() -> ScriptedBackend:
+    """The config-free scripted model backend.
+
+    The backend routes purely on schema + context and holds no `Config`, so it can be
+    wrapped in an `LLMClient` bound to *any* store — useful when a test needs to drive
+    two isolated stores (e.g. a prior-vs-new prompt benchmark) with the same model.
+    """
+    return ScriptedBackend(_scripted_handler)
+
+
+@pytest.fixture
+def scripted_llm(tmp_config, scripted_backend) -> LLMClient:
     """Deterministic reliability client for the whole pipeline (routes via FIXTURE_LLM).
 
     Wraps the scripted backend in the real `LLMClient`, so validation, retry, confidence
     gating, and ValidationFailure logging are exercised end-to-end — only the model call
     is scripted.
     """
-    return LLMClient(ScriptedBackend(_scripted_handler), tmp_config)
+    return LLMClient(scripted_backend, tmp_config)
 
 
-@pytest.fixture(params=sorted(p.name for p in FIXTURES_DIR.iterdir() if p.is_dir()))
+def _load_fixture(repo_id: str) -> FixtureRepo:
+    repo_dir = FIXTURES_DIR / repo_id
+    expected = json.loads((repo_dir / "expected_findings.json").read_text())
+    return FixtureRepo(repo_id=repo_id, snapshot_path=repo_dir / "snapshot", expected=expected)
+
+
+def benchmark_corpus_ids() -> list[str]:
+    """Real, documented benchmark-corpus fixtures: not scripted, and carrying ground truth.
+
+    These are the OWASP Benchmark for Python subset + the CVE-tagged repos. They are
+    detected by the live LLM lens and/or the deterministic SAST/SCA tools — never by a
+    scripted model — so they are excluded from the deterministic scripted golden test and
+    exercised by `tests/test_benchmark_corpus.py` instead. Scripting canned answers for
+    them would make their precision/recall circular. See `tests/fixtures/README.md`.
+
+    A corpus fixture is identified *explicitly* by carrying an `expected_findings.json`
+    (its ground truth), not merely by "any dir not scripted" — other kinds of fixture can
+    now live under `fixtures/` (e.g. `multilang_retrieval/`, which exercises the retrieval
+    index and has no vuln ground truth) without being mistaken for a benchmark repo.
+    """
+    return sorted(
+        p.name for p in FIXTURES_DIR.iterdir()
+        if p.is_dir() and p.name not in FIXTURE_LLM
+        and (p / "expected_findings.json").is_file()
+    )
+
+
+# The deterministic golden test can only run fixtures it has scripted model output for,
+# so discovery is gated on `FIXTURE_LLM` (not "every dir under fixtures/"). This is what
+# lets the benchmark corpus live alongside the scripted fixtures without breaking the
+# scripted harness — a fixture without canned responses simply isn't parametrized here.
+@pytest.fixture(params=sorted(FIXTURE_LLM))
 def fixture_repo(request: pytest.FixtureRequest) -> FixtureRepo:
-    """One known-vulnerable fixture repo with its ground-truth expected findings.
+    """One scripted known-vulnerable fixture repo with its ground-truth expected findings.
 
     `repo_id` is the fixture dir name; the harness ingests each fixture under that id
     (overriding the basename-derived id, since every snapshot dir is named `snapshot`).
     """
-    repo_dir = FIXTURES_DIR / request.param
-    expected = json.loads((repo_dir / "expected_findings.json").read_text())
-    return FixtureRepo(
-        repo_id=request.param,
-        snapshot_path=repo_dir / "snapshot",
-        expected=expected,
-    )
+    return _load_fixture(request.param)
+
+
+@pytest.fixture(params=benchmark_corpus_ids())
+def benchmark_repo(request: pytest.FixtureRequest) -> FixtureRepo:
+    """One real, documented benchmark-corpus fixture (OWASP subset / CVE repo)."""
+    return _load_fixture(request.param)

@@ -48,6 +48,12 @@ class FalsificationStatus(StrEnum):
     CONFIRMED = "confirmed"
     KILLED = "killed"
     UNRESOLVED = "unresolved"
+    # A candidate the falsify stage has not yet examined because it fell outside this
+    # run's LLM budget. Distinct from UNRESOLVED (which means "examined, genuinely
+    # ambiguous, route to human review"): DEFERRED is "not yet examined". A later
+    # falsify run resumes it; the analyze gate excludes it; review ignores it (it keys
+    # on UNRESOLVED). Never confuse it with a confirmed/killed verdict.
+    DEFERRED = "deferred"
 
 
 class SourceType(StrEnum):
@@ -84,13 +90,23 @@ class Entity(BaseModel):
 
 
 class Corroboration(BaseModel):
-    """An independent lens/tool that also flagged a given finding."""
+    """An independent lens/tool that also flagged a given finding.
+
+    `score` and `match_basis` are populated by `analyze/corroboration.py`: `score` is the
+    finding's independence-weighted agreement score in [0, 1] (the same aggregate is
+    written on every corroboration row of a finding), and `match_basis` records *why* this
+    source was judged to be flagging the same underlying issue (the matched signals, e.g.
+    "line_overlap+cwe; cross-class(tool↔lens)"). Both are nullable: rows written by
+    `normalize/adjudicate.py` before analyze runs (and pre-0007 rows) carry neither.
+    """
 
     id: int | None = None
     finding_id: int | None = None
     source_type: SourceType
     source_name: str
     note: str | None = None
+    score: float | None = None
+    match_basis: str | None = None
 
 
 class Finding(BaseModel):
@@ -163,6 +179,20 @@ class EvalRun(BaseModel):
 # --------------------------------------------------------------------------- #
 # Triage stage (detect -> triage -> falsify): calibrated P(actionable) ranking
 # --------------------------------------------------------------------------- #
+class TriageLabelSource(StrEnum):
+    """How a `TriageLabel` was obtained. Governs precedence when a finding is re-labelled.
+
+    `MANUAL` — an analyst asserted it directly (`repoauditor triage-label`); ground truth
+    that the derivation pass must never overwrite. `DERIVED_FALSIFY` / `DERIVED_REVIEW` —
+    harvested automatically (the closed loop) from a downstream falsify verdict or human
+    review decision respectively; a re-derivation may refresh these, a manual label caps them.
+    """
+
+    MANUAL = "manual"
+    DERIVED_FALSIFY = "derived_falsify"
+    DERIVED_REVIEW = "derived_review"
+
+
 class TriageLabel(BaseModel):
     """An analyst's ground-truth disposition on a past deterministic-tool finding.
 
@@ -170,7 +200,9 @@ class TriageLabel(BaseModel):
     `rule_id` (the SAST rule that fired) and `engagement` (the repo/audit it came
     from); accumulates over time so per-rule historical FP rates and the calibrated
     P(actionable) model both improve as more audits are labelled. `actionable` is
-    the label: True = a real, worth-fixing issue; False = a false positive.
+    the label: True = a real, worth-fixing issue; False = a false positive. `source`
+    records manual-vs-derived provenance (see `TriageLabelSource`); a directly-asserted
+    label defaults to MANUAL and outranks any derived label for the same finding.
     """
 
     id: int | None = None
@@ -178,7 +210,26 @@ class TriageLabel(BaseModel):
     rule_id: str  # SAST rule that produced the finding (e.g. "python.lang.security....")
     finding_fingerprint: str  # stable hash of (rule_id, file, line, snippet) — dedupe key
     actionable: bool  # analyst disposition: True = true positive, False = false positive
+    source: TriageLabelSource = TriageLabelSource.MANUAL
     note: str | None = None
+
+
+class TriageFeatureRecord(BaseModel):
+    """The exact feature vector triaged for a finding — the bridge to `TriageLabel`.
+
+    Persisted per deterministic-tool finding at triage time so an accumulated label (keyed
+    by `engagement` + `fingerprint`) can be rejoined to the numeric features the classifier
+    trains on. `feature_names` is stored alongside the vector so a later change to the
+    feature schema is *detected* (rows whose stored names don't match the current
+    `FEATURE_NAMES` are skipped rather than silently column-misaligned), never guessed.
+    """
+
+    finding_id: int
+    engagement: str
+    rule_id: str
+    fingerprint: str
+    features: list[float]
+    feature_names: list[str]
 
 
 class RulePrior(BaseModel):
@@ -266,6 +317,36 @@ class RiskScenario(BaseModel):
     frequency_source: str  # PriorSource.param_path backing frequency_lambda
     magnitude_source: str  # PriorSource.param_path backing the magnitude params
     p_actionable: float | None = None  # triage signal folded into frequency_lambda
+
+
+class DealRisk(BaseModel):
+    """Deal-relevant risk weighting for a finding, layered *alongside* technical severity.
+
+    A sidecar annotation on an existing `Finding` (same discipline as `TriageResult`): it
+    never overwrites the finding's `severity`. `weight` in [0, 1] is a diligence-facing
+    re-weighting blended from four documented, config-sourced components — technical
+    severity, production exposure (does the finding's trust boundary/entity touch a
+    production or customer-data path, from the map stage), remediation burden (a *categorical*
+    cost/timeline estimate by finding type — never a dollar figure, which is
+    `risk_quant.py`'s job), and representation-&-warranty relevance (a config-driven lookup,
+    not hardcoded logic). The component sub-scores are all persisted so the weight is fully
+    reconstructable — no magic numbers. `band` is a coarse bucket of `weight` for reporting.
+    """
+
+    id: int | None = None
+    finding_id: int
+    weight: float = Field(ge=0.0, le=1.0)
+    band: str  # low | elevated | high | critical (bucketed weight, config thresholds)
+    production_exposure: str  # direct | indirect | internal | unknown
+    remediation_category: str  # fast | moderate | major | redesign
+    rep_warranty_category: str | None = None  # matched R&W category, if any
+    rep_warranty_relevant: bool = False  # falls under a standard security rep
+    # Component sub-scores (each in [0, 1]) — persisted so `weight` is auditable.
+    severity_component: float
+    exposure_component: float
+    remediation_component: float
+    rep_warranty_component: float
+    rationale: str  # human-readable basis, same discipline as a killed-finding reason
 
 
 class SimulationRun(BaseModel):
