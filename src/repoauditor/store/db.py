@@ -16,6 +16,7 @@ from ..config import Config, get_config
 from .models import (
     AdjudicationDebate,
     Corroboration,
+    DealRisk,
     DebatePosition,
     Entity,
     EntityKind,
@@ -30,11 +31,14 @@ from .models import (
     RiskScenario,
     RulePrior,
     SimulationRun,
+    TriageFeatureRecord,
     TriageLabel,
+    TriageLabelSource,
     TriageResult,
     TrustBoundary,
     ValidationFailure,
 )
+from ..matching import find_matches  # pure logic (imports only store.models — no cycle)
 
 DDL_DIR = Path(__file__).parent / "ddl"
 _MIGRATION_RE = re.compile(r"^(\d+)_.*\.sql$")
@@ -181,9 +185,10 @@ def insert_finding(finding: Finding, config: Config | None = None) -> int:
             for corr in finding.corroborated_by:
                 conn.execute(
                     "INSERT INTO corroboration "
-                    "(finding_id, source_type, source_name, note) "
-                    "VALUES (?, ?, ?, ?)",
-                    (finding_id, str(corr.source_type), corr.source_name, corr.note),
+                    "(finding_id, source_type, source_name, note, score, match_basis) "
+                    "VALUES (?, ?, ?, ?, ?, ?)",
+                    (finding_id, str(corr.source_type), corr.source_name, corr.note,
+                     corr.score, corr.match_basis),
                 )
         return finding_id
     finally:
@@ -208,6 +213,8 @@ def _hydrate_findings(conn: sqlite3.Connection, rows: list[sqlite3.Row]) -> list
                 source_type=c["source_type"],
                 source_name=c["source_name"],
                 note=c["note"],
+                score=c["score"],
+                match_basis=c["match_basis"],
             )
             for c in corr_rows
         ]
@@ -254,22 +261,38 @@ def list_findings(repo_id: str | None = None, config: Config | None = None) -> l
         conn.close()
 
 
+def get_finding(finding_id: int, config: Config | None = None) -> Finding | None:
+    """Read a single finding by id (with corroborations), or None if it doesn't exist.
+
+    Used by the manual triage-label path to validate the target and resolve its engagement.
+    """
+    conn = get_connection(config)
+    try:
+        rows = conn.execute("SELECT * FROM finding WHERE id = ?", (finding_id,)).fetchall()
+        hydrated = _hydrate_findings(conn, rows)
+        return hydrated[0] if hydrated else None
+    finally:
+        conn.close()
+
+
 def list_analyzable_findings(repo_id: str, config: Config | None = None) -> list[Finding]:
     """Findings the analyze stage is allowed to consume — the review gate applied.
 
     This is the query an analyze-style stage uses instead of `list_findings`: it drops
     findings blocked at the human-review checkpoint. A finding is blocked when it has a
     `review_request` whose *effective* (most recent) decision is not `confirm` — i.e.
-    no decision yet, or a `dismiss`. Killed findings are excluded too, matching the
-    analyze stage's own null-result handling. Everything with no review request passes
-    through unchanged, so review-clean pipelines behave exactly as before.
+    no decision yet, or a `dismiss`. `killed` findings are excluded (analyze's own
+    null-result handling), and so are `deferred` ones — a deferred finding fell outside a
+    falsify run's budget and has not been examined yet, so it must never be mistaken for
+    an analysis-ready verdict. Everything with no review request passes through
+    unchanged, so review-clean pipelines behave exactly as before.
     """
     conn = get_connection(config)
     try:
         rows = conn.execute(
             "SELECT f.* FROM finding f "
             "WHERE f.repo_id = ? "
-            "  AND f.falsification_status != ? "
+            "  AND f.falsification_status NOT IN (?, ?) "
             "  AND NOT EXISTS ("
             "    SELECT 1 FROM review_request rr "
             "    WHERE rr.finding_id = f.id "
@@ -279,11 +302,39 @@ def list_analyzable_findings(repo_id: str, config: Config | None = None) -> list
             "        '__open__') != ? "
             "  ) "
             "ORDER BY f.id",
-            (repo_id, str(FalsificationStatus.KILLED), str(ReviewDisposition.CONFIRM)),
+            (repo_id, str(FalsificationStatus.KILLED), str(FalsificationStatus.DEFERRED),
+             str(ReviewDisposition.CONFIRM)),
         ).fetchall()
         return _hydrate_findings(conn, rows)
     finally:
         conn.close()
+
+
+def list_countable_findings(repo_id: str, config: Config | None = None) -> list[Finding]:
+    """Analyzable findings collapsed to one row per matched issue — the *countable* set.
+
+    When several sources flag the same underlying issue, normalize/adjudicate.py resolves
+    them into one representative but leaves the non-representative rows in place (they are
+    still evidence of what each source found, per store/'s never-delete discipline). A
+    consumer that counts *issues* — `analyze/risk_quant.build_scenarios`, and later
+    `report/` — must therefore not treat those rows as N separate findings.
+
+    Design decision — Option B (read-side view), not Option A (a persisted `superseded_by`
+    status). Rationale, recorded here so future sessions don't re-derive it:
+      * No schema change and no write to existing rows — de-duplication is computed on read
+        from the shared `matching.find_matches`, which is deterministic on the finding set
+        (see tests/test_matching.py::test_matching_is_deterministic_on_the_finding_set), so
+        it always reflects the same grouping normalize used. store/ writes stay append-only.
+      * It composes the review gate: it de-duplicates the *analyzable* set
+        (`list_analyzable_findings` already drops killed/deferred/review-blocked), returning
+        one representative (highest-confidence member) per match group.
+      * Nothing is hidden: every row is still returned by `list_findings` — this is a
+        counting view, not a soft-delete. `list_findings` remains the raw, complete read.
+    A merged group's non-representative rows are simply not among the representatives, so
+    they can no longer be double-counted downstream.
+    """
+    analyzable = list_analyzable_findings(repo_id, config)
+    return [group.representative for group in find_matches(analyzable).groups]
 
 
 def update_falsification(
@@ -309,15 +360,62 @@ def update_falsification(
         conn.close()
 
 
+def apply_adjudication(finding: Finding, config: Config | None = None) -> None:
+    """Persist a normalize/ adjudication: the representative's resolved severity + status,
+    plus its cross-source corroborations, in one transaction.
+
+    This is how a corroboration-licensed severity upgrade becomes *final before review/* —
+    review/ reads the store, so the resolved severity must be written here (at normalize
+    time), not left in memory. The finding row is updated in place (keyed by id); the
+    corroborations are upserted (idempotent). store/ owns this write — normalize calls it.
+    """
+    if finding.id is None:
+        raise ValueError("apply_adjudication requires a persisted finding (id is None)")
+    conn = get_connection(config)
+    try:
+        with conn:
+            conn.execute(
+                "UPDATE finding SET severity = ?, falsification_status = ? WHERE id = ?",
+                (str(finding.severity), str(finding.falsification_status), finding.id),
+            )
+            for corr in finding.corroborated_by:
+                conn.execute(
+                    "INSERT INTO corroboration "
+                    "(finding_id, source_type, source_name, note, score, match_basis) "
+                    "VALUES (?, ?, ?, ?, ?, ?) "
+                    "ON CONFLICT (finding_id, source_type, source_name) DO UPDATE SET "
+                    "  note = COALESCE(excluded.note, corroboration.note), "
+                    "  score = COALESCE(excluded.score, corroboration.score), "
+                    "  match_basis = COALESCE(excluded.match_basis, corroboration.match_basis)",
+                    (finding.id, str(corr.source_type), corr.source_name, corr.note,
+                     corr.score, corr.match_basis),
+                )
+    finally:
+        conn.close()
+
+
 def add_corroboration(corr: Corroboration, config: Config | None = None) -> int:
-    """Record that another lens/tool independently flagged an existing finding."""
+    """Record that another lens/tool independently flagged an existing finding.
+
+    Idempotent per (finding_id, source_type, source_name) via the UNIQUE constraint. When
+    the same corroborator is re-recorded with a freshly computed score/match_basis (e.g. the
+    analyze pass augmenting a normalize-written row), `ON CONFLICT ... DO UPDATE` refreshes
+    the score/basis rather than silently dropping it — so the analyze corroboration score is
+    never lost to an INSERT OR IGNORE no-op.
+    """
     conn = get_connection(config)
     try:
         with conn:
             cur = conn.execute(
-                "INSERT OR IGNORE INTO corroboration "
-                "(finding_id, source_type, source_name, note) VALUES (?, ?, ?, ?)",
-                (corr.finding_id, str(corr.source_type), corr.source_name, corr.note),
+                "INSERT INTO corroboration "
+                "(finding_id, source_type, source_name, note, score, match_basis) "
+                "VALUES (?, ?, ?, ?, ?, ?) "
+                "ON CONFLICT (finding_id, source_type, source_name) DO UPDATE SET "
+                "  note = COALESCE(excluded.note, corroboration.note), "
+                "  score = COALESCE(excluded.score, corroboration.score), "
+                "  match_basis = COALESCE(excluded.match_basis, corroboration.match_basis)",
+                (corr.finding_id, str(corr.source_type), corr.source_name, corr.note,
+                 corr.score, corr.match_basis),
             )
         return int(cur.lastrowid)
     finally:
@@ -456,29 +554,38 @@ def last_eval_run(lineage: str, config: Config | None = None) -> EvalRun | None:
 # --------------------------------------------------------------------------- #
 # Triage layer: analyst labels + per-rule priors
 # --------------------------------------------------------------------------- #
-def upsert_triage_label(label: TriageLabel, config: Config | None = None) -> int:
-    """Record an analyst disposition on a finding (idempotent per engagement+fingerprint).
+def upsert_triage_label(
+    label: TriageLabel, config: Config | None = None, *, protect_manual: bool = False
+) -> int:
+    """Record a disposition on a finding (idempotent per engagement+fingerprint).
 
     The cross-engagement label store the triage classifier trains on. Re-labelling the
     same finding within an engagement overwrites the prior disposition rather than
     duplicating it.
+
+    `protect_manual=True` (used by the derivation pass) adds a `WHERE source != 'manual'`
+    guard to the upsert so a *derived* label can never clobber an analyst's manual one —
+    the manual-precedence rule enforced at the persistence layer. The manual path leaves
+    it False so an analyst can always overwrite (including correcting a prior manual call).
     """
     conn = get_connection(config)
+    guard = " WHERE triage_label.source != 'manual'" if protect_manual else ""
     try:
         with conn:
             cur = conn.execute(
                 "INSERT INTO triage_label "
-                "(engagement, rule_id, finding_fingerprint, actionable, note) "
-                "VALUES (?, ?, ?, ?, ?) "
+                "(engagement, rule_id, finding_fingerprint, actionable, note, source) "
+                "VALUES (?, ?, ?, ?, ?, ?) "
                 "ON CONFLICT (engagement, finding_fingerprint) DO UPDATE SET "
                 "  rule_id = excluded.rule_id, actionable = excluded.actionable, "
-                "  note = excluded.note",
+                "  note = excluded.note, source = excluded.source" + guard,
                 (
                     label.engagement,
                     label.rule_id,
                     label.finding_fingerprint,
                     int(label.actionable),
                     label.note,
+                    str(label.source),
                 ),
             )
         return int(cur.lastrowid)
@@ -489,7 +596,7 @@ def upsert_triage_label(label: TriageLabel, config: Config | None = None) -> int
 def list_triage_labels(
     rule_id: str | None = None, config: Config | None = None
 ) -> list[TriageLabel]:
-    """Read analyst labels, optionally scoped to one rule (for per-rule FP history)."""
+    """Read labels, optionally scoped to one rule (for per-rule FP history)."""
     conn = get_connection(config)
     try:
         if rule_id is None:
@@ -505,10 +612,142 @@ def list_triage_labels(
                 rule_id=r["rule_id"],
                 finding_fingerprint=r["finding_fingerprint"],
                 actionable=bool(r["actionable"]),
+                source=TriageLabelSource(r["source"]),
                 note=r["note"],
             )
             for r in rows
         ]
+    finally:
+        conn.close()
+
+
+# --------------------------------------------------------------------------- #
+# Triage feature bridge: the join between accumulated labels and training rows
+# --------------------------------------------------------------------------- #
+def upsert_triage_features(
+    record: TriageFeatureRecord, config: Config | None = None
+) -> int:
+    """Persist the triaged feature vector for a finding (idempotent per finding_id).
+
+    Written once per finding at triage time; re-running triage refreshes the vector. This
+    is the only place a finding's numeric feature row is durably kept, so a label collected
+    later (manual or derived) can be rejoined to real features for cross-engagement training.
+    """
+    conn = get_connection(config)
+    try:
+        with conn:
+            cur = conn.execute(
+                "INSERT INTO triage_features "
+                "(finding_id, engagement, rule_id, fingerprint, features, feature_names) "
+                "VALUES (?, ?, ?, ?, ?, ?) "
+                "ON CONFLICT (finding_id) DO UPDATE SET "
+                "  engagement = excluded.engagement, rule_id = excluded.rule_id, "
+                "  fingerprint = excluded.fingerprint, features = excluded.features, "
+                "  feature_names = excluded.feature_names",
+                (
+                    record.finding_id,
+                    record.engagement,
+                    record.rule_id,
+                    record.fingerprint,
+                    json.dumps(record.features),
+                    json.dumps(record.feature_names),
+                ),
+            )
+        return int(cur.lastrowid)
+    finally:
+        conn.close()
+
+
+def _triage_feature_record_from_row(row: sqlite3.Row) -> TriageFeatureRecord:
+    return TriageFeatureRecord(
+        finding_id=row["finding_id"],
+        engagement=row["engagement"],
+        rule_id=row["rule_id"],
+        fingerprint=row["fingerprint"],
+        features=json.loads(row["features"]),
+        feature_names=json.loads(row["feature_names"]),
+    )
+
+
+def get_triage_features(
+    finding_id: int, config: Config | None = None
+) -> TriageFeatureRecord | None:
+    """Read the triaged feature row for a finding (used by the manual-label path)."""
+    conn = get_connection(config)
+    try:
+        row = conn.execute(
+            "SELECT * FROM triage_features WHERE finding_id = ?", (finding_id,)
+        ).fetchone()
+        return _triage_feature_record_from_row(row) if row is not None else None
+    finally:
+        conn.close()
+
+
+def list_triage_features(config: Config | None = None) -> list[TriageFeatureRecord]:
+    """Read every triaged feature row (keyed by finding, spanning engagements)."""
+    conn = get_connection(config)
+    try:
+        rows = conn.execute("SELECT * FROM triage_features ORDER BY finding_id").fetchall()
+        return [_triage_feature_record_from_row(r) for r in rows]
+    finally:
+        conn.close()
+
+
+def list_real_training_examples(
+    config: Config | None = None,
+) -> list[tuple[list[float], list[str], bool]]:
+    """Join accumulated labels to their triaged features → real (features, names, label) rows.
+
+    The cross-engagement real training corpus: every `triage_label` that has a matching
+    `triage_features` row (same engagement + fingerprint) becomes one labelled feature
+    vector. `feature_names` travels with each row so the caller can drop rows whose schema
+    no longer matches the current `FEATURE_NAMES` instead of mis-aligning columns. Manual
+    and derived labels are both included — precedence is resolved when the label is written
+    (a manual label overwrites the derived row for the same finding), so at read time each
+    finding contributes exactly one, already-authoritative, row.
+    """
+    conn = get_connection(config)
+    try:
+        rows = conn.execute(
+            "SELECT tf.features, tf.feature_names, tl.actionable "
+            "FROM triage_label tl "
+            "JOIN triage_features tf "
+            "  ON tf.engagement = tl.engagement "
+            " AND tf.fingerprint = tl.finding_fingerprint "
+            "ORDER BY tl.id"
+        ).fetchall()
+        return [
+            (json.loads(r["features"]), json.loads(r["feature_names"]), bool(r["actionable"]))
+            for r in rows
+        ]
+    finally:
+        conn.close()
+
+
+def review_dispositions(
+    repo_id: str, config: Config | None = None
+) -> dict[int, ReviewDisposition]:
+    """Effective (most-recent) review disposition per finding for a repo.
+
+    Only findings with a review request *and* at least one decision appear. Used by the
+    triage label-derivation pass so a human confirm/dismiss can override the automated
+    falsify verdict when turning outcomes into labels.
+    """
+    conn = get_connection(config)
+    try:
+        rows = conn.execute(
+            "SELECT rr.finding_id AS fid, ("
+            "  SELECT rd.disposition FROM review_decision rd "
+            "  WHERE rd.review_request_id = rr.id ORDER BY rd.id DESC LIMIT 1"
+            ") AS disposition "
+            "FROM review_request rr WHERE rr.repo_id = ?",
+            (repo_id,),
+        ).fetchall()
+        return {
+            r["fid"]: ReviewDisposition(r["disposition"])
+            for r in rows
+            if r["disposition"] is not None
+        }
     finally:
         conn.close()
 
@@ -614,6 +853,80 @@ def list_triage_results(repo_id: str, config: Config | None = None) -> list[Tria
                 suppressed=bool(r["suppressed"]),
                 model_name=r["model_name"],
                 attributions=json.loads(r["attributions"]),
+            )
+            for r in rows
+        ]
+    finally:
+        conn.close()
+
+
+# --------------------------------------------------------------------------- #
+# Analyze stage: deal-risk weighting (sidecar annotation, never overwrites a finding)
+# --------------------------------------------------------------------------- #
+def upsert_deal_risk(dr: DealRisk, config: Config | None = None) -> int:
+    """Persist the deal-risk weighting for a finding (idempotent per finding_id).
+
+    A weighting annotation only — the underlying finding row (and its technical severity)
+    is untouched, so deal-risk re-weighting never overwrites the technical assessment.
+    """
+    conn = get_connection(config)
+    try:
+        with conn:
+            cur = conn.execute(
+                "INSERT INTO deal_risk "
+                "(finding_id, weight, band, production_exposure, remediation_category, "
+                " rep_warranty_category, rep_warranty_relevant, severity_component, "
+                " exposure_component, remediation_component, rep_warranty_component, rationale) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
+                "ON CONFLICT (finding_id) DO UPDATE SET "
+                "  weight = excluded.weight, band = excluded.band, "
+                "  production_exposure = excluded.production_exposure, "
+                "  remediation_category = excluded.remediation_category, "
+                "  rep_warranty_category = excluded.rep_warranty_category, "
+                "  rep_warranty_relevant = excluded.rep_warranty_relevant, "
+                "  severity_component = excluded.severity_component, "
+                "  exposure_component = excluded.exposure_component, "
+                "  remediation_component = excluded.remediation_component, "
+                "  rep_warranty_component = excluded.rep_warranty_component, "
+                "  rationale = excluded.rationale",
+                (
+                    dr.finding_id, dr.weight, dr.band, dr.production_exposure,
+                    dr.remediation_category, dr.rep_warranty_category,
+                    int(dr.rep_warranty_relevant), dr.severity_component,
+                    dr.exposure_component, dr.remediation_component,
+                    dr.rep_warranty_component, dr.rationale,
+                ),
+            )
+        return int(cur.lastrowid)
+    finally:
+        conn.close()
+
+
+def list_deal_risk(repo_id: str, config: Config | None = None) -> list[DealRisk]:
+    """Read deal-risk weightings for a repo's findings, heaviest first."""
+    conn = get_connection(config)
+    try:
+        rows = conn.execute(
+            "SELECT dr.* FROM deal_risk dr "
+            "JOIN finding f ON f.id = dr.finding_id "
+            "WHERE f.repo_id = ? ORDER BY dr.weight DESC, dr.finding_id",
+            (repo_id,),
+        ).fetchall()
+        return [
+            DealRisk(
+                id=r["id"],
+                finding_id=r["finding_id"],
+                weight=r["weight"],
+                band=r["band"],
+                production_exposure=r["production_exposure"],
+                remediation_category=r["remediation_category"],
+                rep_warranty_category=r["rep_warranty_category"],
+                rep_warranty_relevant=bool(r["rep_warranty_relevant"]),
+                severity_component=r["severity_component"],
+                exposure_component=r["exposure_component"],
+                remediation_component=r["remediation_component"],
+                rep_warranty_component=r["rep_warranty_component"],
+                rationale=r["rationale"],
             )
             for r in rows
         ]
@@ -1047,6 +1360,26 @@ def insert_falsification_iteration(
                 ),
             )
         return int(cur.lastrowid)
+    finally:
+        conn.close()
+
+
+def finding_ids_with_iterations(repo_id: str, config: Config | None = None) -> set[int]:
+    """Ids of a repo's findings the falsify loop has already examined (>=1 logged round).
+
+    The falsify budget uses this to tell a candidate it has *not yet* processed (fresh
+    from detect, or deferred by a prior run — no iteration rows) from one it already
+    escalated to `unresolved` (has rows), so a resumed run never re-challenges a finding
+    that already ran the loop.
+    """
+    conn = get_connection(config)
+    try:
+        rows = conn.execute(
+            "SELECT DISTINCT fi.finding_id FROM falsification_iteration fi "
+            "JOIN finding f ON f.id = fi.finding_id WHERE f.repo_id = ?",
+            (repo_id,),
+        ).fetchall()
+        return {row["finding_id"] for row in rows}
     finally:
         conn.close()
 

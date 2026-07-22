@@ -26,6 +26,12 @@ dependencies = [
     # shap pulls in numba; floor it so the resolver picks a modern wheel rather than
     # backtracking to an ancient build that only supports Python <3.10.
     "numba>=0.60",
+    # detect/retrieval multi-language AST indexing. tree-sitter is the runtime; the
+    # language-pack bundles the JS/TS/Java/Ruby (+ many more) grammars in one wheel, so
+    # adding a language is a dispatch-table entry, not a new dependency. Files in
+    # languages with no wired grammar fall back to lexical indexing (logged, never a gap).
+    "tree-sitter>=0.25",
+    "tree-sitter-language-pack>=1.13",
 ]
 
 [project.scripts]

@@ -1,27 +1,97 @@
-"""Secrets adapter (interface stub).
+"""Secrets adapter — gitleaks, with the secret value redacted before it is persisted.
 
-Wraps a secret-scanner's output into canonical `CandidateFinding`s. No real tool
-integration yet — interface only.
+Runs gitleaks over an ingested snapshot and normalizes its JSON into canonical
+`CandidateFinding`s. The store must never hold the raw secret, so the matched value is
+masked out of the `citation_snippet` — the finding records *that* a secret was found,
+its rule, and its location, never the credential itself.
+
+Degrades gracefully: a missing binary, a failed/timed-out run, or unparseable output
+contributes no findings (logged), never raising. gitleaks exits non-zero when it finds
+leaks, so a non-zero return code is expected and not treated as failure.
 """
 
 from __future__ import annotations
 
+import json
+import logging
+import shutil
+import subprocess
+import tempfile
 from pathlib import Path
 
+from ...store.models import Severity
 from ..ensemble import CandidateFinding
+from ._common import relativize
+
+logger = logging.getLogger(__name__)
 
 TOOL_NAME = "secrets"
+_BINARY = "gitleaks"
+# A matched secret is a reliable existence signal; committed credentials are high-sev.
+_SECRETS_CONFIDENCE = 0.8
+
+
+def _redact(match: str, secret: str) -> str:
+    """Mask the secret out of its surrounding match so no credential is persisted."""
+    match = (match or "").strip()
+    secret = (secret or "").strip()
+    if secret and secret in match:
+        match = match.replace(secret, "****")
+    elif secret:  # secret not literally in match -> drop the match, keep only structure
+        match = "****"
+    return match[:180]
 
 
 class SecretsAdapter:
-    """Runs / parses a secret scanner and normalizes its output to candidate findings."""
+    """Runs / parses gitleaks and normalizes its output to candidate findings."""
 
     tool_name = TOOL_NAME
 
-    def run(self, snapshot_path: Path) -> list[CandidateFinding]:
-        # No real secret scanner wired yet — returns the canonical (empty) shape.
-        return []
+    def __init__(self, timeout_seconds: int = 180) -> None:
+        self.timeout_seconds = timeout_seconds
 
-    def parse(self, raw_output: str) -> list[CandidateFinding]:
-        """Parse pre-captured tool output into candidate findings (none wired yet)."""
-        return []
+    def run(self, snapshot_path: Path) -> list[CandidateFinding]:
+        if shutil.which(_BINARY) is None:
+            logger.info("gitleaks not installed; secrets adapter contributes no findings")
+            return []
+        with tempfile.TemporaryDirectory() as tmp:
+            report = Path(tmp) / "gitleaks.json"
+            try:
+                subprocess.run(
+                    [_BINARY, "detect", "--source", str(snapshot_path), "--no-git",
+                     "--report-format", "json", "--report-path", str(report),
+                     "--no-banner", "--exit-code", "0"],
+                    capture_output=True, text=True, timeout=self.timeout_seconds,
+                )
+            except (subprocess.TimeoutExpired, OSError) as exc:
+                logger.warning("gitleaks run failed (%s); no secret findings", exc)
+                return []
+            if not report.is_file():
+                return []
+            return self.parse(report.read_text(), snapshot_path)
+
+    def parse(self, raw_output: str,
+              snapshot_path: Path | None = None) -> list[CandidateFinding]:
+        """Parse gitleaks JSON into candidate findings, with secrets redacted."""
+        try:
+            leaks = json.loads(raw_output) or []
+        except json.JSONDecodeError as exc:
+            logger.warning("could not parse gitleaks JSON (%s); no secret findings", exc)
+            return []
+        out: list[CandidateFinding] = []
+        for leak in leaks:
+            rule = leak.get("RuleID", "secret")
+            start = int(leak.get("StartLine", 1) or 1)
+            end = max(int(leak.get("EndLine", start) or start), start)
+            redacted = _redact(leak.get("Match", ""), leak.get("Secret", ""))
+            desc = (leak.get("Description") or "").strip()
+            out.append(CandidateFinding(
+                title=f"Hardcoded secret ({rule})",
+                file=relativize(leak.get("File", ""), snapshot_path),
+                line_start=start, line_end=end,
+                citation_snippet=f"[{rule}] {redacted} (secret value redacted)",
+                source_tool=self.tool_name, confidence=_SECRETS_CONFIDENCE,
+                severity=Severity.HIGH,
+                rationale=f"{desc} — credential committed in source (value withheld).".strip(),
+            ))
+        return out

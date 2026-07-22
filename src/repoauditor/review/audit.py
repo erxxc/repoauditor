@@ -85,6 +85,31 @@ def correct_decision(
     )
 
 
+def decide(
+    repo_id: str,
+    request_id: int,
+    disposition: ReviewDisposition | str,
+    rationale: str,
+    reviewer: str,
+    config: Config | None = None,
+) -> ReviewDecision:
+    """Record a decision on a held finding, validating the request belongs to `repo_id`.
+
+    Thin repo-aware wrapper over `record_decision` so the `review decide` CLI command stays
+    logic-free: it just parses args and calls here. The repo check catches deciding a request
+    from the wrong repo before an append-only decision row is written.
+    """
+    config = config or get_config()
+    request = db.get_review_request_by_id(request_id, config)
+    if request is None:
+        raise ValueError(f"no review request with id {request_id}")
+    if request.repo_id != repo_id:
+        raise ValueError(
+            f"review request {request_id} belongs to repo '{request.repo_id}', not '{repo_id}'"
+        )
+    return record_decision(request_id, reviewer, disposition, rationale, config=config)
+
+
 def decision_history(review_request_id: int, config: Config | None = None) -> list[ReviewDecision]:
     """The full, ordered ruling history for a request (oldest first)."""
     config = config or get_config()

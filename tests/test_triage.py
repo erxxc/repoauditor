@@ -10,7 +10,17 @@ import pytest
 
 from repoauditor.config import load_priors
 from repoauditor.store import db
-from repoauditor.store.models import TriageLabel
+from repoauditor.store.models import (
+    FalsificationStatus,
+    Finding,
+    ReviewDecision,
+    ReviewDisposition,
+    ReviewRequest,
+    Severity,
+    TriageLabel,
+    TriageLabelSource,
+)
+from repoauditor.triage import derive_labels, label_finding
 from repoauditor.triage import priors as triage_priors
 from repoauditor.triage import synthetic, triage_repo
 from repoauditor.triage.classifier import TriageClassifier
@@ -20,6 +30,7 @@ from repoauditor.triage.features import (
     extract_feature_vector,
     load_sarif,
 )
+from repoauditor.triage.training import assemble_training_data, synthetic_share
 
 
 @pytest.fixture
@@ -189,3 +200,137 @@ def test_triage_repo_raises_cleanly_without_sarif(cfg):
     db.init_db(cfg)
     with pytest.raises(FileNotFoundError):
         triage_repo("missing", cfg)
+
+
+# --------------------------------------------------------------------------- #
+# Real TriageLabel training loop: derived labels, manual override, blend, eval
+# --------------------------------------------------------------------------- #
+def _triage_three(cfg, tmp_path, engagement="eng1"):
+    """Triage a 3-finding SARIF so each finding has a persisted feature row."""
+    sp = tmp_path / "scan.sarif"
+    sp.write_text(_sarif(
+        rules=[
+            {"id": "py.a", "name": "A", "properties": {"tags": ["CWE-89"], "security-severity": "8.0"}},
+            {"id": "py.b", "name": "B", "properties": {"tags": ["CWE-78"], "security-severity": "9.0"}},
+            {"id": "py.c", "name": "C", "properties": {"tags": ["CWE-79"], "security-severity": "7.0"}},
+        ],
+        results=[
+            _result("py.a", "a.py", 1, level="error"),
+            _result("py.b", "b.py", 2, level="error"),
+            _result("py.c", "c.py", 3, level="error"),
+        ],
+    ))
+    triage_repo(engagement, cfg, sarif_path=sp, seed=1)
+    return {f.file: f for f in db.list_findings(engagement, cfg)}
+
+
+def test_derived_labels_from_falsify_and_review_override(cfg, tmp_path):
+    db.init_db(cfg)
+    findings = _triage_three(cfg, tmp_path)
+
+    # falsify verdicts: a confirmed (TP), b killed (FP).
+    db.update_falsification(findings["a.py"].id, FalsificationStatus.CONFIRMED, "reachable", cfg)
+    db.update_falsification(findings["b.py"].id, FalsificationStatus.KILLED, "mitigated", cfg)
+    # c confirmed by falsify, but a human dismisses it in review -> review overrides.
+    db.update_falsification(findings["c.py"].id, FalsificationStatus.CONFIRMED, "reachable", cfg)
+    rid = db.upsert_review_request(
+        ReviewRequest(repo_id="eng1", finding_id=findings["c.py"].id, stage="falsify",
+                      reason="edge case"), cfg)
+    db.insert_review_decision(
+        ReviewDecision(review_request_id=rid, disposition=ReviewDisposition.DISMISS,
+                       reviewer="analyst", rationale="accepted risk"), cfg)
+
+    summary = derive_labels(cfg)
+    labels = {label.rule_id: label for label in db.list_triage_labels(config=cfg)}
+
+    assert labels["py.a"].actionable is True
+    assert labels["py.a"].source is TriageLabelSource.DERIVED_FALSIFY
+    assert labels["py.b"].actionable is False
+    assert labels["py.b"].source is TriageLabelSource.DERIVED_FALSIFY
+    # Human review (dismiss) overrides the falsify CONFIRMED verdict.
+    assert labels["py.c"].actionable is False
+    assert labels["py.c"].source is TriageLabelSource.DERIVED_REVIEW
+    assert summary.from_falsify == 2 and summary.from_review == 1
+
+
+def test_unresolved_and_deferred_yield_no_label(cfg, tmp_path):
+    db.init_db(cfg)
+    findings = _triage_three(cfg, tmp_path)
+    # a stays UNRESOLVED (default), b is DEFERRED — neither is evidence either way.
+    db.update_falsification(findings["b.py"].id, FalsificationStatus.DEFERRED, "over budget", cfg)
+    db.update_falsification(findings["c.py"].id, FalsificationStatus.CONFIRMED, "reachable", cfg)
+    summary = derive_labels(cfg)
+    labelled_rules = {label.rule_id for label in db.list_triage_labels(config=cfg)}
+    assert labelled_rules == {"py.c"}                 # only the confirmed one
+    assert summary.skipped_ambiguous == 2             # unresolved + deferred, no fabrication
+
+
+def test_manual_label_overrides_derived_and_persists(cfg, tmp_path):
+    db.init_db(cfg)
+    findings = _triage_three(cfg, tmp_path)
+    db.update_falsification(findings["a.py"].id, FalsificationStatus.CONFIRMED, "reachable", cfg)
+
+    # Analyst disagrees with the automated CONFIRMED verdict and marks it a false positive.
+    label = label_finding(findings["a.py"].id, actionable=False, note="analyst: not exploitable",
+                          config=cfg)
+    assert label.source is TriageLabelSource.MANUAL
+
+    # A later derivation pass must NOT overwrite the manual call.
+    derive_labels(cfg)
+    got = {label.rule_id: label for label in db.list_triage_labels(config=cfg)}
+    assert got["py.a"].actionable is False
+    assert got["py.a"].source is TriageLabelSource.MANUAL
+
+
+def test_manual_label_requires_an_existing_triaged_finding(cfg):
+    db.init_db(cfg)
+    with pytest.raises(ValueError):
+        label_finding(999, True, None, cfg)          # no such finding
+    # A finding that was never triaged has no feature row -> not labellable yet.
+    fid = db.insert_finding(
+        Finding(repo_id="e", title="t", file="f.py", line_start=1, line_end=1,
+                citation_snippet="x", source_lens="owasp", confidence=0.5,
+                severity=Severity.LOW), cfg)
+    with pytest.raises(ValueError):
+        label_finding(fid, True, None, cfg)
+
+
+def test_synthetic_share_shrinks_as_real_labels_accumulate(cfg):
+    # Documented shrinkage: pseudocount / (pseudocount + n_real), 0 past the cutoff.
+    assert synthetic_share(0, cfg) == 1.0
+    assert synthetic_share(0, cfg) > synthetic_share(100, cfg) > synthetic_share(1000, cfg) > 0.0
+    # At n_real == pseudocount, synthetic and real carry equal mass (share 0.5).
+    assert synthetic_share(int(cfg.triage.synthetic_pseudocount), cfg) == pytest.approx(0.5)
+    # Hard cutoff: synthetic is retired entirely.
+    assert synthetic_share(cfg.triage.synthetic_cutoff_labels, cfg) == 0.0
+
+
+def test_assemble_training_data_blends_real_with_downweighted_synthetic(cfg, tmp_path):
+    db.init_db(cfg)
+    findings = _triage_three(cfg, tmp_path)
+    label_finding(findings["a.py"].id, True, None, cfg)
+    label_finding(findings["b.py"].id, False, None, cfg)
+
+    corpus = assemble_training_data(cfg, seed=1)
+    assert corpus.n_real == 2
+    assert int(corpus.real_mask.sum()) == 2
+    assert corpus.X.shape[0] == corpus.n_synthetic + corpus.n_real
+    assert 0.0 < corpus.synthetic_share < 1.0 and not corpus.synthetic_dropped
+    # Real rows carry weight 1.0; the synthetic pool shares `pseudocount`.
+    assert corpus.sample_weight[corpus.real_mask].tolist() == [1.0, 1.0]
+    expected_syn_w = cfg.triage.synthetic_pseudocount / corpus.n_synthetic
+    assert corpus.sample_weight[~corpus.real_mask][0] == pytest.approx(expected_syn_w)
+
+
+def test_holdout_eval_flags_real_vs_synthetic_split():
+    ds = synthetic.generate(n=1200, seed=5)
+    # No real labels -> eval on a synthetic split, honestly flagged.
+    clf = TriageClassifier.train(ds.X, ds.y, seed=5)
+    assert all(e.eval_on == "synthetic" for e in clf.evaluations)
+
+    # Enough "real" rows (stand-in features) -> held-out eval carved from real rows.
+    mask = np.zeros(len(ds.y), dtype=bool)
+    mask[:200] = True
+    clf2 = TriageClassifier.train(ds.X, ds.y, seed=5, real_mask=mask, min_real_holdout=40)
+    assert all(e.eval_on == "real" for e in clf2.evaluations)
+    assert clf2.evaluations[0].n_eval == 50          # 25% of the 200 real rows

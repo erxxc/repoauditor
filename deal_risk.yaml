@@ -1,0 +1,154 @@
+# deal_risk.yaml — config-driven mapping for analyze/deal_risk.py.
+#
+# Turns a finding's type + trust-boundary context into a *deal-relevant* weight that is
+# distinct from (and layered alongside, never replacing) its technical severity. This is
+# the config-editable layer the task asks for: the rep-&-warranty mapping and remediation
+# cost categories live here, editable per engagement without a code change.
+#
+# CLAUDE.md "no unsourced priors": the risk-bearing parameters carry a documented basis.
+# Where no public dataset backs a value it is stated as a calibrated assumption ("informed
+# by common M&A security rep language"), not silently invented. Scalar priors (blend
+# weights, ordinal scores, band cutoffs) also have documented fallbacks in config.py so the
+# module still runs if this file is absent; this file is the source of truth and overrides
+# them.
+#
+# NOTE on remediation vs risk_quant: `remediation` here is a *categorical* cost/timeline
+# class (fast/moderate/major/redesign) by finding type — deliberately NOT a dollar figure.
+# Monetary loss modelling is analyze/risk_quant.py's job (FAIR Monte Carlo over priors.yaml).
+
+deal_risk:
+  # The four components blended into the deal-risk weight (must sum to 1.0).
+  blend:
+    severity: 0.30
+    production_exposure: 0.30
+    remediation: 0.20
+    rep_warranty: 0.20
+    basis: >-
+      Analyst-calibrated diligence blend (stated assumption, not empirical). A deal
+      reviewer weights production/customer-data exposure and technical impact roughly
+      equally, with remediation burden and rep-&-warranty exposure as secondary modifiers.
+
+  # Production/customer-data exposure from the map stage (TrustBoundary + Entity).
+  exposure:
+    entity_kind_scores:
+      data_store: 1.0     # data at rest — the customer-data path
+      entry_point: 0.9    # externally reachable edge
+      integration: 0.5    # adjacent external system
+      component: 0.2      # internal-only component
+    production_indicators:
+      - production
+      - prod
+      - customer
+      - pii
+      - personal data
+      - public
+      - internet
+      - external
+      - payment
+      - card
+      - phi
+      - user data
+      - sensitive
+    matched_score: 1.0
+    default_score: 0.5    # unknown/no map linkage — conservative moderate, never zero
+    basis: >-
+      Data-at-rest stores and internet-facing entry points are the diligence-relevant
+      production/customer-data surfaces; internal components score low. Unknown is treated
+      as moderate, not zero — deal risk should not under-report on missing context.
+
+  # Remediation burden ordinal (harder / longer to fix == higher deal risk). Basis: rough
+  # engineering-effort ordering — a secret is a same-day rotation; a supply-chain fix is a
+  # dependency/major-version bump; an architectural boundary violation is a redesign.
+  remediation_scores:
+    fast: 0.25       # e.g. rotate a secret + purge history
+    moderate: 0.5    # localized code fix (sanitize input, patch a sink)
+    major: 0.75      # dependency / major-version bump, possible breaking change
+    redesign: 1.0    # architectural / trust-boundary rework
+
+  # Weight bands for reporting (bucketed final weight). Presentation only.
+  bands:
+    elevated: 0.4
+    high: 0.6
+    critical: 0.8
+
+  default_category: other
+
+  # Finding taxonomy: recognition rules (CWE / keyword / source_tool), remediation cost
+  # class, and rep-&-warranty relevance. Rep-&-warranty mappings are informed by common
+  # M&A security representations (no-undisclosed-breach; compliance with data-protection
+  # law; no material undisclosed vulnerabilities) — a stated assumption, editable here.
+  categories:
+    secret:
+      cwes: ["798", "259", "321"]
+      keywords: [hardcoded, credential, secret, password, api key, api token, private key]
+      source_tools: [secrets]
+      remediation: fast
+      rep_warranty:
+        relevant: true
+        weight: 1.0
+        rep_clause: "safeguarding of company data / no unauthorized access to systems"
+        source: "Common M&A security rep: exposed live credentials bear directly on the data-safeguarding and unauthorized-access reps (stated assumption)."
+    supply_chain:
+      cwes: ["1104", "1035", "937", "1395"]
+      keywords: [dependency, vulnerable version, outdated, known vulnerability, "cve-", "ghsa-", "pysec-"]
+      source_tools: [sca]
+      remediation: major
+      rep_warranty:
+        relevant: true
+        weight: 0.8
+        rep_clause: "no material undisclosed security vulnerabilities in company products"
+        source: "Common M&A security rep: known-vulnerable dependencies are disclosable material vulnerabilities (stated assumption)."
+    injection:
+      cwes: ["78", "89", "94", "77", "79", "502", "917"]
+      keywords: [injection, rce, remote code execution, command exec, deserialization, sqli, xss]
+      remediation: moderate
+      rep_warranty:
+        relevant: true
+        weight: 0.9
+        rep_clause: "no material undisclosed security vulnerabilities"
+        source: "Common M&A security rep: exploitable injection is a material vulnerability (stated assumption)."
+    access_control:
+      cwes: ["284", "285", "862", "863", "639", "306"]
+      keywords: [access control, authorization, idor, privilege escalation, broken auth, missing authentication]
+      remediation: redesign
+      rep_warranty:
+        relevant: true
+        weight: 0.9
+        rep_clause: "adequacy of security controls / no unauthorized access"
+        source: "Common M&A security rep: broken access control undermines the security-controls-adequacy rep and often needs a redesign (stated assumption)."
+    data_exposure:
+      cwes: ["200", "201", "359", "532", "312"]
+      keywords: [data exposure, information disclosure, pii, data leak, sensitive data, cleartext storage]
+      remediation: moderate
+      rep_warranty:
+        relevant: true
+        weight: 1.0
+        rep_clause: "compliance with data-protection law / no personal-data breach"
+        source: "Common M&A security rep: exposure of personal data bears directly on data-protection compliance reps (stated assumption)."
+    crypto:
+      cwes: ["327", "326", "916", "328", "310"]
+      keywords: [weak crypto, weak hash, insecure cipher, broken cryptography, md5, sha1]
+      remediation: moderate
+      rep_warranty:
+        relevant: true
+        weight: 0.6
+        rep_clause: "adequacy of security controls"
+        source: "Common M&A security rep: weak cryptography is a control-adequacy concern, usually lower materiality (stated assumption)."
+    ssrf:
+      cwes: ["918"]
+      keywords: [ssrf, server-side request forgery]
+      remediation: moderate
+      rep_warranty:
+        relevant: true
+        weight: 0.7
+        rep_clause: "no material undisclosed security vulnerabilities"
+        source: "Common M&A security rep: SSRF is a material, disclosable vulnerability (stated assumption)."
+    other:
+      cwes: []
+      keywords: []
+      remediation: moderate
+      rep_warranty:
+        relevant: false
+        weight: 0.3
+        rep_clause: "not squarely under a standard security rep"
+        source: "Default fallback for findings that do not map to a recognized deal-risk category."

@@ -1,0 +1,18 @@
+# Dependency manifest for the CVE-tagged dependency fixture.
+#
+# Models an acquired codebase that pins two REAL, CVE-affected dependency versions.
+# The vulnerabilities are documented (OSV/GHSA/CVE) — nothing here is fabricated; the
+# SCA adapter (pip-audit / OSV-Scanner) is expected to flag the two pinned versions.
+# See ../expected_findings.json and ../README.md for full sourcing.
+
+# clean, non-flagged deps (realistic filler; current at snapshot time)
+click==8.1.7
+itsdangerous==2.1.2
+
+# VULNERABLE: PyYAML < 5.4 — CVE-2020-14343 (GHSA-8q59-q68h-6hv4)
+# arbitrary code execution via the full-load constructor bypass.
+PyYAML==5.3.1
+
+# VULNERABLE: Flask 0.12.2 — CVE-2018-1000656 (GHSA-562c-5r94-xh97)
+# denial of service via incorrect JSON encoding handling.
+Flask==0.12.2

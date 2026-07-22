@@ -171,6 +171,54 @@ def open_review_requests(repo_id: str, config: Config | None = None) -> list[Rev
     ]
 
 
+def _trace_summary(evidence: dict) -> str:
+    """One-line summary of whichever stage trace a held finding carries (if any)."""
+    if "falsification_trace" in evidence:
+        return f"falsify — {len(evidence['falsification_trace'])} iteration(s), unresolved"
+    if "debate" in evidence:
+        rationale = evidence.get("synthesis_rationale") or ""
+        return (f"normalize — {len(evidence['debate'])} conflicting positions"
+                + (f"; {rationale}" if rationale else ""))
+    if "triage" in evidence:
+        t = evidence["triage"]
+        return (f"triage — P(actionable)={t.get('p_actionable')}, "
+                f"winning-class confidence={t.get('winning_class_confidence')}")
+    return ""
+
+
+def render_open_requests(repo_id: str, config: Config | None = None) -> str:
+    """Human-readable summary of the open review queue — what `review list` prints.
+
+    Rendering lives here (not in `cli.py`) so the CLI stays a thin arg-parse-and-call shell,
+    exactly as the report projections return their rendered string.
+    """
+    config = config or get_config()
+    requests = open_review_requests(repo_id, config)
+    if not requests:
+        return f"No open review requests for {repo_id}."
+
+    lines = [f"Open review requests for {repo_id} ({len(requests)}):", ""]
+    for r in requests:
+        ev = r.evidence or {}
+        lines.append(f"- request #{r.id}  ·  finding #{r.finding_id}  ·  stage={r.stage}")
+        lines.append(f"    reason: {r.reason}")
+        lines.append(
+            f"    severity={ev.get('severity', '?')}  source={ev.get('source', '?')}  "
+            f"boundary={ev.get('trust_boundary', '?')}"
+        )
+        if ev.get("citation"):
+            lines.append(f"    citation: {ev['citation']}")
+        trace = _trace_summary(ev)
+        if trace:
+            lines.append(f"    trace: {trace}")
+        lines.append("")
+    lines.append(
+        "Decide with:  repoauditor review decide "
+        f"{repo_id} <request-id> --decision=confirm|dismiss --rationale=\"...\""
+    )
+    return "\n".join(lines)
+
+
 def is_blocked(finding_id: int, config: Config | None = None) -> bool:
     """True if this finding is held at the checkpoint (open request, not yet released).
 

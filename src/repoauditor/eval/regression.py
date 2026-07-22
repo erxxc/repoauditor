@@ -14,6 +14,7 @@ from __future__ import annotations
 
 from ..config import Config, get_config
 from ..detect.ensemble import PROMPT_VERSION as _DETECT_PV
+from ..falsify.challenger import CRITIQUE_PROMPT_VERSION as _FALSIFY_CRITIQUE_PV
 from ..falsify.challenger import PROMPT_VERSION as _FALSIFY_PV
 from ..map.domain_map import PROMPT_VERSION as _MAP_PV
 from ..normalize.adjudicate import PROMPT_VERSION as _NORMALIZE_PV
@@ -21,11 +22,14 @@ from ..store import db
 from ..store.models import EvalRun
 
 # The prompt version actually wired into each stage right now. Recorded on every run
-# so a regression can be attributed to a specific prompt lineage.
+# so a regression can be attributed to a specific prompt lineage. The falsify stage runs
+# two prompts — the verdict prompt *and* the self-critique (reflect) prompt — so both are
+# recorded (composite), matching the detect stage's multi-lens convention. Omitting the
+# self-critique version would let a regression in the reflect step escape attribution.
 STAGE_PROMPT_VERSIONS: dict[str, str] = {
     "map": _MAP_PV,
     "detect": _DETECT_PV,
-    "falsify": _FALSIFY_PV,
+    "falsify": f"{_FALSIFY_PV}+{_FALSIFY_CRITIQUE_PV}",
     "normalize": _NORMALIZE_PV,
 }
 

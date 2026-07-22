@@ -17,9 +17,13 @@ import os
 
 import pytest
 
+from repoauditor.config import Config, PathsConfig
 from repoauditor.eval import record_and_check
 from repoauditor.falsify import challenge
+from repoauditor.falsify.challenger import CRITIQUE_PROMPT_VERSION as _CRITIQUE_PV
+from repoauditor.falsify.challenger import PROMPT_VERSION as _FALSIFY_PV
 from repoauditor.ingest import ingest_repo
+from repoauditor.llm import LLMClient
 from repoauditor.map import recover_architecture
 from repoauditor.detect import run_ensemble
 from repoauditor.store import db
@@ -73,15 +77,40 @@ def score_precision_recall(actual: list[Finding], expected: list[dict]) -> dict:
 # --------------------------------------------------------------------------- #
 # Pipeline driver (shared by the deterministic and live tests).
 # --------------------------------------------------------------------------- #
-def _run_pipeline(fixture, config, llm) -> None:
+def _run_pipeline(fixture, config, llm, self_critique: bool = True) -> None:
     result = ingest_repo(str(fixture.snapshot_path), config, repo_id=fixture.repo_id)
     recover_architecture(result.snapshot_path, result.repo_id, result.commit, config, llm)
     run_ensemble(result.repo_id, config, llm=llm)
-    challenge(result.repo_id, config, llm=llm)
+    challenge(result.repo_id, config, llm=llm, self_critique=self_critique)
 
 
 def _confirmed(findings: list[Finding]) -> list[Finding]:
     return [f for f in findings if f.falsification_status is FalsificationStatus.CONFIRMED]
+
+
+def _lens_only(findings: list[Finding]) -> list[Finding]:
+    """The LLM-lens findings. The golden precision/recall measures the LLM
+    detect->falsify pipeline against the lens-based ground truth; deterministic tool
+    findings (e.g. gitleaks) are a separate stream with their own adapter tests, and
+    cross-tool dedup/corroboration is a later stage — so they are excluded from this
+    score rather than counted as duplicates of the lens findings they overlap."""
+    return [f for f in findings if f.source_lens]
+
+
+def _sibling_config(base: Config, root) -> Config:
+    """An isolated store rooted at `root`, sharing `base`'s settings otherwise.
+
+    Lets one test drive two independent DBs (e.g. a prior-vs-new prompt benchmark)
+    without either run's findings leaking into the other.
+    """
+    root.mkdir(parents=True, exist_ok=True)
+    (root / "raw").mkdir(parents=True, exist_ok=True)
+    return base.model_copy(update={
+        "paths": PathsConfig(
+            data_dir=root, raw_dir=root / "raw", db_path=root / "repoauditor.db",
+        ),
+        "root": root,
+    })
 
 
 # --------------------------------------------------------------------------- #
@@ -104,7 +133,7 @@ def test_golden_pipeline(tmp_config, fixture_repo, scripted_llm):
     raw = score_precision_recall(all_findings, expected)
     assert raw["precision"] < 1.0, "fixture should plant at least one false positive"
 
-    confirmed = _confirmed(all_findings)
+    confirmed = _lens_only(_confirmed(all_findings))
     post = score_precision_recall(confirmed, expected)
     assert post["recall"] == 1.0, f"missed known findings: {post}"
     assert post["precision"] == 1.0, f"false positive survived falsification: {post}"
@@ -139,6 +168,65 @@ def test_golden_pipeline(tmp_config, fixture_repo, scripted_llm):
 
 
 # --------------------------------------------------------------------------- #
+# Prompt-version benchmark: falsification_selfcritique_v1 vs its prior behaviour.
+# Closes the round-3 eval-gate process gap — the reflect prompt was in active use but
+# had never been scored against the corpus and gated.
+# --------------------------------------------------------------------------- #
+def test_selfcritique_v1_benchmarked_and_gated_against_prior_behaviour(
+    tmp_config, fixture_repo, scripted_backend, tmp_path
+):
+    """Score falsification_selfcritique_v1 on the golden corpus and gate it.
+
+    The self-critique prompt is *net-new* in round 5 — there is no predecessor prompt
+    file — so the honest baseline is the immediately-prior falsify behaviour: the same
+    pipeline with the reflect step disabled. We run the real golden pipeline both ways in
+    isolated stores, then record both metrics on one lineage and gate with
+    `eval/regression.py`. The reflect step can only *tighten* commits, so it must not
+    regress precision/recall: both runs clear 1.0/1.0 and the gate passes.
+    """
+    expected = fixture_repo.expected["findings"]
+    lineage = f"{fixture_repo.repo_id}::falsify_selfcritique"
+
+    # Prior behaviour — reflect step disabled — measured in its own store.
+    prior_cfg = _sibling_config(tmp_config, tmp_path / "bench_prior")
+    db.init_db(prior_cfg)
+    _run_pipeline(fixture_repo, prior_cfg, LLMClient(scripted_backend, prior_cfg),
+                  self_critique=False)
+    prior = score_precision_recall(
+        _lens_only(_confirmed(db.list_findings(fixture_repo.repo_id, prior_cfg))), expected)
+
+    # New behaviour — falsification_selfcritique_v1 — measured in the primary store.
+    db.init_db(tmp_config)
+    _run_pipeline(fixture_repo, tmp_config, LLMClient(scripted_backend, tmp_config),
+                  self_critique=True)
+    new = score_precision_recall(
+        _lens_only(_confirmed(db.list_findings(fixture_repo.repo_id, tmp_config))), expected)
+
+    # The reflect step is precision/recall-neutral on the corpus: no true positive relied
+    # on a shaky commit, and the planted false positive is killed either way.
+    assert (prior["precision"], prior["recall"]) == (1.0, 1.0)
+    assert (new["precision"], new["recall"]) == (1.0, 1.0)
+
+    # Record the prior baseline, then gate the new prompt against it on one lineage.
+    prior_run = record_and_check(
+        lineage=lineage, precision=prior["precision"], recall=prior["recall"],
+        prompt_versions={"falsify": _FALSIFY_PV, "falsify_critique": "(none: pre-reflect)"},
+        config=tmp_config)
+    assert prior_run.regressed_from_prior is False
+
+    new_run = record_and_check(
+        lineage=lineage, precision=new["precision"], recall=new["recall"],
+        prompt_versions={"falsify": _FALSIFY_PV, "falsify_critique": _CRITIQUE_PV},
+        config=tmp_config)
+
+    # The net-new self-critique prompt is now scored and on the record, not regressing.
+    assert new_run.regressed_from_prior is False
+    assert _CRITIQUE_PV in new_run.prompt_versions.values()
+    # The eval log carries both runs for this lineage (auditable going forward).
+    assert db.last_eval_run(lineage, tmp_config).id == new_run.id
+
+
+# --------------------------------------------------------------------------- #
 # Live benchmark (opt in with REPOAUDITOR_LLM=live). Produces the memo number.
 # --------------------------------------------------------------------------- #
 @pytest.mark.live
@@ -148,7 +236,7 @@ def test_golden_pipeline_live(tmp_config, fixture_repo, capsys):
     db.init_db(tmp_config)
     _run_pipeline(fixture_repo, tmp_config, get_llm_client(tmp_config))
 
-    confirmed = _confirmed(db.list_findings(fixture_repo.repo_id, tmp_config))
+    confirmed = _lens_only(_confirmed(db.list_findings(fixture_repo.repo_id, tmp_config)))
     score = score_precision_recall(confirmed, fixture_repo.expected["findings"])
     with capsys.disabled():
         print(

@@ -8,6 +8,7 @@ gates; `audit` records the append-only decision trail.
 
 from .audit import (
     correct_decision,
+    decide,
     decision_history,
     effective_decision,
     record_decision,
@@ -17,15 +18,18 @@ from .checkpoint import (
     is_blocked,
     open_review_requests,
     raise_review_requests,
+    render_open_requests,
 )
 
 __all__ = [
     "raise_review_requests",
     "analyzable_findings",
     "open_review_requests",
+    "render_open_requests",
     "is_blocked",
     "record_decision",
     "correct_decision",
+    "decide",
     "decision_history",
     "effective_decision",
 ]
