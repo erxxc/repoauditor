@@ -1,0 +1,6 @@
+# Storefront service dependencies.
+#
+# NOTE: `requests` is intentionally held back at an old release. It is the HTTP
+# client used by the integrations blueprint. See the service README before bumping.
+Flask==3.0.3
+requests==2.19.1

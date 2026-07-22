@@ -74,6 +74,33 @@ The Homebrew package names above match the current formulae for
 [pip-audit](https://formulae.brew.sh/formula/pip-audit), and
 [OSV-Scanner](https://formulae.brew.sh/formula/osv-scanner).
 
+## Run the guided demo
+
+The repository includes a small, intentionally vulnerable storefront designed for a safe,
+repeatable demonstration. It is analyzed statically and is never started as a web service.
+After completing the setup above, provide the Anthropic key in the current terminal and run:
+
+```sh
+export ANTHROPIC_API_KEY="your-key-here"
+./demo
+```
+
+The launcher uses `uv` to synchronize the project environment, verifies dependencies,
+scanners, SQLite, credentials, and the configured model, then runs the complete pipeline.
+If a finding needs judgment, it explains the evidence and asks the operator to choose
+`confirm` or `dismiss` and enter a short rationale. The default choice for the deliberately
+ambiguous demo case is `dismiss`; the decision remains human and auditable.
+
+At completion it writes both reports, a quantitative appendix, and Markdown/JSON UAT
+scorecards comparing the stored evidence with the ten-case fixture matrix. A partial score
+still produces artifacts so misses can be reviewed instead of being hidden by an early exit.
+The model check and scan make live API requests and may incur provider charges.
+
+If no key is present, the demo stops before scanning and prints the exact environment-variable
+command needed. It never writes the key to configuration, SQLite, reports, or the repository.
+Advanced automation may use `./demo --non-interactive`; that mode stops successfully at an
+open review request instead of making a decision for the user.
+
 ## Linux or an existing development environment
 
 You need Git and `uv`; `uv` can install the correct Python version itself. Install Git
