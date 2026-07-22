@@ -44,6 +44,7 @@ from .review import (
 from .store import db
 from .store.models import ReviewDisposition, RunStatus
 from .triage import label_finding, triage_repo
+from .uat import score_demo
 
 app = typer.Typer(
     help=(
@@ -84,6 +85,9 @@ class ListFormat(StrEnum):
 class RunFormat(StrEnum):
     HUMAN = "human"
     NDJSON = "ndjson"
+
+
+_DEMO_REPO_ID = "uat_lightweight_app"
 
 
 _debug_enabled: ContextVar[bool] = ContextVar("repoauditor_debug", default=False)
@@ -418,6 +422,127 @@ def db_init() -> None:
         typer.echo(f"applied migrations: {', '.join(applied)}")
     else:
         typer.echo("schema already up to date")
+
+
+@app.command()
+@_clean_errors("demo")
+def demo(
+    trials: int = typer.Option(10_000, "--trials", help="Monte Carlo trial count."),
+    seed: int = typer.Option(0, "--seed", help="RNG seed for reproducibility."),
+    non_interactive: bool = typer.Option(
+        False, "--non-interactive",
+        help="Stop at review instead of prompting for a human decision.",
+    ),
+) -> None:
+    """Run the safe, intentionally vulnerable UAT storefront as a guided demo."""
+    config = get_config()
+    fixture_root = config.root / "tests" / "fixtures" / _DEMO_REPO_ID
+    snapshot = fixture_root / "snapshot"
+    expectations = fixture_root / "expected_findings.json"
+    if not snapshot.is_dir() or not expectations.is_file():
+        typer.secho(
+            "demo fixture is missing; run this command from a complete repoauditor checkout",
+            fg=typer.colors.RED, err=True,
+        )
+        raise typer.Exit(code=1)
+
+    preflight = _preflight(config)
+    if preflight.credential_error:
+        env_name = (
+            "ANTHROPIC_API_KEY" if config.llm.provider == "anthropic"
+            else config.llm.api_key_env
+        )
+        typer.secho(
+            f"Demo cannot start: no API key present. Set it in this terminal with:\n"
+            f"  export {env_name}=\"your-key-here\"\n"
+            "The key is read from the environment and is never written to the repository.",
+            fg=typer.colors.RED, err=True,
+        )
+        raise typer.Exit(code=1)
+    if not preflight.ready:
+        typer.secho("demo stopped: preflight requirements are not satisfied", err=True)
+        raise typer.Exit(code=1)
+
+    typer.echo(
+        "Demo safety: this fixture is intentionally vulnerable. repoauditor reads it "
+        "statically and will not start the web application."
+    )
+    typer.echo("Checking the configured live model (one small API request; charges may apply)...")
+    probe = check_model(config)
+    if not probe.ready:
+        typer.secho(f"Demo cannot start: model check failed: {probe.error}", err=True)
+        raise typer.Exit(code=1)
+    typer.echo(f"Model ready: {probe.provider}/{probe.model}")
+
+    with _stage_timing("ingest") as timing, _progress("ingest"):
+        ingested = ingest_repo(str(snapshot), config, repo_id=_DEMO_REPO_ID)
+        manifests = snapshot_manifests(
+            ingested.snapshot_path, ingested.repo_id, ingested.commit
+        )
+    _stage_summary(
+        f"ingested demo. repo-id: {ingested.repo_id}; commit: {ingested.commit}; "
+        f"manifests={len(manifests.manifests)}", timing,
+    )
+    _run_step("map", lambda: _map_stage(_DEMO_REPO_ID, config))
+    detection = _run_step("detect", lambda: _detect_stage(_DEMO_REPO_ID, config))
+    _run_step(
+        "triage",
+        lambda: _triage_stage(_DEMO_REPO_ID, config, sarif=detection.sarif_path),
+    )
+    _run_step("falsify", lambda: _falsify_stage(_DEMO_REPO_ID, config))
+    _run_step("normalize", lambda: _normalize_stage(_DEMO_REPO_ID, config))
+    _run_step("review checkpoint", lambda: raise_review_requests(_DEMO_REPO_ID, config))
+
+    requests = open_review_requests(_DEMO_REPO_ID, config)
+    if requests:
+        typer.echo(render_open_requests(_DEMO_REPO_ID, config))
+        if non_interactive:
+            typer.echo(
+                f"Demo paused successfully. Decide requests with `repoauditor review decide "
+                f"{_DEMO_REPO_ID} ...`, then rerun the demo."
+            )
+            raise typer.Exit(code=0)
+        reviewer = typer.prompt("Reviewer name", default=getpass.getuser())
+        for request in requests:
+            disposition = typer.prompt(
+                f"Request #{request.id}: decision (confirm/dismiss)", default="dismiss"
+            ).strip().lower()
+            while disposition not in {"confirm", "dismiss"}:
+                disposition = typer.prompt("Enter confirm or dismiss").strip().lower()
+            rationale = typer.prompt("Short rationale").strip()
+            while not rationale:
+                rationale = typer.prompt("A rationale is required").strip()
+            decide(
+                _DEMO_REPO_ID, request.id, disposition, rationale, reviewer, config
+            )
+            typer.echo(f"Recorded {disposition} for request #{request.id}.")
+
+    quantification = _run_step(
+        "quantify",
+        lambda: _quantify_stage(
+            _DEMO_REPO_ID, config, trials=trials, seed=seed, record_audit=True
+        ),
+    )
+    engineering = _run_step(
+        "engineering report",
+        lambda: _report_stage(
+            _DEMO_REPO_ID, config, ReportMode.ENGINEERING, print_report=False
+        ),
+    )
+    memo = _run_step(
+        "memo report",
+        lambda: _report_stage(
+            _DEMO_REPO_ID, config, ReportMode.MEMO,
+            quantification=quantification, print_report=False,
+        ),
+    )
+    scorecard = score_demo(_DEMO_REPO_ID, expectations, config)
+    typer.echo(
+        f"Demo complete: {scorecard.passed}/{scorecard.total} expected behaviors passed."
+    )
+    typer.echo("Artifacts:")
+    for path in [*engineering, *memo, scorecard.markdown_path, scorecard.json_path]:
+        typer.echo(f"  {path}")
 
 
 @app.command()
