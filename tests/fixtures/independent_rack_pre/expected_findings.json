@@ -1,0 +1,39 @@
+{
+  "repo_id": "independent_rack_pre",
+  "source": {
+    "kind": "independent",
+    "materialization": "pinned-acquisition-only",
+    "project_id": "rack",
+    "project": "Rack",
+    "language": "Ruby",
+    "repo": "https://github.com/rack/rack.git",
+    "variant": "pre_fix",
+    "pinned_commit": "d6b5b2bab88f458fb048133604faebea952d8133",
+    "pre_fix_commit": "d6b5b2bab88f458fb048133604faebea952d8133",
+    "post_fix_commit": "ee7919ea04303717858be1c3f16b406adc6d8cff",
+    "license": "MIT",
+    "cve": "CVE-2023-27539",
+    "ghsa": "GHSA-c6qg-cjj8-47qp",
+    "source_dataset": "ruby-advisory-db; independently verified with OSV/GHSA",
+    "verified_via": [
+      "https://api.osv.dev/v1/vulns/CVE-2023-27539",
+      "https://github.com/rack/rack.git"
+    ],
+    "ground_truth": "Human-reviewed upstream advisory and pre/post fix diff; never inferred from repoauditor output."
+  },
+  "notes": "Public source only. Static analysis may use a hosted model; proprietary corpus additions are prohibited.",
+  "findings": [
+    {
+      "title": "ReDoS in HTTP Accept header parsing",
+      "file": "lib/rack/request.rb",
+      "line_start": 573,
+      "line_end": 573,
+      "severity": "high",
+      "falsification_status": "confirmed",
+      "cwe": "CWE-1333",
+      "cve": "CVE-2023-27539",
+      "citation_contains": "split(/\\s*,\\s*/)"
+    }
+  ],
+  "expected_absent": []
+}

@@ -37,9 +37,13 @@ from .models import (
     SimulationRun,
     StageRun,
     TriageFeatureRecord,
+    TriageAssessment,
+    TriageAssessmentOutcome,
     TriageLabel,
     TriageLabelSource,
+    TriageModelRun,
     TriageResult,
+    ScoredTriageLabel,
     TrustBoundary,
     ValidationFailure,
 )
@@ -882,11 +886,12 @@ def upsert_triage_label(
         with conn:
             cur = conn.execute(
                 "INSERT INTO triage_label "
-                "(engagement, rule_id, finding_fingerprint, actionable, note, source) "
-                "VALUES (?, ?, ?, ?, ?, ?) "
+                "(engagement, rule_id, finding_fingerprint, actionable, note, source, updated_at) "
+                "VALUES (?, ?, ?, ?, ?, ?, datetime('now')) "
                 "ON CONFLICT (engagement, finding_fingerprint) DO UPDATE SET "
                 "  rule_id = excluded.rule_id, actionable = excluded.actionable, "
-                "  note = excluded.note, source = excluded.source" + guard,
+                "  note = excluded.note, source = excluded.source, "
+                "  updated_at = datetime('now')" + guard,
                 (
                     label.engagement,
                     label.rule_id,
@@ -922,9 +927,56 @@ def list_triage_labels(
                 actionable=bool(r["actionable"]),
                 source=TriageLabelSource(r["source"]),
                 note=r["note"],
+                created_at=r["created_at"],
+                updated_at=r["updated_at"],
             )
             for r in rows
         ]
+    finally:
+        conn.close()
+
+
+def insert_triage_assessment(
+    assessment: TriageAssessment, config: Config | None = None
+) -> int:
+    """Append an analyst assessment; corrections remain visible as later rows."""
+    conn = get_connection(config)
+    try:
+        with conn:
+            cur = conn.execute(
+                "INSERT INTO triage_assessment "
+                "(finding_id, engagement, outcome, rationale, analyst, dimensions) "
+                "VALUES (?, ?, ?, ?, ?, ?)",
+                (
+                    assessment.finding_id, assessment.engagement, str(assessment.outcome),
+                    assessment.rationale, assessment.analyst,
+                    json.dumps(assessment.dimensions),
+                ),
+            )
+        return int(cur.lastrowid)
+    finally:
+        conn.close()
+
+
+def list_triage_assessments(
+    repo_id: str | None = None, config: Config | None = None
+) -> list[TriageAssessment]:
+    """Read append-only analyst assessments, optionally for one engagement."""
+    conn = get_connection(config)
+    try:
+        if repo_id is None:
+            rows = conn.execute("SELECT * FROM triage_assessment ORDER BY id").fetchall()
+        else:
+            rows = conn.execute(
+                "SELECT * FROM triage_assessment WHERE engagement = ? ORDER BY id",
+                (repo_id,),
+            ).fetchall()
+        return [TriageAssessment(
+            id=row["id"], finding_id=row["finding_id"], engagement=row["engagement"],
+            outcome=TriageAssessmentOutcome(row["outcome"]), rationale=row["rationale"],
+            analyst=row["analyst"], dimensions=json.loads(row["dimensions"]),
+            created_at=row["created_at"],
+        ) for row in rows]
     finally:
         conn.close()
 
@@ -1003,7 +1055,7 @@ def list_triage_features(config: Config | None = None) -> list[TriageFeatureReco
 
 def list_real_training_examples(
     config: Config | None = None,
-) -> list[tuple[list[float], list[str], bool]]:
+) -> list[tuple[list[float], list[str], bool, str, TriageLabelSource]]:
     """Join accumulated labels to their triaged features → real (features, names, label) rows.
 
     The cross-engagement real training corpus: every `triage_label` that has a matching
@@ -1017,7 +1069,7 @@ def list_real_training_examples(
     conn = get_connection(config)
     try:
         rows = conn.execute(
-            "SELECT tf.features, tf.feature_names, tl.actionable "
+            "SELECT tf.features, tf.feature_names, tl.actionable, tl.engagement, tl.source "
             "FROM triage_label tl "
             "JOIN triage_features tf "
             "  ON tf.engagement = tl.engagement "
@@ -1025,9 +1077,42 @@ def list_real_training_examples(
             "ORDER BY tl.id"
         ).fetchall()
         return [
-            (json.loads(r["features"]), json.loads(r["feature_names"]), bool(r["actionable"]))
+            (json.loads(r["features"]), json.loads(r["feature_names"]),
+             bool(r["actionable"]), r["engagement"], TriageLabelSource(r["source"]))
             for r in rows
         ]
+    finally:
+        conn.close()
+
+
+def list_scored_triage_labels(
+    config: Config | None = None, *, repo_id: str | None = None,
+) -> list[ScoredTriageLabel]:
+    """Real labels joined to every historical P(actionable) scoring pass."""
+    conn = get_connection(config)
+    try:
+        where = " WHERE tl.engagement = ?" if repo_id else ""
+        params = (repo_id,) if repo_id else ()
+        rows = conn.execute(
+            "SELECT ts.p_actionable, tl.actionable, tl.engagement, tl.source, "
+            " ts.triage_run_id, ts.scored_at, tmr.model_name, tmr.model_version, "
+            " tmr.feature_schema_version, tmr.calibration "
+            "FROM triage_label tl "
+            "JOIN triage_features tf ON tf.engagement = tl.engagement "
+            " AND tf.fingerprint = tl.finding_fingerprint "
+            "JOIN triage_score ts ON ts.finding_id = tf.finding_id "
+            "JOIN triage_model_run tmr ON tmr.id = ts.triage_run_id" + where +
+            " ORDER BY tl.id, ts.id",
+            params,
+        ).fetchall()
+        return [ScoredTriageLabel(
+            p_actionable=float(row["p_actionable"]), actionable=bool(row["actionable"]),
+            engagement=row["engagement"], label_source=TriageLabelSource(row["source"]),
+            triage_run_id=row["triage_run_id"], scored_at=row["scored_at"],
+            model_name=row["model_name"], model_version=row["model_version"],
+            feature_schema_version=row["feature_schema_version"],
+            calibration=row["calibration"],
+        ) for row in rows]
     finally:
         conn.close()
 
@@ -1111,23 +1196,97 @@ def get_rule_prior(rule_id: str, config: Config | None = None) -> RulePrior | No
         conn.close()
 
 
-def upsert_triage_result(result: TriageResult, config: Config | None = None) -> int:
-    """Persist the triage verdict for a finding (idempotent per finding_id).
-
-    Ranking/suppression annotation only — the underlying finding row is untouched, so
-    nothing is ever deleted by triage.
-    """
+def insert_triage_model_run(
+    run: TriageModelRun, config: Config | None = None
+) -> int:
+    """Persist one immutable classifier fit/score provenance record."""
     conn = get_connection(config)
     try:
         with conn:
             cur = conn.execute(
+                "INSERT INTO triage_model_run "
+                "(repo_id, model_name, model_version, feature_schema_version, "
+                " training_label_count, evaluation_label_count, label_source_counts, "
+                " synthetic_share, synthetic_dropped, calibration, evaluation_basis, "
+                " split_strategy, split_detail, evaluations, scanner_versions) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (
+                    run.repo_id, run.model_name, run.model_version,
+                    run.feature_schema_version, run.training_label_count,
+                    run.evaluation_label_count, json.dumps(run.label_source_counts),
+                    run.synthetic_share, int(run.synthetic_dropped), run.calibration,
+                    run.evaluation_basis, run.split_strategy, run.split_detail,
+                    json.dumps(run.evaluations), json.dumps(run.scanner_versions),
+                ),
+            )
+        return int(cur.lastrowid)
+    finally:
+        conn.close()
+
+
+def list_triage_model_runs(
+    repo_id: str | None = None, config: Config | None = None
+) -> list[TriageModelRun]:
+    conn = get_connection(config)
+    try:
+        if repo_id is None:
+            rows = conn.execute("SELECT * FROM triage_model_run ORDER BY id").fetchall()
+        else:
+            rows = conn.execute(
+                "SELECT * FROM triage_model_run WHERE repo_id = ? ORDER BY id", (repo_id,)
+            ).fetchall()
+        return [TriageModelRun(
+            id=row["id"], repo_id=row["repo_id"], model_name=row["model_name"],
+            model_version=row["model_version"],
+            feature_schema_version=row["feature_schema_version"],
+            training_label_count=row["training_label_count"],
+            evaluation_label_count=row["evaluation_label_count"],
+            label_source_counts=json.loads(row["label_source_counts"]),
+            synthetic_share=row["synthetic_share"],
+            synthetic_dropped=bool(row["synthetic_dropped"]),
+            calibration=row["calibration"], evaluation_basis=row["evaluation_basis"],
+            split_strategy=row["split_strategy"], split_detail=row["split_detail"],
+            evaluations=json.loads(row["evaluations"]),
+            scanner_versions=json.loads(row["scanner_versions"]),
+            created_at=row["created_at"],
+        ) for row in rows]
+    finally:
+        conn.close()
+
+
+def upsert_triage_result(result: TriageResult, config: Config | None = None) -> int:
+    """Persist a historical score and update the latest verdict for a finding.
+
+    `triage_score` is append-only provenance; `triage_result` is the idempotent latest-state
+    projection used by downstream stages. The underlying finding row remains untouched.
+    """
+    if result.triage_run_id is None:
+        raise ValueError("triage_run_id is required when persisting a triage result")
+    conn = get_connection(config)
+    try:
+        with conn:
+            conn.execute(
+                "INSERT INTO triage_score "
+                "(finding_id, triage_run_id, p_actionable, rank, suppressed) "
+                "VALUES (?, ?, ?, ?, ?)",
+                (
+                    result.finding_id,
+                    result.triage_run_id,
+                    result.p_actionable,
+                    result.rank,
+                    int(result.suppressed),
+                ),
+            )
+            cur = conn.execute(
                 "INSERT INTO triage_result "
-                "(finding_id, p_actionable, rank, suppressed, model_name, attributions) "
-                "VALUES (?, ?, ?, ?, ?, ?) "
+                "(finding_id, p_actionable, rank, suppressed, model_name, attributions, "
+                " triage_run_id, scored_at) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now')) "
                 "ON CONFLICT (finding_id) DO UPDATE SET "
                 "  p_actionable = excluded.p_actionable, rank = excluded.rank, "
                 "  suppressed = excluded.suppressed, model_name = excluded.model_name, "
-                "  attributions = excluded.attributions",
+                "  attributions = excluded.attributions, triage_run_id = excluded.triage_run_id, "
+                "  scored_at = datetime('now')",
                 (
                     result.finding_id,
                     result.p_actionable,
@@ -1135,6 +1294,7 @@ def upsert_triage_result(result: TriageResult, config: Config | None = None) -> 
                     int(result.suppressed),
                     result.model_name,
                     json.dumps(result.attributions),
+                    result.triage_run_id,
                 ),
             )
         return int(cur.lastrowid)
@@ -1161,6 +1321,8 @@ def list_triage_results(repo_id: str, config: Config | None = None) -> list[Tria
                 suppressed=bool(r["suppressed"]),
                 model_name=r["model_name"],
                 attributions=json.loads(r["attributions"]),
+                triage_run_id=r["triage_run_id"],
+                scored_at=r["scored_at"],
             )
             for r in rows
         ]
@@ -1456,6 +1618,7 @@ def list_simulation_runs(repo_id: str, config: Config | None = None) -> list[Sim
                 scenario_summary=json.loads(r["scenario_summary"]),
                 tornado=json.loads(r["tornado"]),
                 seed=r["seed"],
+                created_at=r["created_at"],
             )
             for r in rows
         ]

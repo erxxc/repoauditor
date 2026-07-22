@@ -47,6 +47,8 @@ from ..store import db
 from ..store.models import (
     FalsificationStatus,
     ReviewDisposition,
+    TriageAssessment,
+    TriageAssessmentOutcome,
     TriageLabel,
     TriageLabelSource,
 )
@@ -166,3 +168,51 @@ def label_finding(
     )
     db.upsert_triage_label(label, config)  # no protect guard: an analyst is authoritative
     return label
+
+
+def assess_finding(
+    finding_id: int,
+    outcome: TriageAssessmentOutcome,
+    rationale: str,
+    analyst: str,
+    dimensions: list[str] | None = None,
+    config: Config | None = None,
+) -> tuple[TriageAssessment, TriageLabel | None]:
+    """Record an auditable analyst assessment and optionally produce a binary label.
+
+    `UNCERTAIN` is a first-class abstention: its evidence is retained but it never enters
+    the classifier's binary training corpus. Binary assessments update the effective manual
+    label only after the append-only assessment has been recorded.
+    """
+    config = config or get_config()
+    rationale = rationale.strip()
+    analyst = analyst.strip()
+    if not rationale:
+        raise ValueError("an analyst rationale is required")
+    if not analyst:
+        raise ValueError("an analyst identity is required")
+    finding = db.get_finding(finding_id, config)
+    if finding is None:
+        raise ValueError(f"no finding with id {finding_id}")
+    record = db.get_triage_features(finding_id, config)
+    if record is None:
+        raise ValueError(
+            f"finding {finding_id} has no triage features yet — run "
+            f"`repoauditor triage {finding.repo_id}` first so it is assessable"
+        )
+    clean_dimensions = sorted({item.strip() for item in dimensions or [] if item.strip()})
+    assessment = TriageAssessment(
+        finding_id=finding_id, engagement=record.engagement, outcome=outcome,
+        rationale=rationale, analyst=analyst, dimensions=clean_dimensions,
+    )
+    assessment_id = db.insert_triage_assessment(assessment, config)
+    assessment = assessment.model_copy(update={"id": assessment_id})
+    if outcome is TriageAssessmentOutcome.UNCERTAIN:
+        return assessment, None
+    label = label_finding(
+        finding_id,
+        actionable=outcome is TriageAssessmentOutcome.TRUE_POSITIVE,
+        note=rationale,
+        config=config,
+    )
+    return assessment, label

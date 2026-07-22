@@ -1,5 +1,6 @@
 {
   "repo_id": "example_vuln_repo",
+  "source": {"kind": "fixture", "project": "purpose-built scripted golden fixture"},
   "notes": "Ground truth for the golden harness. Keyed by (file, severity, source_lens); line numbers are approximate anchors, not exact-match assertions. `expected_unresolved` lists candidates the reliability layer should escalate to unresolved (low-confidence falsification) rather than guess.",
   "expected_unresolved": [
     {"file": "app.py", "citation_contains": "request.args.get(\"id\")"}

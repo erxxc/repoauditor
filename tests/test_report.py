@@ -14,7 +14,14 @@ from repoauditor.analyze import quantify_appendix
 from repoauditor.report import build_backlog, build_memo, write_memo
 from repoauditor.review import raise_review_requests
 from repoauditor.store import db
-from repoauditor.store.models import FalsificationStatus, Finding, TrustBoundary
+from repoauditor.store.models import (
+    Corroboration,
+    FalsificationStatus,
+    Finding,
+    RunStatus,
+    SourceType,
+    TrustBoundary,
+)
 
 
 @pytest.fixture
@@ -110,6 +117,101 @@ def test_memo_excludes_findings_blocked_at_review(cfg):
     memo = build_memo("r", cfg)
     assert "AmbiguousXYZ" not in memo   # held at review -> withheld from the memo
     assert "SQL injection" in memo
+    assert "1 finding(s) withheld pending analyst review" in memo
+
+
+def test_empty_memo_never_hides_pending_review(cfg):
+    db.init_db(cfg)
+    tb = _tb(cfg)
+    _finding(cfg, title="Ambiguous only", sev="high", desc="[CWE-20]", tb=tb,
+             status=FalsificationStatus.UNRESOLVED)
+    raise_review_requests("r", cfg)
+
+    memo = build_memo("r", cfg)
+
+    assert "No material deal-relevant findings surfaced" in memo
+    assert "1 finding(s) withheld pending analyst review" in memo
+
+
+def test_memo_discloses_validation_basis(cfg):
+    db.init_db(cfg)
+    tb = _tb(cfg)
+    falsified_id = _finding(
+        cfg, title="SQL injection", sev="critical", desc="[CWE-89]", tb=tb, start=1
+    )
+    corroborated_id = _finding(
+        cfg, title="Hardcoded secret", sev="high", desc="[CWE-798]", tb=tb, start=2
+    )
+    db.add_corroboration(
+        Corroboration(
+            finding_id=corroborated_id,
+            source_type=SourceType.TOOL,
+            source_name="gitleaks",
+        ),
+        cfg,
+    )
+
+    memo = build_memo("r", cfg)
+
+    assert "confirmed by falsification" in memo
+    assert "independently corroborated (gitleaks)" in memo
+    assert falsified_id != corroborated_id
+
+
+def test_memo_surfaces_recorded_run_provenance_and_triage_context(cfg):
+    db.init_db(cfg)
+    tb = _tb(cfg)
+    _finding(cfg, title="SQL injection", sev="critical", desc="[CWE-89]", tb=tb)
+    pipeline = db.start_pipeline_run("/source", cfg)
+    db.update_pipeline_run_identity(pipeline.id, "r", "abc123", cfg)
+    db.start_stage_run(pipeline.id, "detect", cfg)
+    db.finish_stage_run(
+        pipeline.id,
+        "detect",
+        RunStatus.COMPLETED,
+        summary={
+            "semgrep_status": "complete",
+            "scanner_coverage": {"checked": True, "missing": ["osv-scanner"]},
+            "llm": {
+                "provider": "anthropic",
+                "model": "test-model",
+                "prompt_versions": {"owasp": "owasp_v1"},
+            },
+        },
+        config=cfg,
+    )
+    db.start_stage_run(pipeline.id, "triage", cfg)
+    db.finish_stage_run(
+        pipeline.id,
+        "triage",
+        RunStatus.COMPLETED,
+        summary={
+            "real_labels": 12,
+            "synthetic_share": 0.4,
+            "synthetic_dropped": False,
+            "suppressed": 3,
+            "model": "xgboost",
+            "evaluations": [{
+                "model": "xgboost", "eval_on": "real", "brier": 0.12,
+                "average_precision": 0.81, "n_eval": 10,
+            }],
+        },
+        config=cfg,
+    )
+    db.finish_pipeline_run(pipeline.id, RunStatus.COMPLETED, config=cfg)
+
+    memo = build_memo("r", cfg, record_audit=True)
+
+    assert "Repository commit:** `abc123`" in memo
+    assert "Simulation run:** #1" in memo and "seed=0" in memo
+    assert "Analysis timestamp:** not recorded" not in memo
+    assert "anthropic/test-model" in memo and "owasp=owasp_v1" in memo
+    assert "unavailable: osv-scanner" in memo
+    assert "Real labels:** 12" in memo and "Synthetic training share:** 40.0%" in memo
+    assert "Evaluation basis:** real" in memo
+    assert "Triage model:** xgboost" in memo and "Evaluation sample:** 10 finding(s)" in memo
+    assert "Brier score:** 0.1200" in memo and "Average precision:** 0.8100" in memo
+    assert "Suppressed findings:** 3" in memo
 
 
 def test_memo_default_is_read_only_no_audit_trail(cfg):

@@ -1,0 +1,39 @@
+{
+  "repo_id": "independent_lodash_post",
+  "source": {
+    "kind": "independent",
+    "materialization": "pinned-acquisition-only",
+    "project_id": "lodash",
+    "project": "Lodash",
+    "language": "JavaScript",
+    "repo": "https://github.com/lodash/lodash.git",
+    "variant": "post_fix",
+    "pinned_commit": "c84fe82760fb2d3e03a63379b297a1cc1a2fce12",
+    "pre_fix_commit": "e7b28ea6cb17b4ca021e7c9d66218c8c89782f32",
+    "post_fix_commit": "c84fe82760fb2d3e03a63379b297a1cc1a2fce12",
+    "license": "MIT",
+    "cve": "CVE-2020-8203",
+    "ghsa": "GHSA-p6mc-m468-83gw",
+    "source_dataset": "OpenSSF CVE Benchmark",
+    "verified_via": [
+      "https://api.osv.dev/v1/vulns/CVE-2020-8203",
+      "https://github.com/lodash/lodash.git"
+    ],
+    "ground_truth": "Human-reviewed upstream advisory and pre/post fix diff; never inferred from repoauditor output."
+  },
+  "notes": "Public source only. Static analysis may use a hosted model; proprietary corpus additions are prohibited.",
+  "findings": [],
+  "expected_absent": [
+    {
+      "title": "Prototype pollution in zipObjectDeep/baseSet",
+      "file": "lodash.js",
+      "line_start": 3978,
+      "line_end": 3978,
+      "severity": "high",
+      "falsification_status": "confirmed",
+      "cwe": "CWE-915",
+      "cve": "CVE-2020-8203",
+      "citation_contains": "nested[key]"
+    }
+  ]
+}

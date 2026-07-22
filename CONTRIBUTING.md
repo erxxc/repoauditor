@@ -1,0 +1,53 @@
+# Contributing and test lanes
+
+Repoauditor separates fast pipeline checks from tests that intentionally invoke external
+scanners, full-size calibration, chart rendering, or paid model APIs. Assertions are not
+removed from slower lanes; the markers make their runtime and operating requirements
+explicit.
+
+## Required pull-request lane
+
+```sh
+uv sync --python 3.12
+uv run pytest -m "not integration and not live"
+```
+
+This deterministic lane runs on every pull request and push to `main`. It includes the
+scripted golden pipeline, per-stage `EvalRun` recording, and regression gates. Scripted
+pipeline fixtures return fixed empty scanner output through the real ensemble adapter seam;
+they do not launch scanner subprocesses whose behavior is covered in the integration lane.
+The expected runtime is under 60–90 seconds on a typical CI runner.
+
+Repository administrators must make the GitHub check named `fast / required` a required
+branch-protection check for `main`; workflow files cannot set repository branch protection.
+
+## Integration lane
+
+```sh
+uv run pytest -m "integration and not live"
+```
+
+This lane retains real Semgrep, pip-audit/OSV-Scanner, and gitleaks verification, the
+full-size 2,000-row triage calibration, and real matplotlib chart generation. CI installs
+pinned scanner versions and runs the lane after every merge/push to `main`, as well as on a
+manual dispatch. A failure therefore blocks a healthy `main` signal even though scanner
+startup is not duplicated on each pull request.
+
+## Live-model lane
+
+```sh
+REPOAUDITOR_LLM=live ANTHROPIC_API_KEY=... uv run pytest -m live
+```
+
+This paid/provider lane runs automatically every Tuesday and can also be dispatched
+manually. It exercises the golden and benchmark corpora against the configured live model.
+Configure `ANTHROPIC_API_KEY` as an Actions environment secret in the
+`live-model-tests` environment; do not store it in repository variables, workflow YAML, or
+test output. The workflow checks only whether the secret is non-empty and never prints its
+value. For automatic scheduled execution, do not configure required reviewers on that
+environment. A missing secret fails clearly rather than silently presenting an unexecuted
+live check as coverage.
+
+The three lane commands are intentionally mutually clear: `integration` covers local,
+deterministic external tools and expensive local computation; `live` covers real model API
+calls; the default PR lane excludes both.

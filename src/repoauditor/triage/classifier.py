@@ -3,7 +3,7 @@
 Implements the SAST alert-quality / actionable-warning (AWI) approach: learn P(finding
 is actionable) from labelled features, but treat *calibration* as first-class — a raw
 tree ensemble's scores are not probabilities, and triage feeds those probabilities into
-a downstream frequency prior, so they must mean what they say.
+the downstream Bernoulli finding-validity gate, so they must mean what they say.
 
 Pipeline per `train`:
   1. Fit both a RandomForest and an XGBoost classifier.
@@ -18,18 +18,28 @@ Output per finding: calibrated P(actionable), a rank, and the top-3 feature
 attributions (SHAP contributions where available, impurity importance as a fallback).
 Triage ranks and may suppress (demote below `action_threshold`); it never deletes a
 finding — suppressed findings are persisted with their rank + attribution.
+
+Real-label validation becomes engagement-grouped only after both the existing 40-label
+gate and an eight-engagement gate are met. Eight is the minimum because a 25% grouped
+holdout then contains at least two whole engagements and leaves six for training; a
+one-repository test set would be an anecdote presented as a generalization estimate. Until
+then, the prior row-random real holdout remains available but is explicitly labelled with
+the group-count shortfall. No grouped statistic is fabricated from insufficient breadth.
 """
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass, field
 from pathlib import Path
 
 import numpy as np
+import sklearn
+import xgboost
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import average_precision_score, brier_score_loss
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import GroupShuffleSplit, train_test_split
 from xgboost import XGBClassifier
 
 from ..config import Config, get_config
@@ -38,6 +48,7 @@ from ..store.models import (
     FalsificationStatus,
     Finding,
     TriageFeatureRecord,
+    TriageModelRun,
     TriageResult,
 )
 from . import labels as triage_labels
@@ -45,6 +56,7 @@ from . import priors as triage_priors
 from . import training
 from .features import (
     FEATURE_NAMES,
+    FEATURE_SCHEMA_VERSION,
     SarifFinding,
     build_repo_context,
     extract_feature_vector,
@@ -68,14 +80,22 @@ class ModelEvaluation:
     # presented as real performance). Flagged so the two are never conflated.
     eval_on: str = "synthetic"   # "real" | "synthetic"
     n_eval: int = 0              # size of the held-out set behind these metrics
+    split_strategy: str = "synthetic_row_random"
+    split_detail: str = ""
+
+
+MIN_GROUPED_ENGAGEMENTS = 8
 
 
 def _holdout_split(
-    y: np.ndarray, real_mask: np.ndarray, min_real_holdout: int, seed: int
-) -> tuple[np.ndarray, np.ndarray, str]:
+    y: np.ndarray, real_mask: np.ndarray, min_real_holdout: int, seed: int,
+    engagement_groups: np.ndarray | None = None,
+    evaluation_mask: np.ndarray | None = None,
+) -> tuple[np.ndarray, np.ndarray, str, str, str]:
     """Pick train/test indices, preferring a REAL held-out set when there are enough.
 
-    Returns (train_idx, test_idx, eval_on). When `real_mask` marks >= `min_real_holdout`
+    Returns indices, evaluation basis, split strategy, and an explicit availability detail.
+    When `real_mask` marks >= `min_real_holdout`
     real rows with both classes present, the test set is a stratified 25% sample of the
     *real* rows and everything else (remaining real + all synthetic) trains — so the
     reported PR/Brier are measured on real labels. Otherwise it degrades to a stratified
@@ -84,18 +104,47 @@ def _holdout_split(
     """
     n = len(y)
     all_idx = np.arange(n)
-    real_idx = np.where(real_mask)[0]
+    eligible_mask = real_mask if evaluation_mask is None else np.asarray(evaluation_mask, dtype=bool)
+    real_idx = np.where(eligible_mask)[0]
     if (min_real_holdout > 0 and len(real_idx) >= min_real_holdout
             and len(np.unique(y[real_idx])) == 2):
+        groups = (np.asarray(engagement_groups, dtype=object)[real_idx]
+                  if engagement_groups is not None else np.full(len(real_idx), ""))
+        distinct_groups = len(set(groups) - {""})
+        if distinct_groups >= MIN_GROUPED_ENGAGEMENTS:
+            # Try deterministic variants until both sides contain both classes. Grouping
+            # is never weakened to make a convenient score appear.
+            for offset in range(20):
+                splitter = GroupShuffleSplit(
+                    n_splits=1, test_size=0.25, random_state=seed + offset
+                )
+                group_train, group_test = next(splitter.split(real_idx, y[real_idx], groups))
+                real_train, te_idx = real_idx[group_train], real_idx[group_test]
+                if len(np.unique(y[real_train])) == 2 and len(np.unique(y[te_idx])) == 2:
+                    tr_idx = np.setdiff1d(all_idx, te_idx)
+                    return (
+                        tr_idx, te_idx, "real", "engagement_grouped",
+                        f"grouped holdout active ({distinct_groups} engagements)",
+                    )
         _, te_idx = train_test_split(
             real_idx, test_size=0.25, stratify=y[real_idx], random_state=seed
         )
         tr_idx = np.setdiff1d(all_idx, te_idx)
-        return tr_idx, te_idx, "real"
+        reason = (
+            f"grouped validation not yet available ({distinct_groups} engagements, "
+            f"need {MIN_GROUPED_ENGAGEMENTS})"
+            if distinct_groups < MIN_GROUPED_ENGAGEMENTS
+            else "grouped split could not preserve both classes in train and evaluation"
+        )
+        return tr_idx, te_idx, "real", "real_row_random", reason
     tr_idx, te_idx = train_test_split(
         all_idx, test_size=0.25, stratify=y, random_state=seed
     )
-    return tr_idx, te_idx, "synthetic"
+    return (
+        tr_idx, te_idx, "synthetic", "synthetic_row_random",
+        f"real-label gate not met ({len(real_idx)} labels, need {min_real_holdout}); "
+        "metrics measure synthetic-generator quality, not real-world performance",
+    )
 
 
 def _make_base(model_name: str, seed: int):
@@ -130,6 +179,8 @@ class TriageClassifier:
         *,
         sample_weight: np.ndarray | None = None,
         real_mask: np.ndarray | None = None,
+        engagement_groups: np.ndarray | None = None,
+        evaluation_mask: np.ndarray | None = None,
         min_real_holdout: int = 0,
     ) -> "TriageClassifier":
         """Train + calibrate RF and XGB, compare on held-out PR/Brier, keep the winner.
@@ -154,7 +205,9 @@ class TriageClassifier:
         # Isotonic needs a fair amount of data to avoid overfitting the calibration
         # map; below ~1000 rows fall back to Platt scaling (sigmoid).
         method = "isotonic" if n >= 1000 else "sigmoid"
-        tr_idx, te_idx, eval_on = _holdout_split(y, real_mask, min_real_holdout, seed)
+        tr_idx, te_idx, eval_on, split_strategy, split_detail = _holdout_split(
+            y, real_mask, min_real_holdout, seed, engagement_groups, evaluation_mask
+        )
 
         evaluations: list[ModelEvaluation] = []
         for name in ("randomforest", "xgboost"):
@@ -171,6 +224,8 @@ class TriageClassifier:
                     calibration=method,
                     eval_on=eval_on,
                     n_eval=int(len(te_idx)),
+                    split_strategy=split_strategy,
+                    split_detail=split_detail,
                 )
             )
 
@@ -296,6 +351,22 @@ def _discover_sarif(repo_id: str, config: Config) -> Path | None:
     return None
 
 
+def _scanner_versions(path: Path) -> dict[str, str]:
+    """Read only scanner versions explicitly present in SARIF producer metadata."""
+    try:
+        document = json.loads(path.read_text())
+    except (OSError, json.JSONDecodeError):
+        return {}
+    versions: dict[str, str] = {}
+    for run in document.get("runs", []):
+        driver = run.get("tool", {}).get("driver", {})
+        name = driver.get("name")
+        version = driver.get("semanticVersion") or driver.get("version")
+        if name and version:
+            versions[str(name)] = str(version)
+    return versions
+
+
 def _persist_finding(finding: SarifFinding, repo_id: str, config: Config,
                      existing: dict[tuple, int]) -> int:
     """Insert a SARIF finding as a Finding (source_tool), reusing an existing row.
@@ -409,8 +480,46 @@ def triage_repo(
     clf = classifier or TriageClassifier.train(
         corpus.X, corpus.y, seed=seed,
         sample_weight=corpus.sample_weight, real_mask=corpus.real_mask,
+        engagement_groups=corpus.engagement_groups,
+        evaluation_mask=corpus.evaluation_mask,
         min_real_holdout=config.triage.min_real_labels_for_holdout_eval,
     )
+
+    chosen_eval = next(
+        (evaluation for evaluation in clf.evaluations if evaluation.model_name == clf.model_name),
+        clf.evaluations[0],
+    )
+    model_version = xgboost.__version__ if clf.model_name == "xgboost" else sklearn.__version__
+    evaluations = [
+        {
+            "model": evaluation.model_name,
+            "average_precision": evaluation.average_precision,
+            "brier": evaluation.brier,
+            "calibration": evaluation.calibration,
+            "eval_on": evaluation.eval_on,
+            "n_eval": evaluation.n_eval,
+            "split_strategy": evaluation.split_strategy,
+            "split_detail": evaluation.split_detail,
+        }
+        for evaluation in clf.evaluations
+    ]
+    triage_run_id = db.insert_triage_model_run(TriageModelRun(
+        repo_id=repo_id,
+        model_name=clf.model_name,
+        model_version=model_version,
+        feature_schema_version=FEATURE_SCHEMA_VERSION,
+        training_label_count=corpus.n_real,
+        evaluation_label_count=int(corpus.evaluation_mask.sum()),
+        label_source_counts=corpus.label_source_counts,
+        synthetic_share=corpus.synthetic_share,
+        synthetic_dropped=corpus.synthetic_dropped,
+        calibration=chosen_eval.calibration,
+        evaluation_basis=chosen_eval.eval_on,
+        split_strategy=chosen_eval.split_strategy,
+        split_detail=chosen_eval.split_detail,
+        evaluations=evaluations,
+        scanner_versions=_scanner_versions(Path(resolved)),
+    ), config)
 
     probs = clf.predict_proba(X)
     attrs = clf.attributions(X)
@@ -443,6 +552,7 @@ def triage_repo(
             suppressed=suppressed,
             model_name=clf.model_name,
             attributions=attrs[i],
+            triage_run_id=triage_run_id,
         )
         db.upsert_triage_result(result, config)
         results.append(result)

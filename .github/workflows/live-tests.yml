@@ -1,0 +1,35 @@
+name: live model tests
+
+on:
+  schedule:
+    - cron: "17 6 * * 2"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  live:
+    name: live / Anthropic
+    runs-on: ubuntu-latest
+    environment: live-model-tests
+    env:
+      REPOAUDITOR_LLM: live
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: uv sync --frozen --dev
+      - name: Require the protected live-test secret
+        shell: bash
+        run: |
+          if [[ -z "$ANTHROPIC_API_KEY" ]]; then
+            echo "ANTHROPIC_API_KEY is not configured in the live-model-tests environment." >&2
+            exit 1
+          fi
+      - run: uv run pytest -m live

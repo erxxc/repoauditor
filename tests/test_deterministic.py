@@ -13,7 +13,10 @@ import json
 import stat
 from pathlib import Path
 
+import pytest
+
 from repoauditor.detect import run_ensemble
+from repoauditor.detect.ensemble import CandidateFinding
 from repoauditor.detect.deterministic import SastAdapter, ScaAdapter, SecretsAdapter
 from repoauditor.detect.deterministic.secrets_adapter import _redact
 from repoauditor.ingest import ingest_repo
@@ -58,9 +61,9 @@ def test_sast_adapter_parses_semgrep_sarif_into_candidates():
     assert "CWE-78" in (c.rationale or "")
 
 
+@pytest.mark.integration
 def test_sast_adapter_run_returns_a_list_without_raising(tmp_path):
-    # semgrep isn't installed here; run() must degrade to [] rather than raise.
-    assert SastAdapter().run(tmp_path) == []
+    assert isinstance(SastAdapter().run(tmp_path), list)
 
 
 def test_sast_adapter_writes_empty_sarif_when_semgrep_is_unavailable(tmp_path, monkeypatch):
@@ -128,8 +131,9 @@ def test_sca_adapter_parses_osv_scanner_json_and_auto_detects_format():
     assert "django" in c.citation_snippet and "GHSA-abcd" in c.citation_snippet
 
 
+@pytest.mark.integration
 def test_sca_adapter_run_returns_a_list_without_raising(tmp_path):
-    assert ScaAdapter().run(tmp_path) == []   # neither pip-audit nor osv-scanner installed
+    assert isinstance(ScaAdapter().run(tmp_path), list)
 
 
 # --------------------------------------------------------------------------- #
@@ -159,6 +163,7 @@ def test_secrets_adapter_parses_gitleaks_json_with_the_secret_redacted():
     assert "sk_live_SUPERSECRET0000" not in (c.rationale or "")
 
 
+@pytest.mark.integration
 def test_secrets_adapter_run_finds_and_redacts_a_real_planted_secret():
     """End-to-end with the installed gitleaks binary on a fixture with a planted secret."""
     snapshot = FIXTURES / "example_vuln_repo" / "snapshot"
@@ -181,6 +186,7 @@ def _ingest_and_map(tmp_config, scripted_llm, repo_id="example_vuln_repo"):
     return result.repo_id
 
 
+@pytest.mark.integration
 def test_ensemble_persists_tool_findings_alongside_lens_findings(tmp_config, scripted_llm):
     db.init_db(tmp_config)
     repo_id = _ingest_and_map(tmp_config, scripted_llm)
@@ -215,3 +221,43 @@ def test_ensemble_can_run_lens_only_when_tools_disabled(tmp_config, scripted_llm
 
     findings = db.list_findings(repo_id, cfg)
     assert findings and all(f.source_tool is None for f in findings)  # lens-only
+
+
+def test_fake_adapter_candidate_persists_through_ensemble_fast_lane(
+    tmp_config, scripted_llm, monkeypatch
+):
+    """Protect the adapter-to-store contract without launching scanner binaries."""
+    db.init_db(tmp_config)
+    repo_id = _ingest_and_map(tmp_config, scripted_llm)
+
+    def fake_adapters(_snapshot, _config, sarif_path):
+        sarif_path.parent.mkdir(parents=True, exist_ok=True)
+        sarif_path.write_text('{"version":"2.1.0","runs":[]}')
+        candidate = CandidateFinding(
+            title="Fixed fake command injection",
+            file="app.py",
+            line_start=32,
+            line_end=32,
+            citation_snippet="return requests.get(url).text",
+            source_tool="sast",
+            producer="semgrep",
+            confidence=0.9,
+            severity=Severity.HIGH,
+            trust_boundary_ref="public HTTP edge",
+            rationale="Fixed adapter fixture.",
+        )
+        return [candidate], sarif_path, "complete"
+
+    monkeypatch.setattr(
+        "repoauditor.detect.ensemble._run_deterministic_adapters", fake_adapters
+    )
+    result = run_ensemble(repo_id, tmp_config, llm=scripted_llm)
+
+    persisted = [
+        finding for finding in db.list_findings(repo_id, tmp_config)
+        if finding.title == "Fixed fake command injection"
+    ]
+    assert len(persisted) == 1
+    assert persisted[0].source_tool == "sast"
+    assert persisted[0].trust_boundary_id is not None
+    assert result.source_counts["semgrep"] == 1

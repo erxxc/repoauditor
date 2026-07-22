@@ -1,5 +1,6 @@
 {
   "repo_id": "command_injection_svc",
+  "source": {"kind": "fixture", "project": "purpose-built scripted golden fixture"},
   "notes": "Ground truth for the golden harness. Matched on (file, severity, source_lens, citation substring); line numbers are approximate anchors, not exact-match assertions.",
   "findings": [
     {

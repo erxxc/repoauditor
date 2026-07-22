@@ -50,6 +50,9 @@ max_iterations = 3
 # priority order (highest P(actionable) first). Candidates beyond the budget are
 # persisted `deferred` and resumed by a later run. 0 = unlimited.
 max_findings_per_run = 0
+# For bounded runs with at least two slots, reserve capacity for LLM/novel findings that
+# have no deterministic triage score. 0 restores strict triaged-first behavior.
+min_untriaged_per_run = 1
 
 [triage]
 # Triage classifier training corpus (src/repoauditor/triage/). How the synthetic
@@ -73,6 +76,10 @@ min_real_labels_for_holdout_eval = 40
 # too uncertain to auto-act on and is routed to a human reviewer. Operational
 # gate, not a risk prior — priors live in priors.yaml.
 triage_confidence_threshold = 0.65
+# Audit this many suppressed findings at the review checkpoint to detect false negatives.
+# Selection is deterministic; both this seed and the pipeline run id are recorded.
+low_rank_sample_size = 1
+low_rank_sample_seed = 0
 
 [rate_limits]
 requests_per_minute = 30

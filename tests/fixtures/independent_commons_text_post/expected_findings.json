@@ -1,0 +1,39 @@
+{
+  "repo_id": "independent_commons_text_post",
+  "source": {
+    "kind": "independent",
+    "materialization": "pinned-acquisition-only",
+    "project_id": "commons_text",
+    "project": "Apache Commons Text",
+    "language": "Java",
+    "repo": "https://github.com/apache/commons-text.git",
+    "variant": "post_fix",
+    "pinned_commit": "b9b40b903e2d1f9935039803c9852439576780ea",
+    "pre_fix_commit": "1c0340694871183baf6e55376dd85c260e810bb0",
+    "post_fix_commit": "b9b40b903e2d1f9935039803c9852439576780ea",
+    "license": "Apache-2.0",
+    "cve": "CVE-2022-42889",
+    "ghsa": "GHSA-599f-7c49-w659",
+    "source_dataset": "CVEfixes v1.0.8 scope; independently verified",
+    "verified_via": [
+      "https://api.osv.dev/v1/vulns/CVE-2022-42889",
+      "https://github.com/apache/commons-text.git"
+    ],
+    "ground_truth": "Human-reviewed upstream advisory and pre/post fix diff; never inferred from repoauditor output."
+  },
+  "notes": "Public source only. Static analysis may use a hosted model; proprietary corpus additions are prohibited.",
+  "findings": [],
+  "expected_absent": [
+    {
+      "title": "Code execution through dangerous default interpolators",
+      "file": "src/main/java/org/apache/commons/text/lookup/DefaultStringLookup.java",
+      "line_start": 93,
+      "line_end": 93,
+      "severity": "critical",
+      "falsification_status": "confirmed",
+      "cwe": "CWE-94",
+      "cve": "CVE-2022-42889",
+      "citation_contains": "SCRIPT(StringLookupFactory.KEY_SCRIPT"
+    }
+  ]
+}

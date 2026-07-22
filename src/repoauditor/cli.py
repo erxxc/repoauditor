@@ -27,12 +27,16 @@ from . import __version__
 from .analyze import quantify_appendix
 from .config import get_config
 from .detect import DetectionRun, run_ensemble
+from .detect.ensemble import LENS_PROMPT_VERSIONS
 from .falsify import challenge
+from .falsify.challenger import CRITIQUE_PROMPT_VERSION, PROMPT_VERSION as FALSIFY_PROMPT_VERSION
 from .ingest import ingest_repo, snapshot_manifests
 from .ingest import latest_snapshot
 from .interactive import load_menu_state, render_main_menu
 from .map import recover_architecture
+from .map.domain_map import PROMPT_VERSION as MAP_PROMPT_VERSION
 from .normalize import adjudicate_repo
+from .normalize.adjudicate import PROMPT_VERSION as NORMALIZE_PROMPT_VERSION
 from .preflight import PreflightResult, check_model, check_runtime
 from .presentation import ndjson_event, repos_json, repos_table, review_requests_json
 from .report import write_backlog, write_memo
@@ -43,8 +47,15 @@ from .review import (
     render_open_requests,
 )
 from .store import db
-from .store.models import ReviewDisposition, RunStatus
-from .triage import label_finding, triage_repo
+from .store.models import ReviewDisposition, RunStatus, TriageAssessmentOutcome
+from .triage import (
+    assess_finding,
+    collection_status,
+    render_collection_status,
+    render_threshold_stats,
+    threshold_stats,
+    triage_repo,
+)
 from .uat import score_demo
 
 app = typer.Typer(
@@ -73,10 +84,11 @@ class ReportMode(StrEnum):
 
 
 class LabelDisposition(StrEnum):
-    """Analyst disposition for `triage-label` — the ground-truth call on a finding."""
+    """Analyst disposition; uncertain records an abstention, not a training label."""
 
     TRUE_POSITIVE = "true_positive"
     FALSE_POSITIVE = "false_positive"
+    UNCERTAIN = "uncertain"
 
 
 class ListFormat(StrEnum):
@@ -323,6 +335,11 @@ def _triage_stage(repo_id: str, config, sarif: Path | None = None, threshold: fl
             f"  labels: real={outcome.n_real_labels} synthetic_share={synth} "
             f"(shrinks as real labels accumulate)"
         )
+        if outcome.evaluations:
+            typer.echo(
+                f"  validation: {outcome.evaluations[0].split_strategy}; "
+                f"{outcome.evaluations[0].split_detail}"
+            )
     _verbose(f"SARIF={sarif or 'auto-discovered'}; action-threshold={threshold}")
     return outcome
 
@@ -735,26 +752,73 @@ def triage(
 def triage_label(
     finding_id: int = typer.Argument(..., help="Finding id to label (from `triage` output)."),
     disposition: LabelDisposition = typer.Option(
-        ..., "--disposition", help="true_positive | false_positive (analyst ground truth)."
+        ..., "--disposition", help="true_positive | false_positive | uncertain."
     ),
-    note: str = typer.Option(None, "--note", help="Optional analyst note."),
+    rationale: str = typer.Option(
+        ..., "--rationale", "--note", help="Required analyst rationale (audited)."
+    ),
+    analyst: str = typer.Option(
+        None, "--analyst", help="Analyst identity (defaults to the current OS user)."
+    ),
+    dimension: list[str] = typer.Option(
+        None, "--dimension", help="Repeatable analyst-declared coverage dimension."
+    ),
 ) -> None:
-    """Assert a manual analyst label on a finding (overrides any derived label)."""
+    """Record a reasoned analyst assessment; uncertain assessments do not train."""
     try:
-        label = label_finding(
+        assessment, label = assess_finding(
             finding_id,
-            disposition is LabelDisposition.TRUE_POSITIVE,
-            note,
+            TriageAssessmentOutcome(disposition.value),
+            rationale,
+            analyst or getpass.getuser(),
+            dimension,
             get_config(),
         )
     except ValueError as exc:
         typer.secho(str(exc), fg=typer.colors.RED, err=True)
         raise typer.Exit(code=1)
+    if label is None:
+        typer.echo(
+            f"recorded assessment #{assessment.id}: finding #{finding_id} remains "
+            "uncertain and was excluded from classifier training."
+        )
+        return
     verdict = "true positive" if label.actionable else "false positive"
     typer.echo(
-        f"labelled finding #{finding_id} as {verdict} (rule {label.rule_id}, "
+        f"recorded assessment #{assessment.id}; labelled finding #{finding_id} as "
+        f"{verdict} (rule {label.rule_id}, "
         f"engagement {label.engagement}) — manual label takes precedence over derived."
     )
+
+
+@app.command(name="triage-collection")
+@_clean_errors("triage-collection")
+def triage_collection_command(
+    repo_id: str = typer.Argument(
+        None, help="Optional repo/engagement id; omit for portfolio collection status."
+    ),
+) -> None:
+    """Show progress and coverage against the controlled real-label activation gate."""
+    typer.echo(render_collection_status(collection_status(repo_id, get_config())))
+
+
+@app.command(name="triage-stats")
+@_clean_errors("triage-stats")
+def triage_stats_command(
+    repo_id: str = typer.Argument(
+        None, help="Optional repo/engagement id; omit for the cross-engagement view."
+    ),
+    label_source: str = typer.Option(
+        "human", "--label-source", help="Label cohort: human, derived, or all."
+    ),
+    run_id: int = typer.Option(
+        None, "--run-id", help="Restrict to scores from one compatible triage model run."
+    ),
+) -> None:
+    """Show real-label precision/recall tradeoffs without recommending a threshold."""
+    typer.echo(render_threshold_stats(threshold_stats(
+        repo_id, get_config(), label_cohort=label_source, triage_run_id=run_id
+    )))
 
 
 @app.command()
@@ -905,13 +969,34 @@ def run(
     snapshot_path, _ = latest_snapshot(config, repo_id)
 
     if "map" not in completed:
-        step("map", lambda: _map_stage(repo_id, config))
+        step(
+            "map", lambda: _map_stage(repo_id, config),
+            lambda value: ({
+                "llm": {
+                    "provider": config.llm.provider,
+                    "model": config.model.name,
+                    "prompt_versions": {"map": MAP_PROMPT_VERSION},
+                }
+            }, []),
+        )
 
     if "detect" not in completed:
         detection = step(
             "detect", lambda: _detect_stage(repo_id, config),
             lambda value: (
-                {"source_counts": value.source_counts, "semgrep_status": value.semgrep_status},
+                {
+                    "source_counts": value.source_counts,
+                    "semgrep_status": value.semgrep_status,
+                    "scanner_coverage": {
+                        "checked": preflight.scanners_checked,
+                        "missing": preflight.missing_scanners,
+                    },
+                    "llm": {
+                        "provider": config.llm.provider,
+                        "model": config.model.name,
+                        "prompt_versions": dict(LENS_PROMPT_VERSIONS),
+                    },
+                },
                 [str(value.sarif_path)] if value.sarif_path else [],
             ),
         )
@@ -924,13 +1009,60 @@ def run(
             prior_detect.summary.get("semgrep_status"),
         )
     if "triage" not in completed:
-        step("triage", lambda: _triage_stage(repo_id, config, sarif=detection.sarif_path))
+        step(
+            "triage", lambda: _triage_stage(repo_id, config, sarif=detection.sarif_path),
+            lambda value: ({
+                "real_labels": getattr(value, "n_real_labels", None),
+                "synthetic_share": getattr(value, "synthetic_share", None),
+                "synthetic_dropped": getattr(value, "synthetic_dropped", None),
+                "suppressed": getattr(value, "n_suppressed", None),
+                "model": getattr(value, "model_name", None),
+                "evaluations": [
+                    {
+                        "model": evaluation.model_name,
+                        "eval_on": evaluation.eval_on,
+                        "brier": evaluation.brier,
+                        "average_precision": evaluation.average_precision,
+                        "n_eval": evaluation.n_eval,
+                        "split_strategy": evaluation.split_strategy,
+                        "split_detail": evaluation.split_detail,
+                    }
+                    for evaluation in (getattr(value, "evaluations", None) or [])
+                ],
+            }, []),
+        )
     if "falsify" not in completed:
-        step("falsify", lambda: _falsify_stage(repo_id, config))
+        step(
+            "falsify", lambda: _falsify_stage(repo_id, config),
+            lambda value: ({
+                "llm": {
+                    "provider": config.llm.provider,
+                    "model": config.model.name,
+                    "prompt_versions": {
+                        "falsify": FALSIFY_PROMPT_VERSION,
+                        "falsify_critique": CRITIQUE_PROMPT_VERSION,
+                    },
+                }
+            }, []),
+        )
     if "normalize" not in completed:
-        step("normalize", lambda: _normalize_stage(repo_id, config))
+        step(
+            "normalize", lambda: _normalize_stage(repo_id, config),
+            lambda value: ({
+                "llm": {
+                    "provider": config.llm.provider,
+                    "model": config.model.name,
+                    "prompt_versions": {"normalize": NORMALIZE_PROMPT_VERSION},
+                }
+            }, []),
+        )
     if "review checkpoint" not in completed:
-        step("review checkpoint", lambda: raise_review_requests(repo_id, config))
+        step(
+            "review checkpoint",
+            lambda: raise_review_requests(
+                repo_id, config, sampling_run_id=pipeline.id
+            ),
+        )
 
     requests = open_review_requests(repo_id, config)
     if detection.semgrep_status not in {"complete", "empty"}:

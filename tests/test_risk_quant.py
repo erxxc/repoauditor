@@ -373,6 +373,7 @@ def test_build_scenarios_refuses_unsourced_validity_probability(cfg):
         risk_quant.build_scenarios("r", cfg, persist=False)
 
 
+@pytest.mark.integration
 def test_generate_appendix_writes_artifact_and_simulation_run(cfg, tmp_path):
     db.init_db(cfg)
     _persist_finding(cfg, "SQL Injection", "critical", "sqli [CWE-89]")

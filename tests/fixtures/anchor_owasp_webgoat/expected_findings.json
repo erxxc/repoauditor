@@ -1,0 +1,26 @@
+{
+  "repo_id": "anchor_owasp_webgoat",
+  "source": {
+    "kind": "benchmark",
+    "materialization": "pinned-acquisition-only",
+    "project_id": "owasp_webgoat",
+    "project": "OWASP WebGoat",
+    "repo": "https://github.com/WebGoat/WebGoat.git",
+    "pinned_commit": "5142935bf7c279882c3b0fc0ecec42c447de6fd5",
+    "license": "GPL-2.0-or-later",
+    "ground_truth": "Human-reviewed deliberately vulnerable lesson source; never inferred from repoauditor output."
+  },
+  "notes": "Pinned acquisition-only benchmark anchor. It is not redistributed in this repository and never counts toward the independent gate.",
+  "findings": [
+    {
+      "title": "SQL injection in introductory lesson query",
+      "file": "src/main/java/org/owasp/webgoat/lessons/sqlinjection/introduction/SqlInjectionLesson2.java",
+      "line_start": 49,
+      "line_end": 49,
+      "severity": "high",
+      "falsification_status": "confirmed",
+      "cwe": "CWE-89",
+      "citation_contains": "statement.executeQuery(query)"
+    }
+  ]
+}

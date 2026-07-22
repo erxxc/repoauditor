@@ -79,6 +79,11 @@ class FalsifyConfig(BaseModel):
     # are persisted `deferred` — not dropped — and resumed by a later run. `0` means
     # unlimited (challenge every unresolved candidate, the pre-budget behavior).
     max_findings_per_run: int = 0
+    # On bounded runs with room for both streams, reserve this many slots for findings
+    # that have no deterministic triage score (normally LLM-lens / novel findings).
+    # This prevents a large SARIF queue from starving nonstandard findings. A budget of
+    # one retains strict best-first behavior because one slot cannot serve both streams.
+    min_untriaged_per_run: int = Field(default=1, ge=0)
 
 
 class DetectConfig(BaseModel):
@@ -107,6 +112,11 @@ class ReviewConfig(BaseModel):
     # too uncertain to auto-act on and is routed to human review rather than silently
     # suppressed or promoted.
     triage_confidence_threshold: float = 0.65
+    # Audit a small deterministic sample of findings triage marked suppressed. This
+    # estimates false negatives instead of collecting labels only from model-preferred
+    # findings. 0 disables sampling; the seed and pipeline-run id are recorded in evidence.
+    low_rank_sample_size: int = Field(default=1, ge=0)
+    low_rank_sample_seed: int = 0
 
 
 class TriageConfig(BaseModel):

@@ -168,6 +168,12 @@ This path checks the live model, scans only `snapshot/` (never this answer key),
 the human review decision, records an audited quantification, writes both reports, and emits
 Markdown plus JSON scorecards for all ten cases.
 
+During early UAT, triage may report `synthetic_row_random`. That is a cold-start generator
+check, not measured real-world precision. Do not cite it as model accuracy. After analyst
+decisions accumulate, use `repoauditor triage-stats` to inspect observed threshold tradeoffs;
+the command withholds the table until 40 real scored labels exist and never recommends a
+threshold. Grouped validation remains unavailable until eight distinct engagements exist.
+
 For benchmark development or lower-level diagnosis:
 
 ```bash

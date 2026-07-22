@@ -116,7 +116,7 @@ def _sibling_config(base: Config, root) -> Config:
 # --------------------------------------------------------------------------- #
 # Deterministic golden test (runs by default — no more xfail).
 # --------------------------------------------------------------------------- #
-def test_golden_pipeline(tmp_config, fixture_repo, scripted_llm):
+def test_golden_pipeline(tmp_config, fixture_repo, scripted_llm, stub_deterministic_tools):
     db.init_db(tmp_config)
     _run_pipeline(fixture_repo, tmp_config, scripted_llm)
 
@@ -173,7 +173,7 @@ def test_golden_pipeline(tmp_config, fixture_repo, scripted_llm):
 # had never been scored against the corpus and gated.
 # --------------------------------------------------------------------------- #
 def test_selfcritique_v1_benchmarked_and_gated_against_prior_behaviour(
-    tmp_config, fixture_repo, scripted_backend, tmp_path
+    tmp_config, fixture_repo, scripted_backend, tmp_path, stub_deterministic_tools
 ):
     """Score falsification_selfcritique_v1 on the golden corpus and gate it.
 

@@ -1,7 +1,8 @@
 {
   "repo_id": "cve_gunicorn_smuggling",
   "source": {
-    "kind": "in-code CVE (SAST / LLM-lens path)",
+    "kind": "fixture",
+    "fixture_detail": "in-code CVE (SAST / LLM-lens path)",
     "project": "Gunicorn",
     "repo": "https://github.com/benoitc/gunicorn",
     "pinned_ref": "21.2.0",

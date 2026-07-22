@@ -276,10 +276,11 @@ def challenge(
 
     Repo-level entry point. Candidates are the findings the loop has not examined yet —
     `unresolved` (fresh from detect) or `deferred` (set aside by a prior run) with no
-    logged iterations. They are taken in **triage priority order** — triaged findings
-    first, highest P(actionable) first (the triage->falsify seam the scaffold calls for),
-    then untriaged findings (e.g. LLM-lens findings, which triage does not score) by
-    severity then confidence.
+    logged iterations. They are taken in **triage priority order** — highest
+    P(actionable) first — while a bounded run with at least two slots reserves configured
+    capacity for untriaged findings (e.g. LLM-lens findings) so a large deterministic queue
+    cannot starve novel work. Within the untriaged stream, severity then confidence orders
+    candidates.
 
     `config.falsify.max_findings_per_run` caps how many get the (expensive) loop this
     run. Candidates beyond the cap are persisted `deferred` — never dropped — and resumed
@@ -306,7 +307,9 @@ def challenge(
 
     budget = config.falsify.max_findings_per_run
     if budget and budget > 0:
-        selected, deferred = pending[:budget], pending[budget:]
+        selected, deferred = _budget_partition(
+            pending, triage, budget, config.falsify.min_untriaged_per_run
+        )
     else:
         selected, deferred = pending, []
 
@@ -349,3 +352,39 @@ def _budget_order(
         return (1, -severity_rank(f.severity), -f.confidence)
 
     return sorted(pending, key=key)
+
+
+def _budget_partition(
+    pending: list[Finding],
+    triage: dict[int, TriageResult],
+    budget: int,
+    min_untriaged: int,
+) -> tuple[list[Finding], list[Finding]]:
+    """Select a bounded queue while reserving capacity for novel/untriaged findings.
+
+    A run with fewer than two slots cannot serve both streams, so it retains the existing
+    best-first order. Otherwise, when both streams exist, up to ``min_untriaged`` slots are
+    reserved for the highest-severity/confidence untriaged findings. Remaining slots keep
+    the calibrated P(actionable) ordering. Every unselected finding remains deferred and
+    resumable; this changes scheduling only, never finding status semantics.
+    """
+    if budget < 2 or min_untriaged <= 0:
+        return pending[:budget], pending[budget:]
+
+    triaged = [finding for finding in pending if finding.id in triage]
+    untriaged = [finding for finding in pending if finding.id not in triage]
+    if not triaged or not untriaged:
+        return pending[:budget], pending[budget:]
+
+    reserve = min(min_untriaged, len(untriaged), budget - 1)
+    selected = [*triaged[: budget - reserve], *untriaged[:reserve]]
+    # If one stream cannot fill its allocation, use the globally ordered remainder.
+    selected_ids = {finding.id for finding in selected}
+    for finding in pending:
+        if len(selected) >= budget:
+            break
+        if finding.id not in selected_ids:
+            selected.append(finding)
+            selected_ids.add(finding.id)
+    deferred = [finding for finding in pending if finding.id not in selected_ids]
+    return selected, deferred

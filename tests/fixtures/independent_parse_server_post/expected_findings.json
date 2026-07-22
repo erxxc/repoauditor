@@ -1,0 +1,39 @@
+{
+  "repo_id": "independent_parse_server_post",
+  "source": {
+    "kind": "independent",
+    "materialization": "pinned-acquisition-only",
+    "project_id": "parse_server",
+    "project": "Parse Server",
+    "language": "JavaScript",
+    "repo": "https://github.com/parse-community/parse-server.git",
+    "variant": "post_fix",
+    "pinned_commit": "3a3a5eee5ffa48da1352423312cb767de14de269",
+    "pre_fix_commit": "bde8ab6d55e4da556d0e77eb29d4953ca34eeace",
+    "post_fix_commit": "3a3a5eee5ffa48da1352423312cb767de14de269",
+    "license": "BSD-3-Clause",
+    "cve": "CVE-2020-5251",
+    "ghsa": "GHSA-h4mf-75hf-67w4",
+    "source_dataset": "OpenSSF CVE Benchmark",
+    "verified_via": [
+      "https://api.osv.dev/v1/vulns/CVE-2020-5251",
+      "https://github.com/parse-community/parse-server.git"
+    ],
+    "ground_truth": "Human-reviewed upstream advisory and pre/post fix diff; never inferred from repoauditor output."
+  },
+  "notes": "Public source only. Static analysis may use a hosted model; proprietary corpus additions are prohibited.",
+  "findings": [],
+  "expected_absent": [
+    {
+      "title": "Query injection through non-string request values",
+      "file": "src/RestQuery.js",
+      "line_start": 667,
+      "line_end": 667,
+      "severity": "high",
+      "falsification_status": "confirmed",
+      "cwe": "CWE-89",
+      "cve": "CVE-2020-5251",
+      "citation_contains": "this.restWhere"
+    }
+  ]
+}
