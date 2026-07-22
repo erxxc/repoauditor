@@ -525,6 +525,11 @@ scanner binaries, safe API-secret setup, and the scheduled/manual public-corpus 
 That lane acquires exact pinned public commits on a cache miss and runs corpus integrity
 checks without executing upstream code or invoking a hosted model.
 
+For pre-UAT validation, the manual `bounded corpus UAT` workflow offers a free four-language
+scanner matrix and a separately acknowledged paid Anthropic run on the lightweight fixture.
+Its artifacts preserve the distinction between independently sourced targets, unadjudicated
+scanner candidates, and purpose-built fixture metrics; see [CONTRIBUTING.md](CONTRIBUTING.md).
+
 `repoauditor db init` applies numbered migrations from `src/repoauditor/store/ddl/` and
 is safe to rerun. Existing databases are upgraded in place; legacy quantitative scenarios
 remain readable and new audited scenarios are linked to their simulation run. Ingest is

@@ -272,11 +272,21 @@ def benchmark_corpus_ids() -> list[str]:
     now live under `fixtures/` (e.g. `multilang_retrieval/`, which exercises the retrieval
     index and has no vuln ground truth) without being mistaken for a benchmark repo.
     """
-    return sorted(
+    available = sorted(
         p.name for p in FIXTURES_DIR.iterdir()
         if p.is_dir() and p.name not in FIXTURE_LLM
         and (p / "expected_findings.json").is_file()
     )
+    selected = os.environ.get("REPOAUDITOR_CORPUS_IDS", "").strip()
+    if not selected:
+        return available
+    requested = [repo_id.strip() for repo_id in selected.split(",") if repo_id.strip()]
+    unknown = sorted(set(requested) - set(available))
+    if unknown:
+        raise ValueError(
+            "REPOAUDITOR_CORPUS_IDS contains unknown fixture(s): " + ", ".join(unknown)
+        )
+    return list(dict.fromkeys(requested))
 
 
 # The deterministic golden test can only run fixtures it has scripted model output for,

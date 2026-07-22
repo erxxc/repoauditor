@@ -1,0 +1,169 @@
+name: bounded corpus UAT
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Evaluation mode
+        required: true
+        default: deterministic
+        type: choice
+        options:
+          - deterministic
+          - live-lightweight
+      acknowledge_paid_run:
+        description: I understand live-lightweight makes paid Anthropic API calls
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bounded-corpus-uat-${{ inputs.mode }}
+  cancel-in-progress: false
+
+jobs:
+  reject-unacknowledged-live-run:
+    if: inputs.mode == 'live-lightweight' && inputs.acknowledge_paid_run == false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require explicit paid-run acknowledgement
+        run: |
+          echo "live-lightweight invokes Anthropic and incurs API usage." >&2
+          echo "Rerun with acknowledge_paid_run enabled." >&2
+          exit 1
+
+  deterministic:
+    if: inputs.mode == 'deterministic'
+    name: UAT / four-language scanner matrix
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Restore trusted pinned public snapshots
+        id: corpus-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            tests/fixtures/independent_*/snapshot
+            tests/fixtures/anchor_owasp_*/snapshot
+          key: public-corpus-v1-${{ runner.os }}-${{ hashFiles('tests/fixtures/materialize_public_corpus.py', 'tests/fixtures/independent_*/expected_findings.json', 'tests/fixtures/anchor_owasp_*/expected_findings.json') }}
+      - name: Require a validated corpus cache
+        if: steps.corpus-cache.outputs.cache-hit != 'true'
+        run: |
+          echo "No exact public-corpus cache exists for the current acquisition metadata." >&2
+          echo "Run the 'public corpus cache' workflow first; no stale fallback is allowed." >&2
+          exit 1
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "stable"
+      - run: uv sync --frozen --dev
+      - name: Install pinned scanner binaries
+        run: |
+          uv tool install semgrep==1.170.1
+          uv tool install pip-audit==2.10.1
+          go install github.com/zricethezav/gitleaks/v8@v8.30.1
+          go install github.com/google/osv-scanner/v2/cmd/osv-scanner@v2.3.8
+      - name: Verify scanner availability
+        run: |
+          semgrep --version
+          pip-audit --version
+          gitleaks version
+          osv-scanner --version
+      - name: Run bounded deterministic matrix
+        run: |
+          uv run python tests/fixtures/run_bounded_uat.py \
+            --output bounded-uat-deterministic.json \
+            --timeout-seconds 180 | tee bounded-uat-summary.txt
+      - name: Explain the evidence boundary
+        if: always()
+        run: |
+          {
+            echo "## Bounded deterministic UAT"
+            echo ""
+            echo "The matrix covers one pre/post pair per language plus Juice Shop."
+            echo "Unmatched candidates are unadjudicated, not false positives, because"
+            echo "the independent-project ground truth contains one historical CVE target"
+            echo "rather than an exhaustive vulnerability inventory."
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [[ -f bounded-uat-summary.txt ]]; then
+            echo '```json' >> "$GITHUB_STEP_SUMMARY"
+            cat bounded-uat-summary.txt >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Upload deterministic UAT evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bounded-uat-deterministic-${{ github.run_id }}
+          path: |
+            bounded-uat-deterministic.json
+            bounded-uat-summary.txt
+          retention-days: 30
+          if-no-files-found: error
+
+  live-lightweight:
+    if: inputs.mode == 'live-lightweight' && inputs.acknowledge_paid_run == true
+    name: UAT / paid Anthropic lightweight fixture
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: live-model-tests
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      REPOAUDITOR_LLM: live
+      REPOAUDITOR_CORPUS_IDS: uat_lightweight_app
+      REPOAUDITOR_UAT_RESULTS: bounded-uat-live.json
+      REPOAUDITOR_UAT_SCANNER_COVERAGE: not-installed-live-model-only
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: uv sync --frozen --dev
+      - name: Require the protected live-test secret
+        run: |
+          if [[ -z "$ANTHROPIC_API_KEY" ]]; then
+            echo "ANTHROPIC_API_KEY is not configured in live-model-tests." >&2
+            exit 1
+          fi
+      - name: Record paid-run scope
+        run: |
+          {
+            echo "## Paid live-model UAT"
+            echo ""
+            echo "This run is limited to the 12-file purpose-built lightweight fixture."
+            echo "It exercises map, three detection lenses, falsification, and normalization."
+            echo "Results are fixture-derived and are not real-world performance evidence."
+            echo "Scanner binaries are intentionally absent; this mode isolates the live model path."
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Run paid lightweight UAT
+        run: >-
+          uv run pytest
+          tests/test_benchmark_corpus.py::test_corpus_live_baseline
+          -s
+          --junitxml=bounded-uat-live-junit.xml
+      - name: Upload live UAT evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bounded-uat-live-${{ github.run_id }}
+          path: |
+            bounded-uat-live.json
+            bounded-uat-live-junit.xml
+          retention-days: 30
+          if-no-files-found: error
