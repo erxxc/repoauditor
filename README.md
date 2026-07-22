@@ -12,6 +12,42 @@ You do not need a security background to run it. Findings are leads to review, n
 that a system has been compromised. See [`repoauditor-scaffold.md`](repoauditor-scaffold.md)
 for the design and [`CLAUDE.md`](CLAUDE.md) for the project’s architectural rules.
 
+## Choose the menu or commands
+
+For a guided, numbered interface, run this in an interactive terminal:
+
+```sh
+uv run repoauditor
+```
+
+The menu shows pending review counts and offers the demo, repository scans, review,
+finalization, history, and installation checks. It prints the equivalent command before
+running an action, so the same workflow can later be automated. You can also open it
+explicitly with `uv run repoauditor menu`.
+
+```text
+┌───────────────────────────────────────────────┐
+│ RepoAuditor                                   │
+├───────────────────────────────────────────────┤
+│ 1. Run guided demo                            │
+│ 2. Scan a repository                          │
+│ 3. Review pending findings (2 pending)        │
+│ 4. Finalize reports                           │
+│ 5. View repositories and run history (1)      │
+│ 6. Check installation                         │
+│ 7. Exit                                       │
+└───────────────────────────────────────────────┘
+Select an option [1]:
+```
+
+The counts come from the local audit store. The menu will not run finalization while the
+selected repository still has unresolved review requests; it points the user back to the
+review option instead. Installation checks ask separately before making a live, potentially
+billable model request.
+
+Existing commands remain unchanged. Scripts, redirected input, and other non-interactive
+sessions receive normal command help rather than being blocked by a prompt.
+
 ## Fastest macOS setup
 
 The commands below assume you have [Homebrew](https://brew.sh/) and are in a terminal.

@@ -30,6 +30,7 @@ from .detect import DetectionRun, run_ensemble
 from .falsify import challenge
 from .ingest import ingest_repo, snapshot_manifests
 from .ingest import latest_snapshot
+from .interactive import load_menu_state, render_main_menu
 from .map import recover_architecture
 from .normalize import adjudicate_repo
 from .preflight import PreflightResult, check_model, check_runtime
@@ -50,9 +51,10 @@ app = typer.Typer(
     help=(
         "Audit a codebase with a two-phase workflow: `run` through the review "
         "checkpoint, resolve any `review` requests, then `finalize` both reports. "
+        "Run with no command in an interactive terminal to open the numbered menu. "
         "Individual pipeline stages remain available for advanced/manual use."
     ),
-    no_args_is_help=True,
+    no_args_is_help=False,
     add_completion=False,
 )
 db_app = typer.Typer(help="Database commands.", no_args_is_help=True)
@@ -409,8 +411,111 @@ def _root(
         typer.echo(f"repoauditor {__version__}")
         raise typer.Exit()
     if ctx.invoked_subcommand is None:
-        typer.echo(ctx.get_help())
+        if sys.stdin.isatty() and sys.stdout.isatty():
+            menu()
+        else:
+            typer.echo(ctx.get_help())
         raise typer.Exit()
+
+
+def _menu_repo(config, *, require_reviews: bool = False):
+    """Prompt for one known repository; return its state or None."""
+    state = load_menu_state(config)
+    choices = [repo for repo in state.repositories if not require_reviews or repo.open_reviews]
+    if not choices:
+        typer.echo(
+            "No repositories have pending review requests."
+            if require_reviews else "No repositories have been ingested yet."
+        )
+        return None
+    typer.echo("")
+    for index, repo in enumerate(choices, 1):
+        review = f"; {repo.open_reviews} review(s) pending" if repo.open_reviews else ""
+        typer.echo(f"  {index}. {repo.repo_id} — {repo.source}{review}")
+    while True:
+        value = typer.prompt("Select repository", default="1").strip()
+        if value.isdigit() and 1 <= int(value) <= len(choices):
+            return choices[int(value) - 1]
+        typer.echo(f"Enter a number from 1 to {len(choices)}.")
+
+
+@app.command()
+@_clean_errors("menu")
+def menu() -> None:
+    """Open the state-aware numbered interface (existing commands remain available)."""
+    config = get_config()
+    state = load_menu_state(config)
+    typer.echo(render_main_menu(state))
+    while True:
+        selection = typer.prompt("Select an option", default="1").strip()
+        if selection in {str(number) for number in range(1, 8)}:
+            break
+        typer.echo("Enter a number from 1 to 7.")
+
+    if selection == "1":
+        typer.echo("Equivalent command: repoauditor demo")
+        demo(trials=10_000, seed=0, non_interactive=False)
+    elif selection == "2":
+        source = typer.prompt("Repository path or Git URL").strip()
+        if not source:
+            typer.echo("No target entered; returning without starting a scan.")
+            return
+        typer.echo(f"Equivalent command: repoauditor run {source}")
+        run(source=source, output_format=RunFormat.HUMAN, fresh=False)
+    elif selection == "3":
+        repo = _menu_repo(config, require_reviews=True)
+        if repo is None:
+            return
+        typer.echo(f"Equivalent command: repoauditor review list {repo.repo_id}")
+        typer.echo(render_open_requests(repo.repo_id, config))
+        requests = open_review_requests(repo.repo_id, config)
+        request = requests[0] if len(requests) == 1 else None
+        if request is None:
+            request_id = typer.prompt("Request id to decide").strip()
+            request = next((item for item in requests if str(item.id) == request_id), None)
+            if request is None:
+                typer.echo("That request is not open for the selected repository.")
+                return
+        if not typer.confirm(f"Decide request #{request.id} now?", default=True):
+            return
+        disposition = typer.prompt("Decision (confirm/dismiss)", default="dismiss").strip().lower()
+        while disposition not in {"confirm", "dismiss"}:
+            disposition = typer.prompt("Enter confirm or dismiss").strip().lower()
+        rationale = typer.prompt("Short rationale").strip()
+        while not rationale:
+            rationale = typer.prompt("A rationale is required").strip()
+        reviewer = typer.prompt("Reviewer name", default=getpass.getuser())
+        decision = decide(
+            repo.repo_id, request.id, disposition, rationale, reviewer, config
+        )
+        typer.echo(f"Recorded decision #{decision.id}: {decision.disposition}.")
+    elif selection == "4":
+        repo = _menu_repo(config)
+        if repo is None:
+            return
+        if repo.open_reviews:
+            typer.echo(
+                f"Finalize is blocked: {repo.open_reviews} review request(s) remain. "
+                "Choose option 3 first."
+            )
+            return
+        typer.echo(f"Equivalent command: repoauditor finalize {repo.repo_id}")
+        finalize(
+            repo_id=repo.repo_id, trials=50_000, seed=0,
+            record_audit=False, print_reports=False,
+        )
+    elif selection == "5":
+        typer.echo("Equivalent commands: repoauditor repos list; repoauditor runs list")
+        typer.echo(repos_table(db.list_ingested_repos(config, all_snapshots=False)))
+        runs_list(repo_id=None)
+    elif selection == "6":
+        live = typer.confirm(
+            "Also make one live model request? This may incur provider charges.", default=False
+        )
+        typer.echo("Equivalent command: repoauditor doctor" + (" --check-model" if live else ""))
+        doctor(model=live)
+    else:
+        typer.echo("Goodbye.")
 
 
 @db_app.command("init")
