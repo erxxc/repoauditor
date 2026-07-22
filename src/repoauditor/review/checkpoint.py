@@ -17,6 +17,8 @@ no releasing `ReviewDecision`. This module never auto-approves — recording a d
 
 from __future__ import annotations
 
+import hashlib
+
 from ..config import Config, get_config
 from ..store import db
 from ..store.models import (
@@ -126,7 +128,47 @@ def _triage_request(
     )
 
 
-def raise_review_requests(repo_id: str, config: Config | None = None) -> list[ReviewRequest]:
+def _sampled_triage_request(
+    result: TriageResult,
+    finding: Finding,
+    boundaries: dict[int, str],
+    *,
+    seed: int,
+    sampling_run_id: int | None,
+) -> ReviewRequest:
+    """Build an auditable quality-control request for a suppressed finding."""
+    evidence = _base_evidence(finding, boundaries)
+    evidence["triage"] = {
+        "p_actionable": result.p_actionable,
+        "rank": result.rank,
+        "suppressed": result.suppressed,
+        "model": result.model_name,
+        "attributions": result.attributions,
+    }
+    evidence["sampling"] = {
+        "kind": "low_rank_quality_control",
+        "seed": seed,
+        "pipeline_run_id": sampling_run_id,
+        "selection_scope": finding.repo_id,
+    }
+    return ReviewRequest(
+        repo_id=finding.repo_id,
+        finding_id=finding.id,
+        stage="triage-sample",
+        reason=(
+            "Quality-control sample from triage-suppressed findings; review this item to "
+            "measure false negatives rather than labelling only high-ranked findings."
+        ),
+        evidence=evidence,
+    )
+
+
+def raise_review_requests(
+    repo_id: str,
+    config: Config | None = None,
+    *,
+    sampling_run_id: int | None = None,
+) -> list[ReviewRequest]:
     """Open review requests for every finding the pipeline could not resolve.
 
     Scans the repo's findings for `unresolved` status and its triage results for
@@ -156,6 +198,44 @@ def raise_review_requests(repo_id: str, config: Config | None = None) -> list[Re
         if finding.falsification_status is FalsificationStatus.UNRESOLVED:
             requests[finding.id] = _unresolved_request(finding, boundaries, config)
 
+    # Deterministic low-rank quality-control sampling corrects selection bias in the label
+    # stream. Existing requests/decisions are never overwritten merely to resample a row.
+    sample_size = config.review.low_rank_sample_size
+    prior_requests = db.list_review_requests(repo_id, config)
+    sampled_this_run = any(
+        (request.evidence or {}).get("sampling", {}).get("pipeline_run_id")
+        == sampling_run_id
+        for request in prior_requests
+    )
+    if sampled_this_run:
+        for request in prior_requests:
+            if ((request.evidence or {}).get("sampling", {}).get("pipeline_run_id")
+                    == sampling_run_id):
+                requests.setdefault(request.finding_id, request)
+    if sample_size and sampling_run_id is not None and not sampled_this_run:
+        candidates = []
+        for result in db.list_triage_results(repo_id, config):
+            finding = findings_by_id.get(result.finding_id)
+            if (finding is None or not result.suppressed
+                    or finding.falsification_status is not FalsificationStatus.CONFIRMED
+                    or result.finding_id in requests
+                    or any(r.finding_id == result.finding_id for r in prior_requests)):
+                continue
+            key = (
+                f"{config.review.low_rank_sample_seed}:{sampling_run_id}:"
+                f"{repo_id}:{result.finding_id}"
+            )
+            digest = hashlib.sha256(key.encode()).hexdigest()
+            candidates.append((digest, result, finding))
+        for _digest, result, finding in sorted(candidates)[:sample_size]:
+            requests[finding.id] = _sampled_triage_request(
+                result,
+                finding,
+                boundaries,
+                seed=config.review.low_rank_sample_seed,
+                sampling_run_id=sampling_run_id,
+            )
+
     for request in requests.values():
         db.upsert_review_request(request, config)
     return list(requests.values())
@@ -179,6 +259,14 @@ def _trace_summary(evidence: dict) -> str:
         rationale = evidence.get("synthesis_rationale") or ""
         return (f"normalize — {len(evidence['debate'])} conflicting positions"
                 + (f"; {rationale}" if rationale else ""))
+    if "sampling" in evidence:
+        t = evidence.get("triage", {})
+        sample = evidence["sampling"]
+        return (
+            f"triage quality-control sample — P(actionable)={t.get('p_actionable')}, "
+            f"rank={t.get('rank')}, run={sample.get('pipeline_run_id')}, "
+            f"seed={sample.get('seed')}"
+        )
     if "triage" in evidence:
         t = evidence["triage"]
         return (f"triage — P(actionable)={t.get('p_actionable')}, "

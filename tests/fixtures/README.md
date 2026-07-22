@@ -1,6 +1,6 @@
 # Golden / benchmark fixture corpus
 
-Two tiers of *vulnerability* fixtures live here. The split exists because the golden harness
+Three evidence kinds live here. The split exists because the golden harness
 runs a **scripted** model by default, and scripting canned answers for a large corpus would
 make its precision/recall *circular* (you'd be scoring hand-written answers against
 hand-written ground truth). So the honest numbers are separated from the deterministic ones.
@@ -32,10 +32,51 @@ lets Tier 2 live alongside them without breaking the scripted harness.
 | `cve_gunicorn_smuggling` | Gunicorn `gunicorn/http/message.py` @ 21.2.0 (real file) | CVE-2024-1135 (CWE-444) | LLM lens / semgrep |
 | `cve_vulnerable_deps` | requirements.txt pinning real CVE-affected versions | CVE-2020-14343 (PyYAML 5.3.1), CVE-2018-1000656 (Flask 0.12.2) | SCA (pip-audit / OSV) |
 
+The metadata field `source.kind` is authoritative:
+
+- `independent` — independently authored, mature public software used for the primary
+  real-world cohort. Pre/post snapshots share one `project_id` and count as one repository.
+- `benchmark` — deliberately vulnerable or benchmark-authored calibration anchor. It never
+  advances the independent-repository gate.
+- `fixture` — purpose-built or minimal-slice test material. It never advances that gate.
+
+## Independent real-world cohort
+
+Eight projects are pinned as vulnerable/patched pairs using acquisition metadata rather than
+vendored source trees. The patched commit is a same-codebase negative control; advisories and
+diffs are reviewer evidence, never labels inferred from a repoauditor run.
+
+| Project | Language | CVE | Provenance | License |
+|---|---|---|---|---|
+| Lodash | JavaScript | CVE-2020-8203 | OpenSSF CVE Benchmark + OSV | MIT |
+| Parse Server | JavaScript | CVE-2020-5251 | OpenSSF CVE Benchmark + OSV | BSD-3-Clause |
+| serialize-javascript | JavaScript | CVE-2019-16769 | OpenSSF CVE Benchmark + OSV | BSD-3-Clause |
+| Django | Python | CVE-2021-31542 | CVEfixes scope + OSV + upstream diff | BSD-3-Clause |
+| aiohttp | Python | CVE-2024-23334 | CVEfixes v1.0.8 scope + OSV + upstream diff | Apache-2.0 |
+| Apache Commons Text | Java | CVE-2022-42889 | CVEfixes scope + GHSA/GHSL + upstream diff | Apache-2.0 |
+| Apache JSPWiki | Java | CVE-2019-10090 | OpenSSF CVE Benchmark/CVEfixes scope + OSV | Apache-2.0 |
+| Rack | Ruby | CVE-2023-27539 | ruby-advisory-db + OSV/GHSA + upstream diff | MIT |
+
+The exact pre/post hashes, upstream URL, license, and verification links are repeated in each
+fixture's `expected_findings.json` and README. `materialize_public_corpus.py` materializes from
+verified local clones without network access by default; `--fetch` is an explicit opt-in to
+clone/fetch the public upstreams. Source and license files exist only in the generated local
+snapshot and are not redistributed by this repository.
+
+## Public vulnerable application anchors
+
+OWASP Juice Shop, WebGoat, and RailsGoat are pinned acquisition-only known-positive anchors.
+They are `benchmark`, not independent evidence. Juice Shop and RailsGoat are MIT; WebGoat is
+GPL-2.0-or-later. None of their source trees is redistributed in this repository.
+
 Every fixture's `expected_findings.json` carries a `source` block with the upstream repo,
 pinned commit/version, and advisory IDs (verified via `https://api.osv.dev`), so nothing
 here is an unsourced or fabricated vulnerability. These are **not** scripted — they are
 detected by the live LLM lens and/or the deterministic SAST/SCA tools.
+
+All corpus sources currently selected are public. This does not create permission to add or
+transmit proprietary code: future additions must record authorization explicitly, and no
+proprietary content may be sent to a hosted model merely because this harness supports one.
 
 ## What actually produces a number, and when
 

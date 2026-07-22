@@ -25,7 +25,7 @@ from pathlib import Path
 
 import pytest
 
-from conftest import FIXTURES_DIR, benchmark_corpus_ids
+from conftest import FIXTURES_DIR, _load_fixture, benchmark_corpus_ids
 from repoauditor.detect import run_ensemble
 from repoauditor.detect.deterministic import SecretsAdapter
 from repoauditor.eval import record_and_check
@@ -62,18 +62,84 @@ def test_corpus_fixture_is_well_formed(benchmark_repo):
     The last is the CLAUDE.md 'no finding without a citation' rule applied to ground truth —
     an expected finding that can't be matched by a citation substring is not defensible.
     """
-    assert benchmark_repo.snapshot_path.is_dir()
-    assert any(benchmark_repo.snapshot_path.rglob("*")), "empty snapshot"
-
     exp = benchmark_repo.expected
     assert exp.get("source"), "fixture must document its source (no unsourced fixtures)"
-    assert exp.get("findings"), "fixture must declare ground-truth findings"
-    for f in exp["findings"]:
+    source = exp["source"]
+    assert source.get("kind") in {"benchmark", "fixture", "independent"}
+    assert (benchmark_repo.snapshot_path.parent / "README.md").is_file()
+    materialized = benchmark_repo.snapshot_path.is_dir()
+    if materialized:
+        assert any(benchmark_repo.snapshot_path.rglob("*")), "empty snapshot"
+    else:
+        assert source.get("materialization") == "pinned-acquisition-only"
+        assert source.get("pinned_commit"), "acquisition-only entry needs an exact commit"
+    findings = exp.get("findings")
+    assert isinstance(findings, list), "fixture must declare a ground-truth findings list"
+    if source["kind"] == "independent":
+        assert source.get("pinned_commit")
+        assert source.get("license")
+        assert source.get("ground_truth")
+        assert source.get("variant") in {"pre_fix", "post_fix"}
+        if source["variant"] == "pre_fix":
+            assert findings, "vulnerable snapshot needs a known-positive finding"
+        else:
+            assert not findings, "patched snapshot must not retain the fixed finding"
+            assert exp.get("expected_absent"), "patched snapshot needs an explicit negative control"
+    for f in [*findings, *exp.get("expected_absent", [])]:
         assert f.get("file"), f"finding without a file: {f}"
         assert f.get("citation_contains"), f"finding without a citation anchor: {f}"
         # The cited file must exist in the snapshot (the anchor points at real code).
-        assert (benchmark_repo.snapshot_path / f["file"]).is_file(), \
-            f"cited file not in snapshot: {f['file']}"
+        if materialized:
+            assert (benchmark_repo.snapshot_path / f["file"]).is_file(), \
+                f"cited file not in snapshot: {f['file']}"
+    if materialized:
+        for f in findings:
+            cited_text = (benchmark_repo.snapshot_path / f["file"]).read_text(errors="ignore")
+            assert f["citation_contains"] in cited_text, \
+                f"citation anchor not present in vulnerable snapshot: {f['file']}"
+
+
+def test_independent_corpus_has_eight_real_projects_with_pre_post_pairs():
+    records = []
+    for repo_id in benchmark_corpus_ids():
+        fixture = _load_fixture(repo_id)
+        if fixture.expected["source"]["kind"] == "independent":
+            records.append(fixture.expected["source"])
+    projects = {record["project_id"] for record in records}
+    assert len(projects) == 8
+    assert {record["language"] for record in records} == {
+        "Python", "JavaScript", "Java", "Ruby",
+    }
+    for project in projects:
+        variants = {record["variant"] for record in records if record["project_id"] == project}
+        assert variants == {"pre_fix", "post_fix"}
+
+
+def test_corpus_kinds_keep_fixtures_and_benchmarks_out_of_independent_gate():
+    kinds = {
+        repo_id: _load_fixture(repo_id).expected["source"]["kind"]
+        for repo_id in benchmark_corpus_ids()
+    }
+    assert kinds["owasp_benchmark_py"] == "benchmark"
+    assert kinds["uat_lightweight_app"] == "fixture"
+    assert kinds["cve_gunicorn_smuggling"] == "fixture"
+    assert kinds["cve_vulnerable_deps"] == "fixture"
+    assert kinds["anchor_owasp_juice_shop"] == "benchmark"
+    assert kinds["anchor_owasp_webgoat"] == "benchmark"
+    assert kinds["anchor_owasp_railsgoat"] == "benchmark"
+
+
+def test_all_new_public_entries_are_pinned_acquisition_only():
+    entries = [
+        _load_fixture(repo_id) for repo_id in benchmark_corpus_ids()
+        if repo_id.startswith("independent_") or repo_id.startswith("anchor_owasp_")
+    ]
+    assert len(entries) == 19  # eight pre/post pairs plus three OWASP anchors
+    assert all(
+        fixture.expected["source"].get("materialization") == "pinned-acquisition-only"
+        for fixture in entries
+    )
+    assert all(fixture.expected["source"].get("pinned_commit") for fixture in entries)
 
 
 # --------------------------------------------------------------------------- #
@@ -89,6 +155,7 @@ _SECRETS_GROUND_TRUTH = {
 
 
 @pytest.mark.skipif(shutil.which("gitleaks") is None, reason="gitleaks not installed")
+@pytest.mark.integration
 def test_secrets_adapter_precision_recall_baseline(tmp_config, capsys):
     """Score the real gitleaks adapter against the secrets ground truth; record an EvalRun.
 
@@ -131,7 +198,9 @@ def test_secrets_adapter_precision_recall_baseline(tmp_config, capsys):
 # --------------------------------------------------------------------------- #
 # 3. Scripted detect->falsify->normalize: per-stage PIPELINE-LOGIC EvalRuns.
 # --------------------------------------------------------------------------- #
-def test_scripted_pipeline_records_per_stage_evalruns(tmp_config, fixture_repo, scripted_llm):
+def test_scripted_pipeline_records_per_stage_evalruns(
+    tmp_config, fixture_repo, scripted_llm, stub_deterministic_tools
+):
     """Extend the scripted golden pipeline through normalize and record a per-stage EvalRun.
 
     First time `severity_adjudication_v3` runs inside the golden harness end to end (it was
@@ -184,6 +253,12 @@ def test_corpus_live_baseline(tmp_config, benchmark_repo, capsys):
     hard-failing a non-deterministic model.
     """
     from repoauditor.llm import get_llm_client
+
+    if not benchmark_repo.snapshot_path.is_dir():
+        pytest.skip(
+            "pinned acquisition-only corpus entry is not materialized; run "
+            "tests/fixtures/materialize_public_corpus.py first"
+        )
 
     db.init_db(tmp_config)
     llm = get_llm_client(tmp_config)

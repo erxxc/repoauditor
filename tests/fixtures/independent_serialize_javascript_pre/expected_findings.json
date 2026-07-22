@@ -1,0 +1,39 @@
+{
+  "repo_id": "independent_serialize_javascript_pre",
+  "source": {
+    "kind": "independent",
+    "materialization": "pinned-acquisition-only",
+    "project_id": "serialize_javascript",
+    "project": "serialize-javascript",
+    "language": "JavaScript",
+    "repo": "https://github.com/yahoo/serialize-javascript.git",
+    "variant": "pre_fix",
+    "pinned_commit": "3bab6dee8db7317310a97af5d28f0f0479d21930",
+    "pre_fix_commit": "3bab6dee8db7317310a97af5d28f0f0479d21930",
+    "post_fix_commit": "16a68ab53d9626fc7c942b48a1163108fcd184c8",
+    "license": "BSD-3-Clause",
+    "cve": "CVE-2019-16769",
+    "ghsa": "GHSA-h9rv-jmmf-4pgx",
+    "source_dataset": "OpenSSF CVE Benchmark",
+    "verified_via": [
+      "https://api.osv.dev/v1/vulns/CVE-2019-16769",
+      "https://github.com/yahoo/serialize-javascript.git"
+    ],
+    "ground_truth": "Human-reviewed upstream advisory and pre/post fix diff; never inferred from repoauditor output."
+  },
+  "notes": "Public source only. Static analysis may use a hosted model; proprietary corpus additions are prohibited.",
+  "findings": [
+    {
+      "title": "XSS through unsafe regular-expression serialization",
+      "file": "index.js",
+      "line_start": 191,
+      "line_end": 191,
+      "severity": "high",
+      "falsification_status": "confirmed",
+      "cwe": "CWE-79",
+      "cve": "CVE-2019-16769",
+      "citation_contains": "regexps[valueIndex].toString()"
+    }
+  ],
+  "expected_absent": []
+}

@@ -18,6 +18,7 @@ import re
 import shutil
 from dataclasses import dataclass
 from pathlib import Path
+from urllib.parse import urlsplit, urlunsplit
 
 from ..config import Config, get_config
 from ..store import db
@@ -39,6 +40,40 @@ def _slugify(source: str) -> str:
     name = re.sub(r"\.git$", "", name)
     name = re.sub(r"[^0-9A-Za-z._-]+", "-", name).strip("-._")
     return name.lower() or "repo"
+
+
+def _source_identity(source: str) -> str:
+    """Canonical source identity used to prevent same-basename engagement collisions."""
+    path = Path(source)
+    if path.exists():
+        return str(path.resolve())
+    if re.match(r"^(https?|git|ssh)://", source):
+        parsed = urlsplit(source.rstrip("/"))
+        normalized_path = re.sub(r"\.git$", "", parsed.path.rstrip("/"))
+        return urlunsplit((parsed.scheme.lower(), parsed.netloc.lower(), normalized_path, "", ""))
+    return re.sub(r"\.git$", "", source.rstrip("/"))
+
+
+def _resolved_repo_id(source: str, requested: str | None, config: Config) -> str:
+    """Keep one source identity per repo id; disambiguate derived basename collisions."""
+    candidate = requested or _slugify(source)
+    identity = _source_identity(source)
+    existing = db.list_ingested_repos(config)
+    occupants = [row for row in existing if row.repo_id == candidate]
+    if not occupants or all(_source_identity(row.source) == identity for row in occupants):
+        return candidate
+    if requested is not None:
+        raise ValueError(
+            f"repo-id '{requested}' already belongs to a different source; choose a unique repo-id"
+        )
+
+    digest = hashlib.sha256(identity.encode()).hexdigest()
+    for width in (8, 12, 16, 64):
+        disambiguated = f"{candidate}-{digest[:width]}"
+        rows = [row for row in existing if row.repo_id == disambiguated]
+        if not rows or all(_source_identity(row.source) == identity for row in rows):
+            return disambiguated
+    raise ValueError("could not derive a collision-free repository id")
 
 
 def _looks_like_git(source: str) -> bool:
@@ -80,7 +115,7 @@ def ingest_repo(
     """
     config = config or get_config()
     db.init_db(config)
-    repo_id = repo_id or _slugify(source)
+    repo_id = _resolved_repo_id(source, repo_id, config)
 
     if _looks_like_git(source):
         commit, snapshot_source, cleanup = _prepare_git(source, config, repo_id)

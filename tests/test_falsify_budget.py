@@ -13,10 +13,17 @@ from pathlib import Path
 
 from repoauditor.detect import run_ensemble
 from repoauditor.falsify import challenge
+from repoauditor.falsify.challenger import _budget_order, _budget_partition
 from repoauditor.ingest import ingest_repo
 from repoauditor.map import recover_architecture
 from repoauditor.store import db
-from repoauditor.store.models import FalsificationStatus, Severity, TriageResult
+from repoauditor.store.models import (
+    FalsificationStatus,
+    Finding,
+    Severity,
+    TriageModelRun,
+    TriageResult,
+)
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -39,10 +46,23 @@ def _status(cfg, repo_id, status):
     return [f for f in db.list_findings(repo_id, cfg) if f.falsification_status is status]
 
 
+def _persist_triage_result(result, repo_id, cfg):
+    run_id = db.insert_triage_model_run(TriageModelRun(
+        repo_id=repo_id, model_name=result.model_name, model_version="test-fixture",
+        feature_schema_version="test-fixture", training_label_count=0,
+        evaluation_label_count=0, synthetic_share=1.0, synthetic_dropped=False,
+        calibration="test-fixture", evaluation_basis="test-fixture",
+        split_strategy="test-fixture", split_detail="test-only score fixture",
+    ), cfg)
+    return db.upsert_triage_result(result.model_copy(update={"triage_run_id": run_id}), cfg)
+
+
 # --------------------------------------------------------------------------- #
 # Budget defers the overflow (not drops it) and a later run resumes it.
 # --------------------------------------------------------------------------- #
-def test_budget_challenges_within_cap_and_defers_the_rest(tmp_config, scripted_llm):
+def test_budget_challenges_within_cap_and_defers_the_rest(
+    tmp_config, scripted_llm, stub_deterministic_tools
+):
     cfg = _budget_config(tmp_config, 1)
     db.init_db(cfg)
     repo_id = _detect(cfg, scripted_llm)
@@ -72,7 +92,9 @@ def test_budget_challenges_within_cap_and_defers_the_rest(tmp_config, scripted_l
     assert _status(cfg, repo_id, FalsificationStatus.DEFERRED) == []
 
 
-def test_unlimited_budget_challenges_everything_in_one_run(tmp_config, scripted_llm):
+def test_unlimited_budget_challenges_everything_in_one_run(
+    tmp_config, scripted_llm, stub_deterministic_tools
+):
     cfg = _budget_config(tmp_config, 0)   # 0 = unlimited (pre-budget behavior)
     db.init_db(cfg)
     repo_id = _detect(cfg, scripted_llm)
@@ -84,7 +106,9 @@ def test_unlimited_budget_challenges_everything_in_one_run(tmp_config, scripted_
 # --------------------------------------------------------------------------- #
 # Ordering: triaged (highest P(actionable)) first, then untriaged by severity.
 # --------------------------------------------------------------------------- #
-def test_budget_prioritizes_triaged_high_p_over_untriaged_severity(tmp_config, scripted_llm):
+def test_budget_prioritizes_triaged_high_p_over_untriaged_severity(
+    tmp_config, scripted_llm, stub_deterministic_tools
+):
     cfg = _budget_config(tmp_config, 1)
     db.init_db(cfg)
     repo_id = _detect(cfg, scripted_llm)
@@ -92,15 +116,17 @@ def test_budget_prioritizes_triaged_high_p_over_untriaged_severity(tmp_config, s
 
     # Give the *lowest-severity* finding a high P(actionable); leave the rest untriaged.
     low = next(f for f in findings if f.severity is Severity.LOW)
-    db.upsert_triage_result(TriageResult(
-        finding_id=low.id, p_actionable=0.95, rank=1, model_name="xgboost"), cfg)
+    _persist_triage_result(TriageResult(
+        finding_id=low.id, p_actionable=0.95, rank=1, model_name="xgboost"), repo_id, cfg)
 
     challenge(repo_id, cfg, llm=scripted_llm)
     # Despite its low severity, the triaged finding is falsified first (tier 0 wins).
     assert db.finding_ids_with_iterations(repo_id, cfg) == {low.id}
 
 
-def test_untriaged_findings_fall_back_to_severity_order(tmp_config, scripted_llm):
+def test_untriaged_findings_fall_back_to_severity_order(
+    tmp_config, scripted_llm, stub_deterministic_tools
+):
     cfg = _budget_config(tmp_config, 1)
     db.init_db(cfg)
     repo_id = _detect(cfg, scripted_llm)   # nothing triaged
@@ -110,3 +136,49 @@ def test_untriaged_findings_fall_back_to_severity_order(tmp_config, scripted_llm
     # With no triage, the highest-severity candidate is falsified first.
     critical = next(f for f in findings if f.severity is Severity.CRITICAL)
     assert db.finding_ids_with_iterations(repo_id, cfg) == {critical.id}
+
+
+def _candidate(fid: int, *, severity=Severity.HIGH, lens="owasp", tool=None) -> Finding:
+    return Finding(
+        id=fid, repo_id="r", title=f"finding-{fid}", file="app.py",
+        line_start=fid, line_end=fid, citation_snippet=f"code-{fid}",
+        source_lens=lens if tool is None else None, source_tool=tool,
+        confidence=0.8, severity=severity,
+    )
+
+
+def test_bounded_queue_reserves_a_slot_for_untriaged_novel_finding():
+    deterministic = [_candidate(i, lens=None, tool="sast") for i in range(1, 5)]
+    novel = _candidate(5, severity=Severity.CRITICAL)
+    triage = {
+        finding.id: TriageResult(
+            finding_id=finding.id, p_actionable=1.0 - finding.id / 10,
+            rank=finding.id, suppressed=(finding.id == 4), model_name="xgboost",
+        )
+        for finding in deterministic
+    }
+    ordered = _budget_order([*deterministic, novel], triage)
+
+    selected, deferred = _budget_partition(ordered, triage, budget=3, min_untriaged=1)
+
+    assert [finding.id for finding in selected] == [1, 2, 5]
+    assert {finding.id for finding in deferred} == {3, 4}
+    # Suppression remains an annotation: the suppressed candidate is deferred/resumable,
+    # not deleted or excluded from the pending set.
+    assert any(finding.id == 4 for finding in deferred)
+
+
+def test_single_slot_budget_retains_existing_best_first_priority():
+    deterministic = _candidate(1, lens=None, tool="sast")
+    novel = _candidate(2, severity=Severity.CRITICAL)
+    triage = {
+        1: TriageResult(
+            finding_id=1, p_actionable=0.9, rank=1, model_name="xgboost"
+        )
+    }
+    ordered = _budget_order([novel, deterministic], triage)
+
+    selected, deferred = _budget_partition(ordered, triage, budget=1, min_untriaged=1)
+
+    assert [finding.id for finding in selected] == [1]
+    assert [finding.id for finding in deferred] == [2]

@@ -12,7 +12,8 @@
     "expected_disposition": "store.models.FalsificationStatus — confirmed|killed|unresolved(=requires-review). `architecture-exposure` is used for case 6, which is a map/exposure expectation, not a falsification verdict."
   },
   "source": {
-    "kind": "purpose-built intentionally-vulnerable web app (UAT fixture)",
+    "kind": "fixture",
+    "fixture_detail": "purpose-built intentionally-vulnerable web app (UAT fixture)",
     "framework": "Flask 3.0.3 (Python 3)",
     "framework_rationale": "Flask maximizes coverage of the pipeline's own tooling: requirements.txt is the SCA adapter's native manifest, Python has first-class AST support in detect/retrieval, gitleaks/semgrep/pip-audit are all first-class on this stack, and @app.route entry points are what the map stage recovers cleanly. See README.md.",
     "not_derived_from": "Authored from scratch for this fixture. NOT adapted from OWASP Juice Shop or any existing project; the vulnerability set is a controlled 10-case test matrix.",

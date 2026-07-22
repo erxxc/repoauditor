@@ -1,0 +1,26 @@
+{
+  "repo_id": "anchor_owasp_juice_shop",
+  "source": {
+    "kind": "benchmark",
+    "materialization": "pinned-acquisition-only",
+    "project_id": "owasp_juice_shop",
+    "project": "OWASP Juice Shop",
+    "repo": "https://github.com/juice-shop/juice-shop.git",
+    "pinned_commit": "33518f5a0911e25d9df747b1e70fb7af279a755c",
+    "license": "MIT",
+    "ground_truth": "Human-reviewed intentionally vulnerable source and upstream challenge marker; never inferred from repoauditor output."
+  },
+  "notes": "Pinned acquisition-only known-positive anchor; not an independent project and not redistributed in this repository.",
+  "findings": [
+    {
+      "title": "SQL injection in login query",
+      "file": "routes/login.ts",
+      "line_start": 34,
+      "line_end": 34,
+      "severity": "critical",
+      "falsification_status": "confirmed",
+      "cwe": "CWE-89",
+      "citation_contains": "SELECT * FROM Users WHERE email = '${req.body.email"
+    }
+  ]
+}

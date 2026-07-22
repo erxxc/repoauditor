@@ -1,7 +1,8 @@
 {
   "repo_id": "cve_vulnerable_deps",
   "source": {
-    "kind": "dependency-manifest (SCA path)",
+    "kind": "fixture",
+    "fixture_detail": "dependency-manifest (SCA path)",
     "description": "A minimal requirements.txt pinning two real, CVE-affected dependency versions. Not a synthetic vulnerability — the CVEs are real and sourced to OSV; the manifest models the common acquisition scenario of inherited vulnerable pins. Scored by the SCA adapter (pip-audit / OSV-Scanner), which is not installed in a bare CI env, so this fixture's score is deferred to a tooled run.",
     "advisories": [
       {"package": "PyYAML", "version": "5.3.1", "cve": "CVE-2020-14343", "ghsa": "GHSA-8q59-q68h-6hv4", "pysec": "PYSEC-2021-142", "affected": "<5.4", "verified_via": "https://api.osv.dev/v1/query"},

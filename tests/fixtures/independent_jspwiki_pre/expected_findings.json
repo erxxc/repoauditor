@@ -1,0 +1,39 @@
+{
+  "repo_id": "independent_jspwiki_pre",
+  "source": {
+    "kind": "independent",
+    "materialization": "pinned-acquisition-only",
+    "project_id": "jspwiki",
+    "project": "Apache JSPWiki",
+    "language": "Java",
+    "repo": "https://github.com/apache/jspwiki.git",
+    "variant": "pre_fix",
+    "pinned_commit": "447b5a634dfb6adcc7ff28181cb174aaa1920577",
+    "pre_fix_commit": "447b5a634dfb6adcc7ff28181cb174aaa1920577",
+    "post_fix_commit": "139746f7c25b84049437d1d9eed9456446a08bf7",
+    "license": "Apache-2.0",
+    "cve": "CVE-2019-10090",
+    "ghsa": "GHSA-g6ww-2x43-h963",
+    "source_dataset": "OpenSSF CVE Benchmark; also within CVEfixes scope",
+    "verified_via": [
+      "https://api.osv.dev/v1/vulns/CVE-2019-10090",
+      "https://github.com/apache/jspwiki.git"
+    ],
+    "ground_truth": "Human-reviewed upstream advisory and pre/post fix diff; never inferred from repoauditor output."
+  },
+  "notes": "Public source only. Static analysis may use a hosted model; proprietary corpus additions are prohibited.",
+  "findings": [
+    {
+      "title": "DOM XSS through unsafe transformed text insertion",
+      "file": "jspwiki-war/src/main/scripts/moo-extend/Element.Extend.js",
+      "line_start": 530,
+      "line_end": 530,
+      "severity": "high",
+      "falsification_status": "confirmed",
+      "cwe": "CWE-79",
+      "cve": "CVE-2019-10090",
+      "citation_contains": "dummy.innerHTML = s"
+    }
+  ],
+  "expected_absent": []
+}

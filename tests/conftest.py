@@ -193,8 +193,8 @@ class FixtureRepo:
 
 @pytest.fixture
 def tmp_config(tmp_path: Path) -> Config:
-    """A Config pointed entirely at a throwaway tmp tree (isolated DB + raw store)."""
-    return Config(
+    """An isolated test config with a right-sized synthetic training corpus."""
+    config = Config(
         paths=PathsConfig(
             data_dir=tmp_path,
             raw_dir=tmp_path / "raw",
@@ -202,6 +202,9 @@ def tmp_config(tmp_path: Path) -> Config:
         ),
         root=tmp_path,
     )
+    return config.model_copy(update={
+        "triage": config.triage.model_copy(update={"synthetic_corpus_size": 200})
+    })
 
 
 @pytest.fixture
@@ -224,6 +227,29 @@ def scripted_llm(tmp_config, scripted_backend) -> LLMClient:
     is scripted.
     """
     return LLMClient(scripted_backend, tmp_config)
+
+
+@pytest.fixture
+def stub_deterministic_tools(monkeypatch):
+    """Replace scanner subprocesses with a deterministic adapter result.
+
+    Scripted-model tests validate pipeline ordering and data flow, not scanner binaries.
+    They still pass through ``run_ensemble``'s real deterministic-adapter seam and receive
+    the same tuple shape, including a valid SARIF artifact.  Real binary behavior remains
+    covered by the explicitly marked integration tests in ``test_deterministic.py`` and
+    ``test_benchmark_corpus.py``.
+    """
+    def fake_adapters(snapshot_path, config, sarif_output_path):
+        del snapshot_path, config
+        sarif_output_path.parent.mkdir(parents=True, exist_ok=True)
+        sarif_output_path.write_text(
+            json.dumps({"version": "2.1.0", "runs": []}), encoding="utf-8"
+        )
+        return [], sarif_output_path, "complete"
+
+    monkeypatch.setattr(
+        "repoauditor.detect.ensemble._run_deterministic_adapters", fake_adapters
+    )
 
 
 def _load_fixture(repo_id: str) -> FixtureRepo:

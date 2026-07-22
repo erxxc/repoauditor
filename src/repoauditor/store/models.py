@@ -237,6 +237,27 @@ class TriageLabelSource(StrEnum):
     DERIVED_REVIEW = "derived_review"
 
 
+class TriageAssessmentOutcome(StrEnum):
+    """An analyst assessment; UNCERTAIN is an explicit abstention, never a label."""
+
+    TRUE_POSITIVE = "true_positive"
+    FALSE_POSITIVE = "false_positive"
+    UNCERTAIN = "uncertain"
+
+
+class TriageAssessment(BaseModel):
+    """Append-only analyst evidence behind a label, correction, or abstention."""
+
+    id: int | None = None
+    finding_id: int
+    engagement: str
+    outcome: TriageAssessmentOutcome
+    rationale: str = Field(min_length=1)
+    analyst: str = Field(min_length=1)
+    dimensions: list[str] = Field(default_factory=list)
+    created_at: str | None = None
+
+
 class TriageLabel(BaseModel):
     """An analyst's ground-truth disposition on a past deterministic-tool finding.
 
@@ -256,6 +277,8 @@ class TriageLabel(BaseModel):
     actionable: bool  # analyst disposition: True = true positive, False = false positive
     source: TriageLabelSource = TriageLabelSource.MANUAL
     note: str | None = None
+    created_at: str | None = None
+    updated_at: str | None = None
 
 
 class TriageFeatureRecord(BaseModel):
@@ -317,6 +340,45 @@ class TriageResult(BaseModel):
     suppressed: bool = False
     model_name: str  # winning model: "randomforest" | "xgboost"
     attributions: list[dict] = Field(default_factory=list)  # [{feature, value, contribution}]
+    triage_run_id: int | None = None
+    scored_at: str | None = None
+
+
+class TriageModelRun(BaseModel):
+    """One auditable classifier fit/score pass; every new TriageResult links to it."""
+
+    id: int | None = None
+    repo_id: str
+    model_name: str
+    model_version: str
+    feature_schema_version: str
+    training_label_count: int
+    evaluation_label_count: int
+    label_source_counts: dict[str, int] = Field(default_factory=dict)
+    synthetic_share: float
+    synthetic_dropped: bool
+    calibration: str
+    evaluation_basis: str
+    split_strategy: str
+    split_detail: str
+    evaluations: list[dict] = Field(default_factory=list)
+    scanner_versions: dict[str, str] = Field(default_factory=dict)
+    created_at: str | None = None
+
+
+class ScoredTriageLabel(BaseModel):
+    """A historical P(actionable) joined to its later authoritative label and cohort."""
+
+    p_actionable: float
+    actionable: bool
+    engagement: str
+    label_source: TriageLabelSource
+    triage_run_id: int | None = None
+    scored_at: str | None = None
+    model_name: str | None = None
+    model_version: str | None = None
+    feature_schema_version: str | None = None
+    calibration: str | None = None
 
 
 # --------------------------------------------------------------------------- #
@@ -448,6 +510,7 @@ class SimulationRun(BaseModel):
     scenario_summary: dict = Field(default_factory=dict)  # per-scenario mean/median/p95
     tornado: list[dict] = Field(default_factory=list)  # sensitivity ranking (param -> swing)
     seed: int | None = None
+    created_at: str | None = None
 
 
 # --------------------------------------------------------------------------- #
@@ -480,7 +543,7 @@ class ReviewRequest(BaseModel):
     id: int | None = None
     repo_id: str
     finding_id: int
-    stage: str  # which stage flagged the uncertainty: "falsify" | "normalize" | "triage"
+    stage: str  # "falsify" | "normalize" | "triage" | "triage-sample"
     reason: str  # human-readable why-this-is-unresolved
     evidence: dict = Field(default_factory=dict)  # citation + trust boundary + stage trace
 

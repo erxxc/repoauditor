@@ -17,6 +17,7 @@ the vector width is stable and `synthetic.py` can generate matching rows.
 from __future__ import annotations
 
 import json
+import hashlib
 import math
 import re
 from dataclasses import dataclass, field
@@ -51,6 +52,10 @@ FEATURE_NAMES: list[str] = [
     "finding_density_log",    # log1p(#findings in the same file)
     "message_length_log",     # log1p(len(message)) — terse rules vs verbose ones
 ]
+
+FEATURE_SCHEMA_VERSION = "sha256:" + hashlib.sha256(
+    json.dumps(FEATURE_NAMES, separators=(",", ":")).encode()
+).hexdigest()[:16]
 
 # CWE families that co-occur with high actionable rates in the SAST literature.
 _INJECTION_CWES = {20, 74, 77, 78, 79, 88, 89, 90, 91, 94, 95, 116, 502, 611, 943}

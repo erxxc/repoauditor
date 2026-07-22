@@ -1,0 +1,39 @@
+{
+  "repo_id": "independent_aiohttp_post",
+  "source": {
+    "kind": "independent",
+    "materialization": "pinned-acquisition-only",
+    "project_id": "aiohttp",
+    "project": "aiohttp",
+    "language": "Python",
+    "repo": "https://github.com/aio-libs/aiohttp.git",
+    "variant": "post_fix",
+    "pinned_commit": "1c335944d6a8b1298baf179b7c0b3069f10c514b",
+    "pre_fix_commit": "33ccdfb0a12690af5bb49bda2319ec0907fa7827",
+    "post_fix_commit": "1c335944d6a8b1298baf179b7c0b3069f10c514b",
+    "license": "Apache-2.0",
+    "cve": "CVE-2024-23334",
+    "ghsa": "GHSA-5h86-8mv2-jq9f",
+    "source_dataset": "CVEfixes v1.0.8 scope; independently verified",
+    "verified_via": [
+      "https://api.osv.dev/v1/vulns/CVE-2024-23334",
+      "https://github.com/aio-libs/aiohttp.git"
+    ],
+    "ground_truth": "Human-reviewed upstream advisory and pre/post fix diff; never inferred from repoauditor output."
+  },
+  "notes": "Public source only. Static analysis may use a hosted model; proprietary corpus additions are prohibited.",
+  "findings": [],
+  "expected_absent": [
+    {
+      "title": "Directory traversal when static resources follow symlinks",
+      "file": "aiohttp/web_urldispatcher.py",
+      "line_start": 643,
+      "line_end": 643,
+      "severity": "high",
+      "falsification_status": "confirmed",
+      "cwe": "CWE-22",
+      "cve": "CVE-2024-23334",
+      "citation_contains": "self._directory.joinpath(filename).resolve()"
+    }
+  ]
+}

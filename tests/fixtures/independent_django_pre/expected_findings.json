@@ -1,0 +1,39 @@
+{
+  "repo_id": "independent_django_pre",
+  "source": {
+    "kind": "independent",
+    "materialization": "pinned-acquisition-only",
+    "project_id": "django",
+    "project": "Django",
+    "language": "Python",
+    "repo": "https://github.com/django/django.git",
+    "variant": "pre_fix",
+    "pinned_commit": "7f1b088ab4a4342a87a11496096471703994a006",
+    "pre_fix_commit": "7f1b088ab4a4342a87a11496096471703994a006",
+    "post_fix_commit": "04ac1624bdc2fa737188401757cf95ced122d26d",
+    "license": "BSD-3-Clause",
+    "cve": "CVE-2021-31542",
+    "ghsa": "GHSA-rxjp-mfm9-w4wr",
+    "source_dataset": "CVEfixes v1.0.8 scope; independently verified",
+    "verified_via": [
+      "https://api.osv.dev/v1/vulns/CVE-2021-31542",
+      "https://github.com/django/django.git"
+    ],
+    "ground_truth": "Human-reviewed upstream advisory and pre/post fix diff; never inferred from repoauditor output."
+  },
+  "notes": "Public source only. Static analysis may use a hosted model; proprietary corpus additions are prohibited.",
+  "findings": [
+    {
+      "title": "Path traversal through unsanitized uploaded filenames",
+      "file": "django/core/files/storage.py",
+      "line_start": 101,
+      "line_end": 101,
+      "severity": "high",
+      "falsification_status": "confirmed",
+      "cwe": "CWE-22",
+      "cve": "CVE-2021-31542",
+      "citation_contains": "os.path.normpath(os.path.join(dirname"
+    }
+  ],
+  "expected_absent": []
+}

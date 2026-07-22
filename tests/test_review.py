@@ -26,6 +26,7 @@ from repoauditor.store.models import (
     Finding,
     ReviewDisposition,
     Severity,
+    TriageModelRun,
     TriageResult,
 )
 
@@ -41,6 +42,17 @@ def _finding(cfg, title, status=FalsificationStatus.UNRESOLVED, severity="high",
         ),
         cfg,
     )
+
+
+def _persist_triage_result(result, cfg):
+    run_id = db.insert_triage_model_run(TriageModelRun(
+        repo_id="r", model_name=result.model_name, model_version="test-fixture",
+        feature_schema_version="test-fixture", training_label_count=0,
+        evaluation_label_count=0, synthetic_share=1.0, synthetic_dropped=False,
+        calibration="test-fixture", evaluation_basis="test-fixture",
+        split_strategy="test-fixture", split_detail="test-only score fixture",
+    ), cfg)
+    return db.upsert_triage_result(result.model_copy(update={"triage_run_id": run_id}), cfg)
 
 
 # --------------------------------------------------------------------------- #
@@ -122,11 +134,11 @@ def test_uncertain_triage_result_creates_a_review_request(tmp_config):
     uncertain_id = _finding(tmp_config, "Uncertain", status=FalsificationStatus.CONFIRMED)
     confident_id = _finding(tmp_config, "Confident", status=FalsificationStatus.CONFIRMED,
                             line=20)
-    db.upsert_triage_result(TriageResult(
+    _persist_triage_result(TriageResult(
         finding_id=uncertain_id, p_actionable=0.5, rank=1, model_name="xgboost",
         attributions=[{"feature": "cwe_is_injection", "value": 0.0, "contribution": 0.1}],
     ), tmp_config)
-    db.upsert_triage_result(TriageResult(
+    _persist_triage_result(TriageResult(
         finding_id=confident_id, p_actionable=0.96, rank=2, model_name="xgboost",
     ), tmp_config)
 
@@ -142,13 +154,69 @@ def test_uncertain_triage_result_creates_a_review_request(tmp_config):
 def test_unresolved_status_takes_precedence_over_triage_uncertainty(tmp_config):
     db.init_db(tmp_config)
     fid = _finding(tmp_config, "Both", status=FalsificationStatus.UNRESOLVED)
-    db.upsert_triage_result(TriageResult(
+    _persist_triage_result(TriageResult(
         finding_id=fid, p_actionable=0.5, rank=1, model_name="randomforest",
     ), tmp_config)
 
     requests = raise_review_requests("r", tmp_config)
     assert len(requests) == 1
     assert requests[0].stage == "falsify"  # unresolved wins over the triage-uncertainty
+
+
+def test_suppressed_quality_control_sample_is_deterministic_and_auditable(tmp_config):
+    db.init_db(tmp_config)
+    ids = [
+        _finding(
+            tmp_config, f"Suppressed {index}", status=FalsificationStatus.CONFIRMED,
+            line=20 + index,
+        )
+        for index in range(3)
+    ]
+    for rank, finding_id in enumerate(ids, start=1):
+        _persist_triage_result(TriageResult(
+            finding_id=finding_id, p_actionable=0.1 * rank, rank=rank,
+            suppressed=True, model_name="xgboost",
+        ), tmp_config)
+
+    first = raise_review_requests("r", tmp_config, sampling_run_id=42)
+    second = raise_review_requests("r", tmp_config, sampling_run_id=42)
+
+    assert len(first) == len(second) == 1
+    assert first[0].finding_id == second[0].finding_id
+    assert first[0].stage == "triage-sample"
+    assert first[0].evidence["sampling"] == {
+        "kind": "low_rank_quality_control",
+        "seed": 0,
+        "pipeline_run_id": 42,
+        "selection_scope": "r",
+    }
+    assert first[0].evidence["triage"]["suppressed"] is True
+    assert len(db.list_review_requests("r", tmp_config)) == 1
+
+
+def test_standalone_checkpoint_does_not_open_a_new_sampling_batch(tmp_config):
+    db.init_db(tmp_config)
+    finding_id = _finding(
+        tmp_config, "Suppressed", status=FalsificationStatus.CONFIRMED
+    )
+    _persist_triage_result(TriageResult(
+        finding_id=finding_id, p_actionable=0.1, rank=1, suppressed=True,
+        model_name="xgboost",
+    ), tmp_config)
+
+    assert raise_review_requests("r", tmp_config) == []
+    assert db.list_review_requests("r", tmp_config) == []
+
+
+def test_quality_control_sample_does_not_create_killed_review_override_conflict(tmp_config):
+    db.init_db(tmp_config)
+    finding_id = _finding(tmp_config, "Killed", status=FalsificationStatus.KILLED)
+    _persist_triage_result(TriageResult(
+        finding_id=finding_id, p_actionable=0.1, rank=1, suppressed=True,
+        model_name="xgboost",
+    ), tmp_config)
+
+    assert raise_review_requests("r", tmp_config, sampling_run_id=7) == []
 
 
 # --------------------------------------------------------------------------- #

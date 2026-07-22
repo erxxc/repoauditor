@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
+import pytest
 from typer.testing import CliRunner
 
 from repoauditor import cli
@@ -50,3 +53,33 @@ def test_ingest_cli_prints_identity_and_repos_list(
     assert source in listed.stdout
     assert record.commit_hash in listed.stdout
     assert record.ingested_at in listed.stdout
+
+
+def _same_named_source(root: Path, parent: str, content: str) -> Path:
+    source = root / parent / "service"
+    source.mkdir(parents=True)
+    (source / "app.py").write_text(content)
+    return source
+
+
+def test_same_basename_sources_receive_distinct_stable_engagement_ids(tmp_config, tmp_path):
+    first_source = _same_named_source(tmp_path, "owner-a", "print('a')")
+    second_source = _same_named_source(tmp_path, "owner-b", "print('b')")
+
+    first = ingest_repo(str(first_source), tmp_config)
+    second = ingest_repo(str(second_source), tmp_config)
+    second_again = ingest_repo(str(second_source), tmp_config)
+
+    assert first.repo_id == "service"
+    assert second.repo_id.startswith("service-") and second.repo_id != first.repo_id
+    assert second_again.repo_id == second.repo_id
+    assert second_again.reused is True
+
+
+def test_explicit_repo_id_cannot_merge_different_source_repositories(tmp_config, tmp_path):
+    first_source = _same_named_source(tmp_path, "owner-a", "print('a')")
+    second_source = _same_named_source(tmp_path, "owner-b", "print('b')")
+    ingest_repo(str(first_source), tmp_config, repo_id="engagement")
+
+    with pytest.raises(ValueError, match="already belongs to a different source"):
+        ingest_repo(str(second_source), tmp_config, repo_id="engagement")

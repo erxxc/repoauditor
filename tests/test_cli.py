@@ -61,7 +61,15 @@ def test_report_engineering_cli(wired):
     assert "reported r: wrote" in result.stdout and "backlog.md" in result.stdout
 
 
-def test_report_memo_cli(wired):
+def test_report_memo_cli(wired, monkeypatch):
+    def fake_appendix(repo_id, config, *, out_dir, **_kwargs):
+        del repo_id, config
+        out_dir.mkdir(parents=True, exist_ok=True)
+        path = out_dir / "risk_appendix.md"
+        path.write_text("# Appendix\n\nTest quantification fixture.\n")
+        return path
+
+    monkeypatch.setattr("repoauditor.report.memo.generate_appendix", fake_appendix)
     result = runner.invoke(cli.app, ["report", "r", "--mode", "memo"])
     assert result.exit_code == 0, result.output
     assert "Security Risk Memo" in result.stdout
@@ -70,7 +78,14 @@ def test_report_memo_cli(wired):
     assert "reported r: wrote" in result.stdout and "memo.md" in result.stdout
 
 
-def test_report_memo_record_audit_cli(wired):
+def test_report_memo_record_audit_cli(wired, monkeypatch):
+    def fake_charts(_result, _tornado, out_dir):
+        for name in ("loss_exceedance.png", "tornado.png"):
+            path = out_dir / name
+            path.write_bytes(b"test chart")
+        return {"exceedance": "loss_exceedance.png", "tornado": "tornado.png"}
+
+    monkeypatch.setattr("repoauditor.analyze.risk_quant._render_charts", fake_charts)
     cfg, _held = wired
     assert db.list_simulation_runs("r", cfg) == []
     result = runner.invoke(cli.app, ["report", "r", "--mode", "memo", "--record-audit"])
@@ -142,6 +157,7 @@ def test_triage_and_manual_label_cli(triage_cfg, tmp_path):
     # Cold start: no real labels yet, synthetic teacher owns the whole training mass.
     assert "real=0" in triaged.stdout and "synthetic_share=100%" in triaged.stdout
     assert "eval_on=synthetic" in triaged.stdout
+    assert "not real-world performance" in triaged.stdout
 
     fid = db.list_findings("acme", cfg)[0].id
     labelled = runner.invoke(cli.app, [
@@ -159,9 +175,44 @@ def test_triage_and_manual_label_cli(triage_cfg, tmp_path):
 def test_triage_label_cli_rejects_untriaged_finding(triage_cfg):
     result = runner.invoke(cli.app, [
         "triage-label", "999", "--disposition", "false_positive",
+        "--rationale", "not reachable",
     ])
     assert result.exit_code == 1
     assert "no finding with id 999" in result.output
+
+
+def test_triage_stats_cli_withholds_curve_below_real_label_gate(triage_cfg):
+    result = runner.invoke(cli.app, ["triage-stats"])
+
+    assert result.exit_code == 0, result.output
+    assert "real scored labels=0" in result.stdout
+    assert ">=40 label gate" in result.stdout
+    assert "Synthetic-heavy data is not substituted" in result.stdout
+
+
+def test_triage_label_cli_records_uncertain_without_training_label(triage_cfg, tmp_path):
+    sp = tmp_path / "scan.sarif"
+    sp.write_text(_sarif_one())
+    assert runner.invoke(cli.app, ["triage", "acme", "--sarif", str(sp)]).exit_code == 0
+    fid = db.list_findings("acme", triage_cfg)[0].id
+
+    result = runner.invoke(cli.app, [
+        "triage-label", str(fid), "--disposition", "uncertain",
+        "--rationale", "needs runtime tenant context", "--analyst", "alice",
+        "--dimension", "tenant-isolation", "--dimension", "business-logic",
+    ])
+
+    assert result.exit_code == 0, result.output
+    assert "excluded from classifier training" in result.stdout
+    assert db.list_triage_labels(config=triage_cfg) == []
+    assessment = db.list_triage_assessments("acme", triage_cfg)[0]
+    assert assessment.analyst == "alice"
+    assert assessment.dimensions == ["business-logic", "tenant-isolation"]
+
+    status = runner.invoke(cli.app, ["triage-collection"])
+    assert status.exit_code == 0
+    assert "usable human labels=0/40" in status.stdout
+    assert "explicit abstentions=1" in status.stdout
 
 
 def test_review_decide_rejects_wrong_repo(wired):
@@ -202,6 +253,18 @@ def _wire_run_stages(monkeypatch, requests):
     def triage(repo_id, config, sarif=None, threshold=0.5):
         assert sarif == Path("scan.sarif")
         calls.append("triage")
+        return SimpleNamespace(
+            n_real_labels=7,
+            synthetic_share=0.25,
+            synthetic_dropped=False,
+            n_suppressed=2,
+            model_name="xgboost",
+            evaluations=[SimpleNamespace(
+                model_name="xgboost", eval_on="real", brier=0.11,
+                average_precision=0.82, n_eval=8, split_strategy="real_row_random",
+                split_detail="grouped validation not yet available (1 engagements, need 8)",
+            )],
+        )
 
     monkeypatch.setattr(cli, "_triage_stage", triage)
     monkeypatch.setattr(cli, "_falsify_stage", stage("falsify"))
@@ -234,6 +297,18 @@ def test_run_stops_cleanly_when_no_review_is_needed(tmp_config, monkeypatch):
     assert calls[-1] == "checkpoint"
     assert "no findings require review" in result.stdout
     assert "repoauditor finalize acme" in result.stdout
+
+    pipeline = db.list_pipeline_runs(tmp_config, repo_id="acme")[0]
+    summaries = {stage.stage: stage.summary for stage in db.list_stage_runs(pipeline.id, tmp_config)}
+    assert summaries["detect"]["scanner_coverage"] == {"checked": True, "missing": []}
+    assert summaries["map"]["llm"]["prompt_versions"]["map"] == "architecture_recovery_v2"
+    assert summaries["triage"]["real_labels"] == 7
+    assert summaries["triage"]["evaluations"][0] == {
+        "model": "xgboost", "eval_on": "real", "brier": 0.11,
+        "average_precision": 0.82, "n_eval": 8,
+        "split_strategy": "real_row_random",
+        "split_detail": "grouped validation not yet available (1 engagements, need 8)",
+    }
 
 
 def test_run_ndjson_emits_parseable_stage_events(tmp_config, monkeypatch):

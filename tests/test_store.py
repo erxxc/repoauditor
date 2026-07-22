@@ -64,7 +64,9 @@ def test_pre_methodology_database_migrates_without_losing_audit_data(
     applied = db.init_db(tmp_config)
     assert applied == [
         "0011_risk_methodology.sql", "0012_scenario_inputs.sql",
-        "0013_scenario_run_link.sql",
+        "0013_scenario_run_link.sql", "0014_triage_score_provenance.sql",
+        "0015_triage_score_history.sql",
+        "0016_triage_assessment.sql",
     ]
 
     assert db.list_findings("r", tmp_config)[0].id == finding_id

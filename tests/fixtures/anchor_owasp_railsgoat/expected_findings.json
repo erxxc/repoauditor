@@ -1,0 +1,26 @@
+{
+  "repo_id": "anchor_owasp_railsgoat",
+  "source": {
+    "kind": "benchmark",
+    "materialization": "pinned-acquisition-only",
+    "project_id": "owasp_railsgoat",
+    "project": "OWASP RailsGoat",
+    "repo": "https://github.com/OWASP/railsgoat.git",
+    "pinned_commit": "0222f7da3406ba3ab637bc6d24ae9366b5f0a680",
+    "license": "MIT",
+    "ground_truth": "Human-reviewed deliberately vulnerable controller code; never inferred from repoauditor output."
+  },
+  "notes": "Pinned acquisition-only known-positive anchor; not an independent project and not redistributed in this repository.",
+  "findings": [
+    {
+      "title": "Unsafe deserialization in password reset",
+      "file": "app/controllers/password_resets_controller.rb",
+      "line_start": 6,
+      "line_end": 6,
+      "severity": "critical",
+      "falsification_status": "confirmed",
+      "cwe": "CWE-502",
+      "citation_contains": "Marshal.load(Base64.decode64(params[:user]))"
+    }
+  ]
+}

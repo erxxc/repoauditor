@@ -26,6 +26,7 @@ import numpy as np
 
 from ..config import Config, get_config
 from ..store import db
+from ..store.models import TriageLabelSource
 from . import synthetic
 from .features import FEATURE_NAMES
 
@@ -38,13 +39,18 @@ class TrainingCorpus:
     y: np.ndarray
     sample_weight: np.ndarray
     real_mask: np.ndarray          # True for real rows (for a real held-out eval split)
+    engagement_groups: np.ndarray  # repo id for real rows; empty string for synthetic rows
+    evaluation_mask: np.ndarray    # manual/review labels eligible for honest evaluation
+    label_source_counts: dict[str, int]
     n_real: int
     n_synthetic: int
     synthetic_share: float         # synthetic's fraction of total effective training mass
     synthetic_dropped: bool        # True once n_real >= cutoff (synthetic retired)
 
 
-def load_real_examples(config: Config | None = None) -> tuple[np.ndarray, np.ndarray]:
+def load_real_examples(
+    config: Config | None = None,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, dict[str, int]]:
     """Real labelled feature rows from the store, filtered to the current feature schema.
 
     Rows whose stored `feature_names` don't match the current `FEATURE_NAMES` are dropped
@@ -55,14 +61,27 @@ def load_real_examples(config: Config | None = None) -> tuple[np.ndarray, np.nda
     width = len(FEATURE_NAMES)
     xs: list[list[float]] = []
     ys: list[int] = []
-    for features, names, actionable in db.list_real_training_examples(config):
+    groups: list[str] = []
+    evaluation_eligible: list[bool] = []
+    source_counts: dict[str, int] = {}
+    for features, names, actionable, engagement, source in db.list_real_training_examples(config):
         if names != FEATURE_NAMES or len(features) != width:
             continue
         xs.append([float(v) for v in features])
         ys.append(int(actionable))
+        groups.append(engagement)
+        evaluation_eligible.append(
+            source in (TriageLabelSource.MANUAL, TriageLabelSource.DERIVED_REVIEW)
+        )
+        source_counts[str(source)] = source_counts.get(str(source), 0) + 1
     if not xs:
-        return np.empty((0, width), dtype=float), np.empty((0,), dtype=int)
-    return np.asarray(xs, dtype=float), np.asarray(ys, dtype=int)
+        return (np.empty((0, width), dtype=float), np.empty((0,), dtype=int),
+                np.empty((0,), dtype=object), np.empty((0,), dtype=bool), {})
+    return (
+        np.asarray(xs, dtype=float), np.asarray(ys, dtype=int),
+        np.asarray(groups, dtype=object), np.asarray(evaluation_eligible, dtype=bool),
+        source_counts,
+    )
 
 
 def synthetic_share(n_real: int, config: Config | None = None) -> float:
@@ -87,7 +106,7 @@ def assemble_training_data(
 
     ds = synthetic.generate(n=tc.synthetic_corpus_size, seed=seed)
     Xs, ys = ds.X, ds.y
-    Xr, yr = load_real_examples(config)
+    Xr, yr, groups_r, eval_r, source_counts = load_real_examples(config)
     n_syn, n_real = len(ys), len(yr)
 
     dropped = n_real >= tc.synthetic_cutoff_labels
@@ -96,12 +115,16 @@ def assemble_training_data(
         X, y = Xr, yr
         sample_weight = np.ones(n_real, dtype=float)
         real_mask = np.ones(n_real, dtype=bool)
+        groups = groups_r
+        evaluation_mask = eval_r
         share = 0.0
     elif n_real == 0:
         # Cold start — synthetic only.
         X, y = Xs, ys
         sample_weight = np.ones(n_syn, dtype=float)
         real_mask = np.zeros(n_syn, dtype=bool)
+        groups = np.full(n_syn, "", dtype=object)
+        evaluation_mask = np.zeros(n_syn, dtype=bool)
         share = 1.0
     else:
         # Blend: real rows weight 1.0; the whole synthetic pool shares `pseudocount`, so
@@ -116,10 +139,15 @@ def assemble_training_data(
         real_mask = np.concatenate([
             np.zeros(n_syn, dtype=bool), np.ones(n_real, dtype=bool)
         ])
+        groups = np.concatenate([np.full(n_syn, "", dtype=object), groups_r])
+        evaluation_mask = np.concatenate([np.zeros(n_syn, dtype=bool), eval_r])
         share = tc.synthetic_pseudocount / (tc.synthetic_pseudocount + n_real)
 
     return TrainingCorpus(
         X=X, y=y, sample_weight=sample_weight, real_mask=real_mask,
+        engagement_groups=groups,
+        evaluation_mask=evaluation_mask,
+        label_source_counts=source_counts,
         n_real=n_real, n_synthetic=(0 if dropped else n_syn),
         synthetic_share=share, synthetic_dropped=dropped,
     )

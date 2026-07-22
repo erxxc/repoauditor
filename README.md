@@ -291,6 +291,53 @@ verdict. The decision path is deliberately staged:
    FAIR-style Monte Carlo analysis reports a loss range and exceedance curve rather than a
    single confidently precise number.
 
+### Interpreting triage accuracy
+
+Until the store contains at least 40 real scored labels, triage validation measures the
+synthetic training generator—not real-world classifier performance. Treat `P(actionable)` as
+queue-prioritization guidance during this cold-start period. The CLI prints the active basis:
+`synthetic_row_random`, provisional `real_row_random`, or `engagement_grouped`.
+
+Inspect observed threshold tradeoffs without asking the tool to choose a threshold:
+
+```sh
+uv run repoauditor triage-stats             # all engagements
+uv run repoauditor triage-stats <repo-id>   # one engagement
+uv run repoauditor triage-stats --label-source derived  # automation-derived cohort
+uv run repoauditor triage-stats --run-id <triage-run-id> # one compatible score cohort
+uv run repoauditor triage-collection        # progress toward the real-label activation gate
+```
+
+Below 40 real scored labels, this command deliberately withholds the curve. Engagement-
+grouped validation additionally requires at least eight distinct repositories. A small,
+deterministic sample of suppressed-but-falsification-confirmed findings is routed to review
+on orchestrated runs so labels are not collected exclusively from high-ranked findings.
+The default statistics cohort uses manual and human-review labels; falsification-derived
+labels remain separately selectable for training-data diagnostics. Each scoring pass records
+its model/package version, feature-schema hash, training mix, validation basis, available
+scanner versions, and timestamp, and immutable score history supports run-specific comparison.
+
+For controlled UAT collection, every direct analyst assessment requires a rationale. Use an
+explicit abstention when the available evidence cannot support a binary decision:
+
+```sh
+uv run repoauditor triage-label <finding-id> \
+  --disposition uncertain \
+  --rationale "Runtime tenant context is unavailable" \
+  --dimension tenant-isolation \
+  --dimension authorization
+```
+
+`uncertain` assessments are retained in an append-only audit history but never enter model
+training. For `true_positive` or `false_positive`, the assessment also updates the effective
+manual label. Repeat `--dimension` with analyst-verified coverage descriptors such as
+`business-logic`, `authorization`, `tenant-isolation`, `multi-service`, `ci-iac`,
+`agent-tool-boundary`, `dependency`, `secret`, `dead-code`, `safe-control`, or `near-miss`.
+These values are declared, not guessed from a scanner rule name. The controlled activation
+floor remains 40 usable human/manual-or-review binary labels across eight distinct source
+repositories; automation-derived falsification labels do not advance that gate. The preferred
+maturity target is 100–200 labels with both classes represented.
+
 The quantitative model separates four concepts that should not be collapsed into one score:
 
 - **Finding validity:** a Bernoulli gate informed by triage, falsification, and human review.
@@ -458,18 +505,23 @@ line—so automation receives events as each stage starts, completes, or fails.
 
 ## Development checks
 
-Install the locked development dependencies and run the test suite:
+Install the locked development dependencies and run the required pull-request suite:
 
 ```sh
 uv sync --python 3.12
-uv run pytest -q
+uv run pytest -m "not integration and not live"
 ```
 
-Live model tests are opt-in because they use an external API and may cost money:
+Scanner/calibration/chart tests and paid live-model tests are separate, automatically
+enforced CI lanes:
 
 ```sh
-REPOAUDITOR_LLM=live uv run pytest -q
+uv run pytest -m "integration and not live"
+REPOAUDITOR_LLM=live ANTHROPIC_API_KEY=... uv run pytest -m live
 ```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for what each lane covers, its CI cadence, required
+scanner binaries, and safe API-secret setup.
 
 `repoauditor db init` applies numbered migrations from `src/repoauditor/store/ddl/` and
 is safe to rerun. Existing databases are upgraded in place; legacy quantitative scenarios
