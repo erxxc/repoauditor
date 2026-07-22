@@ -68,6 +68,12 @@ cache key hashes this materializer and all acquisition metadata; an exact hit is
 miss reacquires every pinned commit. No fallback key is used, acquired code is never executed,
 and the integrity result is retained for 30 days. See `CONTRIBUTING.md` for cache invalidation.
 
+The manual `bounded corpus UAT` workflow consumes that exact cache. Its free scanner matrix is
+limited to Django, Lodash, Commons Text, and Rack pre/post pairs plus Juice Shop. Because each
+independent project has one advisory-derived target rather than exhaustive labels, its JSON
+reports unmatched findings as `unadjudicated_candidate_count`, never as false positives. The
+separate paid mode runs only `uat_lightweight_app` and labels its metrics fixture-derived.
+
 ## Public vulnerable application anchors
 
 OWASP Juice Shop, WebGoat, and RailsGoat are pinned acquisition-only known-positive anchors.

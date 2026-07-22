@@ -20,8 +20,12 @@ The honest-baseline story this module encodes:
 
 from __future__ import annotations
 
+import json
+import os
 import shutil
+from datetime import datetime, timezone
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -44,6 +48,36 @@ from test_golden_harness import (  # noqa: E402
     _run_pipeline,
     score_precision_recall,
 )
+
+
+def _append_live_uat_result(path: Path, benchmark_repo, score: dict, run, config) -> None:
+    """Append one paid-run result when the explicit UAT artifact path is configured."""
+    if path.is_file():
+        document = json.loads(path.read_text())
+    else:
+        document = {
+            "schema_version": 1,
+            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "mode": "live-model",
+            "methodology": (
+                "Purpose-built lightweight fixture with human-authored ground truth; "
+                "not evidence of independent real-world performance."
+            ),
+            "scanner_coverage": os.environ.get(
+                "REPOAUDITOR_UAT_SCANNER_COVERAGE", "environment-dependent"
+            ),
+            "results": [],
+        }
+    document["results"].append({
+        "repo_id": benchmark_repo.repo_id,
+        "kind": benchmark_repo.expected["source"]["kind"],
+        "provider": config.llm.provider,
+        "model": config.model.name,
+        "prompt_versions": run.prompt_versions,
+        **score,
+    })
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(document, indent=2) + "\n")
 
 
 # --------------------------------------------------------------------------- #
@@ -140,6 +174,26 @@ def test_all_new_public_entries_are_pinned_acquisition_only():
         for fixture in entries
     )
     assert all(fixture.expected["source"].get("pinned_commit") for fixture in entries)
+
+
+def test_live_uat_artifact_is_explicitly_fixture_derived(tmp_config, tmp_path, monkeypatch):
+    artifact = tmp_path / "live-uat.json"
+    fixture = _load_fixture("uat_lightweight_app")
+    monkeypatch.setenv("REPOAUDITOR_UAT_SCANNER_COVERAGE", "not-installed-live-model-only")
+
+    _append_live_uat_result(
+        artifact,
+        fixture,
+        {"precision": 0.75, "recall": 0.5, "tp": 3, "fp": 1, "fn": 3},
+        SimpleNamespace(prompt_versions={"detect": "owasp_v1"}),
+        tmp_config,
+    )
+
+    document = json.loads(artifact.read_text())
+    assert "not evidence of independent real-world performance" in document["methodology"]
+    assert document["scanner_coverage"] == "not-installed-live-model-only"
+    assert document["results"][0]["kind"] == "fixture"
+    assert document["results"][0]["precision"] == 0.75
 
 
 # --------------------------------------------------------------------------- #
@@ -277,6 +331,10 @@ def test_corpus_live_baseline(tmp_config, benchmark_repo, capsys):
     run = record_and_check(
         lineage=f"corpus::{benchmark_repo.repo_id}",
         precision=score["precision"], recall=score["recall"], config=tmp_config)
+
+    artifact_path = os.environ.get("REPOAUDITOR_UAT_RESULTS")
+    if artifact_path:
+        _append_live_uat_result(Path(artifact_path), benchmark_repo, score, run, tmp_config)
 
     with capsys.disabled():
         print(f"\n[live corpus] {benchmark_repo.repo_id}: "

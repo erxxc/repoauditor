@@ -73,3 +73,27 @@ For a local cold materialization (network access is explicit):
 python tests/fixtures/materialize_public_corpus.py /tmp/repoauditor-corpus-clones --fetch
 uv run pytest tests/test_benchmark_corpus.py -m "not integration and not live"
 ```
+
+## Bounded corpus UAT
+
+The manual `bounded corpus UAT` workflow has two deliberately separate modes:
+
+- `deterministic` restores the exact validated corpus cache and runs Semgrep, pip-audit,
+  OSV-Scanner, and gitleaks over Django, Lodash, Commons Text, and Rack pre/post pairs,
+  plus the Juice Shop anchor. It emits JSON with target-CVE hits, patched-target
+  persistence, tool counts, and candidates awaiting analyst adjudication.
+- `live-lightweight` runs the real Anthropic-backed pipeline only on the 12-file
+  purpose-built UAT fixture. It requires the `live-model-tests` environment secret and an
+  explicit paid-run acknowledgement. It does not install scanners, so the result isolates
+  the model path and says so in the artifact.
+
+The independent-project metadata documents one historical CVE per project; it is not an
+exhaustive vulnerability inventory. Therefore the deterministic mode does **not** call every
+unmatched scanner candidate a false positive or publish a project-level precision number.
+Analysts must adjudicate those candidates first. Likewise, the lightweight fixture result is
+reported as fixture-derived calibration, never as independent real-world performance.
+
+Both modes retain their JSON/JUnit evidence for 30 days. UAT artifacts are evaluation
+evidence, not training labels: to add a reviewed outcome to the triage corpus, scan the
+repository as a persistent engagement and use `repoauditor triage-label` with an analyst and
+rationale. Use `uncertain` when the evidence does not support TP or FP.
