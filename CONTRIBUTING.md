@@ -51,3 +51,25 @@ live check as coverage.
 The three lane commands are intentionally mutually clear: `integration` covers local,
 deterministic external tools and expensive local computation; `live` covers real model API
 calls; the default PR lane excludes both.
+
+## Public-corpus cache lane
+
+The `public corpus cache` workflow runs every Sunday and on manual dispatch. It restores an
+immutable cache of the 19 acquisition-only public snapshots, or fetches and archives their
+exact pinned commits on a cache miss. Its key is derived from the materializer plus every
+independent/OWASP corpus metadata file, so a pin or acquisition-code change cannot silently
+reuse stale source. There is deliberately no broad restore key.
+
+This lane runs only provenance, pre/post-pair, citation, and negative-control integrity tests.
+It never imports or executes acquired source, invokes a scanner, or calls a hosted model.
+The small JUnit result is retained for 30 days; the roughly 231 MB source corpus remains an
+Actions cache rather than a repository artifact. GitHub controls cache eviction, and the
+weekly cadence keeps an actively used cache warm. If a cache is suspected to be corrupt,
+delete that exact key in **Actions → Caches** and rerun the workflow; caches are immutable.
+
+For a local cold materialization (network access is explicit):
+
+```sh
+python tests/fixtures/materialize_public_corpus.py /tmp/repoauditor-corpus-clones --fetch
+uv run pytest tests/test_benchmark_corpus.py -m "not integration and not live"
+```

@@ -63,6 +63,11 @@ verified local clones without network access by default; `--fetch` is an explici
 clone/fetch the public upstreams. Source and license files exist only in the generated local
 snapshot and are not redistributed by this repository.
 
+CI materializes these snapshots in the scheduled/manual `public corpus cache` workflow. The
+cache key hashes this materializer and all acquisition metadata; an exact hit is reused and a
+miss reacquires every pinned commit. No fallback key is used, acquired code is never executed,
+and the integrity result is retained for 30 days. See `CONTRIBUTING.md` for cache invalidation.
+
 ## Public vulnerable application anchors
 
 OWASP Juice Shop, WebGoat, and RailsGoat are pinned acquisition-only known-positive anchors.

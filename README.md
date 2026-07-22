@@ -521,7 +521,9 @@ REPOAUDITOR_LLM=live ANTHROPIC_API_KEY=... uv run pytest -m live
 ```
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for what each lane covers, its CI cadence, required
-scanner binaries, and safe API-secret setup.
+scanner binaries, safe API-secret setup, and the scheduled/manual public-corpus cache lane.
+That lane acquires exact pinned public commits on a cache miss and runs corpus integrity
+checks without executing upstream code or invoking a hosted model.
 
 `repoauditor db init` applies numbered migrations from `src/repoauditor/store/ddl/` and
 is safe to rerun. Existing databases are upgraded in place; legacy quantitative scenarios

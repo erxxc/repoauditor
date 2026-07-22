@@ -1,0 +1,84 @@
+name: public corpus cache
+
+on:
+  schedule:
+    # Refresh weekly so GitHub's cache eviction policy does not make every UAT a cold start.
+    - cron: "41 5 * * 0"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: public-corpus-cache
+  cancel-in-progress: false
+
+jobs:
+  materialize:
+    name: corpus / pinned acquisition and integrity
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Restore pinned public snapshots
+        id: corpus-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            tests/fixtures/independent_*/snapshot
+            tests/fixtures/anchor_owasp_*/snapshot
+          key: public-corpus-v1-${{ runner.os }}-${{ hashFiles('tests/fixtures/materialize_public_corpus.py', 'tests/fixtures/independent_*/expected_findings.json', 'tests/fixtures/anchor_owasp_*/expected_findings.json') }}
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Materialize exact commits on cache miss
+        if: steps.corpus-cache.outputs.cache-hit != 'true'
+        run: >-
+          python tests/fixtures/materialize_public_corpus.py
+          "$RUNNER_TEMP/public-corpus-clones"
+          --fetch
+
+      - name: Install locked test environment
+        run: uv sync --frozen --dev
+
+      - name: Verify corpus provenance, pairs, citations, and negative controls
+        env:
+          PYTEST_DISABLE_PLUGIN_AUTOLOAD: "1"
+        run: |
+          uv run pytest \
+            tests/test_benchmark_corpus.py::test_benchmark_corpus_is_present \
+            tests/test_benchmark_corpus.py::test_corpus_fixture_is_well_formed \
+            tests/test_benchmark_corpus.py::test_independent_corpus_has_eight_real_projects_with_pre_post_pairs \
+            tests/test_benchmark_corpus.py::test_corpus_kinds_keep_fixtures_and_benchmarks_out_of_independent_gate \
+            tests/test_benchmark_corpus.py::test_all_new_public_entries_are_pinned_acquisition_only \
+            --junitxml=public-corpus-results.xml
+
+      - name: Record cache evidence
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "## Public corpus cache"
+            echo ""
+            echo "- Cache hit: ${{ steps.corpus-cache.outputs.cache-hit == 'true' }}"
+            echo "- Materialized fixture-tree size: \`$(du -sh tests/fixtures | cut -f1)\`"
+            echo "- Upstream source was archived only; no snapshot code was executed."
+          } >> "$GITHUB_STEP_SUMMARY"
+          du -sh tests/fixtures/*/snapshot 2>/dev/null || true
+
+      - name: Upload integrity-test result
+        if: always() && hashFiles('public-corpus-results.xml') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: public-corpus-integrity-${{ github.run_id }}
+          path: public-corpus-results.xml
+          retention-days: 30
+          if-no-files-found: error
