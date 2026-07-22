@@ -1,0 +1,398 @@
+{
+  "repo_id": "uat_lightweight_app",
+  "schema_version": "uat-expectation-1",
+  "notes": "Ground truth + full validation matrix for the purpose-built UAT storefront fixture (12 Python source files, one framework = Flask, one manifest = requirements.txt). This file EXTENDS the corpus convention (`source` + `findings` + `expected_unresolved`, keyed by file/severity/source with citation-substring anchors; line numbers are approximate anchors, not exact-match assertions) with three added blocks the richer UAT expectation needs: `expected_killed` (falsify should kill these), `expected_map` (map/ architecture + production-exposure ground truth), and `planted_cases` (the per-case matrix required by the UAT spec). The two scripted-golden fixtures are NOT touched; this fixture is a Tier-2 benchmark-corpus fixture (has an `expected_findings.json`, is not in conftest.FIXTURE_LLM), so it is scored by the live model / real tools, never by canned answers.",
+  "field_provenance": {
+    "note": "Field names in `planted_cases[].exposure` mirror the current (risk-quant session B) output shapes so they are directly validatable — confirmed against store/models.py and analyze/ this session, not the session-A shape.",
+    "production_exposure_label": "store.models.DealRisk.production_exposure — one of direct|indirect|internal|unknown (analyze/deal_risk.py _production_exposure).",
+    "exposure_component_range": "store.models.DealRisk.exposure_component in [0,1]; the same value flows into RiskScenario.exposure_factors[] (analyze/risk_quant.build_scenarios derived_exposures).",
+    "control_strength_expected": "RiskScenario.control_strengths[] — 0.0 conservative default for confirmed findings (no structured positive-control evidence); killed candidates never reach risk_quant.",
+    "scenario_input_origin_expected": "store.models.ScenarioInput.origin — derived|analyst_override|conservative_default.",
+    "entity_kind": "store.models.EntityKind — entry_point|data_store|integration|component.",
+    "expected_disposition": "store.models.FalsificationStatus — confirmed|killed|unresolved(=requires-review). `architecture-exposure` is used for case 6, which is a map/exposure expectation, not a falsification verdict."
+  },
+  "source": {
+    "kind": "purpose-built intentionally-vulnerable web app (UAT fixture)",
+    "framework": "Flask 3.0.3 (Python 3)",
+    "framework_rationale": "Flask maximizes coverage of the pipeline's own tooling: requirements.txt is the SCA adapter's native manifest, Python has first-class AST support in detect/retrieval, gitleaks/semgrep/pip-audit are all first-class on this stack, and @app.route entry points are what the map stage recovers cleanly. See README.md.",
+    "not_derived_from": "Authored from scratch for this fixture. NOT adapted from OWASP Juice Shop or any existing project; the vulnerability set is a controlled 10-case test matrix.",
+    "safety": "Intentionally insecure and inert by default — see snapshot/SECURITY.md. wsgi.py refuses to self-serve without STOREFRONT_ALLOW_RUN=1 and then binds 127.0.0.1 only with the debugger off. The pipeline only ever reads these files statically; it never imports or runs the app.",
+    "fake_credential": {
+      "file": "storefront/config.py",
+      "line": 22,
+      "pattern": "sk_live_<obviously-fake-placeholder>",
+      "value_markers": ["FAKE", "DoNotUse", "EXAMPLE", "UATfixture"],
+      "note": "Recognizable placeholder, not a working secret. Confirmed gitleaks-detectable this session (rule `stripe-access-token`, the only leak it reports).",
+      "cwe": "CWE-798"
+    },
+    "advisories": [
+      {
+        "package": "requests",
+        "version": "2.19.1",
+        "cve": "CVE-2018-18074",
+        "ghsa": "GHSA-x84v-xcm2-53pg",
+        "pysec": "PYSEC-2018-28",
+        "cwe": "CWE-522",
+        "affected": "<2.20.0",
+        "fixed_in": "2.20.0",
+        "verified_via": "https://api.osv.dev/v1/query",
+        "summary": "Requests before 2.20.0 sends the HTTP Authorization header to an http URI upon a same-hostname https->http redirect, leaking credentials to a network sniffer.",
+        "designated_case5_cve": true
+      }
+    ],
+    "advisory_notes": "requests==2.19.1 is genuinely old, so real SCA tools will additionally surface other real, OSV-verified requests advisories (e.g. CVE-2023-32681, CVE-2024-35195). Those are acceptable extra hits, not fabricated; the DESIGNATED, stable case-5 CVE is CVE-2018-18074. Flask 3.0.3 is pinned for a runnable app; the fixture does not attempt to track a moving CVE-clean Flask/Werkzeug baseline (see README 'flagged dependency gaps')."
+  },
+  "findings": [
+    {
+      "case": 1,
+      "title": "SQL injection in public product search",
+      "file": "storefront/catalog.py",
+      "line_start": 33,
+      "line_end": 35,
+      "severity": "critical",
+      "falsification_status": "confirmed",
+      "cwe": "CWE-89",
+      "citation_contains": "FROM products WHERE name LIKE"
+    },
+    {
+      "case": 2,
+      "title": "Server-side request forgery in admin link-preview",
+      "file": "storefront/integrations.py",
+      "line_start": 28,
+      "line_end": 28,
+      "severity": "high",
+      "falsification_status": "confirmed",
+      "cwe": "CWE-918",
+      "citation_contains": "requests.get(target"
+    },
+    {
+      "case": 3,
+      "title": "IDOR: order readable without an ownership check",
+      "file": "storefront/orders.py",
+      "line_start": 34,
+      "line_end": 41,
+      "severity": "high",
+      "falsification_status": "confirmed",
+      "cwe": "CWE-639",
+      "citation_contains": "FROM orders WHERE id = ?"
+    },
+    {
+      "case": 4,
+      "title": "Hardcoded Stripe secret key",
+      "file": "storefront/config.py",
+      "line_start": 22,
+      "line_end": 22,
+      "severity": "high",
+      "falsification_status": "confirmed",
+      "cwe": "CWE-798",
+      "citation_contains": "sk_live_"
+    },
+    {
+      "case": 5,
+      "title": "Vulnerable dependency requests 2.19.1 (CVE-2018-18074)",
+      "file": "requirements.txt",
+      "line_start": 1,
+      "line_end": 1,
+      "severity": "medium",
+      "falsification_status": "confirmed",
+      "cwe": "CWE-522",
+      "cve": "CVE-2018-18074",
+      "citation_contains": "requests"
+    }
+  ],
+  "expected_unresolved": [
+    {
+      "case": 9,
+      "file": "storefront/account.py",
+      "citation_contains": "return_target",
+      "reason": "Reflected/stored `next` value with no server-side redirect sink in-repo; exploitability depends on out-of-scope frontend consumption. Single source (no corroboration) and falsify cannot confidently confirm or kill -> unresolved -> review."
+    }
+  ],
+  "expected_killed": [
+    {
+      "case": 7,
+      "file": "storefront/invoices.py",
+      "citation_contains": "owns_resource(\"invoice\")",
+      "kill_basis": "mitigating_control",
+      "reason": "Structurally identical to the IDOR (case 3) but guarded by the @owns_resource(\"invoice\") ownership gate (defined in storefront/security.py). falsify/'s mitigating-control retrieval should surface the decorator and KILL the candidate -> a correctly-killed candidate, not a surviving false positive."
+    },
+    {
+      "case": 8,
+      "file": "storefront/legacy.py",
+      "citation_contains": "os.system(\"curl -s \" + source",
+      "kill_basis": "unreachable",
+      "reason": "Real OS-command-injection pattern in dead code: legacy_bp is never registered by the app factory (storefront/__init__.py) AND the handler is gated behind ENABLE_LEGACY_IMPORT which is permanently False. falsify/'s reachability check should KILL it as unreachable."
+    }
+  ],
+  "expected_map": {
+    "note": "Architecture the map/ stage should recover. Validates case 6 (production-like customer datastore) and supplies the trust-boundary/entity FKs that findings anchor to and that deal_risk.py's production-exposure check reads.",
+    "trust_boundaries": [
+      {"name_like": "public storefront edge", "production_like": true, "why": "unauthenticated, internet-facing catalog routes (/products, /products/search)"},
+      {"name_like": "authenticated customer session", "production_like": true, "why": "session-cookie-gated order/invoice/account routes"},
+      {"name_like": "admin console", "production_like": true, "why": "admin-gated integrations tooling (/admin/link-preview)"}
+    ],
+    "data_stores": [
+      {
+        "name_like": "customers",
+        "kind": "sqlite",
+        "location": "storefront/db.py",
+        "holds_pii": true,
+        "pii_columns": ["email", "full_name", "shipping_address", "card_last4"],
+        "production_like": true,
+        "entity_kind": "data_store",
+        "production_indicators_expected": ["customer", "pii", "card", "personal data"],
+        "exposure_component_expected": 1.0,
+        "why": "System of record for customer personal data; orders/invoices FK to it. This is the case-6 production-like store deal_risk.py should score as direct exposure."
+      }
+    ],
+    "integrations": [
+      {"name_like": "outbound HTTP link preview (requests)", "direction": "outbound", "location": "storefront/integrations.py"},
+      {"name_like": "Stripe payments", "direction": "outbound", "location": "storefront/config.py"}
+    ]
+  },
+  "planted_cases": [
+    {
+      "case": 1,
+      "id": "sqli-product-search",
+      "category": "sql-injection",
+      "cwe": "CWE-89",
+      "location": {"file": "storefront/catalog.py", "route": "GET /products/search", "symbol": "search_products", "line_approx": 33},
+      "severity_range": ["high", "critical"],
+      "expected_disposition": "confirmed",
+      "disposition_basis": "falsify confirms attacker-controlled query param woven into SQL, reachable from the public edge, no mitigating control.",
+      "trust_boundary": "public storefront edge",
+      "exposure": {
+        "production_exposure_label": "direct",
+        "exposure_component_range": [0.9, 1.0],
+        "entity_kind": "entry_point",
+        "production_indicator_expected": "public",
+        "control_strength_expected": 0.0,
+        "scenario_input_origin_expected": "derived"
+      },
+      "expected_sources": [{"type": "lens", "name": "owasp"}, {"type": "tool", "name": "sast"}],
+      "collapses_into_one_countable": false,
+      "collapse_partner_case": null,
+      "in_findings_ground_truth": true,
+      "notes": "Query runs against the customer datastore; a UNION reaches customer PII, reinforcing the case-6 exposure."
+    },
+    {
+      "case": 2,
+      "id": "ssrf-link-preview",
+      "category": "ssrf",
+      "cwe": "CWE-918",
+      "location": {"file": "storefront/integrations.py", "route": "GET /admin/link-preview", "symbol": "link_preview", "line_approx": 28},
+      "severity_range": ["high", "critical"],
+      "expected_disposition": "confirmed",
+      "disposition_basis": "admin-gated but the fetched URL is fully caller-controlled and fetched server-side from inside the deployment network (can reach internal/metadata endpoints).",
+      "trust_boundary": "admin console",
+      "exposure": {
+        "production_exposure_label": "indirect",
+        "exposure_component_range": [0.5, 0.9],
+        "entity_kind": "integration",
+        "production_indicator_expected": null,
+        "control_strength_expected": 0.0,
+        "scenario_input_origin_expected": "derived"
+      },
+      "expected_sources": [{"type": "lens", "name": "owasp"}, {"type": "tool", "name": "sast"}],
+      "collapses_into_one_countable": false,
+      "collapse_partner_case": null,
+      "in_findings_ground_truth": true,
+      "notes": "This is the 'command-injection OR SSRF -> SSRF' choice. The `requests` client here is also the case-5 vulnerable dependency (distinct finding: code CWE-918 vs dependency CWE-522)."
+    },
+    {
+      "case": 3,
+      "id": "idor-order-by-id",
+      "category": "broken-object-level-authorization",
+      "cwe": "CWE-639",
+      "location": {"file": "storefront/orders.py", "route": "GET /orders/<int:order_id>", "symbol": "get_order", "line_approx": 34},
+      "severity_range": ["medium", "high"],
+      "expected_disposition": "confirmed",
+      "disposition_basis": "Authenticates the caller but never checks the order's customer_id against the session; any signed-in customer reads any order. Query is parameterized (not SQLi).",
+      "trust_boundary": "authenticated customer session",
+      "exposure": {
+        "production_exposure_label": "direct",
+        "exposure_component_range": [0.9, 1.0],
+        "entity_kind": "entry_point",
+        "production_indicator_expected": "customer",
+        "control_strength_expected": 0.0,
+        "scenario_input_origin_expected": "derived"
+      },
+      "expected_sources": [{"type": "lens", "name": "owasp"}],
+      "collapses_into_one_countable": false,
+      "collapse_partner_case": null,
+      "in_findings_ground_truth": true,
+      "notes": "This is the 'broken authorization OR IDOR -> IDOR' choice. Single-source (semgrep is weak on IDOR); its severity upgrade is licensed by a falsify-confirmed reachability pass, not by corroboration. Pairs with case 7 (the defended twin)."
+    },
+    {
+      "case": 4,
+      "id": "hardcoded-stripe-secret",
+      "category": "hardcoded-secret",
+      "cwe": "CWE-798",
+      "location": {"file": "storefront/config.py", "symbol": "Config.STRIPE_SECRET_KEY", "line_approx": 22},
+      "severity_range": ["high", "critical"],
+      "expected_disposition": "confirmed",
+      "disposition_basis": "Live-pattern (sk_live_) credential committed in source; gitleaks-detectable, obviously-fake value.",
+      "trust_boundary": "Stripe payments integration",
+      "exposure": {
+        "production_exposure_label": "direct",
+        "exposure_component_range": [0.5, 1.0],
+        "entity_kind": "integration",
+        "production_indicator_expected": "payment",
+        "control_strength_expected": 0.0,
+        "scenario_input_origin_expected": "derived"
+      },
+      "expected_sources": [{"type": "tool", "name": "secrets"}, {"type": "lens", "name": "owasp"}],
+      "collapses_into_one_countable": true,
+      "collapse_partner_case": 10,
+      "in_findings_ground_truth": true,
+      "notes": "Also serves as case 10: flagged by BOTH gitleaks (source_tool=secrets, confirmed this session) and the owasp LLM lens on the same line -> matching.py line-overlap merge -> db.list_countable_findings collapses to ONE countable finding, not two."
+    },
+    {
+      "case": 5,
+      "id": "vuln-dep-requests-2191",
+      "category": "vulnerable-dependency",
+      "cwe": "CWE-522",
+      "cve": "CVE-2018-18074",
+      "location": {"file": "requirements.txt", "line_approx": 6, "sca_anchor_line": 1},
+      "severity_range": ["medium", "high"],
+      "expected_disposition": "confirmed",
+      "disposition_basis": "requests==2.19.1 is < 2.20.0; SCA (pip-audit / OSV) flags CVE-2018-18074. Real, OSV-verified.",
+      "trust_boundary": "third-party dependency (supply chain)",
+      "exposure": {
+        "production_exposure_label": "indirect",
+        "exposure_component_range": [0.2, 0.5],
+        "entity_kind": "component",
+        "production_indicator_expected": null,
+        "control_strength_expected": 0.0,
+        "scenario_input_origin_expected": "conservative_default"
+      },
+      "expected_sources": [{"type": "tool", "name": "sca"}],
+      "collapses_into_one_countable": false,
+      "collapse_partner_case": null,
+      "in_findings_ground_truth": true,
+      "notes": "SCA adapter emits severity=medium and anchors to manifest line 1 (whole-manifest convention). Designated CVE is CVE-2018-18074; other real requests advisories may also fire (acceptable, all OSV-verified)."
+    },
+    {
+      "case": 6,
+      "id": "customer-pii-datastore-production-exposed",
+      "category": "production-data-store-exposure",
+      "cwe": "CWE-200",
+      "location": {"file": "storefront/db.py", "symbol": "customers table (SCHEMA)", "line_approx": 22},
+      "severity_range": ["medium", "high"],
+      "expected_disposition": "architecture-exposure",
+      "disposition_basis": "Not a falsification verdict: the map/ stage should recover a `customers` DataStore holding PII (email/full_name/shipping_address/card_last4) behind the production-like storefront edge, so deal_risk.py's production-exposure check resolves findings that touch it to production_exposure=direct with a high exposure_component. Validated via `expected_map.data_stores` + the exposure blocks of cases 1 and 3, and the RiskScenario.exposure_factors they feed.",
+      "trust_boundary": "public storefront edge -> authenticated customer session",
+      "exposure": {
+        "production_exposure_label": "direct",
+        "exposure_component_range": [1.0, 1.0],
+        "entity_kind": "data_store",
+        "production_indicator_expected": "customer",
+        "control_strength_expected": 0.0,
+        "scenario_input_origin_expected": "derived"
+      },
+      "expected_sources": [{"type": "stage", "name": "map"}, {"type": "stage", "name": "analyze.deal_risk"}],
+      "collapses_into_one_countable": false,
+      "collapse_partner_case": null,
+      "in_findings_ground_truth": false,
+      "validated_via": ["expected_map.data_stores[customers]", "planted_cases[case=1].exposure", "planted_cases[case=3].exposure"],
+      "notes": "The customer datastore is what makes the fixture's trust boundary genuinely production-like; without it deal_risk.py's production-exposure check would have nothing real to resolve."
+    },
+    {
+      "case": 7,
+      "id": "mitigating-control-invoice-ownership",
+      "category": "mitigating-control",
+      "cwe": "CWE-639",
+      "location": {"file": "storefront/invoices.py", "route": "GET /invoices/<int:invoice_id>", "symbol": "get_invoice", "line_approx": 19},
+      "severity_range": ["info", "low"],
+      "expected_disposition": "killed",
+      "disposition_basis": "Looks like the case-3 IDOR (by-id resource fetch), but the route is decorated @owns_resource(\"invoice\"), which enforces invoice.customer_id == current_customer_id() (defined in storefront/security.py). falsify/'s mitigating-control retrieval should surface the decorator and KILL the candidate.",
+      "trust_boundary": "authenticated customer session",
+      "exposure": {
+        "production_exposure_label": "direct",
+        "exposure_component_range": [0.9, 1.0],
+        "entity_kind": "entry_point",
+        "production_indicator_expected": "customer",
+        "control_strength_expected": null,
+        "scenario_input_origin_expected": "n/a-killed-excluded-from-risk_quant"
+      },
+      "expected_sources": [{"type": "lens", "name": "owasp"}],
+      "collapses_into_one_countable": false,
+      "collapse_partner_case": null,
+      "in_findings_ground_truth": false,
+      "notes": "Success criterion: this candidate is CORRECTLY KILLED by the mitigating-control search, not surviving as a false positive and not silently dropped (its killed verdict + reason persist in the store)."
+    },
+    {
+      "case": 8,
+      "id": "unreachable-legacy-command-injection",
+      "category": "unreachable-candidate",
+      "cwe": "CWE-78",
+      "location": {"file": "storefront/legacy.py", "route": "POST /legacy/import (unregistered)", "symbol": "legacy_import", "line_approx": 34},
+      "severity_range": ["info", "low"],
+      "expected_disposition": "killed",
+      "disposition_basis": "Real os.system() command-injection pattern, but doubly dead: legacy_bp is never registered by the app factory, and the handler is gated behind ENABLE_LEGACY_IMPORT which is permanently False. falsify/'s reachability check should KILL it as unreachable.",
+      "trust_boundary": "(unmapped / dead code)",
+      "exposure": {
+        "production_exposure_label": "unknown",
+        "exposure_component_range": [0.5, 0.5],
+        "entity_kind": null,
+        "production_indicator_expected": null,
+        "control_strength_expected": null,
+        "scenario_input_origin_expected": "n/a-killed-excluded-from-risk_quant"
+      },
+      "expected_sources": [{"type": "lens", "name": "owasp"}, {"type": "tool", "name": "sast"}],
+      "collapses_into_one_countable": false,
+      "collapse_partner_case": null,
+      "in_findings_ground_truth": false,
+      "notes": "Success criterion: falsify identifies unreachability and kills it. If a scanner flags the os.system sink, the kill (not a survive) is the correct outcome."
+    },
+    {
+      "case": 9,
+      "id": "ambiguous-return-target",
+      "category": "ambiguous-requires-review",
+      "cwe": "CWE-601",
+      "location": {"file": "storefront/account.py", "route": "POST /account/return-target", "symbol": "set_return_target", "line_approx": 27},
+      "severity_range": ["low", "medium"],
+      "expected_disposition": "requires-review",
+      "disposition_basis": "A `next` value is stored on the session and echoed back, but the backend never redirects to it — there is no server-side redirect sink in-repo. Exploitability (open redirect) depends on out-of-scope frontend behavior, so falsify can neither confirm nor kill, and it is uncorroborated (single lens). Reliability layer -> unresolved -> review/ per the licensing rule.",
+      "trust_boundary": "authenticated customer session",
+      "exposure": {
+        "production_exposure_label": "internal",
+        "exposure_component_range": [0.2, 0.5],
+        "entity_kind": "entry_point",
+        "production_indicator_expected": null,
+        "control_strength_expected": null,
+        "scenario_input_origin_expected": "n/a-held-at-review-until-confirmed"
+      },
+      "expected_sources": [{"type": "lens", "name": "owasp"}],
+      "collapses_into_one_countable": false,
+      "collapse_partner_case": null,
+      "in_findings_ground_truth": false,
+      "notes": "Success criterion: routed to review/ as unresolved (a ReviewRequest opens), NOT silently confirmed or killed. It must lack both corroboration and a confident falsification verdict for this to hold."
+    },
+    {
+      "case": 10,
+      "id": "duplicate-secret-two-sources",
+      "category": "duplicate-multi-source",
+      "cwe": "CWE-798",
+      "location": {"file": "storefront/config.py", "symbol": "Config.STRIPE_SECRET_KEY", "line_approx": 22},
+      "severity_range": ["high", "critical"],
+      "expected_disposition": "confirmed",
+      "disposition_basis": "Same physical finding as case 4. gitleaks (source_tool=secrets) and the owasp LLM lens both flag the sk_live_ key on the same line; matching.py matches on line-overlap and db.list_countable_findings collapses the group to a single countable finding.",
+      "trust_boundary": "Stripe payments integration",
+      "exposure": {
+        "production_exposure_label": "direct",
+        "exposure_component_range": [0.5, 1.0],
+        "entity_kind": "integration",
+        "production_indicator_expected": "payment",
+        "control_strength_expected": 0.0,
+        "scenario_input_origin_expected": "derived"
+      },
+      "expected_sources": [{"type": "tool", "name": "secrets"}, {"type": "lens", "name": "owasp"}],
+      "collapses_into_one_countable": true,
+      "collapse_partner_case": 4,
+      "in_findings_ground_truth": false,
+      "counts_as_findings": 1,
+      "notes": "Rides on case 4 (per the UAT spec: 'a single real issue ... written so two independent sources both flag it'). Success criterion: exactly ONE countable finding after matching, corroborated_by shows the second source; two sources must NOT double-count."
+    }
+  ]
+}
