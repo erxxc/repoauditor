@@ -421,7 +421,9 @@ def test_debug_preserves_unexpected_exception(tmp_config, monkeypatch):
 
 
 def test_root_help_describes_two_phase_workflow():
-    result = runner.invoke(cli.app, ["--help"])
+    # Pin the rendering width so Rich does not elide option names on narrow CI
+    # terminals. The assertions are about help content, not runner geometry.
+    result = runner.invoke(cli.app, ["--help"], terminal_width=120)
 
     assert result.exit_code == 0
     assert "two-phase workflow" in result.output
