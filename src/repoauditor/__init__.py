@@ -1,6 +1,6 @@
 """repoauditor — CLI pipeline for auditing acquired codebases.
 
-Pipeline: ingest -> map -> detect -> falsify -> normalize -> analyze -> report.
+Pipeline: ingest -> map -> detect -> triage -> falsify -> normalize -> review -> analyze -> report.
 See repoauditor-scaffold.md (design source of truth) and CLAUDE.md (rules).
 """
 

@@ -7,7 +7,7 @@ breaking one of these, stop and ask before proceeding.
 ## Pipeline
 
 ```
-ingest -> map -> detect -> triage -> falsify -> normalize -> analyze -> report
+ingest -> map -> detect -> triage -> falsify -> normalize -> review -> analyze -> report
 ```
 
 The `map` stage runs **before** any detection. Vulnerability hunting is conditioned
@@ -39,16 +39,17 @@ never a deletion layer — see below.
   independently flagging it) or a falsification pass that confirms reachability.
   Relative claims are never silently converted to absolutes.
 - The **falsify** stage tries to *disprove* each candidate (reachability, mitigating
-  control, attacker-controlled input). Only survivors are written to the store.
-  Killed candidates are logged as explicit null results — nothing silently disappears.
+  control, attacker-controlled input). Confirmed, killed, deferred, and unresolved
+  outcomes remain in the store with their evidence trail — nothing silently disappears.
 - The **triage** stage ranks and may suppress (demote priority on) deterministic-
   tool findings by calibrated P(actionable). It never deletes a finding — a
   suppressed finding remains in `store/` with its rank and feature attribution
   visible, same discipline as a killed falsification candidate.
 - **No unsourced priors.** Every distribution parameter or per-rule prior used by
   `triage/` or `analyze/`'s risk quantification must declare its source (industry
-  loss data, EPSS/KEV, or calibrated SME estimate) in a priors config file. No
-  magic numbers.
+  loss data, a real dated CVE-specific EPSS/KEV signal, or a calibrated SME estimate)
+  in a priors config file. Severity-derived EPSS/KEV proxies are prohibited. No magic
+  numbers.
 
 ## Prompts & templates are versioned artifacts
 

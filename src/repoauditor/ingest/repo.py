@@ -20,6 +20,8 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from ..config import Config, get_config
+from ..store import db
+from ..store.models import IngestedRepo
 
 
 @dataclass(frozen=True)
@@ -77,6 +79,7 @@ def ingest_repo(
     (useful when several sources share a basename, e.g. `.../snapshot`).
     """
     config = config or get_config()
+    db.init_db(config)
     repo_id = repo_id or _slugify(source)
 
     if _looks_like_git(source):
@@ -92,12 +95,20 @@ def ingest_repo(
     if dest.exists():
         if cleanup is not None:
             cleanup()
-        return IngestResult(repo_id, commit, source, dest, reused=True)
+        result = IngestResult(repo_id, commit, source, dest, reused=True)
+        db.record_ingested_repo(IngestedRepo(
+            repo_id=repo_id, source=source, commit_hash=commit
+        ), config)
+        return result
 
     _copy_snapshot(snapshot_source, dest)
     if cleanup is not None:
         cleanup()
-    return IngestResult(repo_id, commit, source, dest, reused=False)
+    result = IngestResult(repo_id, commit, source, dest, reused=False)
+    db.record_ingested_repo(IngestedRepo(
+        repo_id=repo_id, source=source, commit_hash=commit
+    ), config)
+    return result
 
 
 def latest_snapshot(config: Config, repo_id: str) -> tuple[Path, str]:

@@ -5,7 +5,7 @@
 directly.
 """
 
-from .engineering import build_backlog
-from .memo import build_memo
+from .engineering import build_backlog, write_backlog
+from .memo import build_memo, write_memo
 
-__all__ = ["build_backlog", "build_memo"]
+__all__ = ["build_backlog", "build_memo", "write_backlog", "write_memo"]

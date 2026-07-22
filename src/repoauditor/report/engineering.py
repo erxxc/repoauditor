@@ -14,6 +14,8 @@ from `store/` only; never touches the DB directly.
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from ..config import Config, get_config
 from ..store import db
 from ..store.models import Finding, Severity, severity_rank
@@ -96,3 +98,13 @@ def build_backlog(repo_id: str, config: Config | None = None) -> str:
         for finding in tier:
             lines += _ticket(finding, boundaries)
     return "\n".join(lines)
+
+
+def write_backlog(repo_id: str, config: Config | None = None) -> Path:
+    """Render and write the engineering backlog, returning its artifact path."""
+    config = config or get_config()
+    out_dir = config.resolve(config.paths.data_dir) / "reports" / f"{repo_id}_engineering"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    path = out_dir / "backlog.md"
+    path.write_text(build_backlog(repo_id, config))
+    return path

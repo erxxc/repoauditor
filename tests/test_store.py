@@ -9,6 +9,9 @@ from repoauditor.store import db
 from repoauditor.store.models import (
     Corroboration,
     Finding,
+    ReviewDecision,
+    ReviewDisposition,
+    ReviewRequest,
     Severity,
     SourceType,
     TrustBoundary,
@@ -20,6 +23,59 @@ def test_init_db_is_idempotent(tmp_config):
     assert "0001_initial.sql" in applied_first
     applied_second = db.init_db(tmp_config)
     assert applied_second == []  # nothing to re-apply
+
+
+def test_pre_methodology_database_migrates_without_losing_audit_data(
+    tmp_config, monkeypatch,
+):
+    """Exercise the real 0001..0010 -> 0011/0012 upgrade, including legacy defaults."""
+    all_migrations = db._discover_migrations()
+    monkeypatch.setattr(
+        db, "_discover_migrations", lambda: [item for item in all_migrations if item[0] <= 10]
+    )
+    db.init_db(tmp_config)
+
+    finding_id = _f(tmp_config, tool="semgrep", status="confirmed")
+    request_id = db.upsert_review_request(ReviewRequest(
+        repo_id="r", finding_id=finding_id, stage="falsify",
+        reason="legacy review", evidence={"trace": ["kept"]},
+    ), tmp_config)
+    decision_id = db.insert_review_decision(ReviewDecision(
+        review_request_id=request_id, disposition=ReviewDisposition.CONFIRM,
+        reviewer="uat", rationale="legacy decision remains auditable",
+    ), tmp_config)
+    # Seed the exact pre-0011 risk shape. The connection still comes from store/, which
+    # remains the sole owner of SQLite setup and access.
+    conn = db.get_connection(tmp_config)
+    try:
+        with conn:
+            conn.execute(
+                "INSERT INTO risk_scenario "
+                "(repo_id, name, finding_ids, frequency_lambda, magnitude_mu, "
+                "magnitude_sigma, frequency_source, magnitude_source, p_actionable) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                ("r", "data_breach", f"[{finding_id}]", 0.25, 10.0, 1.0,
+                 "legacy.frequency", "legacy.magnitude", 0.8),
+            )
+    finally:
+        conn.close()
+
+    monkeypatch.setattr(db, "_discover_migrations", lambda: all_migrations)
+    applied = db.init_db(tmp_config)
+    assert applied == [
+        "0011_risk_methodology.sql", "0012_scenario_inputs.sql",
+        "0013_scenario_run_link.sql",
+    ]
+
+    assert db.list_findings("r", tmp_config)[0].id == finding_id
+    assert db.list_review_requests("r", tmp_config)[0].evidence == {"trace": ["kept"]}
+    assert db.list_review_decisions(request_id, tmp_config)[0].id == decision_id
+    legacy = db.list_risk_scenarios("r", tmp_config)[0]
+    assert legacy.validity_probabilities == []
+    assert legacy.exposure_factors == []
+    assert legacy.control_strengths == []
+    assert legacy.loss_scale == 1.0
+    assert legacy.simulation_run_id is None
 
 
 def _f(cfg, *, lens=None, tool=None, sev="high", conf=0.8, desc="", file="app.py",

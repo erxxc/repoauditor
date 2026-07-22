@@ -12,8 +12,10 @@ backend is in use.
 
 from __future__ import annotations
 
+import os
 from typing import Callable, Protocol, runtime_checkable
 
+import httpx
 from pydantic import BaseModel
 
 from ..config import Config, get_config
@@ -64,6 +66,80 @@ class AnthropicBackend:
                 f"(stop_reason={response.stop_reason})"
             )
         return parsed.model_dump_json()
+
+
+class OpenAICompatibleBackend:
+    """Backend for OpenAI-compatible `/v1/chat/completions` endpoints.
+
+    The endpoint and authentication environment variable are configurable so the
+    transport works with hosted providers and unauthenticated local gateways. The
+    response-format mode is configurable because compatible servers implement
+    different subsets of JSON Schema structured output.
+    """
+
+    def __init__(self, config: Config | None = None, client: httpx.Client | None = None):
+        self._config = config or get_config()
+        self._client = client or httpx.Client(timeout=self._config.llm.timeout_seconds)
+
+    def complete(self, *, system: str, user: str, schema: type[BaseModel], context: dict) -> str:
+        llm = self._config.llm
+        schema_json = schema.model_json_schema()
+        schema_instruction = (
+            f"\n\nReturn only valid JSON matching this JSON Schema:\n{schema_json}"
+        )
+        payload: dict = {
+            "model": self._config.model.name,
+            "messages": [
+                {"role": "system", "content": system},
+                {"role": "user", "content": user + schema_instruction},
+            ],
+            "max_tokens": self._config.model.max_tokens,
+            "temperature": self._config.model.temperature,
+        }
+        if llm.response_format == "json_schema":
+            payload["response_format"] = {
+                "type": "json_schema",
+                "json_schema": {
+                    "name": schema.__name__,
+                    # The shared client performs authoritative Pydantic validation.
+                    # Non-strict server-side schema handling supports a wider range of
+                    # compatible gateways and schemas containing optional/default fields.
+                    "strict": False,
+                    "schema": schema_json,
+                },
+            }
+        elif llm.response_format == "json_object":
+            payload["response_format"] = {"type": "json_object"}
+
+        headers = {"Content-Type": "application/json"}
+        api_key = os.environ.get(llm.api_key_env) if llm.api_key_env else None
+        if api_key:
+            headers["Authorization"] = f"Bearer {api_key}"
+        url = f"{llm.base_url.rstrip('/')}/chat/completions"
+        try:
+            response = self._client.post(url, headers=headers, json=payload)
+            response.raise_for_status()
+            body = response.json()
+        except (httpx.HTTPError, ValueError) as exc:
+            raw = getattr(locals().get("response"), "text", "")
+            raise BackendError(f"OpenAI-compatible request failed: {exc}", raw=raw) from exc
+
+        try:
+            choice = body["choices"][0]
+            message = choice["message"]
+            content = message.get("content")
+        except (KeyError, IndexError, TypeError) as exc:
+            raise BackendError(
+                "OpenAI-compatible response had no completion choice", raw=str(body)
+            ) from exc
+        if not isinstance(content, str) or not content.strip():
+            refusal = message.get("refusal") if isinstance(message, dict) else None
+            raise BackendError(
+                f"OpenAI-compatible model returned no content"
+                + (f": {refusal}" if refusal else ""),
+                raw=str(body),
+            )
+        return content
 
 
 # A scripted handler receives the same call a stage made and returns either a model

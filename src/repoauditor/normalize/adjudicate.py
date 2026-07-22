@@ -188,6 +188,14 @@ def adjudicate(
     return normalized
 
 
+def adjudicate_repo(
+    repo_id: str, config: Config | None = None, llm: LLMClient | None = None
+) -> list[Finding]:
+    """Normalize all stored findings for a repo; thin repo-level stage entry point."""
+    config = config or get_config()
+    return adjudicate(db.list_findings(repo_id, config), config, llm)
+
+
 def _persist_resolution(resolved: Finding, config: Config, persist: bool) -> None:
     """Write the resolved severity + corroborations to the store (if the finding is persisted).
 

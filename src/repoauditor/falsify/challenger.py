@@ -257,13 +257,21 @@ def _unresolved(
     )
 
 
+class FalsificationRun(list[FalsificationOutcome]):
+    """List-compatible outcomes with the number deferred by this run's budget."""
+
+    def __init__(self, outcomes: list[FalsificationOutcome], deferred_count: int):
+        super().__init__(outcomes)
+        self.deferred_count = deferred_count
+
+
 def challenge(
     repo_id: str,
     config: Config | None = None,
     llm: LLMClient | None = None,
     index: RetrievalIndex | None = None,
     self_critique: bool = True,
-) -> list[FalsificationOutcome]:
+) -> FalsificationRun:
     """Run the falsification pass over a repo's not-yet-examined findings, within budget.
 
     Repo-level entry point. Candidates are the findings the loop has not examined yet —
@@ -318,7 +326,7 @@ def challenge(
             f"below the cutoff and will be resumed by a later run.",
             config,
         )
-    return outcomes
+    return FalsificationRun(outcomes, len(deferred))
 
 
 _PENDING_STATUSES = (FalsificationStatus.UNRESOLVED, FalsificationStatus.DEFERRED)

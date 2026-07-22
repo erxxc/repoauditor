@@ -2,7 +2,14 @@
 
 from __future__ import annotations
 
+from typer.testing import CliRunner
+
+from repoauditor import cli
 from repoauditor.ingest import ingest_repo, snapshot_manifests
+from repoauditor.store import db
+
+
+runner = CliRunner()
 
 
 def test_ingest_directory_snapshot_is_idempotent(tmp_config, fixture_repo):
@@ -23,3 +30,23 @@ def test_manifest_snapshot_finds_requirements(tmp_config, fixture_repo):
     manifests = snapshot_manifests(result.snapshot_path, result.repo_id, result.commit)
     paths = {m.path for m in manifests.manifests}
     assert "requirements.txt" in paths
+
+
+def test_ingest_cli_prints_identity_and_repos_list(
+    tmp_config, fixture_repo, monkeypatch
+):
+    monkeypatch.setattr(cli, "get_config", lambda: tmp_config)
+    source = str(fixture_repo.snapshot_path)
+
+    ingested = runner.invoke(cli.app, ["ingest", source])
+    assert ingested.exit_code == 0, ingested.output
+    record = db.list_ingested_repos(tmp_config)[0]
+    assert f"repo-id: {record.repo_id}" in ingested.stdout
+    assert f"commit: {record.commit_hash}" in ingested.stdout
+
+    listed = runner.invoke(cli.app, ["repos", "list"])
+    assert listed.exit_code == 0, listed.output
+    assert record.repo_id in listed.stdout
+    assert source in listed.stdout
+    assert record.commit_hash in listed.stdout
+    assert record.ingested_at in listed.stdout

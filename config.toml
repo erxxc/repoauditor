@@ -16,6 +16,16 @@ max_tokens = 4096
 
 [llm]
 # Reliability layer (src/repoauditor/llm/client.py).
+# Backend: "anthropic" (default) or "openai-compatible". Compatible endpoints use
+# POST <base_url>/chat/completions and read their bearer token from `api_key_env`.
+provider = "anthropic"
+base_url = "https://api.openai.com/v1"
+api_key_env = "OPENAI_API_KEY"
+# Compatible servers vary: use "json_schema" when supported, "json_object" for
+# JSON-mode-only servers, or "none" to enforce the schema through the prompt + the
+# existing validation/retry layer.
+response_format = "json_schema"
+timeout_seconds = 120.0
 # Results the model reports below this confidence are not asserted outright — the
 # calling stage re-scores with broader context or persists `unresolved`.
 confidence_threshold = 0.5
@@ -67,6 +77,18 @@ triage_confidence_threshold = 0.65
 [rate_limits]
 requests_per_minute = 30
 max_concurrency = 4
+
+[risk_quant]
+# IRIS 2022 Figure 7 identifies revenue as a loss-magnitude driver, but automatic
+# band scaling is deliberately withheld until its visual band/value mapping is
+# independently verified. The conservative default is therefore no scaling (1.0).
+company_revenue_band = "unknown"
+# Optional analyst overrides keyed by scenario name; "*" applies engagement-wide.
+# Valid names: credential_compromise, data_breach, rce_full_compromise,
+# service_disruption, uncategorized. Unknown names fail configuration loading.
+# control_strength_overrides = { "data_breach" = 0.7 }
+# exposure_overrides = { "*" = 0.8 }
+# loss_scale_overrides = { "rce_full_compromise" = 1.5 }
 
 [paths]
 # Relative paths are resolved against the repo root by config.py.

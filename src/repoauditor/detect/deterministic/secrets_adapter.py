@@ -91,6 +91,7 @@ class SecretsAdapter:
                 line_start=start, line_end=end,
                 citation_snippet=f"[{rule}] {redacted} (secret value redacted)",
                 source_tool=self.tool_name, confidence=_SECRETS_CONFIDENCE,
+                producer="gitleaks",
                 severity=Severity.HIGH,
                 rationale=f"{desc} — credential committed in source (value withheld).".strip(),
             ))

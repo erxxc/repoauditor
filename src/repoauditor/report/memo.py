@@ -29,8 +29,11 @@ embedded appendix are variable-length generated blocks a flat template can't hol
 
 from __future__ import annotations
 
+import shutil
+from pathlib import Path
+
 from ..analyze.deal_risk import weigh_deal_risk
-from ..analyze.risk_quant import generate_appendix
+from ..analyze.risk_quant import QuantificationArtifacts, generate_appendix
 from ..config import Config, get_config
 from ..store import db
 from ..store.models import DealRisk, Finding
@@ -58,10 +61,15 @@ _METHODOLOGY = (
     "put through a falsification pass; severity is never asserted without a corroborating "
     "source or a confirmed reachability pass, and anything the pipeline could not resolve is "
     "withheld pending human review (it does not appear above). The loss figures in the "
-    "appendix come from a FAIR-style Monte-Carlo model (Freund & Jones) with loss magnitudes "
-    "calibrated as 90% confidence intervals (Hubbard & Seiersen); every distribution "
-    "parameter traces to a sourced prior (`priors.yaml` / `PriorSource`), and results are "
-    "reported as ranges, never single point estimates."
+    "appendix come from a FAIR-style Monte Carlo model with two explicit layers: a "
+    "Bernoulli validity gate represents whether each finding is real and exploitable, then "
+    "a conditional Poisson rate represents loss-event frequency only when that gate is "
+    "open. EPSS and KEV are eligible only as real, dated signals for a CVE-backed finding; "
+    "without such enrichment the model uses the explicitly labelled IRIS 2022 industry "
+    "baseline rather than inferring a threat signal from severity. Loss magnitude is fitted "
+    "to IRIS 2022's published median and p95. Every distribution parameter traces to an "
+    "exactly cited prior (`priors.yaml` / `PriorSource`), and results are reported as ranges, "
+    "never single point estimates."
 )
 
 
@@ -99,7 +107,11 @@ def _strip_h1(markdown: str) -> str:
 
 
 def build_memo(
-    repo_id: str, config: Config | None = None, *, record_audit: bool = False
+    repo_id: str,
+    config: Config | None = None,
+    *,
+    record_audit: bool = False,
+    quantification: QuantificationArtifacts | None = None,
 ) -> str:
     """Render the leadership risk memo for a repo.
 
@@ -110,6 +122,10 @@ def build_memo(
     computed with `persist=False`.
     """
     config = config or get_config()
+    if quantification is not None and record_audit and not quantification.audit_recorded:
+        raise ValueError(
+            "record_audit=True requires quantification artifacts produced with persist=True"
+        )
 
     # Deal weights for the review-gated set (persist=False — a report never mutates the store).
     deal = {r.finding_id: r.deal_risk for r in weigh_deal_risk(repo_id, config, persist=False)}
@@ -142,11 +158,20 @@ def build_memo(
             boundary = boundaries.get(finding.trust_boundary_id, "an unmapped component")
             lines += _risk_paragraph(i, finding, deal[finding.id], boundary)
 
-    # FAIR Monte-Carlo appendix — consume generate_appendix's artifact. persist follows the
-    # audit flag: with record_audit the SimulationRun (and its scenario/prior evidence) is
-    # written as the memo's audit trail; findings/severity are untouched either way.
+    # FAIR Monte-Carlo appendix. A caller such as ``finalize`` may supply the artifacts
+    # from its preceding quantify step; standalone memo generation still quantifies here.
+    # Copy reusable artifacts into the memo directory so its relative chart links remain
+    # valid without re-running the simulation.
     out_dir = config.resolve(config.paths.data_dir) / "reports" / f"{repo_id}_memo"
-    appendix_path = generate_appendix(repo_id, config, out_dir=out_dir, persist=record_audit)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    if quantification is None:
+        appendix_path = generate_appendix(repo_id, config, out_dir=out_dir, persist=record_audit)
+    else:
+        for source in quantification.artifact_paths:
+            destination = out_dir / source.name
+            if source.resolve() != destination.resolve():
+                shutil.copy2(source, destination)
+        appendix_path = out_dir / quantification.appendix_path.name
     lines += [
         "## Appendix: Quantitative Risk Model (FAIR / Monte Carlo)",
         "",
@@ -159,3 +184,24 @@ def build_memo(
         _METHODOLOGY,
     ]
     return "\n".join(lines)
+
+
+def write_memo(
+    repo_id: str,
+    config: Config | None = None,
+    *,
+    record_audit: bool = False,
+    quantification: QuantificationArtifacts | None = None,
+) -> list[Path]:
+    """Render and write the memo, returning every report artifact path."""
+    config = config or get_config()
+    out_dir = config.resolve(config.paths.data_dir) / "reports" / f"{repo_id}_memo"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    memo_path = out_dir / "memo.md"
+    memo_path.write_text(build_memo(
+        repo_id,
+        config,
+        record_audit=record_audit,
+        quantification=quantification,
+    ))
+    return sorted(path for path in out_dir.iterdir() if path.is_file())

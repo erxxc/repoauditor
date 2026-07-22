@@ -81,6 +81,7 @@ class CandidateFinding(BaseModel):
     line_end: int
     citation_snippet: str
     source_tool: str
+    producer: str | None = Field(default=None, exclude=True)
     confidence: float = Field(ge=0.0, le=1.0)
     severity: Severity
     trust_boundary_ref: str | None = None
@@ -99,12 +100,28 @@ def _retrieval_context(index: RetrievalIndex, file_text: str) -> str:
     return "\n\n# --- related call sites (retrieval) ---\n" + "\n\n".join(blocks)
 
 
+class DetectionRun(list[Finding]):
+    """List-compatible result with producer counts and generated scanner artifacts."""
+
+    def __init__(
+        self,
+        findings: list[Finding],
+        source_counts: dict[str, int],
+        sarif_path: Path | None = None,
+        semgrep_status: str | None = None,
+    ):
+        super().__init__(findings)
+        self.source_counts = source_counts
+        self.sarif_path = sarif_path
+        self.semgrep_status = semgrep_status
+
+
 def run_ensemble(
     repo_id: str,
     config: Config | None = None,
     llm: LLMClient | None = None,
     index: RetrievalIndex | None = None,
-) -> list[Finding]:
+) -> DetectionRun:
     """Run the three-lens ensemble over an ingested + mapped repo; persist candidates.
 
     Repo-level entry point: resolves the snapshot, loads the architecture map from
@@ -119,6 +136,10 @@ def run_ensemble(
     index = index or RetrievalIndex().build(snapshot_path)
 
     persisted: list[Finding] = []
+    source_counts = {
+        "semgrep": 0, "gitleaks": 0, "pip-audit": 0,
+        "osv-scanner": 0, "llm-ensemble": 0,
+    }
     for path in iter_source_files(snapshot_path):
         rel = path.relative_to(snapshot_path).as_posix()
         file_text = read_numbered(path)
@@ -138,16 +159,36 @@ def run_ensemble(
                 persisted.append(
                     _persist_candidate(cand, lens, repo_id, architecture, config, low)
                 )
+                source_counts["llm-ensemble"] += 1
 
     # Deterministic tool findings land in the same table as the lens findings, tagged
     # with `source_tool`, so triage / falsify / (later) corroboration see one unified set.
+    artifact_path = (
+        config.resolve(config.paths.data_dir)
+        / "artifacts" / repo_id / commit / "detect" / "semgrep.sarif"
+    )
+    sarif_path = None
+    semgrep_status = None
     if config.detect.run_deterministic_tools:
-        for cand in _run_deterministic_adapters(snapshot_path, config):
+        tool_candidates, sarif_path, semgrep_status = _run_deterministic_adapters(
+            snapshot_path, config, artifact_path
+        )
+        for cand in tool_candidates:
             persisted.append(_persist_tool_candidate(cand, repo_id, architecture, config))
-    return persisted
+            if cand.producer in source_counts:
+                source_counts[cand.producer] += 1
+    else:
+        from .deterministic import SastAdapter
+
+        sast = SastAdapter(sarif_output_path=artifact_path)
+        sast.write_empty_artifact("disabled")
+        sarif_path, semgrep_status = artifact_path, sast.run_status
+    return DetectionRun(persisted, source_counts, sarif_path, semgrep_status)
 
 
-def _run_deterministic_adapters(snapshot_path: Path, config: Config) -> list[CandidateFinding]:
+def _run_deterministic_adapters(
+    snapshot_path: Path, config: Config, sarif_output_path: Path,
+) -> tuple[list[CandidateFinding], Path | None, str | None]:
     """Run the SAST / SCA / secret adapters over the snapshot, in parallel.
 
     Each adapter shells out to an external scanner and already degrades to no findings
@@ -157,12 +198,19 @@ def _run_deterministic_adapters(snapshot_path: Path, config: Config) -> list[Can
     from .deterministic import SastAdapter, ScaAdapter, SecretsAdapter
 
     timeout = config.detect.tool_timeout_seconds
-    adapters = [SastAdapter(timeout), ScaAdapter(timeout), SecretsAdapter(timeout)]
+    sast = SastAdapter(timeout, sarif_output_path=sarif_output_path)
+    adapters = [sast, ScaAdapter(timeout), SecretsAdapter(timeout)]
     candidates: list[CandidateFinding] = []
     with ThreadPoolExecutor(max_workers=len(adapters)) as pool:
         for cands in pool.map(lambda a: _safe_run(a, snapshot_path), adapters):
             candidates.extend(cands)
-    return candidates
+    if not sarif_output_path.is_file():
+        sast.write_empty_artifact(sast.run_status or "failed")
+    return (
+        candidates,
+        sarif_output_path if sarif_output_path.is_file() else None,
+        sast.run_status,
+    )
 
 
 def _safe_run(adapter, snapshot_path: Path) -> list[CandidateFinding]:
@@ -197,7 +245,7 @@ def _persist_tool_candidate(
         trust_boundary_id=architecture.trust_boundary_id(cand.trust_boundary_ref),
         description=cand.rationale,
     )
-    finding_id = db.insert_finding(finding, config)
+    finding_id = db.upsert_detected_finding(finding, config)
     return finding.model_copy(update={"id": finding_id})
 
 
@@ -253,5 +301,5 @@ def _persist_candidate(
         trust_boundary_id=architecture.trust_boundary_id(cand.trust_boundary_ref),
         description=description,
     )
-    finding_id = db.insert_finding(finding, config)
+    finding_id = db.upsert_detected_finding(finding, config)
     return finding.model_copy(update={"id": finding_id})

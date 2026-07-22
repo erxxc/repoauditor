@@ -6,7 +6,13 @@ validates against the stage's Pydantic model, retries (bounded) on failure, logs
 (`AnthropicBackend`, `ScriptedBackend`) only produce raw model text.
 """
 
-from .backends import AnthropicBackend, Backend, BackendError, ScriptedBackend
+from .backends import (
+    AnthropicBackend,
+    Backend,
+    BackendError,
+    OpenAICompatibleBackend,
+    ScriptedBackend,
+)
 from .client import Completion, LLMClient, LLMValidationError, get_llm_client
 
 __all__ = [
@@ -17,5 +23,6 @@ __all__ = [
     "Backend",
     "BackendError",
     "AnthropicBackend",
+    "OpenAICompatibleBackend",
     "ScriptedBackend",
 ]

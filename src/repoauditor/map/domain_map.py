@@ -104,7 +104,7 @@ def recover_architecture(
     boundaries: list[TrustBoundary] = []
     name_to_id: dict[str, int] = {}
     for tb in extraction.trust_boundaries:
-        tb_id = db.insert_trust_boundary(
+        tb_id = db.upsert_trust_boundary(
             StoreTrustBoundary(repo_id=repo_id, name=tb.name, description=tb.description),
             config,
         )
@@ -114,7 +114,7 @@ def recover_architecture(
     # Persist entry points / data stores / integrations as entities, linked to a
     # boundary by name where the model provided one.
     def _persist(kind: EntityKind, name: str, location: str | None, boundary: str | None):
-        db.insert_entity(
+        db.upsert_entity(
             Entity(
                 repo_id=repo_id,
                 kind=kind,

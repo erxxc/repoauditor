@@ -94,6 +94,7 @@ class ScaAdapter:
                     file=manifest, line_start=1, line_end=1,
                     citation_snippet=f"{name}=={version} — {vid}",
                     source_tool=self.tool_name, confidence=_SCA_CONFIDENCE,
+                    producer="pip-audit",
                     severity=Severity.MEDIUM,
                     rationale=f"{desc} (fix: {fix})".strip(),
                 ))
@@ -139,6 +140,7 @@ class ScaAdapter:
                         file=manifest, line_start=1, line_end=1,
                         citation_snippet=f"{name}@{version} — {vid}",
                         source_tool=self.tool_name, confidence=_SCA_CONFIDENCE,
+                        producer="osv-scanner",
                         severity=Severity.MEDIUM, rationale=summary[:500],
                     ))
         return out
