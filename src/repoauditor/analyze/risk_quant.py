@@ -1,24 +1,28 @@
 """FAIR-style Monte Carlo risk quantification.
 
-Implements Factor Analysis of Information Risk (FAIR): annualized loss = Loss Event
-Frequency x Loss Magnitude, estimated by Monte Carlo. Loss Event Frequency is modelled
-Poisson; Loss Magnitude lognormal. Distribution inputs come *only* from `priors.yaml`,
+Implements a FAIR-style decomposition with an explicit epistemic finding-validity gate,
+conditional Poisson Loss Event Frequency, and lognormal Loss Magnitude. Distribution inputs
+come *only* from `priors.yaml`,
 and every parameter consumed writes a `PriorSource` row — there are no magic numbers in
 this module (a CLAUDE.md rule).
 
-Two published methods are combined:
-  * FAIR (Freund & Jones) for the frequency x magnitude decomposition and the loss
-    exceedance curve as the primary output.
-  * Hubbard & Seiersen calibrated estimation for turning a sourced 90% confidence
-    interval (p05, p95) on single-loss cost into lognormal (mu, sigma):
-        mu    = (ln p05 + ln p95) / 2
-        sigma = (ln p95 - ln p05) / (2 * z),   z = 1.6448536  (the 0.95 normal quantile)
+FAIR supplies the frequency/magnitude decomposition and loss exceedance output. The
+lognormal is fitted directly to IRIS 2022's published event-loss median and p95; the
+lower percentile is explicitly model-implied rather than attributed to the publication.
 
-The seam with `triage/`: a scenario's Poisson rate is the exploitation-frequency base
-rate (selected from `priors.yaml` by the finding's signal band) *scaled by the triage
-P(actionable)* of its member findings — a finding the triage classifier thinks is
-probably a false positive contributes proportionally less expected frequency. That
-scaling is applied explicitly in `build_scenarios` and commented at the call site.
+The seam with `triage/` is Bernoulli validity, never Poisson-rate scaling. Confirmed
+findings have validity 1; otherwise P(actionable) gates whether the issue exists in each
+trial. Conditional frequency uses the exactly cited industry baseline. EPSS and KEV are
+not inferred from severity; no live/cached enrichment exists in this version.
+
+Organization context follows the Open FAIR factor mapping rather than being blended into
+one opaque multiplier: map/deal-risk production exposure scales Threat Event Frequency
+(contact rate); falsification evidence informs control strength, which reduces
+Vulnerability (the probability that a threat event becomes a loss event); and engagement
+loss scale multiplies Loss Magnitude. The simulation therefore draws finding validity,
+then threat events, then control-conditioned successful events, then loss magnitude. A
+revenue band is recorded but does not change magnitude until a band curve can be tied to
+an exact published source; the conservative default multiplier is 1.0.
 
 Uncertainty survives to the output: results are always reported as a range (p5 / median
 / mean / p95 and a full loss exceedance curve), never a single expected-loss number, and
@@ -28,6 +32,7 @@ a tornado sensitivity analysis shows which priors dominate.
 from __future__ import annotations
 
 import math
+import re
 from collections import defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -35,26 +40,27 @@ from pathlib import Path
 import numpy as np
 
 from ..config import Config, MagnitudePrior, get_config
+from .deal_risk import weigh_deal_risk
 from ..store import db
 from ..store.models import (
     FalsificationStatus,
     Finding,
     PriorSource,
     RiskScenario,
+    ScenarioInput,
     SimulationRun,
 )
 
-_Z95 = 1.6448536269514722  # standard-normal 0.95 quantile (Hubbard 90% CI half-width)
+_Z95 = 1.6448536269514722  # standard-normal 0.95 quantile
 
 
 # --------------------------------------------------------------------------- #
-# Calibration: sourced 90% CI -> lognormal (mu, sigma)
+# Calibration: published median + p95 -> lognormal (mu, sigma)
 # --------------------------------------------------------------------------- #
-def calibrate_lognormal(p05_usd: float, p95_usd: float) -> tuple[float, float]:
-    """Hubbard & Seiersen: a 90% CI (p05, p95) on cost -> lognormal (mu, sigma)."""
-    ln05, ln95 = math.log(p05_usd), math.log(p95_usd)
-    mu = (ln05 + ln95) / 2.0
-    sigma = (ln95 - ln05) / (2.0 * _Z95)
+def calibrate_lognormal(median_usd: float, p95_usd: float) -> tuple[float, float]:
+    """Fit a lognormal to a published median and 95th percentile."""
+    mu = math.log(median_usd)
+    sigma = (math.log(p95_usd) - mu) / _Z95
     return mu, sigma
 
 
@@ -81,34 +87,53 @@ def _magnitude_category(finding: Finding) -> str:
     for category, needles in _MAGNITUDE_KEYWORDS.items():
         if any(n in text for n in needles):
             return category
-    return "default_magnitude"  # -> priors.sme_estimates
+    return "uncategorized"
 
 
-def _magnitude_prior(category: str, config: Config) -> tuple[MagnitudePrior, str, str]:
-    """Return (prior, kind, param_path) for a category, using the SME default fallback."""
-    if category in config.priors.magnitude:
-        return config.priors.magnitude[category], "magnitude", f"magnitude.{category}"
-    prior = config.priors.sme_estimates["default_magnitude"]
-    return prior, "sme_estimate", "sme_estimates.default_magnitude"
+def _magnitude_prior(config: Config) -> tuple[MagnitudePrior, str, str]:
+    """Return the exact all-event baseline; category differentiation is not sourced yet."""
+    prior = config.priors.magnitude["industry_baseline"]
+    return prior, "magnitude", "magnitude.industry_baseline"
 
 
-def _frequency_band(finding: Finding, config: Config) -> str:
-    """Select an exploitation-frequency band from priors.yaml for a finding.
+_CVE_RE = re.compile(r"\bCVE-\d{4}-\d{4,}\b", re.IGNORECASE)
 
-    Ideally driven by per-CVE KEV/EPSS enrichment. SAST findings rarely carry a CVE, so
-    absent that signal we proxy the exploitation band by adjudicated severity — and
-    record which band (and thus which sourced base rate) was used on the scenario. When
-    KEV/EPSS enrichment is present on the finding it should override this proxy.
-    """
-    bands = config.priors.frequency
-    # (Enrichment hook: if finding metadata carried kev=True -> "kev_listed";
-    #  epss>=threshold -> "epss_high"/"epss_moderate". Not present on SAST findings here.)
-    sev = finding.severity
-    if sev in ("critical", "high") and "epss_high" in bands:
-        return "epss_high"
-    if sev == "medium" and "epss_moderate" in bands:
-        return "epss_moderate"
-    return "baseline_no_signal"
+
+def _cve_ids(finding: Finding) -> list[str]:
+    text = " ".join((finding.title, finding.citation_snippet, finding.description or ""))
+    return sorted({match.upper() for match in _CVE_RE.findall(text)})
+
+
+def _frequency_prior(config: Config) -> tuple[float, str]:
+    """Return the conditional industry rate; no EPSS/KEV proxying is permitted."""
+    prior = config.priors.frequency["industry_baseline"]
+    return -math.log1p(-prior.annual_probability_at_least_one), "frequency.industry_baseline"
+
+
+def _prior_source(kind: str, path: str, prior) -> PriorSource:
+    return PriorSource(
+        kind=kind, param_path=path, source=prior.source, detail=prior.detail,
+        publication=prior.publication, edition=prior.edition, locator=prior.locator,
+        url=prior.url, transformation=prior.transformation, provenance_status="verified",
+    )
+
+
+def _validity(finding: Finding, triage_result, config: Config) -> tuple[float, str]:
+    """Resolve epistemic finding validity without modifying event frequency."""
+    if finding.falsification_status is FalsificationStatus.CONFIRMED:
+        return 1.0, "falsify:confirmed"
+    if finding.id is not None:
+        request = db.get_review_request(finding.id, config)
+        if request is not None:
+            decision = db.latest_review_decision(request.id, config)
+            if decision is not None and str(decision.disposition) == "confirm":
+                return 1.0, "review:human-confirmed"
+    if triage_result is not None:
+        return triage_result.p_actionable, "triage:p_actionable"
+    raise ValueError(
+        f"finding #{finding.id} has neither confirmation nor a triage P(actionable); "
+        "refusing to invent a validity probability"
+    )
 
 
 # --------------------------------------------------------------------------- #
@@ -128,6 +153,21 @@ class ScenarioParams:
     frequency_source: str  # param_path(s) into priors.yaml
     magnitude_source: str
     p_actionable: float    # mean triage P(actionable) across members (record/seam)
+    validity_probabilities: list[float] = field(default_factory=list)
+    validity_sources: list[str] = field(default_factory=list)
+    conditional_frequency_lambdas: list[float] = field(default_factory=list)
+    conditional_frequency_source: str = ""
+    threat_signal_labels: list[str] = field(default_factory=list)
+    exposure_factors: list[float] = field(default_factory=list)
+    control_strengths: list[float] = field(default_factory=list)
+    loss_scale: float = 1.0
+    input_provenance: list[ScenarioInput] = field(default_factory=list)
+    persisted_id: int | None = None
+
+
+def _override(values: dict[str, float], scenario_name: str) -> float | None:
+    """Resolve a scenario override before the engagement-wide ``*`` fallback."""
+    return values.get(scenario_name, values.get("*"))
 
 
 def build_scenarios(
@@ -135,10 +175,9 @@ def build_scenarios(
 ) -> list[ScenarioParams]:
     """Group a repo's triaged/falsified findings into FAIR scenarios with sourced priors.
 
-    Excludes killed findings. Each surviving finding contributes to its magnitude
-    category's scenario an expected frequency of `base_rate(band) * P(actionable)` — the
-    explicit triage seam. Every distinct magnitude/frequency parameter used writes one
-    `PriorSource` row (no unsourced numbers).
+    Excludes killed findings. Each surviving finding contributes a Bernoulli validity
+    probability and a separate conditional industry-baseline event rate. Every magnitude
+    and frequency parameter used writes one exact-provenance `PriorSource` row.
     """
     config = config or get_config()
     # Review gate + de-duplication: the analyze stage consumes only findings that cleared the
@@ -150,58 +189,120 @@ def build_scenarios(
     # this is a read-side view (Option B) rather than a persisted supersede flag.
     findings = db.list_countable_findings(repo_id, config)
     triage = {tr.finding_id: tr for tr in db.list_triage_results(repo_id, config)}
+    # Reuse the existing map-backed production-exposure computation verbatim. This call is
+    # read-only (`persist=False`) and avoids a second, subtly divergent exposure heuristic.
+    exposure_by_finding = {
+        result.finding_id: result.deal_risk
+        for result in weigh_deal_risk(repo_id, config, persist=False)
+    }
 
-    # Default P(actionable) when a finding was never triaged: the sourced global prior
-    # mean, so we never invent a number.
-    bp = config.priors.triage.global_actionable_prior
-    default_p = bp.alpha / (bp.alpha + bp.beta)
-
-    groups: dict[str, list[tuple[Finding, float, str]]] = defaultdict(list)
+    groups: dict[str, list[tuple[Finding, float, str, str]]] = defaultdict(list)
     for f in findings:
         if f.falsification_status == FalsificationStatus.KILLED:
             continue  # killed candidates don't drive loss
-        p_act = triage[f.id].p_actionable if f.id in triage else default_p
+        p_act, validity_source = _validity(f, triage.get(f.id), config)
         category = _magnitude_category(f)
-        band = _frequency_band(f, config)
-        groups[category].append((f, p_act, band))
+        cves = _cve_ids(f)
+        signal = (
+            f"industry-baseline:no-cached-EPSS-or-KEV ({','.join(cves)})" if cves
+            else "industry-baseline:no-CVE-signal"
+        )
+        groups[category].append((f, p_act, validity_source, signal))
 
     used_sources: dict[str, PriorSource] = {}  # param_path -> row (dedup within a run)
     scenarios: list[ScenarioParams] = []
     for category, members in groups.items():
-        mag_prior, mag_kind, mag_path = _magnitude_prior(category, config)
-        mu, sigma = calibrate_lognormal(mag_prior.p05_usd, mag_prior.p95_usd)
-        used_sources[mag_path] = PriorSource(
-            kind=mag_kind, param_path=mag_path, source=mag_prior.source,
-            detail=mag_prior.detail,
+        mag_prior, mag_kind, mag_path = _magnitude_prior(config)
+        mu, sigma = calibrate_lognormal(mag_prior.median_usd, mag_prior.p95_usd)
+        implied_p05 = math.exp(mu - _Z95 * sigma)
+        used_sources[mag_path] = _prior_source(mag_kind, mag_path, mag_prior)
+
+        conditional_lambda, freq_source = _frequency_prior(config)
+        freq_prior = config.priors.frequency["industry_baseline"]
+        used_sources[freq_source] = _prior_source("frequency", freq_source, freq_prior)
+        validities = [p for _, p, _, _ in members]
+        validity_sources = [source for _, _, source, _ in members]
+        conditional_lambdas = [conditional_lambda] * len(members)
+        signals = [signal for _, _, _, signal in members]
+        derived_exposures = [
+            exposure_by_finding[f.id].exposure_component
+            if f.id in exposure_by_finding else config.deal_risk.exposure.default_score
+            for f, _, _, _ in members
+        ]
+        exposure_override = _override(config.risk_quant.exposure_overrides, category)
+        exposures = (
+            [exposure_override] * len(members)
+            if exposure_override is not None else derived_exposures
         )
 
-        lam = 0.0
-        bands_used: set[str] = set()
-        for _finding, p_act, band in members:
-            freq_prior = config.priors.frequency[band]
-            # --- triage seam: scale the sourced base rate by P(actionable) --------- #
-            lam += freq_prior.lambda_per_year * p_act
-            bands_used.add(band)
-            fpath = f"frequency.{band}"
-            used_sources[fpath] = PriorSource(
-                kind="frequency", param_path=fpath, source=freq_prior.source,
-                detail=freq_prior.detail,
-            )
+        # A confirmed falsification verdict means the challenger found the path reachable
+        # and unmitigated. Its persisted result carries no structured positive-control
+        # field, so survivors receive no invented control credit. Human-confirmed findings
+        # use the same numeric conservative default but are labelled unavailable rather
+        # than presented as scanner-derived evidence.
+        derived_controls = [0.0] * len(members)
+        control_override = _override(config.risk_quant.control_strength_overrides, category)
+        controls = (
+            [control_override] * len(members)
+            if control_override is not None else derived_controls
+        )
+        loss_override = _override(config.risk_quant.loss_scale_overrides, category)
+        loss_scale = loss_override if loss_override is not None else 1.0
 
-        freq_source = ", ".join(sorted(f"frequency.{b}" for b in bands_used))
-        mean_p = float(np.mean([p for _, p, _ in members]))
+        exposure_origin = "analyst_override" if exposure_override is not None else "derived"
+        control_origin = (
+            "analyst_override" if control_override is not None
+            else "derived" if all(source == "falsify:confirmed" for source in validity_sources)
+            else "conservative_default"
+        )
+        loss_origin = "analyst_override" if loss_override is not None else "conservative_default"
+        provenance = [
+            ScenarioInput(
+                repo_id=repo_id, scenario_name=category, input_name="exposure",
+                value=float(np.mean(exposures)), origin=exposure_origin,
+                source=("analyst override [risk_quant.exposure_overrides]"
+                        if exposure_override is not None
+                        else "analyze.deal_risk production-exposure component"),
+                detail=f"per-finding values={exposures}",
+            ),
+            ScenarioInput(
+                repo_id=repo_id, scenario_name=category, input_name="control_strength",
+                value=float(np.mean(controls)), origin=control_origin,
+                source=("analyst override [risk_quant.control_strength_overrides]"
+                        if control_override is not None
+                        else ("falsify: confirmed reachable and unmitigated"
+                              if control_origin == "derived"
+                              else "derived-unavailable:no-structured-control-evidence")),
+                detail=f"per-finding values={controls}; validity sources={validity_sources}",
+            ),
+            ScenarioInput(
+                repo_id=repo_id, scenario_name=category, input_name="loss_scale",
+                value=loss_scale, origin=loss_origin,
+                source=("analyst override [risk_quant.loss_scale_overrides]"
+                        if loss_override is not None
+                        else "conservative no-scaling default"),
+                detail=(f"company_revenue_band={config.risk_quant.company_revenue_band}; "
+                        "automatic revenue-band curve withheld pending exact source mapping"),
+            ),
+        ]
+        mean_p = float(np.mean(validities))
         scenarios.append(
             ScenarioParams(
                 name=category,
-                finding_ids=[f.id for f, _, _ in members if f.id is not None],
-                frequency_lambda=lam,
+                finding_ids=[f.id for f, _, _, _ in members if f.id is not None],
+                frequency_lambda=sum(conditional_lambdas),
                 magnitude_mu=mu,
                 magnitude_sigma=sigma,
-                p05_usd=mag_prior.p05_usd,
+                p05_usd=implied_p05,
                 p95_usd=mag_prior.p95_usd,
                 frequency_source=freq_source,
                 magnitude_source=mag_path,
                 p_actionable=mean_p,
+                validity_probabilities=validities, validity_sources=validity_sources,
+                conditional_frequency_lambdas=conditional_lambdas,
+                conditional_frequency_source=freq_source, threat_signal_labels=signals,
+                exposure_factors=exposures, control_strengths=controls,
+                loss_scale=loss_scale, input_provenance=provenance,
             )
         )
 
@@ -209,15 +310,28 @@ def build_scenarios(
         for ps in used_sources.values():
             db.insert_prior_source(ps, config)
         for s in scenarios:
-            db.insert_risk_scenario(
+            scenario_id = db.insert_risk_scenario(
                 RiskScenario(
                     repo_id=repo_id, name=s.name, finding_ids=s.finding_ids,
                     frequency_lambda=s.frequency_lambda, magnitude_mu=s.magnitude_mu,
                     magnitude_sigma=s.magnitude_sigma, frequency_source=s.frequency_source,
                     magnitude_source=s.magnitude_source, p_actionable=s.p_actionable,
+                    validity_probabilities=s.validity_probabilities,
+                    validity_sources=s.validity_sources,
+                    conditional_frequency_lambdas=s.conditional_frequency_lambdas,
+                    conditional_frequency_source=s.conditional_frequency_source,
+                    threat_signal_labels=s.threat_signal_labels,
+                    exposure_factors=s.exposure_factors,
+                    control_strengths=s.control_strengths,
+                    loss_scale=s.loss_scale,
                 ),
                 config,
             )
+            s.persisted_id = scenario_id
+            for value in s.input_provenance:
+                db.insert_scenario_input(
+                    value.model_copy(update={"risk_scenario_id": scenario_id}), config
+                )
     return scenarios
 
 
@@ -245,16 +359,40 @@ class SimulationResult:
         }
 
 
+@dataclass(frozen=True)
+class QuantificationArtifacts:
+    """Files and metadata produced by one quantitative analysis pass.
+
+    Iteration intentionally preserves the historical ``(path, scenario_count)``
+    unpacking contract while giving report builders access to all generated files.
+    """
+
+    appendix_path: Path
+    scenario_count: int
+    artifact_paths: tuple[Path, ...]
+    trials: int
+    seed: int
+    audit_recorded: bool
+
+    def __iter__(self):
+        yield self.appendix_path
+        yield self.scenario_count
+
+
 def _compound_poisson_lognormal(
-    lam: float, mu: float, sigma: float, trials: int, rng: np.random.Generator
+    lam: float, mu: float, sigma: float, trials: int, rng: np.random.Generator,
+    validity_probability: float = 1.0, exposure: float = 1.0,
+    control_strength: float = 0.0, loss_scale: float = 1.0,
 ) -> np.ndarray:
-    """Per-trial loss = sum of Poisson(lam) lognormal(mu,sigma) event losses. Vectorized."""
-    counts = rng.poisson(lam, trials)
+    """Validity -> exposed threat events -> control-conditioned losses -> magnitude."""
+    valid = rng.binomial(1, validity_probability, trials)
+    threat_events = rng.poisson(lam * exposure, trials) * valid
+    counts = rng.binomial(threat_events, 1.0 - control_strength)
     total_events = int(counts.sum())
     out = np.zeros(trials)
     if total_events == 0:
         return out
-    draws = rng.lognormal(mu, sigma, total_events)
+    draws = rng.lognormal(mu, sigma, total_events) * loss_scale
     # Map each event draw to its trial via run-length expansion, then segment-sum.
     trial_index = np.repeat(np.arange(trials), counts)
     np.add.at(out, trial_index, draws)
@@ -269,9 +407,19 @@ def monte_carlo(
     per_scenario: dict[str, np.ndarray] = {}
     aggregate = np.zeros(trials)
     for s in scenarios:
-        losses = _compound_poisson_lognormal(
-            s.frequency_lambda, s.magnitude_mu, s.magnitude_sigma, trials, rng
-        )
+        losses = np.zeros(trials)
+        validities = s.validity_probabilities or [s.p_actionable]
+        conditional_lambdas = s.conditional_frequency_lambdas or [s.frequency_lambda]
+        exposures = s.exposure_factors or [1.0] * len(validities)
+        controls = s.control_strengths or [0.0] * len(validities)
+        for validity, conditional_lambda, exposure, control in zip(
+            validities, conditional_lambdas, exposures, controls, strict=True
+        ):
+            losses += _compound_poisson_lognormal(
+                conditional_lambda, s.magnitude_mu, s.magnitude_sigma, trials, rng,
+                validity_probability=validity, exposure=exposure,
+                control_strength=control, loss_scale=s.loss_scale,
+            )
         per_scenario[s.name] = losses
         aggregate += losses
     return SimulationResult(
@@ -304,38 +452,42 @@ def loss_exceedance_curve(losses: np.ndarray, points: int = 200) -> list[tuple[f
 def tornado_sensitivity(scenarios: list[ScenarioParams]) -> list[dict]:
     """Rank parameters by their swing in expected aggregate loss (largest first).
 
-    Uses the analytic expectation E[loss] = lambda * E[magnitude] so the sweep is exact
-    and fast. Each scenario contributes two bars:
-      * frequency: lambda swept +/-50% (frequency uncertainty band).
-      * magnitude: single-loss cost swept across its sourced 90% CI (p05..p95),
-        i.e. lambda * p05 vs lambda * p95.
+    Uses the analytic expectation E[loss] = validity * exposure * lambda *
+    (1-control strength) * loss scale * E[magnitude], so the sweep is exact
+    and fast. Each scenario contributes a magnitude bar using the model-implied p05 and
+    published p95. The old arbitrary +/-50% frequency shock was removed because it had
+    no source and therefore violated the prior-governance rule.
     The swing (|high - low| of aggregate expected loss with only that parameter moved)
     ranks which prior the headline number is most sensitive to.
     """
     # Baseline expected loss per scenario: lambda * lognormal mean.
     def mag_mean(s: ScenarioParams) -> float:
-        return math.exp(s.magnitude_mu + s.magnitude_sigma ** 2 / 2.0)
+        return math.exp(s.magnitude_mu + s.magnitude_sigma ** 2 / 2.0) * s.loss_scale
 
-    baseline = {s.name: s.frequency_lambda * mag_mean(s) for s in scenarios}
+    def expected_events(s: ScenarioParams) -> float:
+        validities = s.validity_probabilities or [s.p_actionable]
+        lambdas = s.conditional_frequency_lambdas or [s.frequency_lambda]
+        exposures = s.exposure_factors or [1.0] * len(validities)
+        controls = s.control_strengths or [0.0] * len(validities)
+        return sum(
+            p * lam * exposure * (1.0 - control)
+            for p, lam, exposure, control in zip(
+                validities, lambdas, exposures, controls, strict=True
+            )
+        )
+
+    baseline = {s.name: expected_events(s) * mag_mean(s) for s in scenarios}
     base_total = sum(baseline.values())
 
     bars: list[dict] = []
     for s in scenarios:
         others = base_total - baseline[s.name]
-        # Frequency sweep +/-50%.
-        f_low = others + (s.frequency_lambda * 0.5) * mag_mean(s)
-        f_high = others + (s.frequency_lambda * 1.5) * mag_mean(s)
+        # Magnitude sweep across the fitted distribution's implied p05 and published p95.
+        events = expected_events(s)
+        m_low = others + events * s.p05_usd * s.loss_scale
+        m_high = others + events * s.p95_usd * s.loss_scale
         bars.append({
-            "parameter": f"{s.name}: frequency (lambda)",
-            "scenario": s.name, "source": s.frequency_source,
-            "low": f_low, "high": f_high, "swing": abs(f_high - f_low),
-            "baseline": base_total,
-        })
-        # Magnitude sweep across the sourced 90% CI.
-        m_low = others + s.frequency_lambda * s.p05_usd
-        m_high = others + s.frequency_lambda * s.p95_usd
-        bars.append({
-            "parameter": f"{s.name}: magnitude (90% CI)",
+            "parameter": f"{s.name}: magnitude (model p05 / published p95)",
             "scenario": s.name, "source": s.magnitude_source,
             "low": m_low, "high": m_high, "swing": abs(m_high - m_low),
             "baseline": base_total,
@@ -404,13 +556,19 @@ def _render_charts(result: SimulationResult, tornado: list[dict], out_dir: Path)
 _METHODOLOGY = (
     "This appendix quantifies risk with a FAIR-style (Factor Analysis of Information "
     "Risk) Monte Carlo model: for each scenario, the number of loss events per year is "
-    "drawn from a Poisson distribution and each event's cost from a lognormal "
+    "first gated by an explicit Bernoulli finding-validity draw. For valid findings, "
+    "map-derived production exposure scales the Poisson threat-event/contact rate; "
+    "control strength then reduces the probability that a threat event becomes a loss "
+    "event. Each resulting event's "
+    "cost from a lognormal "
     "distribution, then summed over {trials:,} simulated years. Loss-magnitude ranges "
     "come from published industry loss data (Verizon DBIR, Cyentia IRIS); a sourced 90% "
-    "confidence interval on single-event cost is converted to lognormal parameters using "
-    "Hubbard & Seiersen calibrated estimation. Event frequency uses exploitation base "
-    "rates (EPSS/KEV-style bands) scaled by the triage classifier's calibrated "
-    "P(actionable) for each finding. Every distribution parameter traces to `priors.yaml` "
+    "published median and p95 are converted to lognormal parameters. Conditional event "
+    "frequency uses the IRIS 2022 industry baseline; triage P(actionable) affects only "
+    "the Bernoulli validity gate. Organization loss scale multiplies magnitude; revenue "
+    "bands currently retain a conservative 1.0 scale because no exact sourced band curve "
+    "has been accepted. EPSS/KEV are never inferred from severity and are not "
+    "used until real, dated CVE enrichment exists. Every distribution parameter traces to `priors.yaml` "
     "and is recorded as a prior-source row; results are reported as a range (with a loss "
     "exceedance curve), never a single expected-loss figure, and the tornado chart shows "
     "which priors the headline numbers are most sensitive to."
@@ -451,7 +609,7 @@ def generate_appendix(
     agg = result.summary()
 
     if persist:
-        db.insert_simulation_run(
+        simulation_run_id = db.insert_simulation_run(
             SimulationRun(
                 repo_id=repo_id, trials=trials,
                 mean_loss=agg["mean"], median_loss=agg["median"], p95_loss=agg["p95"],
@@ -463,10 +621,40 @@ def generate_appendix(
             ),
             config,
         )
+        db.link_risk_scenarios_to_simulation(
+            [s.persisted_id for s in scenarios if s.persisted_id is not None],
+            simulation_run_id,
+            config,
+        )
 
     path = out_dir / "risk_appendix.md"
     path.write_text(_appendix_markdown(repo_id, scenarios, result, tornado, agg, charts, trials))
     return path
+
+
+def quantify_appendix(
+    repo_id: str,
+    config: Config | None = None,
+    *,
+    trials: int = 50_000,
+    seed: int = 0,
+    persist: bool = True,
+) -> QuantificationArtifacts:
+    """Generate one reusable quantitative result for reports and CLI summaries."""
+    config = config or get_config()
+    before = len(db.list_risk_scenarios(repo_id, config)) if persist else 0
+    projected_count = None if persist else len(build_scenarios(repo_id, config, persist=False))
+    path = generate_appendix(repo_id, config, trials=trials, seed=seed, persist=persist)
+    count = len(db.list_risk_scenarios(repo_id, config)) - before if persist else projected_count
+    artifacts = tuple(sorted(candidate for candidate in path.parent.iterdir() if candidate.is_file()))
+    return QuantificationArtifacts(
+        appendix_path=path,
+        scenario_count=count,
+        artifact_paths=artifacts,
+        trials=trials,
+        seed=seed,
+        audit_recorded=persist,
+    )
 
 
 def _appendix_markdown(repo_id, scenarios, result, tornado, agg, charts, trials) -> str:
@@ -488,15 +676,36 @@ def _appendix_markdown(repo_id, scenarios, result, tornado, agg, charts, trials)
         "",
         "## Scenarios",
         "",
-        "| Scenario | Findings | λ (events/yr) | Magnitude 90% CI | mean P(actionable) | Sources |",
-        "|---|---|---|---|---|---|",
+        "| Scenario | Findings | Conditional λ/finding | Validity | Exposure | Control strength | Loss scale | Magnitude p05*–p95 | Sources |",
+        "|---|---|---|---|---|---|---|---|---|",
     ]
     for s in scenarios:
         lines.append(
-            f"| {s.name} | {len(s.finding_ids)} | {s.frequency_lambda:.3f} | "
-            f"{_fmt_usd(s.p05_usd)}–{_fmt_usd(s.p95_usd)} | {s.p_actionable:.2f} | "
+            f"| {s.name} | {len(s.finding_ids)} | "
+            f"{','.join(f'{value:.3f}' for value in s.conditional_frequency_lambdas)} | "
+            f"{','.join(f'{value:.2f}' for value in s.validity_probabilities)} | "
+            f"{','.join(f'{value:.2f}' for value in s.exposure_factors)} | "
+            f"{','.join(f'{value:.2f}' for value in s.control_strengths)} | "
+            f"{s.loss_scale:.2f}× | "
+            f"{_fmt_usd(s.p05_usd * s.loss_scale)}*–{_fmt_usd(s.p95_usd * s.loss_scale)} | "
             f"{s.magnitude_source}; {s.frequency_source} |"
         )
+    lines += [
+        "",
+        "## Engagement inputs",
+        "",
+        "`origin` distinguishes map/falsify-derived evidence, an analyst override, and a "
+        "conservative default used where the stored evidence cannot support an estimate.",
+        "",
+        "| Scenario | Input | Value | Origin | Source | Detail |",
+        "|---|---|---:|---|---|---|",
+    ]
+    for s in scenarios:
+        for value in s.input_provenance:
+            lines.append(
+                f"| {s.name} | {value.input_name} | {value.value:.3f} | "
+                f"{value.origin} | {value.source} | {value.detail or ''} |"
+            )
     lines += [
         "",
         "## Sensitivity (tornado)",
@@ -519,11 +728,12 @@ def _appendix_markdown(repo_id, scenarios, result, tornado, agg, charts, trials)
         "",
         "Every distribution parameter above traces to `priors.yaml`; provenance is "
         "persisted as `prior_source` rows in the store. Loss magnitudes derive from "
-        "DBIR/IRIS industry data; frequencies from EPSS/KEV-style exploitation bands; "
-        "SME-calibrated 90% intervals are used only where dataset backing is absent.",
+        "Cyentia IRIS 2022 Table 3 (magnitude) and Figure 4 (frequency). The p05 marked "
+        "with an asterisk is implied by the fitted lognormal; it is not a published statistic. "
+        "No EPSS or KEV value is used without real CVE enrichment.",
         "",
-        "> Generated by `analyze/risk_quant.py` (FAIR + Hubbard/Seiersen calibrated "
-        "estimation). Uncertainty is intrinsic — treat the range, not any single figure, "
+        "> Generated by `analyze/risk_quant.py` (FAIR-style Bernoulli validity + "
+        "conditional compound Poisson-lognormal). Uncertainty is intrinsic — treat the range, not any single figure, "
         "as the result.",
         "",
     ]

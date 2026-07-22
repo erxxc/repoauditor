@@ -11,6 +11,7 @@ from __future__ import annotations
 import tomllib
 from functools import lru_cache
 from pathlib import Path
+from typing import Literal
 
 import yaml
 from pydantic import BaseModel, Field, field_validator, model_validator
@@ -20,6 +21,16 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_CONFIG_PATH = REPO_ROOT / "config.toml"
 DEFAULT_PRIORS_PATH = REPO_ROOT / "priors.yaml"
 DEFAULT_DEAL_RISK_PATH = REPO_ROOT / "deal_risk.yaml"
+
+# Scenario names currently emitted by analyze/risk_quant.py. Keeping the accepted override
+# vocabulary here lets configuration fail at load time rather than silently ignoring a typo.
+RISK_SCENARIO_NAMES = frozenset({
+    "rce_full_compromise",
+    "data_breach",
+    "credential_compromise",
+    "service_disruption",
+    "uncategorized",
+})
 
 
 class ScanConfig(BaseModel):
@@ -35,6 +46,14 @@ class ModelConfig(BaseModel):
 
 class LLMConfig(BaseModel):
     """Reliability knobs for the shared `llm/client.py`."""
+
+    # Backend selection. `openai-compatible` targets Chat Completions servers such as
+    # OpenAI, local gateways, and third-party providers exposing the same wire format.
+    provider: Literal["anthropic", "openai-compatible"] = "anthropic"
+    base_url: str = "https://api.openai.com/v1"
+    api_key_env: str = "OPENAI_API_KEY"
+    response_format: Literal["json_schema", "json_object", "none"] = "json_schema"
+    timeout_seconds: float = Field(default=120.0, gt=0.0)
 
     # Below this, a stage's reported confidence is treated as "not confident" and
     # routed to a broader-context re-score or to `unresolved` — never rounded up.
@@ -151,29 +170,35 @@ class PathsConfig(BaseModel):
 
 
 class MagnitudePrior(BaseModel):
-    """A calibrated loss-magnitude prior: a 90% CI on single-event cost (USD).
+    """Published loss median/p95 plus an exact, reproducible transformation."""
 
-    Stored as (p05, p95) rather than lognormal mu/sigma directly — `analyze/risk_quant`
-    converts to log space via Hubbard & Seiersen calibration. `source` is mandatory:
-    this is the object that makes "no unsourced priors" enforceable.
-    """
-
-    p05_usd: float = Field(gt=0.0)
+    median_usd: float = Field(gt=0.0)
     p95_usd: float = Field(gt=0.0)
     source: str
+    publication: str
+    edition: str
+    locator: str
+    url: str
+    transformation: str
     detail: str | None = None
+
+    @model_validator(mode="after")
+    def _p95_exceeds_median(self) -> "MagnitudePrior":
+        if self.p95_usd <= self.median_usd:
+            raise ValueError("magnitude p95_usd must exceed median_usd")
+        return self
 
 
 class FrequencyPrior(BaseModel):
-    """A Loss Event Frequency base rate (Poisson lambda, events/year) for a signal band.
+    """Published annual event probability transformed to conditional Poisson lambda."""
 
-    Selected by the strongest exploitation signal on a finding (KEV / EPSS band /
-    none) and then scaled by triage P(actionable) in `analyze/risk_quant`.
-    """
-
-    lambda_per_year: float = Field(ge=0.0)
+    annual_probability_at_least_one: float = Field(gt=0.0, lt=1.0)
     source: str
-    epss_threshold: float | None = None
+    publication: str
+    edition: str
+    locator: str
+    url: str
+    transformation: str
     detail: str | None = None
 
 
@@ -211,7 +236,6 @@ class PriorsConfig(BaseModel):
     triage: TriagePriorsConfig = Field(default_factory=TriagePriorsConfig)
     magnitude: dict[str, MagnitudePrior] = Field(default_factory=dict)
     frequency: dict[str, FrequencyPrior] = Field(default_factory=dict)
-    sme_estimates: dict[str, MagnitudePrior] = Field(default_factory=dict)
 
 
 # --------------------------------------------------------------------------- #
@@ -336,6 +360,48 @@ class DealRiskConfig(BaseModel):
     )
 
 
+class RiskQuantConfig(BaseModel):
+    """Engagement context and explicit analyst overrides for FAIR scenario inputs.
+
+    Override dictionaries are keyed by scenario name (for example ``data_breach``);
+    ``*`` supplies an engagement-wide override. Scenario-specific values take precedence.
+    """
+
+    company_revenue_band: Literal[
+        "unknown", "under_100k", "100k_to_1m", "1m_to_10m", "10m_to_100m",
+        "100m_to_1b", "1b_to_10b", "10b_to_100b", "over_100b",
+    ] = "unknown"
+    control_strength_overrides: dict[str, float] = Field(default_factory=dict)
+    exposure_overrides: dict[str, float] = Field(default_factory=dict)
+    loss_scale_overrides: dict[str, float] = Field(default_factory=dict)
+
+    @field_validator("control_strength_overrides", "exposure_overrides")
+    @classmethod
+    def _unit_interval_overrides(cls, values: dict[str, float]) -> dict[str, float]:
+        cls._validate_scenario_keys(values)
+        if any(value < 0.0 or value > 1.0 for value in values.values()):
+            raise ValueError("control-strength and exposure overrides must be in [0, 1]")
+        return values
+
+    @field_validator("loss_scale_overrides")
+    @classmethod
+    def _positive_loss_scales(cls, values: dict[str, float]) -> dict[str, float]:
+        cls._validate_scenario_keys(values)
+        if any(value <= 0.0 for value in values.values()):
+            raise ValueError("loss-scale overrides must be positive")
+        return values
+
+    @staticmethod
+    def _validate_scenario_keys(values: dict[str, float]) -> None:
+        unknown = sorted(set(values) - RISK_SCENARIO_NAMES - {"*"})
+        if unknown:
+            recognized = ", ".join(sorted(RISK_SCENARIO_NAMES))
+            raise ValueError(
+                f"unknown risk scenario override key(s): {', '.join(unknown)}; "
+                f"recognized names are: {recognized} (or * for all scenarios)"
+            )
+
+
 class Config(BaseModel):
     scan: ScanConfig = Field(default_factory=ScanConfig)
     model: ModelConfig = Field(default_factory=ModelConfig)
@@ -348,6 +414,7 @@ class Config(BaseModel):
     paths: PathsConfig = Field(default_factory=PathsConfig)
     priors: PriorsConfig = Field(default_factory=PriorsConfig)
     deal_risk: DealRiskConfig = Field(default_factory=DealRiskConfig)
+    risk_quant: RiskQuantConfig = Field(default_factory=RiskQuantConfig)
 
     # Root against which relative `paths` are resolved. Not read from TOML.
     root: Path = REPO_ROOT

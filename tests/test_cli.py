@@ -6,6 +6,8 @@ the review list/decide surface are exercised exactly as a user would.
 from __future__ import annotations
 
 import json
+from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 from typer.testing import CliRunner
@@ -17,6 +19,7 @@ from repoauditor.store import db
 from repoauditor.store.models import (
     FalsificationStatus,
     Finding,
+    IngestedRepo,
     TriageLabelSource,
     TrustBoundary,
 )
@@ -55,6 +58,7 @@ def test_report_engineering_cli(wired):
     assert "Engineering Remediation Backlog" in result.stdout
     assert "SELECT * FROM users WHERE id = ' + user_id" in result.stdout  # citation preserved
     assert "Ambiguous input" not in result.stdout                          # held -> excluded
+    assert "reported r: wrote" in result.stdout and "backlog.md" in result.stdout
 
 
 def test_report_memo_cli(wired):
@@ -63,6 +67,7 @@ def test_report_memo_cli(wired):
     assert "Security Risk Memo" in result.stdout
     assert "Appendix: Quantitative Risk Model" in result.stdout
     assert "Ambiguous input" not in result.stdout
+    assert "reported r: wrote" in result.stdout and "memo.md" in result.stdout
 
 
 def test_report_memo_record_audit_cli(wired):
@@ -94,6 +99,15 @@ def test_review_list_and_decide_cli(wired):
     # The append-only decision is recorded and releases the finding from the queue.
     assert db.latest_review_decision(request.id, cfg).disposition.value == "confirm"
     assert "No open review requests" in runner.invoke(cli.app, ["review", "list", "r"]).stdout
+
+
+def test_review_list_json_is_structured(wired):
+    _cfg, held = wired
+    result = runner.invoke(cli.app, ["review", "list", "r", "--format", "json"])
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.stdout)
+    assert payload[0]["finding_id"] == held
+    assert isinstance(payload[0]["evidence"], dict)
 
 
 def _sarif_one() -> str:
@@ -159,3 +173,326 @@ def test_review_decide_rejects_wrong_repo(wired):
     ])
     assert result.exit_code == 1
     assert "belongs to repo" in result.output
+
+
+def _wire_run_stages(monkeypatch, requests):
+    calls = []
+    monkeypatch.setattr(cli, "_preflight", lambda config: cli.PreflightResult())
+
+    def stage(name, value=None):
+        def invoke(*args, **kwargs):
+            calls.append(name)
+            return value
+        return invoke
+
+    monkeypatch.setattr(
+        cli, "_ingest_stage", stage(
+            "ingest", SimpleNamespace(repo_id="acme", commit="abc", snapshot_path=Path("snapshot"))
+        )
+    )
+    monkeypatch.setattr(cli, "latest_snapshot", lambda config, repo_id: (Path("snapshot"), "abc"))
+    monkeypatch.setattr(cli, "_map_stage", stage("map"))
+    monkeypatch.setattr(
+        cli, "_detect_stage", stage(
+            "detect", SimpleNamespace(
+                sarif_path=Path("scan.sarif"), semgrep_status="complete", source_counts={}
+            )
+        )
+    )
+    def triage(repo_id, config, sarif=None, threshold=0.5):
+        assert sarif == Path("scan.sarif")
+        calls.append("triage")
+
+    monkeypatch.setattr(cli, "_triage_stage", triage)
+    monkeypatch.setattr(cli, "_falsify_stage", stage("falsify"))
+    monkeypatch.setattr(cli, "_normalize_stage", stage("normalize"))
+    monkeypatch.setattr(cli, "raise_review_requests", stage("checkpoint", requests))
+    monkeypatch.setattr(cli, "open_review_requests", lambda repo_id, config: requests)
+    return calls
+
+
+def test_run_stops_cleanly_with_open_review_requests(tmp_config, monkeypatch):
+    monkeypatch.setattr(cli, "get_config", lambda: tmp_config)
+    requests = [SimpleNamespace(id=7, finding_id=11)]
+    calls = _wire_run_stages(monkeypatch, requests)
+
+    result = runner.invoke(cli.app, ["run", "/target"])
+
+    assert result.exit_code == 0, result.output
+    assert calls == ["ingest", "map", "detect", "triage", "falsify", "normalize", "checkpoint"]
+    assert "stopped at review checkpoint with 1 open request" in result.stdout
+    assert "repoauditor review list acme" in result.stdout
+
+
+def test_run_stops_cleanly_when_no_review_is_needed(tmp_config, monkeypatch):
+    monkeypatch.setattr(cli, "get_config", lambda: tmp_config)
+    calls = _wire_run_stages(monkeypatch, [])
+
+    result = runner.invoke(cli.app, ["run", "/target"])
+
+    assert result.exit_code == 0, result.output
+    assert calls[-1] == "checkpoint"
+    assert "no findings require review" in result.stdout
+    assert "repoauditor finalize acme" in result.stdout
+
+
+def test_run_ndjson_emits_parseable_stage_events(tmp_config, monkeypatch):
+    monkeypatch.setattr(cli, "get_config", lambda: tmp_config)
+    _wire_run_stages(monkeypatch, [])
+
+    result = runner.invoke(cli.app, ["run", "/target", "--format", "ndjson"])
+
+    assert result.exit_code == 0, result.output
+    events = [json.loads(line) for line in result.stdout.splitlines()]
+    assert all({"stage", "status", "timestamp"} <= event.keys() for event in events)
+    assert {event["stage"] for event in events} >= {
+        "preflight", "ingest", "map", "detect", "triage", "falsify", "normalize", "run",
+    }
+    assert events[-1]["status"] == "completed"
+    assert events[-1]["next_command"] == "repoauditor finalize acme"
+
+
+def test_repos_list_defaults_latest_and_supports_json_all(tmp_config, monkeypatch):
+    monkeypatch.setattr(cli, "get_config", lambda: tmp_config)
+    db.init_db(tmp_config)
+    for commit in ("old", "new"):
+        db.record_ingested_repo(
+            IngestedRepo(repo_id="acme", source="/src/acme", commit_hash=commit), tmp_config
+        )
+
+    latest = runner.invoke(cli.app, ["repos", "list"])
+    assert latest.exit_code == 0, latest.output
+    assert "new" in latest.stdout and "old" not in latest.stdout
+    assert "\t" not in latest.stdout
+
+    history = runner.invoke(cli.app, ["repos", "list", "--all", "--format", "json"])
+    assert history.exit_code == 0, history.output
+    assert {item["commit_hash"] for item in json.loads(history.stdout)} == {"old", "new"}
+
+
+def test_run_attributes_stage_failure(tmp_config, monkeypatch):
+    monkeypatch.setattr(cli, "get_config", lambda: tmp_config)
+    monkeypatch.setattr(cli, "_preflight", lambda config: cli.PreflightResult())
+    monkeypatch.setattr(
+        cli, "_ingest_stage", lambda source, config: SimpleNamespace(
+            repo_id="acme", commit="abc", snapshot_path=Path("snapshot")
+        )
+    )
+    monkeypatch.setattr(cli, "latest_snapshot", lambda config, repo_id: (Path("snapshot"), "abc"))
+    monkeypatch.setattr(
+        cli, "_map_stage", lambda repo_id, config: (_ for _ in ()).throw(RuntimeError("boom"))
+    )
+
+    result = runner.invoke(cli.app, ["run", "/target"])
+
+    assert result.exit_code == 1
+    assert "pipeline failed at map: RuntimeError: boom" in result.output
+
+
+def test_run_resumes_after_last_completed_stage(tmp_config, monkeypatch):
+    monkeypatch.setattr(cli, "get_config", lambda: tmp_config)
+    calls = _wire_run_stages(monkeypatch, [])
+    original_map = cli._map_stage
+    attempts = 0
+
+    def fail_once(*args, **kwargs):
+        nonlocal attempts
+        attempts += 1
+        if attempts == 1:
+            raise RuntimeError("interrupted")
+        return original_map(*args, **kwargs)
+
+    monkeypatch.setattr(cli, "_map_stage", fail_once)
+    first = runner.invoke(cli.app, ["run", "/target"])
+    second = runner.invoke(cli.app, ["run", "/target"])
+
+    assert first.exit_code == 1
+    assert second.exit_code == 0, second.output
+    assert "resuming run #" in second.stdout
+    assert calls.count("ingest") == 1
+    assert calls.count("map") == 1
+    assert db.list_pipeline_runs(tmp_config)[0].status.value == "completed"
+
+
+def test_individual_stage_failure_is_concise(tmp_config, monkeypatch):
+    monkeypatch.setattr(cli, "get_config", lambda: tmp_config)
+    monkeypatch.setattr(
+        cli,
+        "_map_stage",
+        lambda repo_id, config: (_ for _ in ()).throw(
+            FileNotFoundError(f"no ingested snapshot for {repo_id}")
+        ),
+    )
+
+    result = runner.invoke(cli.app, ["map", "missing-repo"])
+
+    assert result.exit_code == 1
+    assert "map failed: FileNotFoundError: no ingested snapshot for missing-repo" in result.output
+    assert "Traceback" not in result.output
+
+
+def test_debug_preserves_unexpected_exception(tmp_config, monkeypatch):
+    monkeypatch.setattr(cli, "get_config", lambda: tmp_config)
+    monkeypatch.setattr(
+        cli, "_detect_stage", lambda repo_id, config: (_ for _ in ()).throw(RuntimeError("boom"))
+    )
+
+    result = runner.invoke(cli.app, ["--debug", "detect", "r"])
+
+    assert result.exit_code == 1
+    assert isinstance(result.exception, RuntimeError)
+    assert str(result.exception) == "boom"
+    assert "detect failed:" not in result.output
+
+
+def test_root_help_describes_two_phase_workflow():
+    result = runner.invoke(cli.app, ["--help"])
+
+    assert result.exit_code == 0
+    assert "two-phase workflow" in result.output
+    assert "review" in result.output
+    assert "finalize" in result.output
+    assert "--debug" in result.output
+    assert "--quiet" in result.output
+    assert "--verbose" in result.output
+
+
+def test_run_stops_before_ingest_when_preflight_fails(tmp_config, monkeypatch):
+    monkeypatch.setattr(cli, "get_config", lambda: tmp_config)
+    monkeypatch.setattr(
+        cli,
+        "_preflight",
+        lambda config: cli.PreflightResult(credential_error="ANTHROPIC_API_KEY is not set"),
+    )
+    monkeypatch.setattr(
+        cli, "_ingest_stage", lambda source, config: pytest.fail("ingest should not run")
+    )
+
+    result = runner.invoke(cli.app, ["run", "/target"])
+
+    assert result.exit_code == 1
+    assert "preflight requirements are not satisfied" in result.output
+
+
+def test_finalize_refuses_open_review_request(wired, monkeypatch):
+    cfg, held = wired
+    monkeypatch.setattr(cli, "raise_review_requests", lambda repo_id, config: [])
+    request = db.get_review_request(held, cfg)
+
+    result = runner.invoke(cli.app, ["finalize", "r"])
+
+    assert result.exit_code == 1
+    assert f"#{request.id} (finding #{held})" in result.output
+    assert "repoauditor review list r" in result.output
+
+
+def test_finalize_runs_quantify_and_both_reports(tmp_config, monkeypatch):
+    monkeypatch.setattr(cli, "get_config", lambda: tmp_config)
+    monkeypatch.setattr(cli, "raise_review_requests", lambda repo_id, config: [])
+    monkeypatch.setattr(cli, "open_review_requests", lambda repo_id, config: [])
+    calls = []
+    quantification = object()
+    monkeypatch.setattr(
+        cli, "_quantify_stage",
+        lambda repo_id, config, **kwargs: (
+            calls.append(("quantify", kwargs)), quantification
+        )[1],
+    )
+    monkeypatch.setattr(
+        cli, "_report_stage",
+        lambda repo_id, config, mode, **kwargs: calls.append(("report", mode, kwargs)),
+    )
+
+    result = runner.invoke(cli.app, ["finalize", "r", "--trials", "100", "--seed", "4"])
+
+    assert result.exit_code == 0, result.output
+    assert calls == [
+        ("quantify", {"trials": 100, "seed": 4, "record_audit": False}),
+        ("report", cli.ReportMode.ENGINEERING, {"print_report": False}),
+        ("report", cli.ReportMode.MEMO, {
+            "quantification": quantification, "print_report": False,
+        }),
+    ]
+    assert "finalize complete for r" in result.stdout
+
+
+def test_finalize_print_reports_restores_markdown_output(tmp_config, monkeypatch):
+    monkeypatch.setattr(cli, "get_config", lambda: tmp_config)
+    monkeypatch.setattr(cli, "raise_review_requests", lambda repo_id, config: [])
+    monkeypatch.setattr(cli, "open_review_requests", lambda repo_id, config: [])
+    monkeypatch.setattr(cli, "_quantify_stage", lambda *args, **kwargs: object())
+    print_values = []
+
+    def report_stage(repo_id, config, mode, **kwargs):
+        print_values.append(kwargs["print_report"])
+        return []
+
+    monkeypatch.setattr(cli, "_report_stage", report_stage)
+    result = runner.invoke(cli.app, ["finalize", "r", "--print-reports"])
+
+    assert result.exit_code == 0, result.output
+    assert print_values == [True, True]
+
+
+def test_finalize_rerun_versions_scenarios_by_simulation_run(tmp_config, monkeypatch):
+    """An audited rerun is append-only history, with no unowned duplicate scenarios."""
+    cfg = tmp_config.model_copy(update={
+        "priors": load_priors(), "deal_risk": load_deal_risk(),
+    })
+    db.init_db(cfg)
+    db.insert_finding(Finding(
+        repo_id="r", title="SQL injection", file="app.py", line_start=24, line_end=24,
+        citation_snippet="query + user_input", source_tool="semgrep", confidence=0.9,
+        severity="critical", falsification_status=FalsificationStatus.CONFIRMED,
+        description="sqli [CWE-89]",
+    ), cfg)
+    monkeypatch.setattr(cli, "get_config", lambda: cfg)
+    monkeypatch.setattr(cli, "raise_review_requests", lambda repo_id, config: [])
+    monkeypatch.setattr(cli, "open_review_requests", lambda repo_id, config: [])
+    monkeypatch.setattr(cli, "_report_stage", lambda *args, **kwargs: [])
+
+    for seed in (4, 5):
+        result = runner.invoke(cli.app, [
+            "finalize", "r", "--record-audit", "--trials", "100", "--seed", str(seed),
+        ])
+        assert result.exit_code == 0, result.output
+
+    runs = db.list_simulation_runs("r", cfg)
+    scenarios = db.list_risk_scenarios("r", cfg)
+    assert len(runs) == len(scenarios) == 2
+    assert [scenario.simulation_run_id for scenario in scenarios] == [run.id for run in runs]
+    assert len(db.list_scenario_inputs("r", cfg)) == 6  # three inputs per version
+
+
+def test_stage_summary_includes_timestamps_and_elapsed(triage_cfg, tmp_path):
+    sarif = tmp_path / "scan.sarif"
+    sarif.write_text(_sarif_one())
+    result = runner.invoke(cli.app, ["triage", "acme", "--sarif", str(sarif)])
+
+    assert result.exit_code == 0, result.output
+    assert "triage started" in result.stdout
+    assert "elapsed " in result.stdout
+
+
+def test_quiet_run_prints_only_checkpoint_and_recap(tmp_config, monkeypatch):
+    monkeypatch.setattr(cli, "get_config", lambda: tmp_config)
+    _wire_run_stages(monkeypatch, [])
+
+    result = runner.invoke(cli.app, ["--quiet", "run", "/target"])
+
+    assert result.exit_code == 0, result.output
+    assert "preflight:" not in result.stdout
+    assert "run complete for acme" in result.stdout
+    assert "run recap:" in result.stdout
+
+
+def test_verbose_emits_extra_stage_metadata(triage_cfg, tmp_path):
+    sarif = tmp_path / "scan.sarif"
+    sarif.write_text(_sarif_one())
+    result = runner.invoke(
+        cli.app, ["--verbose", "triage", "acme", "--sarif", str(sarif)]
+    )
+
+    assert result.exit_code == 0, result.output
+    assert f"SARIF={sarif}" in result.stdout
+    assert "action-threshold=0.5" in result.stdout

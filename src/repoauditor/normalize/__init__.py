@@ -3,6 +3,6 @@
 Writes everything into the canonical `store.models.Finding` shape. Interface stub.
 """
 
-from .adjudicate import Adjudication, adjudicate
+from .adjudicate import Adjudication, adjudicate, adjudicate_repo
 
-__all__ = ["adjudicate", "Adjudication"]
+__all__ = ["adjudicate", "adjudicate_repo", "Adjudication"]

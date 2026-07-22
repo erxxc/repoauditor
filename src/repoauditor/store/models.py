@@ -11,6 +11,50 @@ from enum import StrEnum
 from pydantic import BaseModel, Field, model_validator
 
 
+class IngestedRepo(BaseModel):
+    """One immutable repository snapshot recorded by the ingest stage."""
+
+    repo_id: str
+    source: str
+    commit_hash: str
+    ingested_at: str | None = None
+
+
+class RunStatus(StrEnum):
+    RUNNING = "running"
+    COMPLETED = "completed"
+    FAILED = "failed"
+
+
+class PipelineRun(BaseModel):
+    """Durable status for one foreground pipeline orchestration."""
+
+    id: int | None = None
+    source: str
+    repo_id: str | None = None
+    commit_hash: str | None = None
+    status: RunStatus = RunStatus.RUNNING
+    started_at: str | None = None
+    completed_at: str | None = None
+    failed_stage: str | None = None
+    failure_detail: str | None = None
+    artifacts: list[str] = Field(default_factory=list)
+
+
+class StageRun(BaseModel):
+    """Latest durable attempt state for a stage within a pipeline run."""
+
+    id: int | None = None
+    pipeline_run_id: int
+    stage: str
+    status: RunStatus = RunStatus.RUNNING
+    started_at: str | None = None
+    completed_at: str | None = None
+    summary: dict = Field(default_factory=dict)
+    artifacts: list[str] = Field(default_factory=list)
+    failure_detail: str | None = None
+
+
 class Severity(StrEnum):
     INFO = "info"
     LOW = "low"
@@ -283,8 +327,9 @@ class PriorSource(BaseModel):
 
     Enforces the "no unsourced priors" rule at the persistence layer: every
     magnitude/frequency parameter that enters a simulation writes one of these,
-    naming which dataset/method backs it (DBIR, IRIS, EPSS, KEV, or a calibrated
-    SME estimate). `kind` is the parameter family; `param_path` is the key in
+    naming the exact publication, edition, table/figure, URL, and transformation.
+    Historical rows that predate this contract are retained as `legacy_unverified`
+    rather than assigned a false citation. `kind` is the parameter family; `param_path` is the key in
     `priors.yaml`; `source` is the human-readable citation copied from that file.
     """
 
@@ -293,19 +338,33 @@ class PriorSource(BaseModel):
     param_path: str  # dotted key into priors.yaml, e.g. "magnitude.data_breach"
     source: str  # citation string (dataset / method) from priors.yaml
     detail: str | None = None  # optional extra provenance (year, table, percentile basis)
+    publication: str | None = None
+    edition: str | None = None
+    locator: str | None = None
+    url: str | None = None
+    transformation: str | None = None
+    provenance_status: str = "verified"
+
+    @model_validator(mode="after")
+    def _verified_provenance_is_exact(self) -> "PriorSource":
+        if self.provenance_status == "verified":
+            required = (self.publication, self.edition, self.locator, self.url,
+                        self.transformation)
+            if not all(required):
+                raise ValueError("verified prior sources require exact publication provenance")
+        return self
 
 
 class RiskScenario(BaseModel):
     """A FAIR-style loss scenario mapping one or more Findings to a modelled risk.
 
-    Each scenario draws Loss Event Frequency ~ Poisson(lam) and Loss Magnitude ~
-    Lognormal(mu, sigma). The frequency rate `lam` is derived from an exploitation-
-    frequency prior *scaled by the triage P(actionable)* of the member findings —
-    that scaling is the explicit seam between triage/ and analyze/. Distribution
-    parameters are resolved from `priors.yaml`; each writes a `PriorSource` row.
+    Each member first draws finding validity ~ Bernoulli(p). Only valid members draw
+    conditional Loss Event Frequency ~ Poisson(lam). Magnitude is lognormal. This keeps
+    epistemic finding uncertainty separate from conditional event frequency.
     """
 
     id: int | None = None
+    simulation_run_id: int | None = None
     repo_id: str
     name: str
     finding_ids: list[int] = Field(default_factory=list)
@@ -316,7 +375,29 @@ class RiskScenario(BaseModel):
     magnitude_sigma: float = Field(gt=0.0)
     frequency_source: str  # PriorSource.param_path backing frequency_lambda
     magnitude_source: str  # PriorSource.param_path backing the magnitude params
-    p_actionable: float | None = None  # triage signal folded into frequency_lambda
+    p_actionable: float | None = None  # legacy summary only; never folded into lambda
+    validity_probabilities: list[float] = Field(default_factory=list)
+    validity_sources: list[str] = Field(default_factory=list)
+    conditional_frequency_lambdas: list[float] = Field(default_factory=list)
+    conditional_frequency_source: str | None = None
+    threat_signal_labels: list[str] = Field(default_factory=list)
+    exposure_factors: list[float] = Field(default_factory=list)
+    control_strengths: list[float] = Field(default_factory=list)
+    loss_scale: float = Field(default=1.0, gt=0.0)
+
+
+class ScenarioInput(BaseModel):
+    """Per-engagement FAIR input and whether it was derived, defaulted, or overridden."""
+
+    id: int | None = None
+    risk_scenario_id: int | None = None
+    repo_id: str
+    scenario_name: str
+    input_name: str  # exposure | control_strength | loss_scale
+    value: float
+    origin: str  # derived | analyst_override | conservative_default
+    source: str
+    detail: str | None = None
 
 
 class DealRisk(BaseModel):

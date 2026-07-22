@@ -282,8 +282,11 @@ def _discover_sarif(repo_id: str, config: Config) -> Path | None:
     try:
         from ..ingest import latest_snapshot
 
-        snapshot_path, _ = latest_snapshot(config, repo_id)
-        candidates += [snapshot_path / "sast.sarif",
+        snapshot_path, commit = latest_snapshot(config, repo_id)
+        candidates += [
+                       config.resolve(config.paths.data_dir) / "artifacts" / repo_id
+                       / commit / "detect" / "semgrep.sarif",
+                       snapshot_path / "sast.sarif",
                        snapshot_path / ".repoauditor" / "sast.sarif"]
     except Exception:
         pass

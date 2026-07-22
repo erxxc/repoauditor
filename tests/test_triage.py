@@ -23,6 +23,7 @@ from repoauditor.store.models import (
 from repoauditor.triage import derive_labels, label_finding
 from repoauditor.triage import priors as triage_priors
 from repoauditor.triage import synthetic, triage_repo
+from repoauditor.triage.classifier import _discover_sarif
 from repoauditor.triage.classifier import TriageClassifier
 from repoauditor.triage.features import (
     FEATURE_NAMES,
@@ -200,6 +201,19 @@ def test_triage_repo_raises_cleanly_without_sarif(cfg):
     db.init_db(cfg)
     with pytest.raises(FileNotFoundError):
         triage_repo("missing", cfg)
+
+
+def test_triage_discovers_detect_artifact(cfg):
+    commit = "abc123"
+    (cfg.raw_dir / "acme" / commit).mkdir(parents=True)
+    artifact = (
+        cfg.resolve(cfg.paths.data_dir) / "artifacts" / "acme" / commit
+        / "detect" / "semgrep.sarif"
+    )
+    artifact.parent.mkdir(parents=True)
+    artifact.write_text('{"version":"2.1.0","runs":[]}')
+
+    assert _discover_sarif("acme", cfg) == artifact
 
 
 # --------------------------------------------------------------------------- #

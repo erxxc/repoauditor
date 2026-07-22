@@ -14,9 +14,11 @@ from .corroboration import (
 )
 from .deal_risk import DealRiskResult, weigh_deal_risk
 from .risk_quant import (
+    QuantificationArtifacts,
     build_scenarios,
     calibrate_lognormal,
     generate_appendix,
+    quantify_appendix,
     monte_carlo,
     tornado_sensitivity,
 )
@@ -29,9 +31,11 @@ __all__ = [
     "SEVERITY_UPGRADE_GAP",
     "weigh_deal_risk",
     "DealRiskResult",
+    "QuantificationArtifacts",
     "build_scenarios",
     "calibrate_lognormal",
     "generate_appendix",
+    "quantify_appendix",
     "monte_carlo",
     "tornado_sensitivity",
 ]

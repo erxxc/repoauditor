@@ -26,7 +26,7 @@ from pydantic import BaseModel, ValidationError
 from ..config import Config, get_config
 from ..store import db
 from ..store.models import ValidationFailure
-from .backends import AnthropicBackend, Backend, BackendError
+from .backends import AnthropicBackend, Backend, BackendError, OpenAICompatibleBackend
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -130,6 +130,11 @@ class LLMClient:
 
 
 def get_llm_client(config: Config | None = None) -> LLMClient:
-    """Default production client (real Anthropic backend). Tests inject a scripted one."""
+    """Build the configured production client. Tests inject a scripted backend."""
     config = config or get_config()
-    return LLMClient(AnthropicBackend(config), config)
+    backend: Backend
+    if config.llm.provider == "openai-compatible":
+        backend = OpenAICompatibleBackend(config)
+    else:
+        backend = AnthropicBackend(config)
+    return LLMClient(backend, config)

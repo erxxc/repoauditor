@@ -5,11 +5,12 @@ Interface stubs only in this scaffold. The lenses live as versioned prompts unde
 under `retrieval/`.
 """
 
-from .ensemble import CandidateFinding, LensCandidate, LensFindings, run_ensemble
+from .ensemble import CandidateFinding, DetectionRun, LensCandidate, LensFindings, run_ensemble
 from .retrieval import RetrievalIndex
 
 __all__ = [
     "CandidateFinding",
+    "DetectionRun",
     "LensCandidate",
     "LensFindings",
     "run_ensemble",

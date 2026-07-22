@@ -16,7 +16,7 @@ evidence.
 ## Pipeline stages
 
 ```
-ingest -> map -> detect -> triage -> falsify -> normalize -> analyze -> report
+ingest -> map -> detect -> triage -> falsify -> normalize -> review -> analyze -> report
 ```
 
 1. **ingest** — clone target repo, snapshot dependency manifests, hash-keyed
@@ -36,18 +36,26 @@ ingest -> map -> detect -> triage -> falsify -> normalize -> analyze -> report
    falsify stage's LLM budget gets allocated.
 5. **falsify** — every candidate finding gets a second pass whose only job
    is to try to disprove it (reachability, existing mitigating control,
-   attacker-controlled input). Only survivors get written to the store.
-   Explicit null-result logging for killed candidates — nothing silently
-   disappears.
+   attacker-controlled input). Confirmed, killed, deferred, and unresolved
+   outcomes remain in the store with explicit iteration evidence — nothing
+   silently disappears.
 6. **normalize** — LLM adjudicates conflicting severity calls between
    deterministic tools and the ensemble lenses, writes everything into the
    canonical finding schema.
-7. **analyze** — FAIR-style Monte Carlo risk quantification: each scenario
-   maps to one or more findings, P(actionable) from triage feeds the
-   frequency prior, magnitude priors come from sourced industry loss data.
+7. **review** — a blocking human checkpoint for unresolved or low-confidence
+   findings. Decisions require rationale and corrections append a superseding row;
+   analysis cannot proceed while requests remain open.
+8. **analyze** — FAIR-style Monte Carlo risk quantification: each scenario
+   maps to one or more findings; P(actionable) from triage feeds a Bernoulli
+   finding-validity gate, separate from the conditional loss-event frequency
+   prior. Map-derived exposure scales threat-event frequency, falsification or
+   analyst control strength modulates vulnerability, and engagement loss scale
+   adjusts magnitude. Magnitude and conditional-frequency priors come from
+   exactly cited industry loss data; revenue-band scaling remains neutral until
+   an exact curve is verified.
    Outputs loss-exceedance curves and sensitivity analysis, not a single
    severity-weighted score.
-8. **report** — two projections off the same `store/`: `--mode=engineering`
+9. **report** — two projections off the same `store/`: `--mode=engineering`
    (ticket backlog) and `--mode=memo` (leadership risk summary, now backed
    by the MC simulation appendix with sourced priors).
 
@@ -134,10 +142,11 @@ src/repoauditor/
 
   analyze/
     corroboration.py                    # cross-lens/cross-tool agreement scoring
-    risk_quant.py                        # FAIR-style Monte Carlo: Loss Event Frequency
-                                           # (Poisson, P(actionable) from triage feeds
-                                           # frequency prior) x Loss Magnitude (lognormal,
-                                           # sourced from priors.yaml); 10k-100k NumPy-
+    risk_quant.py                        # FAIR-style Monte Carlo: Bernoulli finding validity
+                                           # (P(actionable) unless confirmed), exposure-scaled
+                                           # Poisson Threat Event Frequency, control-conditioned
+                                           # Vulnerability, then lognormal Loss Magnitude with an
+                                           # explicit loss scale; sourced priors; 10k-100k NumPy-
                                            # vectorized trials; loss exceedance curves,
                                            # mean/median/95th pct, tornado sensitivity chart
 
@@ -162,17 +171,16 @@ src/repoauditor/
                                               # prompt/template-versioning rule; a future
                                               # memo_v2.md could supersede it.
 
-  cli.py                                    # typer app, thin: ingest/map/detect/
-                                              # falsify/report/db init
+  cli.py                                    # thin Typer app: stage commands plus run/finalize,
+                                              # review, repos/runs, doctor, and db init
 
 config.toml                                   # scan targets, model, rate limits, data paths
 config.py                                       # single loader
 priors.yaml                                       # sourced distribution parameters for
-                                                    # risk_quant.py: magnitude priors (DBIR/
-                                                    # IRIS-style), exploitation-frequency
-                                                    # priors (EPSS/KEV), calibrated SME
-                                                    # estimates where data is absent — no
-                                                    # unsourced magic numbers
+                                                    # risk_quant.py: exact IRIS magnitude and
+                                                    # conditional-frequency baselines. Real EPSS/
+                                                    # KEV enrichment is reserved for CVE-backed
+                                                    # findings and is not fabricated when absent
 
 tests/
   fixtures/
@@ -217,15 +225,21 @@ tests/
   cold-start P(actionable); shrinks toward observed `TriageLabel` data as
   labels accumulate. Hyperparameter choices documented, not arbitrary.
 - **RiskScenario** — maps one or more `Finding` rows to a FAIR-style risk
-  scenario; carries the frequency and magnitude distribution parameters
-  used in that scenario's simulation.
+  scenario; carries validity, conditional frequency, exposure, control strength,
+  and magnitude inputs. Persisted audit scenarios link to the `SimulationRun`
+  that produced them; legacy/standalone rows may have no run link.
+- **ScenarioInput** — per-scenario exposure, control-strength, and loss-scale
+  provenance, explicitly labeled derived, analyst-overridden, or conservatively
+  defaulted.
 - **PriorSource** — the sourcing record `priors.yaml` maps to in the DB:
   which prior (magnitude/frequency), which document/dataset backs it
-  (DBIR, IRIS, EPSS, KEV, or calibrated SME estimate), so every number in
-  the memo appendix is traceable.
+  (currently exact IRIS 2022 locations and transformations), so every number
+  in the memo appendix is traceable. Future EPSS/KEV sources must be real,
+  dated, and CVE-specific rather than severity proxies.
 - **SimulationRun** — one row per Monte Carlo run: trial count, mean/
   median/95th percentile loss, and a reference to the tornado sensitivity
-  output — the evidence layer behind the exec summary.
+  output — the evidence layer behind the exec summary. Audited reruns are
+  append-only and own distinct versioned `RiskScenario` rows.
 
 ---
 
@@ -276,13 +290,20 @@ so it's demonstrable rather than assumed:
 
 ```
 repoauditor db init
+repoauditor doctor [--check-model]
 repoauditor ingest <repo-url>
+repoauditor repos list [--all] [--format=human|json]
+repoauditor run <repo-url> [--fresh] [--format=human|ndjson]
+repoauditor runs list [--repo-id <repo-id>]
+repoauditor runs show <run-id>
 repoauditor map <repo-id>
 repoauditor detect <repo-id>
 repoauditor triage <repo-id>
 repoauditor triage-label <finding-id> --disposition=true_positive|false_positive
 repoauditor falsify <repo-id>
-repoauditor quantify <repo-id>
+repoauditor normalize <repo-id>
+repoauditor quantify <repo-id> [--record-audit]
+repoauditor finalize <repo-id> [--record-audit] [--print-reports]
 repoauditor report <repo-id> --mode=engineering
 repoauditor report <repo-id> --mode=memo
 ```
@@ -308,11 +329,12 @@ repoauditor report <repo-id> --mode=memo
   — FAIR-style Monte Carlo simulation replacing heuristic severity
   weighting, with every prior sourced in `priors.yaml`. Deliberately no
   deep learning in either — tabular models and simulation, matching
-  published methodology (EPSS, FAIR, Hubbard & Seiersen) rather than a
-  novel model.
+  published FAIR methodology and exactly cited IRIS 2022 baselines rather
+  than a novel or severity-derived threat model. EPSS/KEV are reserved for
+  real, dated CVE-backed enrichment and are never inferred from severity.
 
-Next step, if useful: the kickoff prompt for `triage/` and
-`analyze/risk_quant.py`, then round 4 (Tier 2 — `review/` stage,
-debate framing in `normalize/`, iteration limits in `falsify/`), which
-can now also gate on triage-classifier ambiguity, not just falsify/
-normalize ambiguity.
+Current implementation includes the review checkpoint, bounded falsification,
+normalization debate trail, corrected two-layer validity/frequency model,
+organization-specific exposure/control/loss-scale inputs, and versioned audited
+simulation scenarios. Remaining enrichment work (such as live EPSS/KEV lookup or a
+verified revenue-band scaling curve) must preserve the same provenance discipline.

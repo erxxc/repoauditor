@@ -1,85 +1,36 @@
-# priors.yaml — sourced distribution parameters for analyze/risk_quant.py.
+# priors.yaml — exact, auditable distribution inputs for analyze/risk_quant.py.
 #
-# CLAUDE.md rule ("No unsourced priors"): every parameter here carries a `source`
-# field naming the dataset or calibration method that backs it, and every value that
-# enters a Monte Carlo simulation writes a `PriorSource` row to store/. There are no
-# magic numbers in the risk-quant code — all distribution inputs resolve from here.
-#
-# Methodology:
-#   * Loss Magnitude is modelled lognormal. Rather than assert mu/sigma directly, we
-#     record a calibrated 90% confidence interval (5th / 95th percentile single-loss
-#     cost in USD) per scenario category, following Hubbard & Seiersen calibrated
-#     estimation. risk_quant converts (p05, p95) -> (mu, sigma) in log space:
-#         mu    = (ln p05 + ln p95) / 2
-#         sigma = (ln p95 - ln p05) / (2 * 1.645)      # 1.645 = z(0.95)
-#   * Loss Event Frequency is modelled Poisson. The base annual rate is selected by
-#     the strongest exploitation signal present on a finding (KEV > EPSS band > none),
-#     then scaled by the triage P(actionable) inside risk_quant — that scaling is the
-#     documented seam between triage/ and analyze/.
+# EPSS and KEV do not appear as proxy bands here. No live/cached enrichment exists yet,
+# so every finding uses the explicitly labelled industry baseline below. A future CVE
+# enrichment layer may add actual, dated EPSS probabilities and KEV membership, but must
+# never infer either from severity.
 
 triage:
-  # Cold-start Beta-Binomial prior over a SAST rule's actionable (true-positive) rate.
-  # triage/priors.py starts every rule here and shrinks toward observed TriageLabel
-  # data as labels accumulate. This is a prior "used by triage/", so per CLAUDE.md it
-  # is sourced here rather than hardcoded in the module.
   global_actionable_prior:
     alpha: 3.0
     beta: 7.0
-    source: "SME-calibrated cold-start; SAST true-positive rate ~25-35% across studies (Bessey et al. CACM 2010; industry alert-quality/AWI reports)"
-    detail: "Beta(3,7) => prior mean 0.30, weak (10 pseudo-obs) so ~10 real labels dominate the posterior."
+    source: "SME-calibrated cold-start; retained for triage validity pending hierarchical-prior work"
+    detail: "Beta(3,7): mean 0.30 and effective sample size 10."
 
 magnitude:
-  # Single-loss-event cost priors, USD, as calibrated 90% CIs. Categories map to the
-  # kind of asset/impact a finding's trust boundary implies.
-  data_breach:
-    p05_usd: 18000
-    p95_usd: 4880000
-    source: "Verizon DBIR 2024 + Cyentia IRIS 2022 breach-cost distribution; calibrated 90% CI"
-    detail: "Median event ~ $150k; long right tail from mega-breaches. Log-space CI."
-  credential_compromise:
-    p05_usd: 5000
-    p95_usd: 1200000
-    source: "Cyentia IRIS 20/20 credential-theft loss band; SME-calibrated 90% CI"
-    detail: "Account-takeover / lateral-movement staging cost."
-  service_disruption:
-    p05_usd: 3000
-    p95_usd: 900000
-    source: "DBIR 2024 availability-incident cost band; SME-calibrated 90% CI"
-    detail: "SSRF / injection leading to outage or resource abuse."
-  rce_full_compromise:
-    p05_usd: 40000
-    p95_usd: 9500000
-    source: "Cyentia IRIS 2022 severe-incident tail; SME-calibrated 90% CI"
-    detail: "Command injection / RCE enabling full host or data-plane compromise."
+  industry_baseline:
+    median_usd: 259000
+    p95_usd: 52000000
+    source: "Cyentia Institute, Information Risk Insights Study 2022, Table 3"
+    publication: "Information Risk Insights Study"
+    edition: "2022"
+    locator: "Table 3: Loss magnitude summary statistics, report page 12 (PDF page 11)"
+    url: "https://www.cyentia.com/wp-content/uploads/IRIS-2022_Cyentia.pdf"
+    transformation: "Fit Lognormal(mu,sigma) with published median=exp(mu) and published p95=exp(mu+z_0.95*sigma); model-implied p05=exp(mu-z_0.95*sigma)."
+    detail: "All-event, all-sector baseline: 1,893 publicly recorded loss events; amounts inflation-adjusted by the study. It is not category- or organization-specific."
 
 frequency:
-  # Loss Event Frequency base rates (expected events/year) selected by exploitation
-  # signal. risk_quant multiplies the chosen base rate by the finding's P(actionable).
-  kev_listed:
-    lambda_per_year: 2.0
-    source: "CISA Known Exploited Vulnerabilities catalog — active in-the-wild exploitation"
-    detail: "KEV presence => treat as routinely targeted; base attempt rate (SME calibrated)."
-  epss_high:
-    epss_threshold: 0.5
-    lambda_per_year: 0.9
-    source: "FIRST EPSS >= 0.50 exploitation-probability band"
-    detail: "High modelled 30-day exploit probability; annualized base rate."
-  epss_moderate:
-    epss_threshold: 0.1
-    lambda_per_year: 0.3
-    source: "FIRST EPSS >= 0.10 exploitation-probability band"
-    detail: "Moderate exploit probability; annualized base rate."
-  baseline_no_signal:
-    lambda_per_year: 0.1
-    source: "SME-calibrated baseline for findings with no KEV/EPSS exploitation signal"
-    detail: "Opportunistic-only exposure; low but non-zero annual event rate."
-
-sme_estimates:
-  # Explicit calibrated-estimate slots for parameters with no public-dataset backing.
-  # Same (p05, p95) -> lognormal calibration as magnitude. Used when a scenario has no
-  # matching magnitude category; the analyst fills these per engagement.
-  default_magnitude:
-    p05_usd: 8000
-    p95_usd: 1500000
-    source: "SME-calibrated default single-loss magnitude (Hubbard 90% CI) — no dataset match"
-    detail: "Conservative fallback so no scenario runs on an unsourced number."
+  industry_baseline:
+    annual_probability_at_least_one: 0.129
+    source: "Cyentia Institute, Information Risk Insights Study 2022, Figure 4"
+    publication: "Information Risk Insights Study"
+    edition: "2022"
+    locator: "Figure 4: Upper-bound observed and modeled annualized loss event frequency, report page 9 (PDF page 7)"
+    url: "https://www.cyentia.com/wp-content/uploads/IRIS-2022_Cyentia.pdf"
+    transformation: "Conditional Poisson rate lambda=-ln(1-p), using published modeled P(N>=1)=0.129 for a one-year horizon."
+    detail: "All-event industry baseline for organizations over $10M revenue; upper-bound model. Used because no organization-specific frequency or real CVE EPSS/KEV enrichment exists."

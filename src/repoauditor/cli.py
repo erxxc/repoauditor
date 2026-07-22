@@ -9,27 +9,48 @@ than a traceback.
 from __future__ import annotations
 
 import getpass
+import io
+import sys
+import threading
+import time
+from contextlib import contextmanager, redirect_stdout
+from contextvars import ContextVar
+from datetime import datetime
 from enum import StrEnum
+from functools import wraps
 
 import typer
 
 from pathlib import Path
 
 from . import __version__
-from .analyze import generate_appendix
+from .analyze import quantify_appendix
 from .config import get_config
-from .detect import run_ensemble
+from .detect import DetectionRun, run_ensemble
 from .falsify import challenge
 from .ingest import ingest_repo, snapshot_manifests
+from .ingest import latest_snapshot
 from .map import recover_architecture
-from .report import build_backlog, build_memo
-from .review import decide, render_open_requests
+from .normalize import adjudicate_repo
+from .preflight import PreflightResult, check_model, check_runtime
+from .presentation import ndjson_event, repos_json, repos_table, review_requests_json
+from .report import write_backlog, write_memo
+from .review import (
+    decide,
+    open_review_requests,
+    raise_review_requests,
+    render_open_requests,
+)
 from .store import db
-from .store.models import ReviewDisposition
+from .store.models import ReviewDisposition, RunStatus
 from .triage import label_finding, triage_repo
 
 app = typer.Typer(
-    help="repoauditor — audit an acquired codebase: ingest, map, detect, falsify, report.",
+    help=(
+        "Audit a codebase with a two-phase workflow: `run` through the review "
+        "checkpoint, resolve any `review` requests, then `finalize` both reports. "
+        "Individual pipeline stages remain available for advanced/manual use."
+    ),
     no_args_is_help=True,
     add_completion=False,
 )
@@ -37,6 +58,10 @@ db_app = typer.Typer(help="Database commands.", no_args_is_help=True)
 app.add_typer(db_app, name="db")
 review_app = typer.Typer(help="Human-review checkpoint commands.", no_args_is_help=True)
 app.add_typer(review_app, name="review")
+repos_app = typer.Typer(help="Ingested repository commands.", no_args_is_help=True)
+app.add_typer(repos_app, name="repos")
+runs_app = typer.Typer(help="Pipeline run history and failure diagnostics.", no_args_is_help=True)
+app.add_typer(runs_app, name="runs")
 
 
 class ReportMode(StrEnum):
@@ -51,6 +76,74 @@ class LabelDisposition(StrEnum):
     FALSE_POSITIVE = "false_positive"
 
 
+class ListFormat(StrEnum):
+    HUMAN = "human"
+    JSON = "json"
+
+
+class RunFormat(StrEnum):
+    HUMAN = "human"
+    NDJSON = "ndjson"
+
+
+_debug_enabled: ContextVar[bool] = ContextVar("repoauditor_debug", default=False)
+_quiet_enabled: ContextVar[bool] = ContextVar("repoauditor_quiet", default=False)
+_verbose_enabled: ContextVar[bool] = ContextVar("repoauditor_verbose", default=False)
+
+
+def _timestamp() -> str:
+    return datetime.now().astimezone().isoformat(timespec="seconds")
+
+
+def _elapsed(seconds: float) -> str:
+    if seconds < 60:
+        return f"{seconds:.1f}s"
+    minutes, remainder = divmod(seconds, 60)
+    return f"{int(minutes)}m {remainder:.1f}s"
+
+
+@contextmanager
+def _stage_timing(label: str):
+    timing = {"started_at": _timestamp(), "started": time.monotonic()}
+    if not _quiet_enabled.get():
+        typer.echo(f"[{timing['started_at']}] {label} started")
+    yield timing
+    timing["completed_at"] = _timestamp()
+    timing["elapsed"] = time.monotonic() - timing["started"]
+
+
+def _stage_summary(message: str, timing: dict) -> None:
+    if not _quiet_enabled.get():
+        typer.echo(f"[{timing['completed_at']}] {message} (elapsed {_elapsed(timing['elapsed'])})")
+
+
+def _verbose(message: str) -> None:
+    if _verbose_enabled.get() and not _quiet_enabled.get():
+        typer.echo(f"  {message}")
+
+
+def _clean_errors(stage: str):
+    """Give individual commands the same concise failure boundary as orchestrators."""
+    def decorate(fn):
+        @wraps(fn)
+        def invoke(*args, **kwargs):
+            try:
+                return fn(*args, **kwargs)
+            except typer.Exit:
+                raise
+            except Exception as exc:
+                if _debug_enabled.get():
+                    raise
+                typer.secho(
+                    f"{stage} failed: {type(exc).__name__}: {exc}",
+                    fg=typer.colors.RED,
+                    err=True,
+                )
+                raise typer.Exit(code=1) from None
+        return invoke
+    return decorate
+
+
 def _stub_guard(fn, *args, **kwargs):
     """Call a stage function, turning a stubbed NotImplementedError into a clean exit."""
     try:
@@ -60,11 +153,254 @@ def _stub_guard(fn, *args, **kwargs):
         raise typer.Exit(code=2)
 
 
+@contextmanager
+def _progress(label: str):
+    """Render an indeterminate ASCII bar for a blocking stage call on interactive terminals."""
+    stream = sys.stderr
+    if _quiet_enabled.get() or not stream.isatty():
+        yield
+        return
+
+    width = 24
+    stopped = threading.Event()
+
+    def animate() -> None:
+        position = 0
+        direction = 1
+        pulse = "====>"
+        while not stopped.is_set():
+            cells = [" "] * width
+            cells[position:position + len(pulse)] = pulse
+            stream.write(f"\r{label:<10} [{''.join(cells)}]")
+            stream.flush()
+            position += direction
+            if position <= 0 or position >= width - len(pulse):
+                direction *= -1
+            stopped.wait(0.12)
+
+    worker = threading.Thread(target=animate, daemon=True)
+    worker.start()
+    try:
+        yield
+    except BaseException:
+        stopped.set()
+        worker.join()
+        stream.write(f"\r{label:<10} [{'!' * width}] failed\n")
+        stream.flush()
+        raise
+    else:
+        stopped.set()
+        worker.join()
+        stream.write(f"\r{label:<10} [{'=' * width}] done\n")
+        stream.flush()
+
+
+def _run_step(stage: str, fn):
+    """Run one orchestrated stage and turn its exception into an attributable CLI error."""
+    try:
+        return fn()
+    except typer.Exit as exc:
+        typer.secho(
+            f"pipeline failed at {stage}: stage exited with code {exc.exit_code}",
+            fg=typer.colors.RED,
+            err=True,
+        )
+        raise
+    except Exception as exc:
+        if _debug_enabled.get():
+            raise
+        typer.secho(
+            f"pipeline failed at {stage}: {type(exc).__name__}: {exc}",
+            fg=typer.colors.RED,
+            err=True,
+        )
+        raise typer.Exit(code=1) from exc
+
+
+def _render_preflight(result: PreflightResult) -> None:
+    if not _quiet_enabled.get():
+        if result.migrations:
+            typer.echo(f"preflight: initialized SQLite ({', '.join(result.migrations)})")
+        else:
+            typer.echo("preflight: SQLite schema is ready")
+    if result.missing_packages:
+        typer.secho(
+            f"preflight error: missing Python packages: {', '.join(result.missing_packages)}; "
+            "run `uv sync`",
+            fg=typer.colors.RED,
+            err=True,
+        )
+    elif not _quiet_enabled.get():
+        typer.echo("preflight: Python package dependencies are ready")
+    if result.credential_error:
+        typer.secho(
+            f"preflight error: {result.credential_error}", fg=typer.colors.RED, err=True
+        )
+    if not result.git_available:
+        typer.secho(
+            "preflight warning: git executable not found; Git URL/repository ingest will fail",
+            fg=typer.colors.YELLOW,
+            err=True,
+        )
+    if not result.scanners_checked and not _quiet_enabled.get():
+        typer.echo("preflight: optional deterministic scanners are disabled by config")
+    elif result.missing_scanners:
+        typer.secho(
+            "preflight warning: optional scanners unavailable (their lenses will be skipped): "
+            + ", ".join(result.missing_scanners),
+            fg=typer.colors.YELLOW,
+            err=True,
+        )
+    elif not result.missing_packages and not _quiet_enabled.get():
+        typer.echo("preflight: optional scanner toolchain is ready")
+
+
+def _preflight(config) -> PreflightResult:
+    result = check_runtime(config)
+    _render_preflight(result)
+    return result
+
+
+def _ingest_stage(source: str, config):
+    with _stage_timing("ingest") as timing, _progress("ingest"):
+        result = ingest_repo(source, config)
+        manifests = snapshot_manifests(result.snapshot_path, result.repo_id, result.commit)
+    status = "reused (no-op)" if result.reused else "ingested"
+    _stage_summary(
+        f"{status}. repo-id: {result.repo_id}; commit: {result.commit}; "
+        f"manifests={len(manifests.manifests)} -> {result.snapshot_path}", timing
+    )
+    return result
+
+
+def _map_stage(repo_id: str, config):
+    snapshot_path, commit = latest_snapshot(config, repo_id)
+    with _stage_timing("map") as timing, _progress("map"):
+        result = _stub_guard(recover_architecture, snapshot_path, repo_id, commit, config)
+    _stage_summary(
+        f"mapped {repo_id}: entry-points={len(result.entry_points)}, "
+        f"trust-boundaries={len(result.trust_boundaries)}, "
+        f"data-stores={len(result.data_stores)}, integrations={len(result.integrations)}", timing
+    )
+    _verbose(f"snapshot={snapshot_path}; commit={commit}")
+    return result
+
+
+def _detect_stage(repo_id: str, config):
+    with _stage_timing("detect") as timing, _progress("detect"):
+        result = _stub_guard(run_ensemble, repo_id, config)
+    counts = result.source_counts
+    _stage_summary(
+        f"detected {len(result)} findings: semgrep={counts['semgrep']}, "
+        f"gitleaks={counts['gitleaks']}, pip-audit={counts['pip-audit']}, "
+        f"osv-scanner={counts['osv-scanner']}, llm-ensemble={counts['llm-ensemble']}", timing
+    )
+    if result.sarif_path is not None:
+        if not _quiet_enabled.get():
+            typer.echo(f"  semgrep-status={result.semgrep_status}; SARIF={result.sarif_path}")
+    return result
+
+
+def _triage_stage(repo_id: str, config, sarif: Path | None = None, threshold: float = 0.5):
+    with _stage_timing("triage") as timing, _progress("triage"):
+        outcome = _stub_guard(
+            triage_repo, repo_id, config, sarif_path=sarif, action_threshold=threshold
+        )
+    eval_on = outcome.evaluations[0].eval_on if outcome.evaluations else "synthetic"
+    _stage_summary(
+        f"triaged {len(outcome.ranked)} findings for {repo_id}: "
+        f"ranked={len(outcome.ranked)}, suppressed={outcome.n_suppressed}, eval_on={eval_on}", timing
+    )
+    synth = "dropped" if outcome.synthetic_dropped else f"{outcome.synthetic_share:.0%}"
+    if not _quiet_enabled.get():
+        typer.echo(
+            f"  labels: real={outcome.n_real_labels} synthetic_share={synth} "
+            f"(shrinks as real labels accumulate)"
+        )
+    _verbose(f"SARIF={sarif or 'auto-discovered'}; action-threshold={threshold}")
+    return outcome
+
+
+def _falsify_stage(repo_id: str, config):
+    with _stage_timing("falsify") as timing, _progress("falsify"):
+        result = _stub_guard(challenge, repo_id, config)
+    counts = {status: 0 for status in ("confirmed", "killed", "unresolved")}
+    for outcome in result:
+        counts[str(outcome.status)] += 1
+    _stage_summary(
+        f"falsified {repo_id}: confirmed={counts['confirmed']}, killed={counts['killed']}, "
+        f"unresolved={counts['unresolved']}, deferred={result.deferred_count}", timing
+    )
+    return result
+
+
+def _normalize_stage(repo_id: str, config):
+    with _stage_timing("normalize") as timing, _progress("normalize"):
+        result = _stub_guard(adjudicate_repo, repo_id, config)
+    unresolved = sum(f.falsification_status.value == "unresolved" for f in result)
+    _stage_summary(
+        f"normalized {repo_id}: resolved={len(result) - unresolved}, "
+        f"unresolved (routed to review)={unresolved}", timing
+    )
+    return result
+
+
+def _quantify_stage(
+    repo_id: str, config, *, trials: int = 50_000, seed: int = 0,
+    record_audit: bool = False,
+):
+    with _stage_timing("quantify") as timing, _progress("quantify"):
+        artifacts = _stub_guard(
+            quantify_appendix, repo_id, config, trials=trials, seed=seed,
+            persist=record_audit,
+        )
+    path, scenario_count = artifacts
+    _stage_summary(
+        f"quantified {repo_id}: scenarios={scenario_count}, "
+        f"record-audit={'yes' if record_audit else 'no'}; wrote {path}", timing
+    )
+    return artifacts
+
+
+def _report_stage(
+    repo_id: str, config, mode: ReportMode, *, record_audit: bool = False,
+    quantification=None, print_report: bool = True,
+):
+    with _stage_timing(f"report ({mode.value})") as timing, _progress("report"):
+        if mode is ReportMode.ENGINEERING:
+            paths = [_stub_guard(write_backlog, repo_id, config)]
+            rendered_path = paths[0]
+        else:
+            paths = _stub_guard(
+                write_memo, repo_id, config, record_audit=record_audit,
+                quantification=quantification,
+            )
+            rendered_path = next(path for path in paths if path.name == "memo.md")
+    if print_report and not _quiet_enabled.get():
+        typer.echo(rendered_path.read_text())
+    _stage_summary(f"reported {repo_id}: wrote {', '.join(str(path) for path in paths)}", timing)
+    return paths
+
+
 @app.callback(invoke_without_command=True)
 def _root(
     ctx: typer.Context,
     version: bool = typer.Option(False, "--version", help="Show version and exit."),
+    debug: bool = typer.Option(
+        False, "--debug", help="Diagnostic mode: preserve Python tracebacks on failures."
+    ),
+    quiet: bool = typer.Option(
+        False, "--quiet", "-q", help="Suppress stage progress/summaries; show final recap or errors."
+    ),
+    verbose: bool = typer.Option(
+        False, "--verbose", "-v", help="Show extra artifact and stage metadata (not tracebacks)."
+    ),
 ):
+    if quiet and verbose:
+        raise typer.BadParameter("--quiet and --verbose cannot be used together")
+    _debug_enabled.set(debug)
+    _quiet_enabled.set(quiet)
+    _verbose_enabled.set(verbose)
     if version:
         typer.echo(f"repoauditor {__version__}")
         raise typer.Exit()
@@ -74,6 +410,7 @@ def _root(
 
 
 @db_app.command("init")
+@_clean_errors("db init")
 def db_init() -> None:
     """Create/upgrade the SQLite schema by applying pending migrations."""
     applied = db.init_db(get_config())
@@ -84,32 +421,72 @@ def db_init() -> None:
 
 
 @app.command()
+@_clean_errors("doctor")
+def doctor(
+    model: bool = typer.Option(
+        False, "--check-model",
+        help="Make one live, potentially billable request to verify endpoint, auth, model, and structured output.",
+    ),
+) -> None:
+    """Check dependencies/schema; optionally probe the configured model."""
+    config = get_config()
+    result = _preflight(config)
+    if not result.ready:
+        raise typer.Exit(code=1)
+    if model:
+        typer.echo("Model check: making one live API request; provider charges may apply.")
+        probe = check_model(config)
+        if not probe.ready:
+            typer.secho(
+                f"model check failed ({probe.provider}/{probe.model}, "
+                f"structured-output={probe.response_format}): {probe.error}",
+                fg=typer.colors.RED, err=True,
+            )
+            raise typer.Exit(code=1)
+        typer.echo(
+            f"model check passed: provider={probe.provider}; model={probe.model}; "
+            f"structured-output={probe.response_format}"
+        )
+
+
+@app.command()
+@_clean_errors("ingest")
 def ingest(source: str = typer.Argument(..., help="Git URL or local repo/dir to ingest.")) -> None:
     """Clone/snapshot a target repo (idempotent, keyed by commit hash)."""
-    config = get_config()
-    result = ingest_repo(source, config)
-    manifests = snapshot_manifests(result.snapshot_path, result.repo_id, result.commit)
-    status = "reused (no-op)" if result.reused else "ingested"
-    typer.echo(
-        f"{status}: repo_id={result.repo_id} commit={result.commit} "
-        f"manifests={len(manifests.manifests)} -> {result.snapshot_path}"
-    )
+    _ingest_stage(source, get_config())
+
+
+@repos_app.command("list")
+@_clean_errors("repos list")
+def repos_list(
+    output_format: ListFormat = typer.Option(
+        ListFormat.HUMAN, "--format", help="Output format: human or json."
+    ),
+    all_snapshots: bool = typer.Option(
+        False, "--all", help="Show full ingest history, not only each source's latest snapshot."
+    ),
+) -> None:
+    """List ingested repositories (latest snapshot per source by default)."""
+    repos = db.list_ingested_repos(get_config(), all_snapshots=all_snapshots)
+    typer.echo(repos_json(repos) if output_format is ListFormat.JSON else repos_table(repos))
 
 
 @app.command()
+@_clean_errors("map")
 def map(repo_id: str = typer.Argument(..., help="Ingested repo id.")) -> None:
     """Recover the architecture/trust-boundary map (runs before detection)."""
-    config = get_config()
-    _stub_guard(recover_architecture, config.raw_dir / repo_id, repo_id, "HEAD", config)
+    _map_stage(repo_id, get_config())
 
 
 @app.command()
+@_clean_errors("detect")
 def detect(repo_id: str = typer.Argument(..., help="Ingested + mapped repo id.")) -> None:
     """Run the multi-lens detection ensemble + deterministic tools."""
-    _stub_guard(run_ensemble, repo_id, get_config())
+    _detect_stage(repo_id, get_config())
 
 
 @app.command()
+@_clean_errors("triage")
 def triage(
     repo_id: str = typer.Argument(..., help="Repo id with deterministic SAST findings."),
     sarif: Path = typer.Option(
@@ -120,30 +497,11 @@ def triage(
     ),
 ) -> None:
     """Rank SAST findings by calibrated P(actionable) (runs after detect, before falsify)."""
-    outcome = _stub_guard(
-        triage_repo, repo_id, get_config(), sarif_path=sarif, action_threshold=threshold
-    )
-    eval_on = outcome.evaluations[0].eval_on if outcome.evaluations else "synthetic"
-    evals = "  ".join(
-        f"{e.model_name}(AP={e.average_precision:.2f},Brier={e.brier:.2f})"
-        for e in outcome.evaluations
-    )
-    typer.echo(
-        f"triaged {len(outcome.ranked)} findings for {repo_id}: model={outcome.model_name} "
-        f"[{evals}] eval_on={eval_on} suppressed={outcome.n_suppressed}"
-    )
-    synth = "dropped" if outcome.synthetic_dropped else f"{outcome.synthetic_share:.0%}"
-    typer.echo(
-        f"  labels: real={outcome.n_real_labels}  synthetic_share={synth} "
-        f"(shrinks as real labels accumulate)"
-    )
-    for r in outcome.ranked[:10]:
-        flag = " (suppressed)" if r.suppressed else ""
-        top = ", ".join(a["feature"] for a in r.attributions)
-        typer.echo(f"  #{r.rank} p={r.p_actionable:.2f}{flag} — top: {top}")
+    _triage_stage(repo_id, get_config(), sarif, threshold)
 
 
 @app.command(name="triage-label")
+@_clean_errors("triage-label")
 def triage_label(
     finding_id: int = typer.Argument(..., help="Finding id to label (from `triage` output)."),
     disposition: LabelDisposition = typer.Option(
@@ -170,23 +528,38 @@ def triage_label(
 
 
 @app.command()
+@_clean_errors("quantify")
 def quantify(
     repo_id: str = typer.Argument(..., help="Repo id with triaged/falsified findings."),
     trials: int = typer.Option(50_000, "--trials", help="Monte Carlo trial count."),
     seed: int = typer.Option(0, "--seed", help="RNG seed for reproducibility."),
+    record_audit: bool = typer.Option(
+        False, "--record-audit",
+        help="Persist a versioned SimulationRun and its scenario inputs."
+    ),
 ) -> None:
     """Run a FAIR-style Monte Carlo risk simulation and write the findings appendix."""
-    path = _stub_guard(generate_appendix, repo_id, get_config(), trials=trials, seed=seed)
-    typer.echo(f"wrote risk appendix -> {path}")
+    _quantify_stage(
+        repo_id, get_config(), trials=trials, seed=seed, record_audit=record_audit
+    )
 
 
 @app.command()
+@_clean_errors("falsify")
 def falsify(repo_id: str = typer.Argument(..., help="Repo id with candidate findings.")) -> None:
     """Run the falsification pass over candidate findings."""
-    _stub_guard(challenge, repo_id, get_config())
+    _falsify_stage(repo_id, get_config())
 
 
 @app.command()
+@_clean_errors("normalize")
+def normalize(repo_id: str = typer.Argument(..., help="Repo id with falsified findings.")) -> None:
+    """Adjudicate conflicting severities and route unresolved findings to review."""
+    _normalize_stage(repo_id, get_config())
+
+
+@app.command()
+@_clean_errors("report")
 def report(
     repo_id: str = typer.Argument(..., help="Repo id to report on."),
     mode: ReportMode = typer.Option(
@@ -194,27 +567,304 @@ def report(
     ),
     record_audit: bool = typer.Option(
         False, "--record-audit",
-        help="memo only: persist the backing SimulationRun as an audit trail "
+        help="memo only: persist a versioned SimulationRun and scenario inputs "
              "(additive logging; never mutates findings/severity).",
     ),
 ) -> None:
     """Project the findings store into an engineering backlog or a leadership memo."""
+    _report_stage(repo_id, get_config(), mode, record_audit=record_audit)
+
+
+@app.command()
+@_clean_errors("run")
+def run(
+    source: str = typer.Argument(..., help="Git URL or local repo/dir to audit."),
+    output_format: RunFormat = typer.Option(
+        RunFormat.HUMAN, "--format", help="Output format: human or streaming ndjson."
+    ),
+    fresh: bool = typer.Option(
+        False, "--fresh", help="Start a new run instead of resuming the latest incomplete run for this source."
+    ),
+) -> None:
+    """Run ingest through normalize, then stop at the human-review checkpoint.
+
+    Incomplete runs resume from their first unfinished stage. Use --fresh to force a new
+    run record; stage writes remain idempotent if a failed stage had partially persisted.
+    """
+    run_started = time.monotonic()
+    run_started_at = _timestamp()
+    machine = output_format is RunFormat.NDJSON
+    if machine:
+        _quiet_enabled.set(True)
+
+    def event(stage: str, status: str, **details) -> None:
+        if machine:
+            typer.echo(ndjson_event(stage, status, **details))
+
+    pipeline = None
+
+    def step(stage: str, fn, metadata=lambda value: ({}, [])):
+        event(stage, "started")
+        db.start_stage_run(pipeline.id, stage, config)
+        try:
+            value = _run_step(stage, fn)
+        except BaseException as exc:
+            detail = f"{type(exc).__name__}: {exc}"[:4000]
+            db.finish_stage_run(
+                pipeline.id, stage, RunStatus.FAILED, failure_detail=detail, config=config
+            )
+            db.finish_pipeline_run(
+                pipeline.id, RunStatus.FAILED, failed_stage=stage,
+                failure_detail=detail, config=config,
+            )
+            event(stage, "failed", error=detail)
+            raise
+        summary, artifacts = metadata(value)
+        db.finish_stage_run(
+            pipeline.id, stage, RunStatus.COMPLETED, summary=summary,
+            artifacts=artifacts, config=config,
+        )
+        event(stage, "completed", **summary, artifacts=artifacts)
+        return value
+
     config = get_config()
-    if mode is ReportMode.ENGINEERING:
-        typer.echo(_stub_guard(build_backlog, repo_id, config))
+    event("preflight", "started")
+    if machine:
+        with redirect_stdout(io.StringIO()):
+            preflight = _preflight(config)
     else:
-        typer.echo(_stub_guard(build_memo, repo_id, config, record_audit=record_audit))
+        preflight = _preflight(config)
+    if not preflight.ready:
+        event("preflight", "failed", error="requirements are not satisfied")
+        typer.secho("run stopped: preflight requirements are not satisfied", err=True)
+        raise typer.Exit(code=1)
+    event("preflight", "completed")
+    # Preflight normally applies this migration; the idempotent call also keeps
+    # orchestrator tests/custom preflight wrappers from bypassing run-record setup.
+    db.init_db(config)
+    pipeline = None if fresh else db.find_resumable_pipeline_run(source, config)
+    if pipeline is None:
+        pipeline = db.start_pipeline_run(source, config)
+        completed: dict[str, object] = {}
+    else:
+        db.resume_pipeline_run(pipeline.id, config)
+        completed = {
+            stage.stage: stage for stage in db.list_stage_runs(pipeline.id, config)
+            if stage.status is RunStatus.COMPLETED
+        }
+        event("run", "resumed", run_id=pipeline.id, completed_stages=list(completed))
+        if not machine and not _quiet_enabled.get():
+            typer.echo(
+                f"resuming run #{pipeline.id} after completed stage(s): "
+                + (", ".join(completed) if completed else "none")
+            )
+
+    result = None
+    if "ingest" not in completed or not pipeline.repo_id:
+        result = step(
+            "ingest", lambda: _ingest_stage(source, config),
+            lambda value: (
+                {"repo_id": value.repo_id, "commit_hash": value.commit},
+                [str(value.snapshot_path)],
+            ),
+        )
+        repo_id, commit = result.repo_id, result.commit
+        db.update_pipeline_run_identity(pipeline.id, repo_id, commit, config)
+    else:
+        repo_id, commit = pipeline.repo_id, pipeline.commit_hash
+    snapshot_path, _ = latest_snapshot(config, repo_id)
+
+    if "map" not in completed:
+        step("map", lambda: _map_stage(repo_id, config))
+
+    if "detect" not in completed:
+        detection = step(
+            "detect", lambda: _detect_stage(repo_id, config),
+            lambda value: (
+                {"source_counts": value.source_counts, "semgrep_status": value.semgrep_status},
+                [str(value.sarif_path)] if value.sarif_path else [],
+            ),
+        )
+    else:
+        prior_detect = completed["detect"]
+        paths = prior_detect.artifacts
+        detection = DetectionRun(
+            [], prior_detect.summary.get("source_counts", {}),
+            Path(paths[0]) if paths else None,
+            prior_detect.summary.get("semgrep_status"),
+        )
+    if "triage" not in completed:
+        step("triage", lambda: _triage_stage(repo_id, config, sarif=detection.sarif_path))
+    if "falsify" not in completed:
+        step("falsify", lambda: _falsify_stage(repo_id, config))
+    if "normalize" not in completed:
+        step("normalize", lambda: _normalize_stage(repo_id, config))
+    if "review checkpoint" not in completed:
+        step("review checkpoint", lambda: raise_review_requests(repo_id, config))
+
+    requests = open_review_requests(repo_id, config)
+    if detection.semgrep_status not in {"complete", "empty"}:
+        typer.secho(
+            f"coverage notice: Semgrep status is {detection.semgrep_status}; "
+            "the run completed without full SAST coverage.",
+            fg=typer.colors.YELLOW,
+            err=True,
+        )
+    artifact_items = [f"snapshot={snapshot_path}"]
+    artifact_paths = [str(snapshot_path)]
+    if detection.sarif_path is not None:
+        artifact_items.append(f"semgrep-sarif={detection.sarif_path}")
+        artifact_paths.append(str(detection.sarif_path))
+    artifact_items.append(f"review-requests={len(requests)}")
+    db.finish_pipeline_run(
+        pipeline.id, RunStatus.COMPLETED, artifacts=artifact_paths, config=config
+    )
+    if machine:
+        next_command = (
+            f"repoauditor review list {repo_id}" if requests
+            else f"repoauditor finalize {repo_id}"
+        )
+        typer.echo(ndjson_event(
+            "run", "completed", repo_id=repo_id,
+            run_id=pipeline.id,
+            open_review_requests=len(requests), artifacts=artifact_paths,
+            elapsed_seconds=round(time.monotonic() - run_started, 3),
+            next_command=next_command,
+        ))
+        return
+    if requests:
+        typer.echo(
+            f"run complete for {repo_id}; stopped at review checkpoint with "
+            f"{len(requests)} open request(s)."
+        )
+        typer.echo(f"Next: repoauditor review list {repo_id}")
+    else:
+        typer.echo(f"run complete for {repo_id}; no findings require review.")
+        typer.echo(f"Next: repoauditor finalize {repo_id}")
+    typer.echo(
+        f"run recap: started={run_started_at}; completed={_timestamp()}; "
+        f"total={_elapsed(time.monotonic() - run_started)}; " + "; ".join(artifact_items)
+    )
+
+
+@runs_app.command("list")
+@_clean_errors("runs list")
+def runs_list(
+    repo_id: str = typer.Option(None, "--repo-id", help="Limit history to one repository id."),
+) -> None:
+    """List pipeline run history, newest first."""
+    rows = db.list_pipeline_runs(get_config(), repo_id=repo_id)
+    if not rows:
+        typer.echo("No pipeline runs recorded.")
+        return
+    typer.echo("RUN  STATUS     REPO-ID                 STARTED              FAILURE")
+    for item in rows:
+        typer.echo(
+            f"{item.id:<4} {item.status.value:<10} {(item.repo_id or '-'):<23} "
+            f"{(item.started_at or '-'):<20} {item.failed_stage or '-'}"
+        )
+
+
+@runs_app.command("show")
+@_clean_errors("runs show")
+def runs_show(run_id: int = typer.Argument(..., help="Pipeline run id.")) -> None:
+    """Show stage timing, artifacts, and failure detail for one pipeline run."""
+    config = get_config()
+    item = db.get_pipeline_run(run_id, config)
+    if item is None:
+        typer.secho(f"run #{run_id} not found", fg=typer.colors.RED, err=True)
+        raise typer.Exit(code=1)
+    typer.echo(
+        f"run #{item.id}: status={item.status.value}; source={item.source}; "
+        f"repo-id={item.repo_id or '-'}; commit={item.commit_hash or '-'}"
+    )
+    typer.echo(f"started={item.started_at}; completed={item.completed_at or '-'}")
+    if item.failure_detail:
+        typer.echo(f"failure at {item.failed_stage}: {item.failure_detail}")
+    for stage in db.list_stage_runs(run_id, config):
+        detail = f"; failure={stage.failure_detail}" if stage.failure_detail else ""
+        typer.echo(
+            f"  {stage.stage}: {stage.status.value}; started={stage.started_at}; "
+            f"completed={stage.completed_at or '-'}; artifacts={stage.artifacts}{detail}"
+        )
+    if item.artifacts:
+        typer.echo("artifacts: " + ", ".join(item.artifacts))
+
+
+@app.command()
+@_clean_errors("finalize")
+def finalize(
+    repo_id: str = typer.Argument(..., help="Reviewed repo id to analyze and report."),
+    trials: int = typer.Option(50_000, "--trials", help="Monte Carlo trial count."),
+    seed: int = typer.Option(0, "--seed", help="RNG seed for reproducibility."),
+    record_audit: bool = typer.Option(
+        False, "--record-audit",
+        help="Persist a versioned SimulationRun and its scenario inputs."
+    ),
+    print_reports: bool = typer.Option(
+        False, "--print-reports", help="Also print both generated Markdown reports to stdout."
+    ),
+) -> None:
+    """After review, quantify risk and write both reports; optionally retain an audit run."""
+    config = get_config()
+    _run_step("review checkpoint", lambda: raise_review_requests(repo_id, config))
+    requests = open_review_requests(repo_id, config)
+    if requests:
+        ids = ", ".join(
+            f"#{request.id} (finding #{request.finding_id})" for request in requests
+        )
+        typer.secho(
+            f"finalize blocked for {repo_id}: {len(requests)} open review request(s): {ids}",
+            fg=typer.colors.RED,
+            err=True,
+        )
+        typer.echo(f"Review them with: repoauditor review list {repo_id}", err=True)
+        raise typer.Exit(code=1)
+
+    quantification = _run_step(
+        "quantify",
+        lambda: _quantify_stage(
+            repo_id, config, trials=trials, seed=seed, record_audit=record_audit
+        ),
+    )
+    engineering_paths = _run_step(
+        "engineering report",
+        lambda: _report_stage(
+            repo_id, config, ReportMode.ENGINEERING, print_report=print_reports
+        ),
+    )
+    memo_paths = _run_step(
+        "memo report",
+        lambda: _report_stage(
+            repo_id, config, ReportMode.MEMO, quantification=quantification,
+            print_report=print_reports,
+        ),
+    )
+    paths = [*(engineering_paths or []), *(memo_paths or [])]
+    typer.echo(
+        f"finalize complete for {repo_id}: wrote "
+        + (", ".join(str(path) for path in paths) if paths else "quantitative appendix and both reports")
+    )
 
 
 @review_app.command("list")
+@_clean_errors("review list")
 def review_list(
     repo_id: str = typer.Argument(..., help="Repo id to list open review requests for."),
+    output_format: ListFormat = typer.Option(
+        ListFormat.HUMAN, "--format", help="Output format: human or json."
+    ),
 ) -> None:
     """Show open review requests (held findings) with their evidence summary."""
-    typer.echo(render_open_requests(repo_id, get_config()))
+    config = get_config()
+    if output_format is ListFormat.JSON:
+        typer.echo(review_requests_json(open_review_requests(repo_id, config)))
+    else:
+        typer.echo(render_open_requests(repo_id, config))
 
 
 @review_app.command("decide")
+@_clean_errors("review decide")
 def review_decide(
     repo_id: str = typer.Argument(..., help="Repo id the review request belongs to."),
     request_id: int = typer.Argument(..., help="ReviewRequest id (from `review list`)."),

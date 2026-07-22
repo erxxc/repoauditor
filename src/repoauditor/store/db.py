@@ -24,13 +24,18 @@ from .models import (
     FalsificationIteration,
     FalsificationStatus,
     Finding,
+    IngestedRepo,
+    PipelineRun,
     PriorSource,
     ReviewDecision,
     ReviewDisposition,
     ReviewRequest,
     RiskScenario,
+    RunStatus,
+    ScenarioInput,
     RulePrior,
     SimulationRun,
+    StageRun,
     TriageFeatureRecord,
     TriageLabel,
     TriageLabelSource,
@@ -115,6 +120,208 @@ def init_db(config: Config | None = None) -> list[str]:
 # --------------------------------------------------------------------------- #
 # Writes
 # --------------------------------------------------------------------------- #
+def record_ingested_repo(repo: IngestedRepo, config: Config | None = None) -> None:
+    """Record an ingested snapshot, preserving the timestamp of an existing row."""
+    conn = get_connection(config)
+    try:
+        with conn:
+            conn.execute(
+                "INSERT INTO ingested_repo (repo_id, source, commit_hash) VALUES (?, ?, ?) "
+                "ON CONFLICT (repo_id, commit_hash) DO UPDATE SET source = excluded.source",
+                (repo.repo_id, repo.source, repo.commit_hash),
+            )
+    finally:
+        conn.close()
+
+
+def start_pipeline_run(source: str, config: Config | None = None) -> PipelineRun:
+    conn = get_connection(config)
+    try:
+        with conn:
+            cur = conn.execute(
+                "INSERT INTO pipeline_run (source, status) VALUES (?, 'running')", (source,)
+            )
+            row = conn.execute("SELECT * FROM pipeline_run WHERE id = ?", (cur.lastrowid,)).fetchone()
+        return _pipeline_run_from_row(row)
+    finally:
+        conn.close()
+
+
+def update_pipeline_run_identity(
+    run_id: int, repo_id: str, commit_hash: str, config: Config | None = None
+) -> None:
+    conn = get_connection(config)
+    try:
+        with conn:
+            conn.execute(
+                "UPDATE pipeline_run SET repo_id = ?, commit_hash = ? WHERE id = ?",
+                (repo_id, commit_hash, run_id),
+            )
+    finally:
+        conn.close()
+
+
+def finish_pipeline_run(
+    run_id: int, status: RunStatus, *, failed_stage: str | None = None,
+    failure_detail: str | None = None, artifacts: list[str] | None = None,
+    config: Config | None = None,
+) -> None:
+    conn = get_connection(config)
+    try:
+        with conn:
+            conn.execute(
+                "UPDATE pipeline_run SET status = ?, completed_at = datetime('now'), "
+                "failed_stage = ?, failure_detail = ?, artifacts = ? WHERE id = ?",
+                (str(status), failed_stage, failure_detail, json.dumps(artifacts or []), run_id),
+            )
+    finally:
+        conn.close()
+
+
+def start_stage_run(run_id: int, stage: str, config: Config | None = None) -> StageRun:
+    """Start or restart a stage attempt within an existing pipeline run."""
+    conn = get_connection(config)
+    try:
+        with conn:
+            conn.execute(
+                "INSERT INTO stage_run (pipeline_run_id, stage, status) VALUES (?, ?, 'running') "
+                "ON CONFLICT (pipeline_run_id, stage) DO UPDATE SET "
+                "status='running', started_at=datetime('now'), completed_at=NULL, "
+                "summary='{}', artifacts='[]', failure_detail=NULL",
+                (run_id, stage),
+            )
+            row = conn.execute(
+                "SELECT * FROM stage_run WHERE pipeline_run_id = ? AND stage = ?",
+                (run_id, stage),
+            ).fetchone()
+        return _stage_run_from_row(row)
+    finally:
+        conn.close()
+
+
+def finish_stage_run(
+    run_id: int, stage: str, status: RunStatus, *, summary: dict | None = None,
+    artifacts: list[str] | None = None, failure_detail: str | None = None,
+    config: Config | None = None,
+) -> None:
+    conn = get_connection(config)
+    try:
+        with conn:
+            conn.execute(
+                "UPDATE stage_run SET status = ?, completed_at = datetime('now'), summary = ?, "
+                "artifacts = ?, failure_detail = ? WHERE pipeline_run_id = ? AND stage = ?",
+                (str(status), json.dumps(summary or {}), json.dumps(artifacts or []),
+                 failure_detail, run_id, stage),
+            )
+    finally:
+        conn.close()
+
+
+def list_pipeline_runs(
+    config: Config | None = None, *, repo_id: str | None = None
+) -> list[PipelineRun]:
+    conn = get_connection(config)
+    try:
+        if repo_id is None:
+            rows = conn.execute("SELECT * FROM pipeline_run ORDER BY id DESC").fetchall()
+        else:
+            rows = conn.execute(
+                "SELECT * FROM pipeline_run WHERE repo_id = ? ORDER BY id DESC", (repo_id,)
+            ).fetchall()
+        return [_pipeline_run_from_row(row) for row in rows]
+    finally:
+        conn.close()
+
+
+def get_pipeline_run(run_id: int, config: Config | None = None) -> PipelineRun | None:
+    conn = get_connection(config)
+    try:
+        row = conn.execute("SELECT * FROM pipeline_run WHERE id = ?", (run_id,)).fetchone()
+        return _pipeline_run_from_row(row) if row else None
+    finally:
+        conn.close()
+
+
+def find_resumable_pipeline_run(
+    source: str, config: Config | None = None
+) -> PipelineRun | None:
+    conn = get_connection(config)
+    try:
+        row = conn.execute(
+            "SELECT * FROM pipeline_run WHERE source = ? AND status != 'completed' "
+            "ORDER BY id DESC LIMIT 1", (source,),
+        ).fetchone()
+        return _pipeline_run_from_row(row) if row else None
+    finally:
+        conn.close()
+
+
+def resume_pipeline_run(run_id: int, config: Config | None = None) -> None:
+    conn = get_connection(config)
+    try:
+        with conn:
+            conn.execute(
+                "UPDATE pipeline_run SET status='running', completed_at=NULL, failed_stage=NULL, "
+                "failure_detail=NULL WHERE id = ?", (run_id,),
+            )
+    finally:
+        conn.close()
+
+
+def list_stage_runs(run_id: int, config: Config | None = None) -> list[StageRun]:
+    conn = get_connection(config)
+    try:
+        rows = conn.execute(
+            "SELECT * FROM stage_run WHERE pipeline_run_id = ? ORDER BY id", (run_id,)
+        ).fetchall()
+        return [_stage_run_from_row(row) for row in rows]
+    finally:
+        conn.close()
+
+
+def _pipeline_run_from_row(row: sqlite3.Row) -> PipelineRun:
+    values = dict(row)
+    values["artifacts"] = json.loads(values["artifacts"])
+    return PipelineRun(**values)
+
+
+def _stage_run_from_row(row: sqlite3.Row) -> StageRun:
+    values = dict(row)
+    values["summary"] = json.loads(values["summary"])
+    values["artifacts"] = json.loads(values["artifacts"])
+    return StageRun(**values)
+
+
+def list_ingested_repos(
+    config: Config | None = None, *, all_snapshots: bool = True
+) -> list[IngestedRepo]:
+    """List ingested snapshots, newest first.
+
+    When ``all_snapshots`` is false, return only the most recently ingested
+    snapshot for each source repository. ``rowid`` breaks ties between SQLite's
+    one-second timestamps deterministically.
+    """
+    conn = get_connection(config)
+    try:
+        if all_snapshots:
+            query = (
+                "SELECT repo_id, source, commit_hash, ingested_at FROM ingested_repo "
+                "ORDER BY ingested_at DESC, rowid DESC, repo_id, commit_hash"
+            )
+        else:
+            query = (
+                "SELECT repo_id, source, commit_hash, ingested_at FROM ("
+                " SELECT repo_id, source, commit_hash, ingested_at, rowid,"
+                " ROW_NUMBER() OVER (PARTITION BY source ORDER BY ingested_at DESC, rowid DESC) AS n"
+                " FROM ingested_repo"
+                ") WHERE n = 1 ORDER BY ingested_at DESC, rowid DESC, repo_id, commit_hash"
+            )
+        rows = conn.execute(query).fetchall()
+        return [IngestedRepo(**dict(row)) for row in rows]
+    finally:
+        conn.close()
+
+
 def insert_trust_boundary(tb: TrustBoundary, config: Config | None = None) -> int:
     conn = get_connection(config)
     try:
@@ -124,6 +331,32 @@ def insert_trust_boundary(tb: TrustBoundary, config: Config | None = None) -> in
                 "VALUES (?, ?, ?)",
                 (tb.repo_id, tb.name, tb.description),
             )
+        return int(cur.lastrowid)
+    finally:
+        conn.close()
+
+
+def upsert_trust_boundary(tb: TrustBoundary, config: Config | None = None) -> int:
+    """Insert or refresh a map boundary, idempotent on (repo_id, name)."""
+    conn = get_connection(config)
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+        row = conn.execute(
+            "SELECT id FROM trust_boundary WHERE repo_id = ? AND name = ? ORDER BY id LIMIT 1",
+            (tb.repo_id, tb.name),
+        ).fetchone()
+        if row is not None:
+            conn.execute(
+                "UPDATE trust_boundary SET description = ? WHERE id = ?",
+                (tb.description, row["id"]),
+            )
+            conn.commit()
+            return int(row["id"])
+        cur = conn.execute(
+            "INSERT INTO trust_boundary (repo_id, name, description) VALUES (?, ?, ?)",
+            (tb.repo_id, tb.name, tb.description),
+        )
+        conn.commit()
         return int(cur.lastrowid)
     finally:
         conn.close()
@@ -146,6 +379,37 @@ def insert_entity(entity: Entity, config: Config | None = None) -> int:
                     json.dumps(entity.metadata) if entity.metadata else None,
                 ),
             )
+        return int(cur.lastrowid)
+    finally:
+        conn.close()
+
+
+def upsert_entity(entity: Entity, config: Config | None = None) -> int:
+    """Insert or refresh a map entity on its stable repo/kind/name/location identity."""
+    conn = get_connection(config)
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+        row = conn.execute(
+            "SELECT id FROM entity WHERE repo_id = ? AND kind = ? AND name = ? "
+            "AND location IS ? ORDER BY id LIMIT 1",
+            (entity.repo_id, str(entity.kind), entity.name, entity.location),
+        ).fetchone()
+        metadata = json.dumps(entity.metadata) if entity.metadata else None
+        if row is not None:
+            conn.execute(
+                "UPDATE entity SET trust_boundary_id = ?, metadata = ? WHERE id = ?",
+                (entity.trust_boundary_id, metadata, row["id"]),
+            )
+            conn.commit()
+            return int(row["id"])
+        cur = conn.execute(
+            "INSERT INTO entity "
+            "(repo_id, kind, name, location, trust_boundary_id, metadata) "
+            "VALUES (?, ?, ?, ?, ?, ?)",
+            (entity.repo_id, str(entity.kind), entity.name, entity.location,
+             entity.trust_boundary_id, metadata),
+        )
+        conn.commit()
         return int(cur.lastrowid)
     finally:
         conn.close()
@@ -191,6 +455,50 @@ def insert_finding(finding: Finding, config: Config | None = None) -> int:
                      corr.score, corr.match_basis),
                 )
         return finding_id
+    finally:
+        conn.close()
+
+
+def upsert_detected_finding(finding: Finding, config: Config | None = None) -> int:
+    """Persist a detector result once, preserving downstream verdicts on rerun.
+
+    The natural identity excludes mutable confidence/severity/status fields. A repeated
+    detector pass returns the existing row instead of resetting falsification or normalized
+    severity state. `BEGIN IMMEDIATE` makes the read-then-insert safe across concurrent CLI
+    processes despite the legacy schema having no corresponding UNIQUE constraint.
+    """
+    conn = get_connection(config)
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+        row = conn.execute(
+            "SELECT id FROM finding WHERE repo_id = ? AND source_lens IS ? "
+            "AND source_tool IS ? AND file = ? AND line_start = ? AND line_end = ? "
+            "AND title = ? AND citation_snippet = ? ORDER BY id LIMIT 1",
+            (
+                finding.repo_id, finding.source_lens, finding.source_tool, finding.file,
+                finding.line_start, finding.line_end, finding.title,
+                finding.citation_snippet,
+            ),
+        ).fetchone()
+        if row is not None:
+            conn.commit()
+            return int(row["id"])
+        cur = conn.execute(
+            "INSERT INTO finding "
+            "(repo_id, title, file, line_start, line_end, citation_snippet, "
+            " source_lens, source_tool, confidence, severity, falsification_status, "
+            " falsification_reason, trust_boundary_id, entity_id, description) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                finding.repo_id, finding.title, finding.file, finding.line_start,
+                finding.line_end, finding.citation_snippet, finding.source_lens,
+                finding.source_tool, finding.confidence, str(finding.severity),
+                str(finding.falsification_status), finding.falsification_reason,
+                finding.trust_boundary_id, finding.entity_id, finding.description,
+            ),
+        )
+        conn.commit()
+        return int(cur.lastrowid)
     finally:
         conn.close()
 
@@ -943,9 +1251,11 @@ def insert_prior_source(ps: PriorSource, config: Config | None = None) -> int:
     try:
         with conn:
             cur = conn.execute(
-                "INSERT INTO prior_source (kind, param_path, source, detail) "
-                "VALUES (?, ?, ?, ?)",
-                (ps.kind, ps.param_path, ps.source, ps.detail),
+                "INSERT INTO prior_source (kind, param_path, source, detail, publication, "
+                " edition, locator, url, transformation, provenance_status) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (ps.kind, ps.param_path, ps.source, ps.detail, ps.publication,
+                 ps.edition, ps.locator, ps.url, ps.transformation, ps.provenance_status),
             )
         return int(cur.lastrowid)
     finally:
@@ -964,6 +1274,12 @@ def list_prior_sources(config: Config | None = None) -> list[PriorSource]:
                 param_path=r["param_path"],
                 source=r["source"],
                 detail=r["detail"],
+                publication=r["publication"],
+                edition=r["edition"],
+                locator=r["locator"],
+                url=r["url"],
+                transformation=r["transformation"],
+                provenance_status=r["provenance_status"],
             )
             for r in rows
         ]
@@ -978,10 +1294,14 @@ def insert_risk_scenario(scenario: RiskScenario, config: Config | None = None) -
         with conn:
             cur = conn.execute(
                 "INSERT INTO risk_scenario "
-                "(repo_id, name, finding_ids, frequency_lambda, magnitude_mu, "
-                " magnitude_sigma, frequency_source, magnitude_source, p_actionable) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                "(simulation_run_id, repo_id, name, finding_ids, frequency_lambda, magnitude_mu, "
+                " magnitude_sigma, frequency_source, magnitude_source, p_actionable, "
+                " validity_probabilities, validity_sources, conditional_frequency_lambdas, "
+                " conditional_frequency_source, threat_signal_labels, "
+                " exposure_factors, control_strengths, loss_scale) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (
+                    scenario.simulation_run_id,
                     scenario.repo_id,
                     scenario.name,
                     json.dumps(scenario.finding_ids),
@@ -991,6 +1311,14 @@ def insert_risk_scenario(scenario: RiskScenario, config: Config | None = None) -
                     scenario.frequency_source,
                     scenario.magnitude_source,
                     scenario.p_actionable,
+                    json.dumps(scenario.validity_probabilities),
+                    json.dumps(scenario.validity_sources),
+                    json.dumps(scenario.conditional_frequency_lambdas),
+                    scenario.conditional_frequency_source,
+                    json.dumps(scenario.threat_signal_labels),
+                    json.dumps(scenario.exposure_factors),
+                    json.dumps(scenario.control_strengths),
+                    scenario.loss_scale,
                 ),
             )
         return int(cur.lastrowid)
@@ -1008,6 +1336,7 @@ def list_risk_scenarios(repo_id: str, config: Config | None = None) -> list[Risk
         return [
             RiskScenario(
                 id=r["id"],
+                simulation_run_id=r["simulation_run_id"],
                 repo_id=r["repo_id"],
                 name=r["name"],
                 finding_ids=json.loads(r["finding_ids"]),
@@ -1017,9 +1346,49 @@ def list_risk_scenarios(repo_id: str, config: Config | None = None) -> list[Risk
                 frequency_source=r["frequency_source"],
                 magnitude_source=r["magnitude_source"],
                 p_actionable=r["p_actionable"],
+                validity_probabilities=json.loads(r["validity_probabilities"]),
+                validity_sources=json.loads(r["validity_sources"]),
+                conditional_frequency_lambdas=json.loads(r["conditional_frequency_lambdas"]),
+                conditional_frequency_source=r["conditional_frequency_source"],
+                threat_signal_labels=json.loads(r["threat_signal_labels"]),
+                exposure_factors=json.loads(r["exposure_factors"]),
+                control_strengths=json.loads(r["control_strengths"]),
+                loss_scale=r["loss_scale"],
             )
             for r in rows
         ]
+    finally:
+        conn.close()
+
+
+def insert_scenario_input(value: ScenarioInput, config: Config | None = None) -> int:
+    """Persist or refresh one transparent per-engagement scenario input."""
+    conn = get_connection(config)
+    try:
+        with conn:
+            cur = conn.execute(
+                "INSERT INTO scenario_input (risk_scenario_id, repo_id, scenario_name, "
+                " input_name, value, origin, source, detail) VALUES (?, ?, ?, ?, ?, ?, ?, ?) "
+                "ON CONFLICT (risk_scenario_id, input_name) DO UPDATE SET value=excluded.value, "
+                "origin=excluded.origin, source=excluded.source, detail=excluded.detail",
+                (value.risk_scenario_id, value.repo_id, value.scenario_name,
+                 value.input_name, value.value, value.origin, value.source, value.detail),
+            )
+        return int(cur.lastrowid)
+    finally:
+        conn.close()
+
+
+def list_scenario_inputs(
+    repo_id: str, config: Config | None = None
+) -> list[ScenarioInput]:
+    conn = get_connection(config)
+    try:
+        rows = conn.execute(
+            "SELECT * FROM scenario_input WHERE repo_id = ? ORDER BY risk_scenario_id, input_name",
+            (repo_id,),
+        ).fetchall()
+        return [ScenarioInput(**dict(row)) for row in rows]
     finally:
         conn.close()
 
@@ -1046,6 +1415,25 @@ def insert_simulation_run(run: SimulationRun, config: Config | None = None) -> i
                 ),
             )
         return int(cur.lastrowid)
+    finally:
+        conn.close()
+
+
+def link_risk_scenarios_to_simulation(
+    scenario_ids: list[int], simulation_run_id: int, config: Config | None = None
+) -> None:
+    """Attach one quantification pass's scenario snapshots to its audit run."""
+    if not scenario_ids:
+        return
+    conn = get_connection(config)
+    try:
+        with conn:
+            placeholders = ", ".join("?" for _ in scenario_ids)
+            conn.execute(
+                f"UPDATE risk_scenario SET simulation_run_id = ? "
+                f"WHERE id IN ({placeholders})",
+                (simulation_run_id, *scenario_ids),
+            )
     finally:
         conn.close()
 
@@ -1247,7 +1635,11 @@ def get_review_decision_by_id(
 # Normalize layer: persisted severity-adjudication debate trail
 # --------------------------------------------------------------------------- #
 def insert_adjudication_debate(debate: AdjudicationDebate, config: Config | None = None) -> int:
-    """Persist one severity-adjudication debate (positions + outcome), not just the value."""
+    """Persist the current debate for a region, idempotently.
+
+    Normalize and review already identify a debate by repo + exact region. Re-running
+    normalize refreshes that record rather than appending an indistinguishable duplicate.
+    """
     conn = get_connection(config)
     try:
         positions = [
@@ -1259,23 +1651,35 @@ def insert_adjudication_debate(debate: AdjudicationDebate, config: Config | None
             }
             for p in debate.positions
         ]
-        with conn:
-            cur = conn.execute(
-                "INSERT INTO adjudication_debate "
-                "(repo_id, file, line_start, line_end, positions, outcome, "
-                " resolved_severity, synthesis_rationale) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-                (
-                    debate.repo_id,
-                    debate.file,
-                    debate.line_start,
-                    debate.line_end,
-                    json.dumps(positions),
-                    debate.outcome,
-                    str(debate.resolved_severity) if debate.resolved_severity else None,
-                    debate.synthesis_rationale,
-                ),
+        conn.execute("BEGIN IMMEDIATE")
+        row = conn.execute(
+            "SELECT id FROM adjudication_debate WHERE repo_id = ? AND file = ? "
+            "AND line_start = ? AND line_end = ? ORDER BY id LIMIT 1",
+            (debate.repo_id, debate.file, debate.line_start, debate.line_end),
+        ).fetchone()
+        values = (
+            json.dumps(positions), debate.outcome,
+            str(debate.resolved_severity) if debate.resolved_severity else None,
+            debate.synthesis_rationale,
+        )
+        if row is not None:
+            conn.execute(
+                "UPDATE adjudication_debate SET positions = ?, outcome = ?, "
+                "resolved_severity = ?, synthesis_rationale = ? WHERE id = ?",
+                (*values, row["id"]),
             )
+            conn.commit()
+            return int(row["id"])
+        cur = conn.execute(
+            "INSERT INTO adjudication_debate "
+            "(repo_id, file, line_start, line_end, positions, outcome, "
+            " resolved_severity, synthesis_rationale) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                debate.repo_id, debate.file, debate.line_start, debate.line_end,
+                *values,
+            ),
+        )
+        conn.commit()
         return int(cur.lastrowid)
     finally:
         conn.close()

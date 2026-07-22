@@ -10,6 +10,7 @@ findings, tagged with `source_tool`.
 from __future__ import annotations
 
 import json
+import stat
 from pathlib import Path
 
 from repoauditor.detect import run_ensemble
@@ -60,6 +61,39 @@ def test_sast_adapter_parses_semgrep_sarif_into_candidates():
 def test_sast_adapter_run_returns_a_list_without_raising(tmp_path):
     # semgrep isn't installed here; run() must degrade to [] rather than raise.
     assert SastAdapter().run(tmp_path) == []
+
+
+def test_sast_adapter_writes_empty_sarif_when_semgrep_is_unavailable(tmp_path, monkeypatch):
+    artifact = tmp_path / "artifacts" / "semgrep.sarif"
+    monkeypatch.setattr("repoauditor.detect.deterministic.sast_adapter.shutil.which",
+                        lambda _binary: None)
+
+    adapter = SastAdapter(sarif_output_path=artifact)
+    assert adapter.run(tmp_path) == []
+    assert adapter.run_status == "unavailable"
+    doc = json.loads(artifact.read_text(encoding="utf-8"))
+    assert doc["runs"][0]["results"] == []
+
+
+def test_sast_adapter_preserves_valid_sarif_outside_snapshot(tmp_path, monkeypatch):
+    snapshot = tmp_path / "raw" / "acme" / "abc123"
+    snapshot.mkdir(parents=True)
+    artifact = tmp_path / "artifacts" / "acme" / "abc123" / "detect" / "semgrep.sarif"
+
+    class Completed:
+        stdout = _SARIF
+
+    monkeypatch.setattr("repoauditor.detect.deterministic.sast_adapter.shutil.which",
+                        lambda _binary: "/usr/bin/semgrep")
+    monkeypatch.setattr("repoauditor.detect.deterministic.sast_adapter.subprocess.run",
+                        lambda *args, **kwargs: Completed())
+
+    findings = SastAdapter(sarif_output_path=artifact).run(snapshot)
+
+    assert len(findings) == 1
+    assert artifact.read_text(encoding="utf-8") == _SARIF
+    assert stat.S_IMODE(artifact.stat().st_mode) == 0o600
+    assert not (snapshot / "semgrep.sarif").exists()
 
 
 # --------------------------------------------------------------------------- #
@@ -150,7 +184,16 @@ def _ingest_and_map(tmp_config, scripted_llm, repo_id="example_vuln_repo"):
 def test_ensemble_persists_tool_findings_alongside_lens_findings(tmp_config, scripted_llm):
     db.init_db(tmp_config)
     repo_id = _ingest_and_map(tmp_config, scripted_llm)
-    run_ensemble(repo_id, tmp_config, llm=scripted_llm)
+    result = run_ensemble(repo_id, tmp_config, llm=scripted_llm)
+
+    assert result.sarif_path is not None
+    assert result.sarif_path.is_file()
+    artifact_rel = result.sarif_path.relative_to(
+        tmp_config.resolve(tmp_config.paths.data_dir)
+    )
+    assert artifact_rel.parts[:2] == ("artifacts", repo_id)
+    assert artifact_rel.parts[-2:] == ("detect", "semgrep.sarif")
+    assert result.semgrep_status in {"complete", "empty", "unavailable", "failed", "malformed"}
 
     findings = db.list_findings(repo_id, tmp_config)
     lens = [f for f in findings if f.source_lens]

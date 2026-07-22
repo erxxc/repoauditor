@@ -10,7 +10,8 @@ from __future__ import annotations
 import pytest
 
 from repoauditor.config import load_deal_risk, load_priors
-from repoauditor.report import build_backlog, build_memo
+from repoauditor.analyze import quantify_appendix
+from repoauditor.report import build_backlog, build_memo, write_memo
 from repoauditor.review import raise_review_requests
 from repoauditor.store import db
 from repoauditor.store.models import FalsificationStatus, Finding, TrustBoundary
@@ -137,3 +138,39 @@ def test_memo_record_audit_persists_a_simulation_run_without_mutating_findings(c
     # ...and it is purely additive — no finding or severity was mutated by generating it.
     after = {f.id: f.severity for f in db.list_findings("r", cfg)}
     assert after == before
+
+
+def test_memo_reuses_quantification_without_second_simulation(cfg, monkeypatch):
+    db.init_db(cfg)
+    tb = _tb(cfg)
+    _finding(cfg, title="SQL injection", sev="critical", desc="sqli [CWE-89]", tb=tb,
+             start=1, end=1, snippet="q")
+
+    quantification = quantify_appendix(
+        "r", cfg, trials=1_234, seed=19, persist=True
+    )
+    # Any attempt by the memo to quantify again is a regression. Its audit row and
+    # trial/seed settings must be exactly those produced above.
+    monkeypatch.setattr(
+        "repoauditor.report.memo.generate_appendix",
+        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("simulated twice")),
+    )
+
+    paths = write_memo("r", cfg, record_audit=True, quantification=quantification)
+
+    memo_path = next(path for path in paths if path.name == "memo.md")
+    assert "1,234" in memo_path.read_text()
+    assert {path.name for path in paths} >= {
+        "memo.md", "risk_appendix.md", "loss_exceedance.png", "tornado.png"
+    }
+    runs = db.list_simulation_runs("r", cfg)
+    assert len(runs) == 1
+    assert runs[0].trials == 1_234 and runs[0].seed == 19
+
+
+def test_memo_rejects_unrecorded_quantification_when_audit_is_required(cfg):
+    db.init_db(cfg)
+    quantification = quantify_appendix("r", cfg, trials=100, seed=3, persist=False)
+
+    with pytest.raises(ValueError, match="persist=True"):
+        build_memo("r", cfg, record_audit=True, quantification=quantification)

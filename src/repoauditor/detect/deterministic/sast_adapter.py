@@ -13,9 +13,12 @@ must never break a detect run.
 
 from __future__ import annotations
 
+import json
 import logging
+import os
 import shutil
 import subprocess
+import tempfile
 from pathlib import Path
 
 from ...triage.features import (
@@ -33,17 +36,59 @@ TOOL_NAME = "sast"
 _BINARY = "semgrep"
 
 
+def _empty_sarif(status: str) -> str:
+    return json.dumps({
+        "version": "2.1.0",
+        "runs": [{
+            "tool": {"driver": {
+                "name": "semgrep",
+                "rules": [],
+                "properties": {"repoauditorCoverageStatus": status},
+            }},
+            "results": [],
+        }],
+    })
+
+
 class SastAdapter:
     """Runs / parses Semgrep and normalizes its SARIF output to candidate findings."""
 
     tool_name = TOOL_NAME
 
-    def __init__(self, timeout_seconds: int = 180) -> None:
+    def __init__(
+        self, timeout_seconds: int = 180, sarif_output_path: Path | None = None,
+    ) -> None:
         self.timeout_seconds = timeout_seconds
+        self.sarif_output_path = sarif_output_path
+        self.run_status: str | None = None
+
+    def _write_artifact(self, raw_output: str) -> None:
+        if self.sarif_output_path is None:
+            return
+        self.sarif_output_path.parent.mkdir(parents=True, exist_ok=True)
+        temporary: Path | None = None
+        try:
+            with tempfile.NamedTemporaryFile(
+                mode="w", encoding="utf-8", dir=self.sarif_output_path.parent,
+                prefix=".semgrep-", suffix=".tmp", delete=False,
+            ) as handle:
+                temporary = Path(handle.name)
+                os.chmod(temporary, 0o600)
+                handle.write(raw_output)
+            os.replace(temporary, self.sarif_output_path)
+        finally:
+            if temporary is not None and temporary.exists():
+                temporary.unlink()
+
+    def write_empty_artifact(self, status: str) -> None:
+        """Persist an explicit zero-result SARIF with its coverage status."""
+        self.run_status = status
+        self._write_artifact(_empty_sarif(status))
 
     def run(self, snapshot_path: Path) -> list[CandidateFinding]:
         if shutil.which(_BINARY) is None:
             logger.info("semgrep not installed; SAST adapter contributes no findings")
+            self.write_empty_artifact("unavailable")
             return []
         try:
             proc = subprocess.run(
@@ -53,10 +98,23 @@ class SastAdapter:
             )
         except (subprocess.TimeoutExpired, OSError) as exc:
             logger.warning("semgrep run failed (%s); no SAST findings", exc)
+            self.write_empty_artifact("failed")
             return []
         if not proc.stdout.strip():
+            status = "failed" if getattr(proc, "returncode", 0) else "empty"
+            self.write_empty_artifact(status)
             return []
-        return self.parse(proc.stdout, snapshot_path)
+        findings = self.parse(proc.stdout, snapshot_path)
+        # Preserve only valid SARIF.  The generated artifact lives outside the raw
+        # snapshot and is therefore safe to replace on a repeated detect run.
+        try:
+            load_sarif(proc.stdout)
+        except Exception:
+            self.write_empty_artifact("malformed")
+            return findings
+        self.run_status = "complete" if findings else "empty"
+        self._write_artifact(proc.stdout)
+        return findings
 
     def parse(self, raw_output: str,
               snapshot_path: Path | None = None) -> list[CandidateFinding]:
@@ -78,6 +136,7 @@ class SastAdapter:
             line_end=max(f.line_end, f.line_start),
             citation_snippet=(f.snippet or f.message[:200] or f.rule_id),
             source_tool=self.tool_name,
+            producer="semgrep",
             confidence=sarif_tool_confidence(f),
             severity=sarif_severity(f),
             rationale=f"{f.message} (rule {f.rule_id}){cwe}",
