@@ -3,7 +3,10 @@
 Runs each code region through the three framing lenses (OWASP / supply-chain /
 agentic-surface), each backed by its versioned prompt under `lenses/`, augmented
 with retrieval context (callers/callees and similar patterns pulled from the AST
-index). Every candidate is persisted as a `Finding` tagged with its `source_lens`.
+index). Before persistence, each model citation is anchored to an exact repository
+location. A uniquely misattributed citation is deterministically canonicalized; an absent
+or ambiguous citation is logged as a validation failure and never becomes a malformed
+`Finding`.
 
 Findings from different lenses on the same region are **not** deduplicated here —
 cross-lens agreement/disagreement is scoring input for `analyze/` later. Candidates
@@ -22,10 +25,15 @@ from pydantic import BaseModel, Field
 from ..config import Config, get_config
 from ..ingest import latest_snapshot
 from ..llm import LLMClient, get_llm_client
+from ..llm.prompt_security import (
+    PROMPT_SECURITY_VERSION,
+    delimit_repository_evidence,
+    secure_system_prompt,
+)
 from ..map import ArchitectureMap, load_architecture
 from ..sourcefiles import iter_source_files, read_numbered
 from ..store import db
-from ..store.models import FalsificationStatus, Finding, Severity
+from ..store.models import FalsificationStatus, Finding, Severity, ValidationFailure
 from .retrieval import RetrievalIndex
 
 logger = logging.getLogger(__name__)
@@ -38,8 +46,11 @@ LENSES: dict[str, str] = {
 }
 # Prompt version per lens (the v1 lens prompts already request a confidence field, so
 # no _v2 was needed for detect). Exposed for the eval regression record.
-LENS_PROMPT_VERSIONS: dict[str, str] = {name: file[:-3] for name, file in LENSES.items()}
+LENS_PROMPT_VERSIONS: dict[str, str] = {
+    name: f"{file[:-3]}+{PROMPT_SECURITY_VERSION}" for name, file in LENSES.items()
+}
 PROMPT_VERSION = "+".join(LENS_PROMPT_VERSIONS[name] for name in LENSES)
+CITATION_INTEGRITY_VERSION = "citation_integrity_v1"
 _LENS_DIR = Path(__file__).parent / "lenses"
 _LENS_PROMPTS: dict[str, str] = {
     name: (_LENS_DIR / filename).read_text() for name, filename in LENSES.items()
@@ -149,13 +160,23 @@ def run_ensemble(
             completion = llm.call(
                 module="detect",
                 prompt_version=LENS_PROMPT_VERSIONS[lens],
-                system=prompt,
-                user=region,
+                system=secure_system_prompt(prompt),
+                user=delimit_repository_evidence(region),
                 schema=LensFindings,
                 context={"stage": "detect", "repo_id": repo_id, "lens": lens, "file": rel},
             )
             for cand in completion.value.findings:
+                cand = _canonicalize_citation(
+                    cand, index, rel, lens, config
+                )
+                if cand is None:
+                    continue
                 cand, low = _resolve_confidence(cand, lens, prompt, index, repo_id, llm, threshold)
+                cand = _canonicalize_citation(
+                    cand, index, rel, lens, config
+                )
+                if cand is None:
+                    continue
                 persisted.append(
                     _persist_candidate(cand, lens, repo_id, architecture, config, low)
                 )
@@ -184,6 +205,97 @@ def run_ensemble(
         sast.write_empty_artifact("disabled")
         sarif_path, semgrep_status = artifact_path, sast.run_status
     return DetectionRun(persisted, source_counts, sarif_path, semgrep_status)
+
+
+def _same_file(candidate: str, actual: str) -> bool:
+    candidate = candidate.replace("\\", "/")
+    actual = actual.replace("\\", "/")
+    return candidate == actual or candidate.endswith(f"/{actual}") or actual.endswith(
+        f"/{candidate}"
+    )
+
+
+def _log_citation_failure(
+    cand: LensCandidate,
+    lens: str,
+    current_file: str,
+    error: str,
+    config: Config,
+) -> None:
+    db.insert_validation_failure(
+        ValidationFailure(
+            module="detect.citation",
+            prompt_version=(
+                f"{LENS_PROMPT_VERSIONS[lens]}+{CITATION_INTEGRITY_VERSION}"
+            ),
+            raw_response=cand.model_dump_json()[:2000],
+            validation_error=(
+                f"{error}; prompt_region={current_file}; declared_file={cand.file}; "
+                f"declared_lines={cand.line_start}-{cand.line_end}"
+            )[:2000],
+        ),
+        config,
+    )
+
+
+def _canonicalize_citation(
+    cand: LensCandidate,
+    index: RetrievalIndex,
+    current_file: str,
+    lens: str,
+    config: Config,
+) -> LensCandidate | None:
+    """Anchor a verbatim model citation to one deterministic repository location.
+
+    A unique occurrence is canonicalized even when the model copied it from retrieval
+    context but attributed it to the primary prompt file. Ambiguous or absent citations
+    are logged and rejected rather than persisted as malformed Findings.
+    """
+    locations = index.locate_citation(cand.citation_snippet)
+    if not locations:
+        _log_citation_failure(
+            cand, lens, current_file,
+            "verbatim citation does not occur in any indexed source file", config,
+        )
+        return None
+
+    declared = [
+        location for location in locations if _same_file(cand.file, location.file)
+    ]
+    overlapping = [
+        location for location in declared
+        if location.line_start <= cand.line_end and cand.line_start <= location.line_end
+    ]
+    if len(overlapping) == 1:
+        selected = overlapping[0]
+    elif len(declared) == 1:
+        selected = declared[0]
+    elif len(locations) == 1:
+        selected = locations[0]
+    else:
+        _log_citation_failure(
+            cand, lens, current_file,
+            f"verbatim citation is ambiguous across {len(locations)} locations", config,
+        )
+        return None
+
+    updates = {
+        "file": selected.file,
+        "line_start": selected.line_start,
+        "line_end": selected.line_end,
+    }
+    if (
+        not _same_file(cand.file, selected.file)
+        or cand.line_start != selected.line_start
+        or cand.line_end != selected.line_end
+    ):
+        correction = (
+            f"[citation canonicalized by {CITATION_INTEGRITY_VERSION}: "
+            f"{cand.file}:{cand.line_start}-{cand.line_end} -> "
+            f"{selected.file}:{selected.line_start}-{selected.line_end}]"
+        )
+        updates["rationale"] = f"{correction} {cand.rationale or ''}".strip()
+    return cand.model_copy(update=updates)
 
 
 def _run_deterministic_adapters(
@@ -261,9 +373,11 @@ def _resolve_confidence(cand, lens, prompt, index, repo_id, llm, threshold):
     rescore = llm.call(
         module="detect",
         prompt_version=f"{LENS_PROMPT_VERSIONS[lens]}+rescore",
-        system=prompt,
-        user=f"Re-score this single candidate with the added context.\n"
-             f"citation:\n{cand.citation_snippet}{extra}",
+        system=secure_system_prompt(prompt),
+        user=delimit_repository_evidence(
+            f"Re-score this single candidate with the added context.\n"
+            f"citation:\n{cand.citation_snippet}{extra}"
+        ),
         schema=LensFindings,
         context={"stage": "detect", "repo_id": repo_id, "lens": lens, "rescore": True},
     )

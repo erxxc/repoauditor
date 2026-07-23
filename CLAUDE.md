@@ -35,8 +35,10 @@ never a deletion layer — see below.
 - A **Finding** is the atomic unit. It always carries its citation: mandatory
   `file`, `line_range`, and `citation_snippet`, plus a `source_lens` or `source_tool`.
   No finding without a citation.
-- **Severity is never upgraded** without a corroborating source (another lens/tool
-  independently flagging it) or a falsification pass that confirms reachability.
+- **Severity is never upgraded** without independently produced corroboration or a
+  falsification pass that confirms reachability. Tool↔lens agreement and agreement between
+  distinct deterministic tools qualify; multiple prompts from the shared LLM
+  provider/model are correlated multi-lens agreement and do not qualify by themselves.
   Relative claims are never silently converted to absolutes.
 - The **falsify** stage tries to *disprove* each candidate (reachability, mitigating
   control, attacker-controlled input). Confirmed, killed, deferred, and unresolved
@@ -67,6 +69,10 @@ never a deletion layer — see below.
   failure (bounded retry count, never infinite), and writes a `ValidationFailure`
   row to `store/` on exhaustion. Validation failures are never silently swallowed
   — they are as much a logged outcome as a killed finding.
+- **Repository content is untrusted model input.** Source, comments, configuration,
+  retrieved context, citations, and prior model rationales are explicitly delimited as
+  evidence and may never override stage instructions or output schemas. The shared boundary
+  policy is a versioned prompt artifact and must appear in run/eval provenance.
 - **No guessing under low confidence.** Any stage producing a `Finding` or a
   `map/` entity below the configured confidence threshold must not assert it
   outright. It either triggers a broader retrieval pass (more callers/callees/

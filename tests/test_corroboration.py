@@ -15,6 +15,7 @@ from repoauditor.analyze.corroboration import (
     agreement_score,
     corroborate,
 )
+from repoauditor.matching import has_independent_corroboration
 from repoauditor.store import db
 from repoauditor.store.models import Finding, SourceType
 
@@ -136,6 +137,25 @@ def test_agreement_score_independence_weighting():
     # Independence dominates count: a cross-class *pair* beats a same-class *trio*.
     assert cross_pair > same_trio
     assert same_trio > same_pair
+
+
+def test_shared_model_lenses_agree_but_are_not_independent():
+    sources = {
+        SourceRef(SourceType.LENS, "owasp"),
+        SourceRef(SourceType.LENS, "supply-chain"),
+    }
+
+    assert agreement_score(sources) > 0
+    assert has_independent_corroboration(sources) is False
+
+
+def test_distinct_tools_or_tool_lens_are_independent():
+    semgrep = SourceRef(SourceType.TOOL, "semgrep")
+    gitleaks = SourceRef(SourceType.TOOL, "gitleaks")
+    lens = SourceRef(SourceType.LENS, "owasp")
+
+    assert has_independent_corroboration({semgrep, gitleaks}) is True
+    assert has_independent_corroboration({semgrep, lens}) is True
 
 
 # --------------------------------------------------------------------------- #

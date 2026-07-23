@@ -35,6 +35,7 @@ from pathlib import Path
 from ..analyze.deal_risk import weigh_deal_risk
 from ..analyze.risk_quant import QuantificationArtifacts, generate_appendix
 from ..config import Config, get_config
+from ..matching import SourceRef, has_independent_corroboration, source_of
 from ..review import open_review_requests
 from ..store import db
 from ..store.models import DealRisk, Finding
@@ -59,8 +60,8 @@ _METHODOLOGY = (
     "exposure, remediation burden, and representation-&-warranty relevance — not by raw "
     "technical severity, so the memo reflects what matters to the transaction rather than the "
     "engineering backlog. Each highlighted finding's validation basis is disclosed beside "
-    "it: independent "
-    "cross-source corroboration, falsification confirmation, or analyst review. Severity is "
+    "it: independently produced corroboration, correlated multi-lens agreement, "
+    "falsification confirmation, or analyst review. Severity is "
     "never asserted without a corroborating source or a confirmed reachability pass, and "
     "anything the pipeline could not resolve is "
     "withheld pending human review (it does not appear above). The loss figures in the "
@@ -83,7 +84,16 @@ def _band_label(dr: DealRisk) -> str:
 def _validation_basis(finding: Finding) -> str:
     if finding.corroborated_by:
         sources = sorted({item.source_name for item in finding.corroborated_by})
-        return "independently corroborated" + (f" ({', '.join(sources)})" if sources else "")
+        source_refs = {source_of(finding)} | {
+            SourceRef(item.source_type, item.source_name)
+            for item in finding.corroborated_by
+        }
+        label = (
+            "independently corroborated"
+            if has_independent_corroboration(source_refs)
+            else "multi-lens agreement (shared model lineage)"
+        )
+        return label + (f" ({', '.join(sources)})" if sources else "")
     if finding.falsification_status.value == "confirmed":
         return "confirmed by falsification"
     return "released by analyst review"

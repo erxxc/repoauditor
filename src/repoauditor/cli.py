@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import getpass
 import io
+import json
 import sys
 import threading
 import time
@@ -27,7 +28,7 @@ from . import __version__
 from .analyze import quantify_appendix
 from .config import get_config
 from .detect import DetectionRun, run_ensemble
-from .detect.ensemble import LENS_PROMPT_VERSIONS
+from .detect.ensemble import CITATION_INTEGRITY_VERSION, LENS_PROMPT_VERSIONS
 from .falsify import challenge
 from .falsify.challenger import (
     CONTEXT_VERSION as FALSIFY_CONTEXT_VERSION,
@@ -41,6 +42,11 @@ from .map import recover_architecture
 from .map.domain_map import PROMPT_VERSION as MAP_PROMPT_VERSION
 from .normalize import adjudicate_repo
 from .normalize.adjudicate import PROMPT_VERSION as NORMALIZE_PROMPT_VERSION
+from .observability import (
+    detection_metrics,
+    falsification_metrics,
+    normalization_metrics,
+)
 from .preflight import PreflightResult, check_model, check_runtime
 from .presentation import ndjson_event, repos_json, repos_table, review_requests_json
 from .report import write_backlog, write_memo
@@ -51,7 +57,11 @@ from .review import (
     render_open_requests,
 )
 from .store import db
-from .store.models import ReviewDisposition, RunStatus, TriageAssessmentOutcome
+from .store.models import (
+    ReviewDisposition,
+    RunStatus,
+    TriageDisposition,
+)
 from .triage import (
     assess_finding,
     collection_status,
@@ -88,11 +98,19 @@ class ReportMode(StrEnum):
 
 
 class LabelDisposition(StrEnum):
-    """Analyst disposition; uncertain records an abstention, not a training label."""
+    """Detailed analyst ground truth plus legacy binary aliases."""
 
     TRUE_POSITIVE = "true_positive"
     FALSE_POSITIVE = "false_positive"
     UNCERTAIN = "uncertain"
+    CONFIRMED_ACTIONABLE = "confirmed_actionable"
+    TOOL_INCORRECT = "tool_incorrect"
+    UNREACHABLE = "unreachable"
+    NOT_ATTACKER_CONTROLLED = "not_attacker_controlled"
+    MITIGATED = "mitigated"
+    DUPLICATE = "duplicate"
+    VALID_NOT_ACTIONABLE = "valid_not_actionable"
+    INSUFFICIENT_EVIDENCE = "insufficient_evidence"
 
 
 class ListFormat(StrEnum):
@@ -122,6 +140,18 @@ def _elapsed(seconds: float) -> str:
         return f"{seconds:.1f}s"
     minutes, remainder = divmod(seconds, 60)
     return f"{int(minutes)}m {remainder:.1f}s"
+
+
+def _stored_elapsed(started_at: str | None, completed_at: str | None) -> str:
+    if not started_at or not completed_at:
+        return "-"
+    try:
+        return _elapsed(
+            (datetime.fromisoformat(completed_at) - datetime.fromisoformat(started_at))
+            .total_seconds()
+        )
+    except ValueError:
+        return "unavailable"
 
 
 @contextmanager
@@ -756,7 +786,14 @@ def triage(
 def triage_label(
     finding_id: int = typer.Argument(..., help="Finding id to label (from `triage` output)."),
     disposition: LabelDisposition = typer.Option(
-        ..., "--disposition", help="true_positive | false_positive | uncertain."
+        ...,
+        "--disposition",
+        help=(
+            "confirmed_actionable | tool_incorrect | unreachable | "
+            "not_attacker_controlled | mitigated | duplicate | "
+            "valid_not_actionable | insufficient_evidence. Legacy "
+            "true_positive/false_positive/uncertain remain accepted."
+        ),
     ),
     rationale: str = typer.Option(
         ..., "--rationale", "--note", help="Required analyst rationale (audited)."
@@ -770,9 +807,19 @@ def triage_label(
 ) -> None:
     """Record a reasoned analyst assessment; uncertain assessments do not train."""
     try:
+        legacy = {
+            LabelDisposition.TRUE_POSITIVE: TriageDisposition.CONFIRMED_ACTIONABLE,
+            LabelDisposition.FALSE_POSITIVE: TriageDisposition.TOOL_INCORRECT,
+            LabelDisposition.UNCERTAIN: TriageDisposition.INSUFFICIENT_EVIDENCE,
+        }
+        detailed = (
+            legacy[disposition]
+            if disposition in legacy
+            else TriageDisposition(disposition.value)
+        )
         assessment, label = assess_finding(
             finding_id,
-            TriageAssessmentOutcome(disposition.value),
+            detailed,
             rationale,
             analyst or getpass.getuser(),
             dimension,
@@ -784,13 +831,13 @@ def triage_label(
     if label is None:
         typer.echo(
             f"recorded assessment #{assessment.id}: finding #{finding_id} remains "
-            "uncertain and was excluded from classifier training."
+            f"{assessment.disposition.value} and was excluded from classifier training."
         )
         return
     verdict = "true positive" if label.actionable else "false positive"
     typer.echo(
         f"recorded assessment #{assessment.id}; labelled finding #{finding_id} as "
-        f"{verdict} (rule {label.rule_id}, "
+        f"{verdict} ({assessment.disposition.value}; rule {label.rule_id}, "
         f"engagement {label.engagement}) — manual label takes precedence over derived."
     )
 
@@ -989,7 +1036,7 @@ def run(
             "detect", lambda: _detect_stage(repo_id, config),
             lambda value: (
                 {
-                    "source_counts": value.source_counts,
+                    **detection_metrics(value, value.source_counts),
                     "semgrep_status": value.semgrep_status,
                     "scanner_coverage": {
                         "checked": preflight.scanners_checked,
@@ -998,7 +1045,10 @@ def run(
                     "llm": {
                         "provider": config.llm.provider,
                         "model": config.model.name,
-                        "prompt_versions": dict(LENS_PROMPT_VERSIONS),
+                        "prompt_versions": {
+                            **LENS_PROMPT_VERSIONS,
+                            "citation_integrity": CITATION_INTEGRITY_VERSION,
+                        },
                     },
                 },
                 [str(value.sarif_path)] if value.sarif_path else [],
@@ -1017,6 +1067,8 @@ def run(
             "triage", lambda: _triage_stage(repo_id, config, sarif=detection.sarif_path),
             lambda value: ({
                 "real_labels": getattr(value, "n_real_labels", None),
+                "ranked": len(getattr(value, "ranked", []) or []),
+                "action_threshold": getattr(value, "action_threshold", None),
                 "synthetic_share": getattr(value, "synthetic_share", None),
                 "synthetic_dropped": getattr(value, "synthetic_dropped", None),
                 "suppressed": getattr(value, "n_suppressed", None),
@@ -1039,6 +1091,7 @@ def run(
         step(
             "falsify", lambda: _falsify_stage(repo_id, config),
             lambda value: ({
+                **falsification_metrics(value, getattr(value, "deferred_count", 0)),
                 "llm": {
                     "provider": config.llm.provider,
                     "model": config.model.name,
@@ -1054,6 +1107,7 @@ def run(
         step(
             "normalize", lambda: _normalize_stage(repo_id, config),
             lambda value: ({
+                **normalization_metrics(value),
                 "llm": {
                     "provider": config.llm.provider,
                     "model": config.model.name,
@@ -1067,6 +1121,10 @@ def run(
             lambda: raise_review_requests(
                 repo_id, config, sampling_run_id=pipeline.id
             ),
+            lambda value: ({
+                "requests_raised_or_refreshed": len(value),
+                "open_requests": len(open_review_requests(repo_id, config)),
+            }, []),
         )
 
     requests = open_review_requests(repo_id, config)
@@ -1150,10 +1208,14 @@ def runs_show(run_id: int = typer.Argument(..., help="Pipeline run id.")) -> Non
         typer.echo(f"failure at {item.failed_stage}: {item.failure_detail}")
     for stage in db.list_stage_runs(run_id, config):
         detail = f"; failure={stage.failure_detail}" if stage.failure_detail else ""
+        elapsed = _stored_elapsed(stage.started_at, stage.completed_at)
         typer.echo(
             f"  {stage.stage}: {stage.status.value}; started={stage.started_at}; "
-            f"completed={stage.completed_at or '-'}; artifacts={stage.artifacts}{detail}"
+            f"completed={stage.completed_at or '-'}; elapsed={elapsed}; "
+            f"artifacts={stage.artifacts}{detail}"
         )
+        if stage.summary:
+            typer.echo("    summary: " + json.dumps(stage.summary, sort_keys=True))
     if item.artifacts:
         typer.echo("artifacts: " + ", ".join(item.artifacts))
 

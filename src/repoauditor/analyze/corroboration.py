@@ -13,22 +13,24 @@ split is safe given the pipeline ordering.
 
 Agreement scoring — weighting rationale
 ---------------------------------------
-For a matched group, an independence-weighted corroboration score in [0, 1] from two signals:
-how *many* distinct sources agree (breadth) and how *independent* they are (diversity). This
+For a matched group, a mechanism-diversity-weighted agreement score in [0, 1] from two
+signals: how *many* named sources agree (breadth) and whether they span method classes
+(diversity). This
 is our own design choice — no single published constant is being copied, so per the "cite the
-published method" convention it is stated as such, with its lineage. Deterministic tools and
-LLM lenses fail in *decorrelated* ways (a SAST tool's false positives are pattern-driven, an
-LLM lens's are reasoning-driven), so agreement *across* the tool↔lens divide is stronger
-evidence than agreement *within* one method class (two lenses can share a correlated blind
-spot; two tools a rule lineage). This mirrors the classical ensemble result that error
+published method" convention it is stated as such, with its lineage. Tool↔lens agreement is
+treated as more diverse than agreement within one method class. This is a relative evidence
+weight, not a statistical-independence claim: LLM lenses share a model/retrieval lineage,
+and deterministic tools can share rule ancestry. This mirrors the classical ensemble result
+that error
 *diversity*, not member count, drives reliability (Kuncheva, *Combining Pattern Classifiers*,
 2004; Dietterich, "Ensemble Methods in Machine Learning", 2000). Concretely:
 
-    independence = 1.0 if the group spans both a tool and a lens, else 0.5
-    breadth      = 1 - 1/n           (n = distinct sources; grows, saturates < 1)
-    score        = independence * breadth
+    diversity = 1.0 if the group spans both a tool and a lens, else 0.5
+    breadth   = 1 - 1/n           (n = named sources; grows, saturates < 1)
+    score     = diversity * breadth
 
-so a tool+lens pair (0.50) outscores a same-class trio (0.33): independence dominates count.
+so a tool+lens pair (0.50) outscores a same-class trio (0.33): mechanism diversity
+dominates count.
 
 `store/` owns all persistence: reads via `db.list_findings`, writes only through
 `db.add_corroboration`.
@@ -99,9 +101,9 @@ def agreement_score(sources: set[SourceRef]) -> float:
         return 0.0
     has_tool = any(s.source_type is SourceType.TOOL for s in sources)
     has_lens = any(s.source_type is SourceType.LENS for s in sources)
-    independence = 1.0 if (has_tool and has_lens) else 0.5
+    diversity = 1.0 if (has_tool and has_lens) else 0.5
     breadth = 1.0 - 1.0 / n
-    return round(independence * breadth, 4)
+    return round(diversity * breadth, 4)
 
 
 # --------------------------------------------------------------------------- #

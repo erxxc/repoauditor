@@ -16,6 +16,9 @@ from ..config import Config, get_config
 from .models import (
     AdjudicationDebate,
     Corroboration,
+    ClaimVerification,
+    ClaimVerificationStatus,
+    ClaimEvidence,
     DealRisk,
     DebatePosition,
     Entity,
@@ -34,11 +37,13 @@ from .models import (
     RunStatus,
     ScenarioInput,
     RulePrior,
+    SecurityClaim,
     SimulationRun,
     StageRun,
     TriageFeatureRecord,
     TriageAssessment,
     TriageAssessmentOutcome,
+    TriageDisposition,
     TriageLabel,
     TriageLabelSource,
     TriageModelRun,
@@ -783,7 +788,7 @@ def list_entities(repo_id: str, config: Config | None = None) -> list[Entity]:
 # Reliability layer: validation failures + eval runs
 # --------------------------------------------------------------------------- #
 def insert_validation_failure(vf: ValidationFailure, config: Config | None = None) -> int:
-    """Log an exhausted parse/validation retry from `llm/client.py`."""
+    """Log an exhausted parse/schema retry or semantic citation failure."""
     conn = get_connection(config)
     try:
         with conn:
@@ -945,10 +950,11 @@ def insert_triage_assessment(
         with conn:
             cur = conn.execute(
                 "INSERT INTO triage_assessment "
-                "(finding_id, engagement, outcome, rationale, analyst, dimensions) "
-                "VALUES (?, ?, ?, ?, ?, ?)",
+                "(finding_id, engagement, outcome, disposition, rationale, analyst, dimensions) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?)",
                 (
                     assessment.finding_id, assessment.engagement, str(assessment.outcome),
+                    str(assessment.disposition) if assessment.disposition else None,
                     assessment.rationale, assessment.analyst,
                     json.dumps(assessment.dimensions),
                 ),
@@ -974,6 +980,9 @@ def list_triage_assessments(
         return [TriageAssessment(
             id=row["id"], finding_id=row["finding_id"], engagement=row["engagement"],
             outcome=TriageAssessmentOutcome(row["outcome"]), rationale=row["rationale"],
+            disposition=(
+                TriageDisposition(row["disposition"]) if row["disposition"] else None
+            ),
             analyst=row["analyst"], dimensions=json.loads(row["dimensions"]),
             created_at=row["created_at"],
         ) for row in rows]
@@ -1975,6 +1984,157 @@ def list_falsification_iterations(
                 committed=bool(r["committed"]),
             )
             for r in rows
+        ]
+    finally:
+        conn.close()
+
+
+# --------------------------------------------------------------------------- #
+# Falsify layer: structured claims + deterministic verification
+# --------------------------------------------------------------------------- #
+def upsert_security_claim(
+    claim: SecurityClaim, config: Config | None = None
+) -> int:
+    """Persist one claim version per finding, refreshing its deterministic evidence."""
+    conn = get_connection(config)
+    try:
+        with conn:
+            conn.execute(
+                "INSERT INTO security_claim "
+                "(finding_id, claim_version, mechanism, source_evidence, sink_evidence, "
+                " path_nodes, path_predicates, control_candidate, producer_type, "
+                " producer_name, prompt_version) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
+                "ON CONFLICT (finding_id, claim_version) DO UPDATE SET "
+                "mechanism=excluded.mechanism, source_evidence=excluded.source_evidence, "
+                "sink_evidence=excluded.sink_evidence, path_nodes=excluded.path_nodes, "
+                "path_predicates=excluded.path_predicates, "
+                "control_candidate=excluded.control_candidate, "
+                "producer_type=excluded.producer_type, producer_name=excluded.producer_name, "
+                "prompt_version=excluded.prompt_version",
+                (
+                    claim.finding_id,
+                    claim.claim_version,
+                    claim.mechanism,
+                    json.dumps([item.model_dump() for item in claim.source_evidence]),
+                    json.dumps(claim.sink_evidence.model_dump())
+                    if claim.sink_evidence else None,
+                    json.dumps([item.model_dump() for item in claim.path_nodes]),
+                    json.dumps(claim.path_predicates),
+                    json.dumps(claim.control_candidate.model_dump())
+                    if claim.control_candidate else None,
+                    claim.producer_type,
+                    claim.producer_name,
+                    claim.prompt_version,
+                ),
+            )
+            row = conn.execute(
+                "SELECT id FROM security_claim WHERE finding_id = ? AND claim_version = ?",
+                (claim.finding_id, claim.claim_version),
+            ).fetchone()
+        return int(row["id"])
+    finally:
+        conn.close()
+
+
+def list_security_claims(
+    finding_id: int, config: Config | None = None
+) -> list[SecurityClaim]:
+    conn = get_connection(config)
+    try:
+        rows = conn.execute(
+            "SELECT * FROM security_claim WHERE finding_id = ? ORDER BY id",
+            (finding_id,),
+        ).fetchall()
+        return [
+            SecurityClaim(
+                id=row["id"],
+                finding_id=row["finding_id"],
+                claim_version=row["claim_version"],
+                mechanism=row["mechanism"],
+                source_evidence=[
+                    ClaimEvidence(**item) for item in json.loads(row["source_evidence"])
+                ],
+                sink_evidence=(
+                    ClaimEvidence(**json.loads(row["sink_evidence"]))
+                    if row["sink_evidence"] else None
+                ),
+                path_nodes=[
+                    ClaimEvidence(**item) for item in json.loads(row["path_nodes"])
+                ],
+                path_predicates=json.loads(row["path_predicates"]),
+                control_candidate=(
+                    ClaimEvidence(**json.loads(row["control_candidate"]))
+                    if row["control_candidate"] else None
+                ),
+                producer_type=row["producer_type"],
+                producer_name=row["producer_name"],
+                prompt_version=row["prompt_version"],
+                created_at=row["created_at"],
+            )
+            for row in rows
+        ]
+    finally:
+        conn.close()
+
+
+def upsert_claim_verification(
+    verification: ClaimVerification, config: Config | None = None
+) -> int:
+    """Persist one result per claim/verifier version, idempotently."""
+    conn = get_connection(config)
+    try:
+        with conn:
+            conn.execute(
+                "INSERT INTO claim_verification "
+                "(claim_id, status, verifier_name, verifier_version, checks, reason) "
+                "VALUES (?, ?, ?, ?, ?, ?) "
+                "ON CONFLICT (claim_id, verifier_name, verifier_version) DO UPDATE SET "
+                "status=excluded.status, checks=excluded.checks, reason=excluded.reason",
+                (
+                    verification.claim_id,
+                    str(verification.status),
+                    verification.verifier_name,
+                    verification.verifier_version,
+                    json.dumps(verification.checks),
+                    verification.reason,
+                ),
+            )
+            row = conn.execute(
+                "SELECT id FROM claim_verification WHERE claim_id = ? "
+                "AND verifier_name = ? AND verifier_version = ?",
+                (
+                    verification.claim_id,
+                    verification.verifier_name,
+                    verification.verifier_version,
+                ),
+            ).fetchone()
+        return int(row["id"])
+    finally:
+        conn.close()
+
+
+def list_claim_verifications(
+    claim_id: int, config: Config | None = None
+) -> list[ClaimVerification]:
+    conn = get_connection(config)
+    try:
+        rows = conn.execute(
+            "SELECT * FROM claim_verification WHERE claim_id = ? ORDER BY id",
+            (claim_id,),
+        ).fetchall()
+        return [
+            ClaimVerification(
+                id=row["id"],
+                claim_id=row["claim_id"],
+                status=ClaimVerificationStatus(row["status"]),
+                verifier_name=row["verifier_name"],
+                verifier_version=row["verifier_version"],
+                checks=json.loads(row["checks"]),
+                reason=row["reason"],
+                created_at=row["created_at"],
+            )
+            for row in rows
         ]
     finally:
         conn.close()

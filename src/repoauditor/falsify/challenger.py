@@ -39,18 +39,27 @@ from ..store.models import (
     severity_rank,
 )
 from ..detect.retrieval import RetrievalIndex
+from ..llm.prompt_security import (
+    PROMPT_SECURITY_VERSION,
+    delimit_repository_evidence,
+    secure_system_prompt,
+)
 
 # Re-exported: the model's structured output shape for a falsification verdict.
 from .outcome import FalsificationOutcome, SelfCritique
+from .claims import claim_from_slice, verify_structural_claim
+from .slicing import PythonSliceEvidence, build_python_slice
 
-PROMPT_VERSION = "falsification_v2"
-PROMPT = (Path(__file__).parent / "prompts" / f"{PROMPT_VERSION}.md").read_text()
+_PROMPT_ARTIFACT = "falsification_v2"
+PROMPT_VERSION = f"{_PROMPT_ARTIFACT}+{PROMPT_SECURITY_VERSION}"
+PROMPT = (Path(__file__).parent / "prompts" / f"{_PROMPT_ARTIFACT}.md").read_text()
 
-CRITIQUE_PROMPT_VERSION = "falsification_selfcritique_v1"
+_CRITIQUE_PROMPT_ARTIFACT = "falsification_selfcritique_v1"
+CRITIQUE_PROMPT_VERSION = f"{_CRITIQUE_PROMPT_ARTIFACT}+{PROMPT_SECURITY_VERSION}"
 CRITIQUE_PROMPT = (
-    Path(__file__).parent / "prompts" / f"{CRITIQUE_PROMPT_VERSION}.md"
+    Path(__file__).parent / "prompts" / f"{_CRITIQUE_PROMPT_ARTIFACT}.md"
 ).read_text()
-CONTEXT_VERSION = "falsification_context_v2"
+CONTEXT_VERSION = "falsification_context_v3"
 
 _TERMINAL = (FalsificationStatus.CONFIRMED, FalsificationStatus.KILLED)
 _REFERENCE_TOKEN_RE = re.compile(r"\b(?:[A-Z][A-Z0-9_]{3,}|[A-Za-z_]\w*_bp)\b")
@@ -88,6 +97,7 @@ def _falsification_context(
     finding: Finding,
     architecture: ArchitectureMap,
     iteration: int,
+    slice_evidence: PythonSliceEvidence | None = None,
 ) -> str:
     """Gather deterministic evidence with a genuinely broader strategy each round."""
     if index is None:
@@ -104,6 +114,10 @@ def _falsification_context(
         )
         if excerpt is not None:
             sections.append(_format_context("LOCAL SOURCE", [excerpt]))
+    if slice_evidence is None:
+        slice_evidence = build_python_slice(index, finding)
+    if slice_evidence is not None:
+        sections.append(slice_evidence.render())
 
     if iteration >= 2:
         related = []
@@ -205,6 +219,13 @@ def challenge_finding(
     threshold = config.llm.confidence_threshold
     max_iterations = max(1, config.falsify.max_iterations)
     boundary = _boundary_name(architecture, finding)
+    slice_evidence = build_python_slice(index, finding) if index is not None else None
+    if slice_evidence is not None and finding.id is not None:
+        claim = claim_from_slice(finding.id, slice_evidence)
+        claim_id = db.upsert_security_claim(claim, config)
+        claim = claim.model_copy(update={"id": claim_id})
+        verification = verify_structural_claim(claim, slice_evidence)
+        db.upsert_claim_verification(verification, config)
 
     last_verdict: FalsificationOutcome | None = None
     last_critique: SelfCritique | None = None
@@ -212,15 +233,17 @@ def challenge_finding(
     for iteration in range(1, max_iterations + 1):
         # OBSERVE — gather evidence, broadening the retrieval window each round.
         evidence_block = _falsification_context(
-            index, finding, architecture, iteration
+            index, finding, architecture, iteration, slice_evidence
         )
 
         # THINK / ACT — form a verdict against the current evidence.
         verdict_completion = llm.call(
             module="falsify",
             prompt_version=PROMPT_VERSION,
-            system=PROMPT,
-            user=_verdict_prompt(finding, boundary, evidence_block),
+            system=secure_system_prompt(PROMPT),
+            user=delimit_repository_evidence(
+                _verdict_prompt(finding, boundary, evidence_block)
+            ),
             schema=FalsificationOutcome,
             context={
                 "stage": "falsify", "repo_id": finding.repo_id,
@@ -235,8 +258,10 @@ def challenge_finding(
             critique_completion = llm.call(
                 module="falsify",
                 prompt_version=CRITIQUE_PROMPT_VERSION,
-                system=CRITIQUE_PROMPT,
-                user=_critique_prompt(finding, verdict, evidence_block),
+                system=secure_system_prompt(CRITIQUE_PROMPT),
+                user=delimit_repository_evidence(
+                    _critique_prompt(finding, verdict, evidence_block)
+                ),
                 schema=SelfCritique,
                 context={
                     "stage": "falsify", "repo_id": finding.repo_id,

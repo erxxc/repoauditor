@@ -5,9 +5,9 @@ stage, because it is used at **two** points in the pipeline and must give the *s
 at both:
 
   * `normalize/adjudicate.py` — to license a severity upgrade before a finding reaches
-    `review/`. Two independent sources flagging the same issue is one of the two things that
-    license keeping the higher end of a severity range (the other being a falsification pass
-    confirming reachability, per CLAUDE.md).
+    `review/`. Two independently produced signals flagging the same issue is one of the two
+    things that license keeping the higher end of a severity range (the other being a
+    falsification pass confirming reachability, per CLAUDE.md).
   * `analyze/corroboration.py` — to score cross-source agreement *downstream* of review, for
     the confidence narrative. It never changes severity.
 
@@ -32,6 +32,12 @@ Whether a matched group is *corroboration* (≥2 distinct sources) or a *duplica
 reported twice) is a caller-side interpretation via `MatchGroup.distinct_sources` — so the
 same grouping serves normalize's licensing and analyze's scoring without either re-deciding
 what "the same issue" means.
+
+Different prompts executed by the shared LLM ensemble are distinct lenses, but not
+independent producers: they share the same provider/model, retrieval context, and calling
+path. `has_independent_corroboration` therefore requires either a tool↔lens combination or
+two distinct deterministic tools. Lens↔lens agreement remains useful and visible as
+multi-lens agreement, but cannot by itself license a severity upgrade.
 
 Pure logic, no I/O.
 """
@@ -64,6 +70,17 @@ def source_of(finding: Finding) -> SourceRef:
     if finding.source_tool is not None:
         return SourceRef(SourceType.TOOL, finding.source_tool)
     return SourceRef(SourceType.LENS, finding.source_lens or "unknown")
+
+
+def has_independent_corroboration(sources: set[SourceRef]) -> bool:
+    """Whether a source set spans independently produced evidence.
+
+    All LLM lenses belong to one producer family even when their prompt names differ.
+    Distinct deterministic tools are treated as separate producers, as is a tool↔lens pair.
+    """
+    tools = {source.source_name for source in sources if source.source_type is SourceType.TOOL}
+    has_lens = any(source.source_type is SourceType.LENS for source in sources)
+    return len(tools) >= 2 or (bool(tools) and has_lens)
 
 
 def cwes_of(finding: Finding) -> set[str]:
@@ -156,8 +173,13 @@ class MatchGroup:
 
     @property
     def is_corroborated(self) -> bool:
-        """True iff ≥2 *distinct* sources flagged this issue (a duplicate is not corroboration)."""
+        """True iff ≥2 named sources agree (including correlated multi-lens agreement)."""
         return len(self.distinct_sources) >= 2
+
+    @property
+    def has_independent_corroboration(self) -> bool:
+        """True only when agreement spans independently produced evidence."""
+        return has_independent_corroboration(self.distinct_sources)
 
     def corroborating_sources(self) -> set[SourceRef]:
         """Distinct sources other than the representative's own."""

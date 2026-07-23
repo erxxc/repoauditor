@@ -1,5 +1,10 @@
 # Triage accuracy and nonstandard-finding roadmap
 
+The persisted ground-truth meanings and evaluation-denominator rules are defined in
+[adjudication-taxonomy.md](adjudication-taxonomy.md).
+The separate [agentic escalation gate](agentic-escalation-gate.md) records why autonomous
+tool-use remains deferred until usage accounting and recall-safe evaluation exist.
+
 Status: active. This document is the durable execution plan for improving triage accuracy
 without presenting synthetic performance as real-world evidence.
 

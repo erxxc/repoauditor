@@ -67,6 +67,8 @@ def test_pre_methodology_database_migrates_without_losing_audit_data(
         "0013_scenario_run_link.sql", "0014_triage_score_provenance.sql",
         "0015_triage_score_history.sql",
         "0016_triage_assessment.sql",
+        "0017_triage_disposition.sql",
+        "0018_security_claims.sql",
     ]
 
     assert db.list_findings("r", tmp_config)[0].id == finding_id

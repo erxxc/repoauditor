@@ -44,6 +44,37 @@ def _base_evidence(finding: Finding, boundaries: dict[int, str]) -> dict:
     }
 
 
+def _attach_security_claims(evidence: dict, finding: Finding, config: Config) -> None:
+    claims = db.list_security_claims(finding.id, config) if finding.id is not None else []
+    if claims:
+        evidence["security_claims"] = []
+        for claim in claims:
+            verifications = db.list_claim_verifications(claim.id, config)
+            evidence["security_claims"].append({
+                "claim_id": claim.id,
+                "claim_version": claim.claim_version,
+                "mechanism": claim.mechanism,
+                "sources": [item.model_dump() for item in claim.source_evidence],
+                "sink": claim.sink_evidence.model_dump() if claim.sink_evidence else None,
+                "path_nodes": [item.model_dump() for item in claim.path_nodes],
+                "path_predicates": claim.path_predicates,
+                "control_candidate": (
+                    claim.control_candidate.model_dump()
+                    if claim.control_candidate else None
+                ),
+                "verifications": [
+                    {
+                        "status": str(item.status),
+                        "verifier": item.verifier_name,
+                        "version": item.verifier_version,
+                        "checks": item.checks,
+                        "reason": item.reason,
+                    }
+                    for item in verifications
+                ],
+            })
+
+
 def _unresolved_request(
     finding: Finding, boundaries: dict[int, str], config: Config
 ) -> ReviewRequest:
@@ -55,6 +86,7 @@ def _unresolved_request(
     the reasoning, not just the verdict.
     """
     evidence = _base_evidence(finding, boundaries)
+    _attach_security_claims(evidence, finding, config)
 
     iterations = db.list_falsification_iterations(finding.id, config)
     if iterations:

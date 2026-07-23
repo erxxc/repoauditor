@@ -199,20 +199,41 @@ tests/
   `source_tool`, `confidence`, `severity`, `falsification_status`
   (confirmed/killed/unresolved), `corroborated_by` (list of other
   lenses/tools that independently flagged it).
+- LLM citations are semantically validated before a Finding is persisted: the
+  verbatim snippet must resolve to repository source. A unique location
+  canonicalizes an incorrect model-supplied file/range; absent or ambiguous
+  snippets are logged as `ValidationFailure` records and rejected.
+- Python SQLi/command-injection/SSRF falsification can consume a deterministic,
+  intraprocedural def-use evidence slice. Its contract is deliberately non-authoritative:
+  reachability, path feasibility, attacker control, and sanitizer effectiveness remain
+  unproven; unsupported or dynamic dependencies are explicitly `incomplete`.
+- **SecurityClaim / ClaimVerification** — an idempotent, structured audit trail for
+  source/sink/path-node/control-candidate facts and their verifier/version. `verified` is
+  narrowly structural and never means exploitable; `incomplete` preserves missing or
+  dynamic dependencies. These records are attached to unresolved review evidence but do
+  not change the falsification verdict.
 - **TrustBoundary** / **EntryPoint** / **DataStore** / **Integration** —
   output of the `map/` stage, referenced by findings via foreign key so
   every finding is traceable back to *why it matters architecturally*, not
   just *what pattern matched*.
-- Severity is never upgraded without a corroborating source or a
-  falsification pass confirming reachability — direct carryover of
+- Severity is never upgraded without independently produced corroboration or a
+  falsification pass confirming reachability. Tool↔lens agreement and distinct
+  deterministic-tool agreement qualify; shared-model multi-lens agreement remains visible
+  but is correlated and cannot license an upgrade by itself. This is a direct carryover of
   semianalyst's "relative claims never converted to absolutes" rule.
-- **ValidationFailure** — logs every exhausted parse/validation retry from
-  `llm/client.py`: which module called it, which prompt version, the raw
+- **ValidationFailure** — logs every exhausted parse/schema retry from
+  `llm/client.py` and semantic citation failure from `detect/`: which module
+  raised it, which prompt/validator version, the raw
   (truncated) response, and the validation error. This is the structured-
   output reliability trail — nothing gets silently retried into oblivion.
 - **EvalRun** — one row per golden-harness execution: prompt versions used
   across all stages, precision/recall against the benchmark corpus, and a
   `regressed_from_prior` flag computed by `eval/regression.py`.
+- **StageRun.summary** — descriptive funnel evidence captured at stage boundaries:
+  raw/unique candidates and duplicate amplification, triage suppression/evaluation
+  context, falsification outcomes, normalization abstentions, and review-request counts.
+  It never changes a verdict. Model usage/cost remains explicitly unavailable until a
+  backend returns authoritative provider usage rather than an estimate.
 - **TriageLabel** — disposition (true/false positive) on a past finding, keyed
   by rule ID and engagement. Accumulates across engagements, not just within one
   — the label store the classifier learns from over time. `source` records

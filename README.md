@@ -272,15 +272,32 @@ checkpoint and proceeds to final reports.
 `repoauditor` treats scanner and model output as candidate evidence, not as an automatic
 verdict. The decision path is deliberately staged:
 
-1. **Detection gathers independent signals.** Model lenses and deterministic scanners
+1. **Detection gathers attributed signals.** Model lenses and deterministic scanners
    contribute findings with source attribution and code citations. Multiple reports of the
-   same issue are retained as corroborating evidence rather than counted as separate risks.
+   same issue are retained as agreement evidence rather than counted as separate risks.
+   Shared-model lenses are explicitly treated as correlated multi-lens agreement; only
+   different evidence mechanisms or distinct deterministic tools count as independent
+   corroboration.
+   Model citations must resolve exactly to repository source before persistence: a unique
+   location corrects a misattributed file/range, while absent or ambiguous citations are
+   logged and rejected rather than becoming malformed findings.
+   Repository-controlled text is delimited as untrusted evidence at detect and falsify
+   model boundaries; comments or docstrings that resemble instructions cannot replace the
+   stage policy or output contract.
 2. **Triage ranks actionability.** The classifier estimates `P(actionable)` and records its
    feature attribution. This probability represents uncertainty that a finding is real and
    useful—not technical severity and not an expected incident frequency.
 3. **Falsification challenges the candidate.** A bounded evidence loop checks reachability,
    attacker control, and mitigating controls. It confirms, kills, defers, or leaves the
    candidate unresolved; it never silently drops an inconclusive result.
+   For Python SQL injection, command injection, and SSRF candidates, a deterministic local
+   def-use slice adds source/assignment/sink and possible-control evidence. The slice is
+   explicitly non-authoritative: it does not prove reachability, path feasibility, attacker
+   control, or sanitizer effectiveness, and unsupported/dynamic flows are marked incomplete.
+   Supported slices also produce an idempotent structured `SecurityClaim` plus a
+   `ClaimVerification` audit record. A `verified` claim means only that local source,
+   assignment-chain, and sink facts were structurally observed; review evidence states
+   explicitly that exploitability and end-to-end reachability remain unverified.
 4. **Normalization reconciles evidence.** Findings that refer to the same underlying issue
    are grouped, source disagreements are adjudicated, and unresolved cases become review
    requests.
@@ -328,9 +345,12 @@ uv run repoauditor triage-label <finding-id> \
   --dimension authorization
 ```
 
-`uncertain` assessments are retained in an append-only audit history but never enter model
-training. For `true_positive` or `false_positive`, the assessment also updates the effective
-manual label. Repeat `--dimension` with analyst-verified coverage descriptors such as
+Detailed dispositions distinguish tool error, unreachable paths, absent attacker control,
+effective mitigations, duplicates, and technically valid-but-non-actionable issues; see the
+[adjudication taxonomy and evaluation protocol](docs/adjudication-taxonomy.md).
+`insufficient_evidence` (and legacy `uncertain`) assessments are retained in an append-only
+audit history but never enter model training. Decided outcomes update the effective manual
+binary label. Repeat `--dimension` with analyst-verified coverage descriptors such as
 `business-logic`, `authorization`, `tenant-isolation`, `multi-service`, `ci-iac`,
 `agent-tool-boundary`, `dependency`, `secret`, `dead-code`, `safe-control`, or `near-miss`.
 These values are declared, not guessed from a scanner rule name. The controlled activation
@@ -438,7 +458,7 @@ uv run repoauditor repos list
 # Show every ingested commit/snapshot.
 uv run repoauditor repos list --all
 
-# Inspect run history or the failure details for one run.
+# Inspect run history, stage timing/funnel summaries, or failure details.
 uv run repoauditor runs list --repo-id <repo-id>
 uv run repoauditor runs show <run-id>
 
@@ -451,7 +471,16 @@ uv run repoauditor run <path-or-url> --fresh
 
 Map, detect, and normalize use idempotent writes, so a partially completed stage can be
 rerun without duplicating its persisted records. Existing downstream finding verdicts are
-preserved. Run history records stage status, timing, artifacts, and attributable failures.
+preserved. Run history records stage status, timing, artifacts, attributable failures, and
+the raw-to-review funnel: raw/unique candidates, duplicate amplification, triage suppression
+context, falsification outcomes, normalization abstentions, and review-request counts.
+Provider token usage and dollar cost are shown as not recorded rather than estimated until
+the configured backend supplies authoritative usage metadata.
+
+More autonomous tool-using falsification is intentionally not enabled yet. The
+[agentic escalation gate](docs/agentic-escalation-gate.md) requires authoritative usage
+accounting, a protected real-world baseline, recall-safety evidence, read-only tools, and
+independent claim verification before such a mode can become available.
 
 ## Output controls and automation
 
