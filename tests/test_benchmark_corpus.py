@@ -38,7 +38,7 @@ from repoauditor.ingest import ingest_repo
 from repoauditor.map import recover_architecture
 from repoauditor.normalize import adjudicate
 from repoauditor.store import db
-from repoauditor.store.models import FalsificationStatus, Finding
+from repoauditor.store.models import FalsificationStatus
 
 # The scorer + pipeline driver are the golden harness's; reuse them rather than fork a
 # second, drifting copy (tests/ is on the path in prepend import mode — no __init__.py).
@@ -48,6 +48,7 @@ from test_golden_harness import (  # noqa: E402
     _run_pipeline,
     score_precision_recall,
 )
+from uat_scoring import score_live_uat
 
 
 def _append_live_uat_result(path: Path, benchmark_repo, score: dict, run, config) -> None:
@@ -56,7 +57,7 @@ def _append_live_uat_result(path: Path, benchmark_repo, score: dict, run, config
         document = json.loads(path.read_text())
     else:
         document = {
-            "schema_version": 1,
+            "schema_version": 2,
             "generated_at": datetime.now(timezone.utc).isoformat(),
             "mode": "live-model",
             "methodology": (
@@ -74,7 +75,7 @@ def _append_live_uat_result(path: Path, benchmark_repo, score: dict, run, config
         "provider": config.llm.provider,
         "model": config.model.name,
         "prompt_versions": run.prompt_versions,
-        **score,
+        "evaluation": score,
     })
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(document, indent=2) + "\n")
@@ -184,7 +185,12 @@ def test_live_uat_artifact_is_explicitly_fixture_derived(tmp_config, tmp_path, m
     _append_live_uat_result(
         artifact,
         fixture,
-        {"precision": 0.75, "recall": 0.5, "tp": 3, "fp": 1, "fn": 3},
+        {
+            "methodology": "confirmed countable fixture scoring",
+            "final_countable_confirmed": {
+                "precision": 0.75, "recall": 0.5, "tp": 3, "fp": 1, "fn": 3,
+            },
+        },
         SimpleNamespace(prompt_versions={"detect": "owasp_v1"}),
         tmp_config,
     )
@@ -193,7 +199,8 @@ def test_live_uat_artifact_is_explicitly_fixture_derived(tmp_config, tmp_path, m
     assert "not evidence of independent real-world performance" in document["methodology"]
     assert document["scanner_coverage"] == "not-installed-live-model-only"
     assert document["results"][0]["kind"] == "fixture"
-    assert document["results"][0]["precision"] == 0.75
+    final = document["results"][0]["evaluation"]["final_countable_confirmed"]
+    assert final["precision"] == 0.75
 
 
 # --------------------------------------------------------------------------- #
@@ -323,14 +330,26 @@ def test_corpus_live_baseline(tmp_config, benchmark_repo, capsys):
     challenge(result.repo_id, tmp_config, llm=llm)
     adjudicate(db.list_findings(result.repo_id, tmp_config), tmp_config, llm)
 
-    confirmed: list[Finding] = [
-        f for f in db.list_findings(result.repo_id, tmp_config)
-        if f.falsification_status is not FalsificationStatus.KILLED
-    ]
-    score = score_precision_recall(confirmed, benchmark_repo.expected["findings"])
+    findings = db.list_findings(result.repo_id, tmp_config)
+    if benchmark_repo.expected.get("planted_cases"):
+        score = score_live_uat(findings, benchmark_repo.expected)
+        final = score["final_countable_confirmed"]
+        lineage = f"corpus-v2::{benchmark_repo.repo_id}"
+    else:
+        # Non-UAT corpus fixtures retain their existing legacy scorer. They do not carry
+        # the planted-case source/disposition metadata needed for the v2 UAT method.
+        legacy_survivors = [
+            finding for finding in findings
+            if finding.falsification_status is not FalsificationStatus.KILLED
+        ]
+        final = score_precision_recall(
+            legacy_survivors, benchmark_repo.expected["findings"]
+        )
+        score = {"methodology": "legacy corpus scorer", "final_countable_confirmed": final}
+        lineage = f"corpus::{benchmark_repo.repo_id}"
     run = record_and_check(
-        lineage=f"corpus::{benchmark_repo.repo_id}",
-        precision=score["precision"], recall=score["recall"], config=tmp_config)
+        lineage=lineage,
+        precision=final["precision"], recall=final["recall"], config=tmp_config)
 
     artifact_path = os.environ.get("REPOAUDITOR_UAT_RESULTS")
     if artifact_path:
@@ -338,6 +357,6 @@ def test_corpus_live_baseline(tmp_config, benchmark_repo, capsys):
 
     with capsys.disabled():
         print(f"\n[live corpus] {benchmark_repo.repo_id}: "
-              f"precision={score['precision']:.2f} recall={score['recall']:.2f} "
-              f"(tp={score['tp']} fp={score['fp']} fn={score['fn']})")
+              f"precision={final['precision']:.2f} recall={final['recall']:.2f} "
+              f"(tp={final['tp']} fp={final['fp']} fn={final['fn']})")
     assert run.id is not None

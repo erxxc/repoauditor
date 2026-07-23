@@ -528,7 +528,9 @@ checks without executing upstream code or invoking a hosted model.
 For pre-UAT validation, the manual `bounded corpus UAT` workflow offers a free four-language
 scanner matrix and a separately acknowledged paid Anthropic run on the lightweight fixture.
 Its artifacts preserve the distinction between independently sourced targets, unadjudicated
-scanner candidates, and purpose-built fixture metrics; see [CONTRIBUTING.md](CONTRIBUTING.md).
+scanner candidates, and purpose-built fixture metrics. The paid fixture score counts only
+confirmed, deduplicated issues, uses a model-applicable expected-case denominator, and
+discloses disposition and severity checks separately; see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 `repoauditor db init` applies numbered migrations from `src/repoauditor/store/ddl/` and
 is safe to rerun. Existing databases are upgraded in place; legacy quantitative scenarios
