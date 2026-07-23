@@ -72,7 +72,9 @@ The manual `bounded corpus UAT` workflow consumes that exact cache. Its free sca
 limited to Django, Lodash, Commons Text, and Rack pre/post pairs plus Juice Shop. Because each
 independent project has one advisory-derived target rather than exhaustive labels, its JSON
 reports unmatched findings as `unadjudicated_candidate_count`, never as false positives. The
-separate paid mode runs only `uat_lightweight_app` and labels its metrics fixture-derived.
+artifact distinguishes binary availability from Semgrep's actual per-fixture run status and
+reports pair-stable/pre-only/post-only candidate deltas. The separate paid mode runs only
+`uat_lightweight_app` and labels its metrics fixture-derived.
 
 ## Public vulnerable application anchors
 

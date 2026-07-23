@@ -6,7 +6,7 @@ from repoauditor.detect.ensemble import CandidateFinding
 from repoauditor.store.models import Severity
 
 from conftest import benchmark_corpus_ids
-from fixtures.run_bounded_uat import evaluate_candidates
+from fixtures.run_bounded_uat import build_pair_deltas, evaluate_candidates
 
 
 def _candidate(**updates) -> CandidateFinding:
@@ -84,3 +84,26 @@ def test_corpus_selection_environment_is_bounded_and_rejects_unknown(monkeypatch
         assert "not-a-fixture" in str(exc)
     else:
         raise AssertionError("unknown corpus selection must fail closed")
+
+
+def test_pair_deltas_collapse_stable_candidates_without_discarding_raw_counts():
+    stable = _candidate().model_dump()
+    stable["producer"] = "semgrep"
+    pre_only = _candidate(file="pre_only.py", line_start=20, line_end=20).model_dump()
+    pre_only["producer"] = "semgrep"
+    rows = [
+        {
+            "project_id": "example", "variant": "pre_fix",
+            "candidates": [stable, pre_only],
+        },
+        {
+            "project_id": "example", "variant": "post_fix",
+            "candidates": [stable],
+        },
+    ]
+
+    delta = build_pair_deltas(rows)[0]
+    assert delta["stable_candidate_count"] == 1
+    assert delta["pre_fix_only_candidate_count"] == 1
+    assert delta["post_fix_only_candidate_count"] == 0
+    assert delta["pair_collapsed_candidate_count"] == 2

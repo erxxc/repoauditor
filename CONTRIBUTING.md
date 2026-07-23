@@ -81,7 +81,9 @@ The manual `bounded corpus UAT` workflow has two deliberately separate modes:
 - `deterministic` restores the exact validated corpus cache and runs Semgrep, pip-audit,
   OSV-Scanner, and gitleaks over Django, Lodash, Commons Text, and Rack pre/post pairs,
   plus the Juice Shop anchor. It emits JSON with target-CVE hits, patched-target
-  persistence, tool counts, and candidates awaiting analyst adjudication.
+  persistence, Semgrep run status, binary availability, pre/post deltas, tool counts,
+  and candidates awaiting analyst adjudication. Raw candidates remain in the artifact;
+  pair-stable signals are also collapsed into a realistic review-workload count.
 - `live-lightweight` runs the real Anthropic-backed pipeline only on the 12-file
   purpose-built UAT fixture. It requires the `live-model-tests` environment secret and an
   explicit paid-run acknowledgement. It does not install scanners, so the result isolates

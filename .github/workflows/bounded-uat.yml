@@ -67,6 +67,7 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: "stable"
+          cache: false
       - run: uv sync --frozen --dev
       - name: Install pinned scanner binaries
         run: |
