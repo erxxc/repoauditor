@@ -30,7 +30,7 @@ def _instrument_handler(_system, user, schema, _context):
         )
     negative = (
         '"SELECT * FROM products WHERE name LIKE ?"' in user
-        or "parsed.hostname not in" in user
+        or "_ALLOWED_PREVIEWS.get(page)" in user
     )
     return FalsificationOutcome(
         status=FalsificationStatus.KILLED if negative else FalsificationStatus.CONFIRMED,
@@ -98,7 +98,11 @@ def test_answer_key_is_outside_scanned_snapshot():
 
     assert manifest.kind == "manufactured_solution"
     assert not (snapshot / "manifest.json").exists()
-    assert "expected" not in (snapshot / "app.py").read_text()
+    source = (snapshot / "app.py").read_text()
+    assert "expected" not in source
+    assert 'request.args.get("url")' in source
+    assert '_ALLOWED_PREVIEWS.get(page)' in source
+    assert "allow_redirects=False" in source
 
 
 def test_live_workflow_defaults_manual_runs_to_sentinels_and_keeps_monthly_full_lane():

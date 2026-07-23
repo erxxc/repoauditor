@@ -31,6 +31,7 @@ class SentinelCase(BaseModel):
     citation_snippet: str
     severity: str
     expected: FalsificationStatus
+    ground_truth_basis: str = Field(min_length=1)
 
     @model_validator(mode="after")
     def _terminal_answer(self) -> "SentinelCase":
