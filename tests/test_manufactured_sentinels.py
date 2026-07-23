@@ -100,6 +100,10 @@ def test_answer_key_is_outside_scanned_snapshot():
     assert not (snapshot / "manifest.json").exists()
     source = (snapshot / "app.py").read_text()
     assert "expected" not in source
+    assert '@app.get("/products/unsafe-search")' in source
+    assert '@app.get("/products/safe-search")' in source
+    assert '@app.get("/preview/unsafe")' in source
+    assert '@app.get("/preview/safe")' in source
     assert 'request.args.get("url")' in source
     assert '_ALLOWED_PREVIEWS.get(page)' in source
     assert "allow_redirects=False" in source

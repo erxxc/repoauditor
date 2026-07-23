@@ -5,6 +5,8 @@ instrument: two known exploitable paths and two close negative controls. The man
 outside `snapshot/`, so the model cannot retrieve the answer key.
 Positive and negative controls use the same neutral candidate title within each mechanism,
 so title wording does not disclose the disposition.
+Each control is registered as a Flask route so HTTP reachability is part of the fixture's
+checkable evidence rather than an assumption inferred from use of the request object.
 The SSRF negative maps an untrusted page identifier to a fixed URL and disables redirects;
 it does not treat initial-host validation alone as a complete SSRF control.
 
