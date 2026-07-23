@@ -50,6 +50,7 @@ from test_golden_harness import (  # noqa: E402
     score_precision_recall,
 )
 from uat_scoring import score_live_uat
+from fixtures.audit_corpus_readiness import build_corpus_readiness
 
 
 def _append_live_uat_result(path: Path, benchmark_repo, score: dict, run, config) -> None:
@@ -178,6 +179,38 @@ def test_all_new_public_entries_are_pinned_acquisition_only():
         for fixture in entries
     )
     assert all(fixture.expected["source"].get("pinned_commit") for fixture in entries)
+
+
+def test_protected_holdout_is_one_complete_independent_pre_post_pair():
+    protected = [
+        _load_fixture(repo_id).expected["source"]
+        for repo_id in benchmark_corpus_ids()
+        if _load_fixture(repo_id).expected["source"].get("evaluation_role")
+        == "protected_holdout"
+    ]
+
+    assert len(protected) == 2
+    assert {source["project_id"] for source in protected} == {"serialize_javascript"}
+    assert {source["variant"] for source in protected} == {"pre_fix", "post_fix"}
+    assert all(source["kind"] == "independent" for source in protected)
+    assert all(source["pinned_commit"] for source in protected)
+    assert all(source["license"] for source in protected)
+    assert all("never inferred" in source["ground_truth"].lower() for source in protected)
+
+
+def test_offline_corpus_readiness_is_metadata_complete_and_network_free():
+    report = build_corpus_readiness(FIXTURES_DIR)
+
+    assert report["metadata_ready"] is True
+    assert report["network_accessed"] is False
+    assert report["summary"]["independent_project_count"] == 8
+    assert report["summary"]["protected_holdout_count"] == 2
+    assert report["summary"]["calibration_fixture_count"] == 1
+    # Acquisition-only source is deliberately not vendored. This field, rather than an
+    # implicit skip, tells the operator whether cache restoration is still required.
+    assert report["online_execution_ready"] is (
+        report["summary"]["protected_holdout_materialized_count"] == 2
+    )
 
 
 @pytest.mark.integration

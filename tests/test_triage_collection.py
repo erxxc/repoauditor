@@ -56,4 +56,7 @@ def test_collection_gate_excludes_automation_derived_labels(tmp_config, monkeypa
     assert status.source_counts == {
         "derived_falsify": 1, "derived_review": 1, "manual": 1,
     }
+    assert "authorization" not in status.missing_dimensions
+    assert "tenant-isolation" in status.missing_dimensions
     assert "usable human labels=2/40" in rendered
+    assert "unrepresented target dimensions:" in rendered

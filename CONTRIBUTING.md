@@ -157,6 +157,12 @@ collapsing to a final traceback. Scanner-dependent fixtures are absent from thes
 model-only cohorts. Large OWASP anchors remain available to the free retrieval/scanner
 lanes, but are not submitted to the hosted model by this workflow.
 
+The cache workflow and paid independent lane also run the zero-network corpus-readiness
+audit. Metadata must identify exactly one protected independent pre/post holdout, and the
+paid lane additionally requires both pinned snapshots to be materialized before it
+qualifies the model or begins corpus evaluation. See
+`docs/offline-readiness-runbook.md`.
+
 For native retrieval failures, manually dispatch `live model tests` with
 `retrieval-diagnostic`. This scope restores and requires the exact public-corpus cache, then
 runs only the Juice Shop retrieval smoke test with flushed per-file diagnostics. It skips

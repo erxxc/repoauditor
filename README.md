@@ -509,6 +509,8 @@ accounting, a protected real-world baseline, recall-safety evidence, read-only t
 independent claim verification before such a mode can become available.
 The current cross-project sequence and evidence gates are recorded in
 [docs/project-priorities.md](docs/project-priorities.md).
+Offline preparation and the exact later paid-calibration sequence are documented in
+[docs/offline-readiness-runbook.md](docs/offline-readiness-runbook.md).
 
 To test whether one falsification verdict survives increasing retrieval and iteration
 resolution without changing its stored result:
