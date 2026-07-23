@@ -11,6 +11,7 @@ from pydantic import BaseModel
 from repoauditor.detect.ensemble import LensCandidate, LensFindings, _resolve_confidence
 from repoauditor.detect.retrieval import RetrievalIndex
 from repoauditor.llm import (
+    AnthropicBackend,
     BackendError,
     LLMClient,
     LLMValidationError,
@@ -183,6 +184,37 @@ def test_get_llm_client_selects_openai_compatible_backend(tmp_config):
         "llm": tmp_config.llm.model_copy(update={"provider": "openai-compatible"}),
     })
     assert isinstance(get_llm_client(cfg)._backend, OpenAICompatibleBackend)
+
+
+# --------------------------------------------------------------------------- #
+# Anthropic structured-output backend
+# --------------------------------------------------------------------------- #
+def test_anthropic_sdk_parse_failure_uses_shared_bounded_retry(tmp_config):
+    db.init_db(tmp_config)
+    attempts = {"n": 0}
+
+    class Messages:
+        def parse(self, **_kwargs):
+            attempts["n"] += 1
+            if attempts["n"] == 1:
+                # Mirrors a provider response rejected inside messages.parse()
+                # before AnthropicBackend receives a parsed response.
+                return _Demo.model_validate_json('{"value": "broken",}')
+            return type("Response", (), {
+                "parsed_output": _Demo(value="ok"),
+                "stop_reason": "end_turn",
+            })()
+
+    backend = object.__new__(AnthropicBackend)
+    backend._config = tmp_config
+    backend._client = type("Client", (), {"messages": Messages()})()
+    backend.sampling_seed = None
+
+    completion = _call(LLMClient(backend, tmp_config), _Demo)
+
+    assert completion.value.value == "ok"
+    assert attempts["n"] == 2
+    assert db.list_validation_failures(tmp_config) == []
 
 
 # --------------------------------------------------------------------------- #

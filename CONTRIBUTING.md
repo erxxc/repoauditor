@@ -135,3 +135,12 @@ Both modes retain their JSON/JUnit evidence for 30 days. UAT artifacts are evalu
 evidence, not training labels: to add a reviewed outcome to the triage corpus, scan the
 repository as a persistent engagement and use `repoauditor triage-label` with an analyst and
 rationale. Use `uncertain` when the evidence does not support TP or FP.
+
+The `live model tests` workflow's `full-live` scope restores the same exact validated
+public-corpus cache before making any paid calls. It fails before evaluation when that cache
+is unavailable; it never silently skips acquisition-only entries or fetches a floating
+revision. During the run, each completed fixture is appended to
+`live-corpus-results.json`, and pytest writes `live-corpus-junit.xml`. Both are uploaded
+even when a later fixture fails, so a long paid run retains its partial evidence rather than
+collapsing to a final traceback. The workflow does not install scanner binaries, and marks
+the resulting corpus artifact as live-model-only coverage.

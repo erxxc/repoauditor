@@ -16,7 +16,7 @@ import os
 from typing import Callable, Protocol, runtime_checkable
 
 import httpx
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 
 from ..config import Config, get_config
 
@@ -53,13 +53,22 @@ class AnthropicBackend:
         self.sampling_seed: int | None = None
 
     def complete(self, *, system: str, user: str, schema: type[BaseModel], context: dict) -> str:
-        response = self._client.messages.parse(
-            model=self._config.model.name,
-            max_tokens=self._config.model.max_tokens,
-            system=system,
-            messages=[{"role": "user", "content": user}],
-            output_format=schema,
-        )
+        try:
+            response = self._client.messages.parse(
+                model=self._config.model.name,
+                max_tokens=self._config.model.max_tokens,
+                system=system,
+                messages=[{"role": "user", "content": user}],
+                output_format=schema,
+            )
+        except ValidationError as exc:
+            # The Anthropic SDK validates structured output before returning the
+            # response. Translate that provider-side parse failure into the backend
+            # contract so LLMClient can apply its bounded retry and failure logging.
+            # The SDK exception does not expose the complete raw response reliably.
+            raise BackendError(
+                f"model returned invalid {schema.__name__}: {exc}"
+            ) from exc
         parsed = response.parsed_output
         if parsed is None:  # refusal or unparsable — surface, don't guess
             raise BackendError(
