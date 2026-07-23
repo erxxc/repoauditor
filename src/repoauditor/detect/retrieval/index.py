@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import ast
 import logging
+import os
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -124,6 +125,8 @@ class RetrievalIndex:
         self._snapshot_path = snapshot_path.resolve()
         for path in iter_source_files(snapshot_path):
             rel = path.relative_to(snapshot_path).as_posix()
+            if os.environ.get("REPOAUDITOR_RETRIEVAL_TRACE_FILES") == "1":
+                logger.warning("retrieval diagnostic: indexing %s", rel)
             text = path.read_text(errors="replace")
             self._file_texts[rel] = text
             suffix = path.suffix.lower()
