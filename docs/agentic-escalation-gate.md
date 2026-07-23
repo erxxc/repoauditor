@@ -26,8 +26,9 @@ evidence exists.
    and stored architecture evidence. It may not execute repository code, invoke repository
    tools, access arbitrary networks, or mutate the checkout.
 7. **Independent verification** — agent-produced claims use the persisted `SecurityClaim`
-   contract and are checked by a separately versioned deterministic verifier. The agent
-   never verifies its own claim.
+   contract, bind to an immutable snapshot commit, and are checked by a separately versioned
+   deterministic verifier that reopens the snapshot and reconstructs supported facts without
+   consuming the producer's evidence object. The agent never verifies its own claim.
 
 ## Proposed eligibility
 

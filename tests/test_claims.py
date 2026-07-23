@@ -31,7 +31,7 @@ def test_structural_claim_round_trip_is_idempotent_and_scoped(tmp_config):
     finding_id = db.insert_finding(finding, tmp_config)
     evidence = build_python_slice(RetrievalIndex().build(UAT), finding)
     assert evidence is not None
-    claim = claim_from_slice(finding_id, evidence)
+    claim = claim_from_slice(finding_id, evidence, "commit-abc")
 
     first = db.upsert_security_claim(claim, tmp_config)
     second = db.upsert_security_claim(claim, tmp_config)
@@ -40,15 +40,13 @@ def test_structural_claim_round_trip_is_idempotent_and_scoped(tmp_config):
     assert stored.sink_evidence and "db.query(sql)" in stored.sink_evidence.source
     assert any("request.args.get" in item.source for item in stored.source_evidence)
 
-    verification = verify_structural_claim(
-        stored, evidence
-    )
+    verification = verify_structural_claim(stored, UAT, "commit-abc")
     first_verification = db.upsert_claim_verification(verification, tmp_config)
     second_verification = db.upsert_claim_verification(verification, tmp_config)
     assert first_verification == second_verification
     saved = db.list_claim_verifications(stored.id, tmp_config)[0]
-    assert saved.status is ClaimVerificationStatus.VERIFIED
-    assert "exploitability remain unverified" in saved.reason
+    assert saved.status is ClaimVerificationStatus.STRUCTURALLY_VERIFIED
+    assert "real-world risk are not validated" in saved.reason
 
 
 def test_unresolved_dependency_produces_incomplete_verification(tmp_config, tmp_path):
@@ -64,10 +62,61 @@ def test_unresolved_dependency_produces_incomplete_verification(tmp_config, tmp_
     finding_id = db.insert_finding(finding, tmp_config)
     evidence = build_python_slice(RetrievalIndex().build(tmp_path), finding)
     assert evidence is not None
-    claim = claim_from_slice(finding_id, evidence).model_copy(update={"id": 1})
+    claim = claim_from_slice(finding_id, evidence, "commit-abc").model_copy(
+        update={"id": 1}
+    )
 
-    verification = verify_structural_claim(claim, evidence)
+    verification = verify_structural_claim(claim, tmp_path, "commit-abc")
 
-    assert verification.status is ClaimVerificationStatus.INCOMPLETE
-    assert verification.checks["source_present"] is False
-    assert "plugin_command" in verification.reason
+    assert verification.status is ClaimVerificationStatus.VERIFICATION_INCOMPLETE
+    assert verification.checks["certificate_complete"] is False
+    assert "required source" in verification.reason
+
+
+def test_independent_checker_refutes_forged_certificate_text():
+    finding = _finding()
+    evidence = build_python_slice(RetrievalIndex().build(UAT), finding)
+    assert evidence is not None
+    claim = claim_from_slice(1, evidence, "commit-abc").model_copy(update={"id": 1})
+    assert claim.sink_evidence is not None
+    forged_sink = claim.sink_evidence.model_copy(
+        update={"source": "rows = db.query(sanitized_sql)"}
+    )
+    forged = claim.model_copy(
+        update={
+            "sink_evidence": forged_sink,
+            "path_nodes": [
+                forged_sink if item == claim.sink_evidence else item
+                for item in claim.path_nodes
+            ],
+        }
+    )
+
+    verification = verify_structural_claim(forged, UAT, "commit-abc")
+
+    assert verification.status is ClaimVerificationStatus.STRUCTURALLY_REFUTED
+    assert verification.checks["evidence_matches_snapshot"] is False
+
+
+def test_independent_checker_refutes_stale_snapshot_commit():
+    finding = _finding()
+    evidence = build_python_slice(RetrievalIndex().build(UAT), finding)
+    assert evidence is not None
+    claim = claim_from_slice(1, evidence, "commit-old").model_copy(update={"id": 1})
+
+    verification = verify_structural_claim(claim, UAT, "commit-new")
+
+    assert verification.status is ClaimVerificationStatus.STRUCTURALLY_REFUTED
+    assert verification.checks["snapshot_matches"] is False
+
+
+def test_independent_checker_requires_snapshot_binding():
+    finding = _finding()
+    evidence = build_python_slice(RetrievalIndex().build(UAT), finding)
+    assert evidence is not None
+    claim = claim_from_slice(1, evidence, None).model_copy(update={"id": 1})
+
+    verification = verify_structural_claim(claim, UAT, "commit-abc")
+
+    assert verification.status is ClaimVerificationStatus.VERIFICATION_INCOMPLETE
+    assert verification.checks["snapshot_bound"] is False

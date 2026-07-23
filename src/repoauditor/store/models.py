@@ -654,9 +654,9 @@ class FalsificationIteration(BaseModel):
 class ClaimVerificationStatus(StrEnum):
     """Structural verification outcome; never an exploitability verdict."""
 
-    VERIFIED = "verified"
-    REFUTED = "refuted"
-    INCOMPLETE = "incomplete"
+    STRUCTURALLY_VERIFIED = "structurally_verified"
+    STRUCTURALLY_REFUTED = "structurally_refuted"
+    VERIFICATION_INCOMPLETE = "verification_incomplete"
     UNSUPPORTED = "unsupported"
 
 
@@ -674,6 +674,7 @@ class SecurityClaim(BaseModel):
     id: int | None = None
     finding_id: int
     claim_version: str
+    snapshot_commit: str | None = None
     mechanism: str
     source_evidence: list[ClaimEvidence] = Field(default_factory=list)
     sink_evidence: ClaimEvidence | None = None

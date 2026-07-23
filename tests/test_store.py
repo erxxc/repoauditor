@@ -69,6 +69,7 @@ def test_pre_methodology_database_migrates_without_losing_audit_data(
         "0016_triage_assessment.sql",
         "0017_triage_disposition.sql",
         "0018_security_claims.sql",
+        "0019_structural_claim_verification.sql",
     ]
 
     assert db.list_findings("r", tmp_config)[0].id == finding_id
@@ -80,6 +81,48 @@ def test_pre_methodology_database_migrates_without_losing_audit_data(
     assert legacy.control_strengths == []
     assert legacy.loss_scale == 1.0
     assert legacy.simulation_run_id is None
+
+
+def test_structural_status_migration_preserves_claim_audit_data(
+    tmp_config, monkeypatch,
+):
+    """The terminology migration must retain legacy certificates and checks."""
+    all_migrations = db._discover_migrations()
+    monkeypatch.setattr(
+        db, "_discover_migrations", lambda: [item for item in all_migrations if item[0] <= 18]
+    )
+    db.init_db(tmp_config)
+    finding_id = _f(tmp_config, tool="semgrep")
+    conn = db.get_connection(tmp_config)
+    try:
+        with conn:
+            claim_id = conn.execute(
+                "INSERT INTO security_claim "
+                "(finding_id, claim_version, mechanism, source_evidence, path_nodes, "
+                "path_predicates, producer_type, producer_name) "
+                "VALUES (?, 'legacy-v1', 'sql_injection', '[]', '[]', '[]', "
+                "'deterministic', 'legacy-slicer')",
+                (finding_id,),
+            ).lastrowid
+            conn.execute(
+                "INSERT INTO claim_verification "
+                "(claim_id, status, verifier_name, verifier_version, checks, reason) "
+                "VALUES (?, 'verified', 'legacy-checker', 'v1', "
+                "'{\"source_present\": true}', 'legacy structural result')",
+                (claim_id,),
+            )
+    finally:
+        conn.close()
+
+    monkeypatch.setattr(db, "_discover_migrations", lambda: all_migrations)
+    assert db.init_db(tmp_config) == ["0019_structural_claim_verification.sql"]
+
+    claim = db.list_security_claims(finding_id, tmp_config)[0]
+    verification = db.list_claim_verifications(claim.id, tmp_config)[0]
+    assert claim.snapshot_commit is None
+    assert verification.status.value == "verification_incomplete"
+    assert verification.checks == {"source_present": True}
+    assert verification.reason == "legacy structural result"
 
 
 def _f(cfg, *, lens=None, tool=None, sev="high", conf=0.8, desc="", file="app.py",
