@@ -75,16 +75,18 @@ per CLAUDE.md.
 1. **No live model key in a bare environment.** `ANTHROPIC_API_KEY` is unset /
    `REPOAUDITOR_LLM` is not `live`, so the LLM-lens `detect`, `falsify`, and `normalize`
    stages don't run. Every case whose detection **or disposition** depends on the model —
-   the SQLi/SSRF/IDOR confirmations, the mitigating-control kill (7), the unreachable kill
-   (8), the ambiguous→review routing (9), and the LLM half of the duplicate (10) — is scored
+   the SQLi/SSRF/IDOR confirmations, the fake-credential kill (4), the mitigating-control
+   kill (7), the unreachable kill (8), the no-redirect-sink kill (9), and the LLM half of
+   the duplicate (10) — is scored
    only under a live run. Turnkey: `export ANTHROPIC_API_KEY=… ; REPOAUDITOR_LLM=live pytest
    tests/test_benchmark_corpus.py::test_corpus_live_baseline`.
 2. **Deterministic SAST/SCA tools not installed.** Only `gitleaks` (secrets) is present in a
    bare CI env; `semgrep` (SAST) and `pip-audit`/`osv-scanner` (SCA) are not. So the SAST
    corroboration and the **case-5 dependency CVE path** are deferred to a tooled run
    (`pipx install semgrep pip-audit ; brew install osv-scanner`). What runs **now**: real
-   gitleaks confirms the case-4/10 secret (rule `stripe-access-token`, the only leak it
-   reports — precision clean), and the ingest is well-formed.
+   gitleaks detects the case-4/10 fake credential pattern (rule `stripe-access-token`, the
+   only leak it reports), and the ingest is well-formed. Detection is expected; the final
+   falsification disposition is killed because the value is explicitly non-working.
 
 A knock-on note on pinning: `requests==2.19.1` is old enough that real SCA tools will surface
 **additional** real, OSV-verified `requests` advisories beyond CVE-2018-18074; those are
@@ -99,17 +101,36 @@ them — the designated, stable case-5 CVE is CVE-2018-18074.
 | 1 | SQL injection (public route) | `catalog.py` `GET /products/search` | **confirmed** | attacker-controlled param concatenated into SQL |
 | 2 | SSRF | `integrations.py` `GET /admin/link-preview` | **confirmed** | caller-controlled URL fetched server-side |
 | 3 | IDOR (broken object-level authz) | `orders.py` `GET /orders/<id>` | **confirmed** | authenticated but no ownership check |
-| 4 | Hardcoded secret (fake credential) | `config.py` `STRIPE_SECRET_KEY` | **confirmed** | `sk_live_` fake, gitleaks-detectable |
+| 4 | Fake credential pattern | `config.py` `STRIPE_SECRET_KEY` | **killed** | gitleaks-detectable, but explicitly non-working |
 | 5 | Vulnerable dependency (real CVE) | `requirements.txt` `requests==2.19.1` | **confirmed** | CVE-2018-18074 via SCA |
 | 6 | Production-like customer datastore | `db.py` `customers` (PII) | **architecture-exposure** | map recovers it; deal_risk scores exposure=direct |
 | 7 | Genuine mitigating control | `invoices.py` `GET /invoices/<id>` | **killed** | `@owns_resource` ownership gate found by falsify |
 | 8 | Unreachable candidate | `legacy.py` `legacy_import` | **killed** | unregistered blueprint + always-`False` flag |
-| 9 | Ambiguous, needs review | `account.py` `POST /account/return-target` | **requires-review** | no redirect sink in-repo + uncorroborated → unresolved |
-| 10 | Duplicate across sources | `config.py` (same line as case 4) | **confirmed, collapses to 1** | gitleaks + owasp lens → matching → one countable finding |
+| 9 | Open-redirect candidate without a sink | `account.py` `POST /account/return-target` | **killed** | backend stores/returns data but never redirects |
+| 10 | Duplicate across sources | `config.py` (same line as case 4) | **killed, 0 countable** | gitleaks + owasp lens identify the same fake candidate |
 
-Cases 7–9 are the discrimination tests: 7 and 8 must be **correctly killed** (not surviving
-false positives, not silently dropped — the killed verdict + reason persist), and 9 must
-**route to `review/` as unresolved** rather than being guessed either way.
+Cases 4 and 7–10 are discrimination tests: detection alone does not make a candidate a
+valid vulnerability. Each must be **correctly killed**, not silently dropped, and its reason
+must persist. Cases 4/10 additionally test that two sources can identify the same physical
+candidate without turning an explicitly fake credential into a confirmed issue.
+
+## Ground-truth adjudication (expectation v2)
+
+The 2026-07-23 live UAT exposed three answer-key problems, reviewed against the complete
+fixture rather than inferred from the tool's score:
+
+- The Stripe-shaped literal is explicitly marked `UATfixture`, `FAKE`, `DoNotUse`, and
+  `EXAMPLE`. It remains a useful detector-pattern target, but its correct final disposition
+  is **killed**, not confirmed.
+- The return-target handler has no redirect sink in the assessed backend. Hypothetical
+  out-of-scope frontend behavior is not evidence for the specific open-redirect claim, so
+  its correct disposition is **killed**, not unresolved.
+- The fixed `local-dev-session-key` was a genuine but accidental weakness outside the
+  controlled ten-case matrix. The snapshot now generates an unpredictable per-process
+  local key when no deployment secret is configured, removing that unlabelled positive.
+
+These corrections reduce the scanner-free model-positive denominator to cases 1–3. Case 5
+remains excluded from that mode because it is SCA-only.
 
 ## `expected_findings.json` — schema (extends the corpus convention)
 
@@ -117,8 +138,8 @@ It keeps the existing keys (`repo_id`, `source`, `findings`, `expected_unresolve
 carry `file` + `citation_contains` with approximate line anchors) so
 `test_corpus_fixture_is_well_formed` accepts it, and adds:
 
-- **`expected_killed`** — candidates falsify must kill, each with a `kill_basis`
-  (`mitigating_control` | `unreachable`). (Cases 7, 8.)
+- **`expected_killed`** — candidates falsify must kill, each with a documented
+  `kill_basis`. (Cases 4, 7, 8, 9, and duplicate case 10.)
 - **`expected_map`** — the trust boundaries / data stores / integrations `map/` should
   recover; the `customers` datastore entry is the case-6 production-exposure ground truth.
 - **`planted_cases`** — the per-case matrix required by the UAT spec: category + location
@@ -145,13 +166,13 @@ deferred is only *tool/model availability* (the two gaps above), not the checks 
 | Goal (case) | Validated by | Runs now? |
 |---|---|---|
 | SQLi / SSRF / IDOR confirmed (1,2,3) | live detect→falsify; `findings` ground truth | live |
-| Hardcoded secret (4) | gitleaks `secrets` + owasp lens | **secret half now** (gitleaks) |
+| Fake credential pattern killed (4) | gitleaks `secrets` + live falsify | **detection half now** (gitleaks) |
 | Vulnerable dep CVE (5) | SCA (pip-audit/osv) vs `source.advisories` | tooled run |
 | Production datastore exposure (6) | `map/` entities + `deal_risk` exposure_component + `RiskScenario.exposure_factors` | live map |
 | Mitigating control killed (7) | falsify mitigating-control search → `killed` | live falsify |
 | Unreachable killed (8) | falsify reachability check → `killed` | live falsify |
-| Ambiguous → review (9) | reliability layer → `unresolved` → `review/` request | live |
-| Duplicate collapses to 1 (10) | `matching.py` + `db.list_countable_findings` | live (both sources) |
+| No-redirect-sink candidate killed (9) | live falsify verifies the backend has no redirect | live |
+| Duplicate fake candidate contributes 0 (10) | `matching.py` + killed disposition | live (both sources) |
 | Exposure/control provenance | `ScenarioInput.origin` + `PriorSource` | live analyze |
 | Resumed/repeated audited runs | `quantify --record-audit`, `SimulationRun` history | now |
 

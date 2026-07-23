@@ -10,7 +10,7 @@ from repoauditor import cli
 from repoauditor.config import REPO_ROOT
 from repoauditor.store import db
 from repoauditor.store.models import (
-    Entity, EntityKind, FalsificationStatus, Finding, ReviewRequest,
+    Entity, EntityKind, FalsificationStatus, Finding,
 )
 from repoauditor.uat import score_demo
 
@@ -31,23 +31,21 @@ def test_scorecard_covers_all_ten_behaviors(tmp_config, tmp_path):
     db.init_db(tmp_config)
     confirmed_files = [
         "storefront/catalog.py", "storefront/integrations.py", "storefront/orders.py",
-        "storefront/config.py", "requirements.txt",
+        "requirements.txt",
     ]
     for file in confirmed_files:
-        _finding(tmp_config, file, FalsificationStatus.CONFIRMED, line=22 if "config" in file else 10)
+        _finding(tmp_config, file, FalsificationStatus.CONFIRMED)
     _finding(
-        tmp_config, "storefront/config.py", FalsificationStatus.CONFIRMED,
-        line=22, tool=None, lens="owasp",
+        tmp_config, "storefront/config.py", FalsificationStatus.KILLED,
+        line=24, tool="gitleaks",
+    )
+    _finding(
+        tmp_config, "storefront/config.py", FalsificationStatus.KILLED,
+        line=24, tool=None, lens="owasp",
     )
     _finding(tmp_config, "storefront/invoices.py", FalsificationStatus.KILLED)
     _finding(tmp_config, "storefront/legacy.py", FalsificationStatus.KILLED)
-    ambiguous = _finding(
-        tmp_config, "storefront/account.py", FalsificationStatus.UNRESOLVED
-    )
-    db.upsert_review_request(ReviewRequest(
-        repo_id="uat_lightweight_app", finding_id=ambiguous, stage="falsify",
-        reason="ambiguous", evidence={},
-    ), tmp_config)
+    _finding(tmp_config, "storefront/account.py", FalsificationStatus.KILLED)
     db.insert_entity(Entity(
         repo_id="uat_lightweight_app", kind=EntityKind.DATA_STORE,
         name="customers PII store", location="storefront/db.py",

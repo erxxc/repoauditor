@@ -54,6 +54,7 @@ def score_demo(
     requests = db.list_review_requests(repo_id, config)
     request_finding_ids = {request.finding_id for request in requests}
     entities = db.list_entities(repo_id, config)
+    planted_by_case = {item["case"]: item for item in expected.get("planted_cases", [])}
 
     results: list[CaseResult] = []
     for item in expected["findings"]:
@@ -76,27 +77,36 @@ def score_demo(
 
     for item in expected["expected_killed"]:
         matches = [f for f in findings if _file_matches(f.file, item["file"])]
-        passed = any(f.falsification_status is FalsificationStatus.KILLED for f in matches)
+        killed = [f for f in matches if f.falsification_status is FalsificationStatus.KILLED]
+        passed = bool(killed)
+        detail = f"{len(matches)} matching candidate(s); killed={passed}"
+        planted = planted_by_case.get(item["case"], {})
+        if planted.get("counts_as_findings") == 0:
+            sources = {
+                (finding.source_tool or finding.source_lens or "unknown")
+                for finding in killed
+            }
+            countable_matches = [
+                finding for finding in countable
+                if _file_matches(finding.file, item["file"])
+            ]
+            passed = passed and len(sources) >= 2 and not countable_matches
+            detail += (
+                f"; killed_sources={len(sources)}; "
+                f"countable={len(countable_matches)}"
+            )
         results.append(CaseResult(
             item["case"], f"Killed: {item['kill_basis']}", passed,
-            f"{len(matches)} matching candidate(s); killed={passed}",
+            detail,
         ))
 
-    unresolved = expected["expected_unresolved"][0]
-    matches = [f for f in findings if _file_matches(f.file, unresolved["file"])]
-    reviewed = any(f.id in request_finding_ids for f in matches)
-    results.append(CaseResult(
-        9, "Ambiguous finding routed to review", reviewed,
-        f"{len(matches)} matching candidate(s); review request created={reviewed}",
-    ))
-
-    raw_secret = [f for f in findings if _file_matches(f.file, "storefront/config.py")]
-    countable_secret = [f for f in countable if _file_matches(f.file, "storefront/config.py")]
-    collapsed = len(raw_secret) >= 2 and len(countable_secret) == 1
-    results.append(CaseResult(
-        10, "Duplicate secret collapses to one countable issue", collapsed,
-        f"raw={len(raw_secret)}; countable={len(countable_secret)}",
-    ))
+    for item in expected.get("expected_unresolved", []):
+        matches = [f for f in findings if _file_matches(f.file, item["file"])]
+        reviewed = any(f.id in request_finding_ids for f in matches)
+        results.append(CaseResult(
+            item["case"], "Unresolved finding routed to review", reviewed,
+            f"{len(matches)} matching candidate(s); review request created={reviewed}",
+        ))
     results.sort(key=lambda result: result.case)
 
     out_dir = out_dir or config.resolve(config.paths.data_dir) / "reports" / f"{repo_id}_demo"

@@ -136,12 +136,17 @@ def test_live_uat_reports_killed_control_case_without_adding_it_to_recall():
     assert result["final_countable_confirmed"]["expected_case_count"] == 1
 
 
-def test_live_uat_real_fixture_denominator_matches_scanner_free_model_scope():
-    expected = _load_fixture("uat_lightweight_app").expected
+def test_live_uat_real_fixture_denominator_matches_adjudicated_model_scope():
+    fixture = _load_fixture("uat_lightweight_app")
+    expected = fixture.expected
 
     result = score_live_uat([], expected)
 
-    assert result["final_countable_confirmed"]["expected_case_count"] == 4
+    assert expected["schema_version"] == "uat-expectation-2"
+    assert result["final_countable_confirmed"]["expected_case_count"] == 3
     assert [case["case"] for case in result["excluded_expected_cases"]] == [5]
-    assert len(result["killed_case_checks"]) == 2
-    assert len(result["unresolved_case_checks"]) == 1
+    assert [case["case"] for case in result["killed_case_checks"]] == [4, 7, 8, 9, 10]
+    assert result["unresolved_case_checks"] == []
+    config_source = (fixture.snapshot_path / "storefront" / "config.py").read_text()
+    assert "local-dev-session-key" not in config_source
+    assert "secrets.token_hex(32)" in config_source
