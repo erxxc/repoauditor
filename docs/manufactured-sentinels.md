@@ -3,9 +3,9 @@
 Status: active instrument qualification; not production scan input.
 
 Repoauditor keeps four fixed falsification sentinels: exploitable SQL injection and SSRF
-paths plus parameterized-query and hostname-allowlisted negative controls. Their human-authored
-answer key is outside the scanned snapshot. The model receives the candidate and source
-context, never the expected disposition.
+paths plus parameterized-query and fixed-target/redirect-disabled negative controls. Their
+human-authored answer key and ground-truth basis are outside the scanned snapshot. The model
+receives the candidate and source context, never the expected disposition.
 
 Run the control explicitly:
 
@@ -29,6 +29,8 @@ Passing means only that the configured provider/model/prompt recovered these man
 knowns at that time. It is not an estimate of precision, recall, or calibration on unknown
 or independently authored repositories. The existing public corpus and UAT lanes remain
 the evidence for those separate questions.
+Qualification scores the declared disposition; it does not certify every incidental claim
+in the model's freeform rationale. Rationale accuracy is reviewed separately.
 
 ## Automatic cadence
 

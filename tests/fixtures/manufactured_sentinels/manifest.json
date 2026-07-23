@@ -7,41 +7,45 @@
       "id": "positive-sqli-concatenation",
       "title": "Potential SQL injection in product search",
       "file": "app.py",
-      "line_start": 10,
-      "line_end": 10,
+      "line_start": 12,
+      "line_end": 12,
       "citation_snippet": "return db.execute(sql).fetchall()",
       "severity": "high",
-      "expected": "confirmed"
+      "expected": "confirmed",
+      "ground_truth_basis": "HTTP query input is concatenated into SQL syntax before execution."
     },
     {
       "id": "negative-sqli-parameterized",
       "title": "Potential SQL injection in product search",
       "file": "app.py",
-      "line_start": 15,
-      "line_end": 18,
+      "line_start": 17,
+      "line_end": 20,
       "citation_snippet": "return db.execute(",
       "severity": "medium",
-      "expected": "killed"
+      "expected": "killed",
+      "ground_truth_basis": "HTTP query input is passed only as a bound parameter, never as SQL syntax."
     },
     {
       "id": "positive-ssrf-unrestricted",
       "title": "Potential SSRF in link preview",
       "file": "app.py",
-      "line_start": 23,
-      "line_end": 23,
+      "line_start": 25,
+      "line_end": 25,
       "citation_snippet": "return requests.get(target, timeout=2).text",
       "severity": "high",
-      "expected": "confirmed"
+      "expected": "confirmed",
+      "ground_truth_basis": "An attacker-provided URL flows directly into the outbound HTTP sink."
     },
     {
-      "id": "negative-ssrf-allowlisted",
+      "id": "negative-ssrf-fixed-target",
       "title": "Potential SSRF in link preview",
       "file": "app.py",
-      "line_start": 31,
-      "line_end": 31,
-      "citation_snippet": "return requests.get(target, timeout=2).text",
+      "line_start": 33,
+      "line_end": 33,
+      "citation_snippet": "return requests.get(target, timeout=2, allow_redirects=False).text",
       "severity": "medium",
-      "expected": "killed"
+      "expected": "killed",
+      "ground_truth_basis": "User input selects a key mapped to a fixed non-user-controlled URL, and redirects are disabled."
     }
   ]
 }

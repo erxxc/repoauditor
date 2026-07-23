@@ -1,7 +1,9 @@
-from urllib.parse import urlparse
-
 import requests
 from flask import request
+
+_ALLOWED_PREVIEWS = {
+    "help": "https://docs.example.test/help",
+}
 
 
 def unsafe_search(db):
@@ -24,8 +26,8 @@ def unsafe_preview():
 
 
 def safe_preview():
-    target = request.args.get("url")
-    parsed = urlparse(target)
-    if parsed.scheme != "https" or parsed.hostname not in {"docs.example.test"}:
-        raise ValueError("unapproved preview host")
-    return requests.get(target, timeout=2).text
+    page = request.args.get("page")
+    target = _ALLOWED_PREVIEWS.get(page)
+    if target is None:
+        raise ValueError("unknown preview page")
+    return requests.get(target, timeout=2, allow_redirects=False).text
