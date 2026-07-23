@@ -147,3 +147,11 @@ and appended to
 even when a later fixture fails, so a long paid run retains its partial evidence rather than
 collapsing to a final traceback. The workflow does not install scanner binaries, and marks
 the resulting corpus artifact as live-model-only coverage.
+
+For native retrieval failures, manually dispatch `live model tests` with
+`retrieval-diagnostic`. This scope restores and requires the exact public-corpus cache, then
+runs only the Juice Shop retrieval smoke test with flushed per-file diagnostics. It skips
+the API-key check, manufactured controls, and all live corpus tests, so it makes no model
+calls. The final `retrieval diagnostic: indexing ...` log entry identifies the file active
+at a native crash. A failed smoke gate also blocks `full-live`; later live steps no longer
+run under `always()` after preflight failure.

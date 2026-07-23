@@ -131,6 +131,19 @@ def test_javascript_ast_walk_handles_nesting_beyond_python_recursion_limit(tmp_p
     assert any(item.symbol == "deeplyNested" for item in callers)
 
 
+def test_retrieval_file_trace_is_explicitly_opt_in(tmp_path, monkeypatch, caplog):
+    (tmp_path / "trace.js").write_text("function traced() { return sink(); }\n")
+    monkeypatch.setenv("REPOAUDITOR_RETRIEVAL_TRACE_FILES", "1")
+
+    with caplog.at_level(logging.WARNING, logger="repoauditor.detect.retrieval.index"):
+        RetrievalIndex().build(tmp_path)
+
+    assert any(
+        record.message == "retrieval diagnostic: indexing trace.js"
+        for record in caplog.records
+    )
+
+
 def test_typescript_ast_caller_callee():
     index = RetrievalIndex().build(MULTILANG)
     assert _callers_in(index, "lookup", "svc.ts") == {"fetchUser"}

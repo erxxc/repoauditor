@@ -117,12 +117,16 @@ def test_live_workflow_defaults_manual_runs_to_sentinels_and_keeps_monthly_full_
     assert 'cron: "17 6 * * 2"' in workflow
     assert 'cron: "47 6 1 * *"' in workflow
     assert 'pytest -m "live and not instrument"' in workflow
+    assert "retrieval-diagnostic" in workflow
     assert "actions/cache/restore@v4" in workflow
-    assert "Require a validated corpus cache for full-live" in workflow
+    assert "Require a validated corpus cache" in workflow
     assert "REPOAUDITOR_UAT_RESULTS: live-corpus-results.json" in workflow
     assert "live-corpus-junit.xml" in workflow
     assert "Retain live corpus evidence" in workflow
     assert "Smoke-test restored Juice Shop retrieval" in workflow
+    assert 'REPOAUDITOR_RETRIEVAL_TRACE_FILES: "1"' in workflow
+    assert "success() &&" in workflow
+    assert "hashFiles('manufactured-sentinels.json') != ''" in workflow
     assert 'pytest -m "live and not instrument" -s -vv' in workflow
 
 

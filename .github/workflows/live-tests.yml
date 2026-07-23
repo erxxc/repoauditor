@@ -16,6 +16,7 @@ on:
         options:
           - sentinels-only
           - full-live
+          - retrieval-diagnostic
 
 permissions:
   contents: read
@@ -35,7 +36,10 @@ jobs:
       - name: Restore trusted pinned public snapshots
         id: corpus-cache
         if: >-
-          (github.event_name == 'workflow_dispatch' && inputs.scope == 'full-live') ||
+          (
+            github.event_name == 'workflow_dispatch' &&
+            (inputs.scope == 'full-live' || inputs.scope == 'retrieval-diagnostic')
+          ) ||
           github.event.schedule == '47 6 1 * *'
         uses: actions/cache/restore@v4
         with:
@@ -43,10 +47,13 @@ jobs:
             tests/fixtures/independent_*/snapshot
             tests/fixtures/anchor_owasp_*/snapshot
           key: public-corpus-v1-${{ runner.os }}-${{ hashFiles('tests/fixtures/materialize_public_corpus.py', 'tests/fixtures/independent_*/expected_findings.json', 'tests/fixtures/anchor_owasp_*/expected_findings.json') }}
-      - name: Require a validated corpus cache for full-live
+      - name: Require a validated corpus cache
         if: >-
           (
-            (github.event_name == 'workflow_dispatch' && inputs.scope == 'full-live') ||
+            (
+              github.event_name == 'workflow_dispatch' &&
+              (inputs.scope == 'full-live' || inputs.scope == 'retrieval-diagnostic')
+            ) ||
             github.event.schedule == '47 6 1 * *'
           ) &&
           steps.corpus-cache.outputs.cache-hit != 'true'
@@ -63,13 +70,21 @@ jobs:
       - run: uv sync --frozen --dev
       - name: Smoke-test restored Juice Shop retrieval
         if: >-
-          (github.event_name == 'workflow_dispatch' && inputs.scope == 'full-live') ||
+          (
+            github.event_name == 'workflow_dispatch' &&
+            (inputs.scope == 'full-live' || inputs.scope == 'retrieval-diagnostic')
+          ) ||
           github.event.schedule == '47 6 1 * *'
+        env:
+          REPOAUDITOR_RETRIEVAL_TRACE_FILES: "1"
         run: >-
           uv run pytest
           tests/test_benchmark_corpus.py::test_materialized_juice_shop_retrieval_index_builds
-          -q
+          -q -o log_cli=true -o log_cli_level=WARNING
       - name: Require the protected live-test secret
+        if: >-
+          github.event_name != 'workflow_dispatch' ||
+          inputs.scope != 'retrieval-diagnostic'
         shell: bash
         run: |
           if [[ -z "$ANTHROPIC_API_KEY" ]]; then
@@ -77,9 +92,17 @@ jobs:
             exit 1
           fi
       - name: Qualify falsification instrument with manufactured controls
+        if: >-
+          github.event_name != 'workflow_dispatch' ||
+          inputs.scope != 'retrieval-diagnostic'
         run: uv run repoauditor qualify-instrument --format json > manufactured-sentinels.json
       - name: Publish manufactured-control result
-        if: always()
+        if: >-
+          always() &&
+          (
+            github.event_name != 'workflow_dispatch' ||
+            inputs.scope != 'retrieval-diagnostic'
+          )
         run: |
           echo "## Manufactured falsification controls" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
@@ -93,7 +116,7 @@ jobs:
           fi
       - name: Run remaining live tests
         if: >-
-          always() &&
+          success() &&
           (
             (github.event_name == 'workflow_dispatch' && inputs.scope == 'full-live') ||
             github.event.schedule == '47 6 1 * *'
@@ -120,10 +143,10 @@ jobs:
           retention-days: 30
           if-no-files-found: warn
       - name: Retain manufactured-control evidence
-        if: always()
+        if: always() && hashFiles('manufactured-sentinels.json') != ''
         uses: actions/upload-artifact@v4
         with:
           name: manufactured-sentinels-${{ github.run_id }}
           path: manufactured-sentinels.json
           retention-days: 30
-          if-no-files-found: error
+          if-no-files-found: warn
