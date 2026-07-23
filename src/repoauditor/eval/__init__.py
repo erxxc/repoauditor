@@ -5,5 +5,19 @@ from .regression import (
     RegressionError,
     record_and_check,
 )
+from .convergence import (
+    ConvergenceResult,
+    evaluate_finding_convergence,
+    render_convergence,
+    run_finding_convergence,
+)
 
-__all__ = ["record_and_check", "RegressionError", "STAGE_PROMPT_VERSIONS"]
+__all__ = [
+    "record_and_check",
+    "RegressionError",
+    "STAGE_PROMPT_VERSIONS",
+    "ConvergenceResult",
+    "evaluate_finding_convergence",
+    "run_finding_convergence",
+    "render_convergence",
+]

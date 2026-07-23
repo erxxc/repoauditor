@@ -4,7 +4,13 @@ Only confirmed/unresolved findings stay live; killed candidates are persisted wi
 their status and reason (explicit null-result logging), never deleted.
 """
 
-from .challenger import challenge, challenge_finding
+from .challenger import FalsificationResolution, challenge, challenge_finding
 from .outcome import FalsificationOutcome, SelfCritique
 
-__all__ = ["challenge", "challenge_finding", "FalsificationOutcome", "SelfCritique"]
+__all__ = [
+    "challenge",
+    "challenge_finding",
+    "FalsificationResolution",
+    "FalsificationOutcome",
+    "SelfCritique",
+]

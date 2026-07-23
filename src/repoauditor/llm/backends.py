@@ -50,6 +50,7 @@ class AnthropicBackend:
 
         self._config = config or get_config()
         self._client = anthropic.Anthropic()
+        self.sampling_seed: int | None = None
 
     def complete(self, *, system: str, user: str, schema: type[BaseModel], context: dict) -> str:
         response = self._client.messages.parse(
@@ -80,6 +81,9 @@ class OpenAICompatibleBackend:
     def __init__(self, config: Config | None = None, client: httpx.Client | None = None):
         self._config = config or get_config()
         self._client = client or httpx.Client(timeout=self._config.llm.timeout_seconds)
+        # The compatible transport does not currently send a seed because support is not
+        # portable across endpoints. Convergence output must disclose this as unavailable.
+        self.sampling_seed: int | None = None
 
     def complete(self, *, system: str, user: str, schema: type[BaseModel], context: dict) -> str:
         llm = self._config.llm
@@ -158,6 +162,7 @@ class ScriptedBackend:
     def __init__(self, handler: ScriptedHandler):
         self._handler = handler
         self.calls: list[dict] = []
+        self.sampling_seed: int | None = 0
 
     def complete(self, *, system: str, user: str, schema: type[BaseModel], context: dict) -> str:
         self.calls.append({"schema": schema.__name__, "context": context})

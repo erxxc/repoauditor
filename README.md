@@ -484,6 +484,18 @@ More autonomous tool-using falsification is intentionally not enabled yet. The
 accounting, a protected real-world baseline, recall-safety evidence, read-only tools, and
 independent claim verification before such a mode can become available.
 
+To test whether one falsification verdict survives increasing retrieval and iteration
+resolution without changing its stored result:
+
+```sh
+uv run repoauditor falsify-convergence <finding-id>
+uv run repoauditor falsify-convergence <finding-id> --format json
+```
+
+This evaluation makes multiple model calls and may incur API cost. It reports verdict
+flips, citation overlap, confidence spread, and provider seed availability; it never writes
+a finding or verdict. See the [convergence evaluation methodology](docs/convergence-evaluation.md).
+
 ## Output controls and automation
 
 Global output flags must appear before the command:

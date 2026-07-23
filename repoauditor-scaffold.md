@@ -214,6 +214,12 @@ tests/
   and never means exploitable; `verification_incomplete` preserves missing or dynamic
   dependencies. These records are attached to unresolved review evidence but do not change
   the falsification verdict.
+- **Convergence evaluation** — an opt-in, non-mutating solution-refinement experiment
+  reruns a finding with artifact persistence disabled at coarse, standard, and refined
+  retrieval/iteration resolution. It reports flips, citation overlap, confidence spread,
+  and seed availability;
+  non-convergence never becomes an automatic production verdict. See
+  `docs/convergence-evaluation.md`.
 - **TrustBoundary** / **EntryPoint** / **DataStore** / **Integration** —
   output of the `map/` stage, referenced by findings via foreign key so
   every finding is traceable back to *why it matters architecturally*, not

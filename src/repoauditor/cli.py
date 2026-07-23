@@ -29,6 +29,7 @@ from .analyze import quantify_appendix
 from .config import get_config
 from .detect import DetectionRun, run_ensemble
 from .detect.ensemble import CITATION_INTEGRITY_VERSION, LENS_PROMPT_VERSIONS
+from .eval import evaluate_finding_convergence, render_convergence
 from .falsify import challenge
 from .falsify.challenger import (
     CONTEXT_VERSION as FALSIFY_CONTEXT_VERSION,
@@ -894,6 +895,29 @@ def quantify(
 def falsify(repo_id: str = typer.Argument(..., help="Repo id with candidate findings.")) -> None:
     """Run the falsification pass over candidate findings."""
     _falsify_stage(repo_id, get_config())
+
+
+@app.command(name="falsify-convergence")
+@_clean_errors("falsify-convergence")
+def falsify_convergence(
+    finding_id: int = typer.Argument(
+        ..., help="Persisted finding id to evaluate without changing its verdict."
+    ),
+    output_format: ListFormat = typer.Option(
+        ListFormat.HUMAN, "--format", help="Output format: human or json."
+    ),
+) -> None:
+    """Test verdict stability across coarse-to-refined analysis resolution.
+
+    This evaluation makes multiple model calls and can incur provider cost. It never
+    writes a falsification verdict or changes the production pipeline.
+    """
+    result = evaluate_finding_convergence(finding_id, get_config())
+    typer.echo(
+        result.model_dump_json(indent=2)
+        if output_format is ListFormat.JSON
+        else render_convergence(result)
+    )
 
 
 @app.command()
