@@ -39,11 +39,12 @@ startup is not duplicated on each pull request.
 REPOAUDITOR_LLM=live ANTHROPIC_API_KEY=... uv run pytest -m live
 ```
 
-The manufactured-sentinel control runs automatically every Tuesday. The broader golden and
-benchmark corpus sweep runs automatically on the first day of each month. Manual dispatch
-defaults to `sentinels-only`; select `full-live` explicitly to include the broader sweep.
-This split keeps both checks automatic without spending full-corpus API budget on every
-weekly instrument qualification.
+The manufactured-sentinel control runs automatically every Tuesday. On the first day of
+each month, the live lane runs only the pinned `serialize-javascript` pre/post pair. Manual
+dispatch defaults to `sentinels-only`; `live-lightweight` selects only the 12-file UAT
+fixture and `bounded-independent` selects that same small independent pre/post pair.
+There is deliberately no monolithic paid full-corpus option: one Juice Shop evaluation
+exhausted the configured provider allowance before producing a result.
 Configure `ANTHROPIC_API_KEY` as an Actions environment secret in the
 `live-model-tests` environment; do not store it in repository variables, workflow YAML, or
 test output. The workflow checks only whether the secret is non-empty and never prints its
@@ -136,25 +137,27 @@ evidence, not training labels: to add a reviewed outcome to the triage corpus, s
 repository as a persistent engagement and use `repoauditor triage-label` with an analyst and
 rationale. Use `uncertain` when the evidence does not support TP or FP.
 
-The `live model tests` workflow's `full-live` scope restores the same exact validated
-public-corpus cache before making any paid calls. It fails before evaluation when that cache
-is unavailable; it never silently skips acquisition-only entries or fetches a floating
-revision. A cache-backed Juice Shop retrieval-index smoke test also runs before any model
-call, protecting the paid lane from native parser/indexer failures on the first large
-JavaScript anchor. During the run, each completed fixture is named in verbose pytest output
-and appended to
+The `live model tests` workflow's `bounded-independent` scope restores the same exact
+validated public-corpus cache before making any paid calls. It fails before evaluation when
+that cache is unavailable; it never silently skips acquisition-only entries or fetches a
+floating revision. Paid corpus execution is constrained to one declared cohort, stops on
+the first test/provider failure (`pytest -x`), and is terminated after 20 minutes
+(`timeout`, with a 30-second forced-kill grace). The step has a 22-minute Actions ceiling
+and the whole job a 30-minute ceiling. During the run, each completed fixture is named in
+verbose pytest output and appended to
 `live-corpus-results.json`, and pytest writes `live-corpus-junit.xml`. Both are uploaded
 even when a later fixture fails, so a long paid run retains its partial evidence rather than
-collapsing to a final traceback. The workflow does not install scanner binaries, and marks
-the resulting corpus artifact as live-model-only coverage.
+collapsing to a final traceback. Scanner-dependent fixtures are absent from these
+model-only cohorts. Large OWASP anchors remain available to the free retrieval/scanner
+lanes, but are not submitted to the hosted model by this workflow.
 
 For native retrieval failures, manually dispatch `live model tests` with
 `retrieval-diagnostic`. This scope restores and requires the exact public-corpus cache, then
 runs only the Juice Shop retrieval smoke test with flushed per-file diagnostics. It skips
 the API-key check, manufactured controls, and all live corpus tests, so it makes no model
 calls. The final `retrieval diagnostic: indexing ...` log entry identifies the file active
-at a native crash. A failed smoke gate also blocks `full-live`; later live steps no longer
-run under `always()` after preflight failure.
+at a native crash. It is the cache-backed parser check for the large Juice Shop anchor and
+does not unlock a paid full-corpus sweep.
 
 The July 2026 Juice Shop diagnostic isolated a native failure in
 `data/datacreator.ts`: `tree-sitter 0.26.0` returned corrupted TypeScript coordinates and

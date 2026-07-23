@@ -36,9 +36,12 @@ in the model's freeform rationale. Rationale accuracy is reviewed separately.
 
 The protected paid live workflow runs the controls every Tuesday, publishes the structured
 result in the job summary, and retains it for 30 days. Manual dispatch defaults to
-`sentinels-only`; choose `full-live` explicitly for the broader corpus/golden sweep. The
-broader sweep remains automatically enforced on the first day of each month. The same
-control is not repeated inside that pytest selection, preventing duplicate API cost.
+`sentinels-only`. `live-lightweight` evaluates only the 12-file UAT fixture, while
+`bounded-independent` evaluates one pinned independent pre/post pair. The latter runs
+automatically on the first day of each month. Paid corpus evaluation stops on its first
+failure and has a 20-minute hard timeout; there is no monolithic hosted-model corpus sweep.
+The same manufactured control is not repeated inside a bounded pytest selection,
+preventing duplicate API cost.
 
 Current Anthropic and OpenAI-compatible transports do not provide a configured sampling
 seed, so the result explicitly reports repeatability as unisolated. Gauge/repeatability
