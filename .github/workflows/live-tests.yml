@@ -69,6 +69,17 @@ jobs:
           echo "No exact validated public-corpus cache exists for this revision." >&2
           echo "Run the 'public corpus cache' workflow before spending live-model budget." >&2
           exit 1
+      - name: Verify restored protected holdout before paid execution
+        if: >-
+          (
+            github.event_name == 'workflow_dispatch' &&
+            inputs.scope == 'bounded-independent'
+          ) ||
+          github.event.schedule == '47 6 1 * *'
+        run: >-
+          python tests/fixtures/audit_corpus_readiness.py
+          --require-materialized
+          --output corpus-readiness.json
       - uses: astral-sh/setup-uv@v6
         with:
           enable-cache: true
@@ -170,6 +181,7 @@ jobs:
           path: |
             live-corpus-results.json
             live-corpus-junit.xml
+            corpus-readiness.json
           retention-days: 30
           if-no-files-found: warn
       - name: Retain manufactured-control evidence

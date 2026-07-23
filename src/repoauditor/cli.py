@@ -30,10 +30,12 @@ from .config import get_config
 from .detect import DetectionRun, run_ensemble
 from .detect.ensemble import CITATION_INTEGRITY_VERSION, LENS_PROMPT_VERSIONS
 from .eval import (
+    build_usage_calibration,
     evaluate_finding_convergence,
     evaluate_manufactured_sentinels,
     render_convergence,
     render_sentinel_qualification,
+    render_usage_calibration,
 )
 from .falsify import challenge
 from .falsify.challenger import (
@@ -857,7 +859,9 @@ def triage_collection_command(
     ),
 ) -> None:
     """Show progress and coverage against the controlled real-label activation gate."""
-    typer.echo(render_collection_status(collection_status(repo_id, get_config())))
+    config = get_config()
+    db.init_db(config)
+    typer.echo(render_collection_status(collection_status(repo_id, config)))
 
 
 @app.command(name="triage-stats")
@@ -947,6 +951,42 @@ def qualify_instrument(
         else render_sentinel_qualification(result)
     )
     if not result.qualified:
+        raise typer.Exit(code=1)
+
+
+@app.command(name="usage-calibration")
+@_clean_errors("usage-calibration")
+def usage_calibration(
+    lightweight_run_id: int = typer.Option(
+        ..., "--lightweight-run-id", help="Completed lightweight fixture pipeline run id."
+    ),
+    independent_pre_run_id: int = typer.Option(
+        ..., "--independent-pre-run-id", help="Completed vulnerable pre-fix pipeline run id."
+    ),
+    independent_post_run_id: int = typer.Option(
+        ..., "--independent-post-run-id", help="Completed patched post-fix pipeline run id."
+    ),
+    output_format: ListFormat = typer.Option(
+        ListFormat.HUMAN, "--format", help="Output format: human or json."
+    ),
+) -> None:
+    """Compare recorded provider usage offline; never calls a model or changes a limit."""
+    config = get_config()
+    db.init_db(config)
+    report = build_usage_calibration(
+        {
+            "lightweight": lightweight_run_id,
+            "independent_pre": independent_pre_run_id,
+            "independent_post": independent_post_run_id,
+        },
+        config,
+    )
+    typer.echo(
+        report.model_dump_json(indent=2)
+        if output_format is ListFormat.JSON
+        else render_usage_calibration(report)
+    )
+    if not report.ready:
         raise typer.Exit(code=1)
 
 

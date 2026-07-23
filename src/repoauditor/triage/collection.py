@@ -18,6 +18,21 @@ from ..store.models import TriageAssessmentOutcome, TriageLabelSource
 
 MIN_LABELS = 40
 MIN_ENGAGEMENTS = 8
+# Descriptive coverage targets from the durable Phase-3 roadmap. They do not advance the
+# numeric activation gate merely by being named; each remains analyst-declared evidence.
+TARGET_DIMENSIONS = frozenset({
+    "authorization",
+    "business-logic",
+    "tenant-isolation",
+    "cross-service",
+    "ci-iac",
+    "agent-tool-boundary",
+    "dependencies",
+    "secrets",
+    "dead-code",
+    "mitigating-control",
+    "near-miss-negative",
+})
 
 
 @dataclass(frozen=True)
@@ -30,6 +45,7 @@ class CollectionStatus:
     unlabeled_triaged: int
     source_counts: dict[str, int] = field(default_factory=dict)
     dimension_counts: dict[str, int] = field(default_factory=dict)
+    missing_dimensions: tuple[str, ...] = ()
 
     @property
     def activation_ready(self) -> bool:
@@ -76,6 +92,7 @@ def collection_status(
         ),
         source_counts=dict(sorted(sources.items())),
         dimension_counts=dict(sorted(dimensions.items())),
+        missing_dimensions=tuple(sorted(TARGET_DIMENSIONS - dimensions.keys())),
     )
 
 
@@ -95,6 +112,9 @@ def render_collection_status(status: CollectionStatus) -> str:
         "declared dimensions: " + (
             ", ".join(f"{key}={value}" for key, value in status.dimension_counts.items())
             or "none"
+        ),
+        "unrepresented target dimensions: " + (
+            ", ".join(status.missing_dimensions) or "none"
         ),
     ]
     if not status.activation_ready:

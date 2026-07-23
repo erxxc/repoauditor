@@ -16,6 +16,11 @@ from .sentinels import (
     evaluate_manufactured_sentinels,
     render_sentinel_qualification,
 )
+from .usage_calibration import (
+    UsageCalibrationReport,
+    build_usage_calibration,
+    render_usage_calibration,
+)
 
 __all__ = [
     "record_and_check",
@@ -28,4 +33,7 @@ __all__ = [
     "SentinelQualification",
     "evaluate_manufactured_sentinels",
     "render_sentinel_qualification",
+    "UsageCalibrationReport",
+    "build_usage_calibration",
+    "render_usage_calibration",
 ]

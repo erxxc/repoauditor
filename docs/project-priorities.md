@@ -22,9 +22,11 @@ order so future sessions do not have to reconstruct it from conversation history
   training. It was a 30-second command-output yield being mistaken for process completion;
   polling the persistent session produced a clean exit (`26 passed` for the triage file).
   No classifier or native-runtime change was justified.
-- [ ] Calibrate the initial 75-call/250,000-token guardrails from one successful lightweight
-  run and one independent pre/post run. Treat them as safety ceilings, not statistically
-  calibrated defaults; never auto-raise them.
+- [~] Calibrate the initial 75-call/250,000-token guardrails. Offline readiness is shipped:
+  fixed evaluation roles, a zero-network corpus audit, and the fail-closed
+  `usage-calibration` report. Paid evidence still requires one successful lightweight run
+  and one protected independent pre/post pair after cache/provider access returns. Treat
+  the limits as safety ceilings, not statistically calibrated defaults; never auto-raise.
 
 ## P1 — controlled real-world evidence
 
@@ -32,9 +34,10 @@ order so future sessions do not have to reconstruct it from conversation history
   represented, across at least eight genuinely distinct engagements. Prefer 100–200 labels.
 - [ ] Review high-ranked, reserved novel, and sampled low-ranked findings. Preserve
   `insufficient_evidence` as abstention and record evidence-based rationales.
-- [ ] Freeze a protected baseline by repository commit, corpus version, provider/model,
-  prompt versions, and configuration. Keep fixtures/benchmarks separate from independent
-  evidence and protected holdouts out of training.
+- [~] Freeze a protected baseline. The serialize-javascript pre/post commits are explicitly
+  designated as a protected holdout and checked offline; provider/model/prompt/configured
+  result evidence remains pending the bounded online run. Keep fixtures/benchmarks separate
+  from independent evidence and protected holdouts out of training.
 
 ## P2 — validation maturity
 

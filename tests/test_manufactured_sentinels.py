@@ -121,6 +121,9 @@ def test_live_workflow_defaults_manual_runs_to_sentinels_and_keeps_monthly_full_
     assert "retrieval-diagnostic" in workflow
     assert "actions/cache/restore@v4" in workflow
     assert "Require a validated corpus cache" in workflow
+    assert "Verify restored protected holdout before paid execution" in workflow
+    assert "--require-materialized" in workflow
+    assert "corpus-readiness.json" in workflow
     assert "REPOAUDITOR_UAT_RESULTS: live-corpus-results.json" in workflow
     assert "live-corpus-junit.xml" in workflow
     assert "Retain live corpus evidence" in workflow

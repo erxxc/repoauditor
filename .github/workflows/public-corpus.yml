@@ -23,6 +23,11 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Audit checked-in corpus policy without network access
+        run: >-
+          python tests/fixtures/audit_corpus_readiness.py
+          --output corpus-readiness-before-materialization.json
+
       - name: Restore pinned public snapshots
         id: corpus-cache
         uses: actions/cache@v4
@@ -49,6 +54,12 @@ jobs:
       - name: Install locked test environment
         run: uv sync --frozen --dev
 
+      - name: Require the protected holdout snapshots
+        run: >-
+          python tests/fixtures/audit_corpus_readiness.py
+          --require-materialized
+          --output corpus-readiness.json
+
       - name: Verify corpus provenance, pairs, citations, and negative controls
         env:
           PYTEST_DISABLE_PLUGIN_AUTOLOAD: "1"
@@ -59,6 +70,8 @@ jobs:
             tests/test_benchmark_corpus.py::test_independent_corpus_has_eight_real_projects_with_pre_post_pairs \
             tests/test_benchmark_corpus.py::test_corpus_kinds_keep_fixtures_and_benchmarks_out_of_independent_gate \
             tests/test_benchmark_corpus.py::test_all_new_public_entries_are_pinned_acquisition_only \
+            tests/test_benchmark_corpus.py::test_protected_holdout_is_one_complete_independent_pre_post_pair \
+            tests/test_benchmark_corpus.py::test_offline_corpus_readiness_is_metadata_complete_and_network_free \
             --junitxml=public-corpus-results.xml
 
       - name: Record cache evidence
@@ -79,6 +92,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: public-corpus-integrity-${{ github.run_id }}
-          path: public-corpus-results.xml
+          path: |
+            public-corpus-results.xml
+            corpus-readiness-before-materialization.json
+            corpus-readiness.json
           retention-days: 30
           if-no-files-found: error

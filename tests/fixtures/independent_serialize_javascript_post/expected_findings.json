@@ -2,6 +2,7 @@
   "repo_id": "independent_serialize_javascript_post",
   "source": {
     "kind": "independent",
+    "evaluation_role": "protected_holdout",
     "materialization": "pinned-acquisition-only",
     "project_id": "serialize_javascript",
     "project": "serialize-javascript",
