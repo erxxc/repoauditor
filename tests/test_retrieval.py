@@ -3,7 +3,10 @@
 from __future__ import annotations
 
 import logging
+from importlib.metadata import version
 from pathlib import Path
+
+from packaging.version import Version
 
 from repoauditor.detect.retrieval import RetrievalIndex
 
@@ -129,6 +132,12 @@ def test_javascript_ast_walk_handles_nesting_beyond_python_recursion_limit(tmp_p
 
     callers = index.find_callers("sink")
     assert any(item.symbol == "deeplyNested" for item in callers)
+
+
+def test_tree_sitter_runtime_excludes_known_bad_0260():
+    """0.26.0 corrupts valid TypeScript node coordinates before a native crash."""
+    runtime = Version(version("tree-sitter"))
+    assert Version("0.25") <= runtime < Version("0.26")
 
 
 def test_retrieval_file_trace_is_explicitly_opt_in(tmp_path, monkeypatch, caplog):
