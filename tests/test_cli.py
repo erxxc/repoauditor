@@ -28,6 +28,36 @@ from repoauditor.store.models import (
 runner = CliRunner()
 
 
+def test_falsify_convergence_cli_is_thin_and_supports_json(monkeypatch):
+    from repoauditor.eval.convergence import ConvergenceResult
+
+    result_model = ConvergenceResult(
+        repo_id="r",
+        finding_id=7,
+        snapshot_commit="abc",
+        model="scripted",
+        provider="anthropic",
+        prompt_versions={"falsify": "v1"},
+        sampling_seed=None,
+        observations=[],
+        classification="stable",
+        verdict_flip_rate=0.0,
+        adjacent_evidence_jaccard=None,
+        confidence_spread=0.0,
+        first_stable_resolution=None,
+    )
+    monkeypatch.setattr(
+        cli, "evaluate_finding_convergence", lambda finding_id, config: result_model
+    )
+
+    result = runner.invoke(
+        cli.app, ["falsify-convergence", "7", "--format", "json"]
+    )
+
+    assert result.exit_code == 0, result.output
+    assert json.loads(result.stdout)["finding_id"] == 7
+
+
 @pytest.fixture
 def wired(tmp_config, monkeypatch):
     """A populated store + `cli.get_config` pointed at it, so the app hits the tmp DB."""

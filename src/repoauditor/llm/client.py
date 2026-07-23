@@ -68,6 +68,11 @@ class LLMClient:
         self._backend = backend
         self._config = config or get_config()
 
+    @property
+    def sampling_seed(self) -> int | None:
+        """Backend-reported deterministic seed, or None when no seed is supported."""
+        return getattr(self._backend, "sampling_seed", None)
+
     def call(
         self,
         *,

@@ -24,7 +24,9 @@ cross-source corroboration) that licenses a severity upgrade downstream.
 from __future__ import annotations
 
 import re
+from dataclasses import dataclass
 from pathlib import Path
+from typing import Callable
 
 from ..config import Config, get_config
 from ..ingest import latest_snapshot
@@ -66,6 +68,22 @@ _REFERENCE_TOKEN_RE = re.compile(r"\b(?:[A-Z][A-Z0-9_]{3,}|[A-Za-z_]\w*_bp)\b")
 _MAX_EVIDENCE_CHARS = 12_000
 
 
+@dataclass(frozen=True)
+class FalsificationResolution:
+    """Evaluation seam for perturbing instrument resolution, never the subject.
+
+    Production callers use the defaults, which exactly preserve the normal retrieval
+    policy. Convergence experiments may supply a different immutable profile without
+    changing repository content, prompts, thresholds, or the persisted finding.
+    """
+
+    name: str = "production"
+    local_context_lines: int = 10
+    related_result_base: int = 2
+    module_context_lines: int = 18
+    max_evidence_chars: int = _MAX_EVIDENCE_CHARS
+
+
 def _format_context(label: str, blocks: list) -> str:
     rendered = []
     seen: set[tuple[str, int, int, str]] = set()
@@ -98,10 +116,12 @@ def _falsification_context(
     architecture: ArchitectureMap,
     iteration: int,
     slice_evidence: PythonSliceEvidence | None = None,
+    resolution: FalsificationResolution | None = None,
 ) -> str:
     """Gather deterministic evidence with a genuinely broader strategy each round."""
     if index is None:
         return ""
+    resolution = resolution or FalsificationResolution()
     sections: list[str] = []
     enclosing = index.find_enclosing(
         finding.file, finding.line_start, finding.line_end
@@ -110,7 +130,10 @@ def _falsification_context(
         sections.append(_format_context("ENCLOSING FUNCTION", enclosing[:2]))
     else:
         excerpt = index.file_excerpt(
-            finding.file, finding.line_start, finding.line_end, context_lines=10
+            finding.file,
+            finding.line_start,
+            finding.line_end,
+            context_lines=resolution.local_context_lines,
         )
         if excerpt is not None:
             sections.append(_format_context("LOCAL SOURCE", [excerpt]))
@@ -125,14 +148,20 @@ def _falsification_context(
             related.extend(index.find_callers(info.symbol))
             related.extend(index.find_callees(info.symbol))
         related.extend(
-            index.find_similar_patterns(finding.citation_snippet, limit=2 + iteration)
+            index.find_similar_patterns(
+                finding.citation_snippet,
+                limit=resolution.related_result_base + iteration,
+            )
         )
         if related:
             sections.append(_format_context("CALL/PATTERN EVIDENCE", related))
 
     if iteration >= 3:
         excerpt = index.file_excerpt(
-            finding.file, finding.line_start, finding.line_end, context_lines=18
+            finding.file,
+            finding.line_start,
+            finding.line_end,
+            context_lines=resolution.module_context_lines,
         )
         if excerpt is not None:
             sections.append(_format_context("MODULE CONTEXT", [excerpt]))
@@ -152,7 +181,7 @@ def _falsification_context(
     return (
         f"# RETRIEVAL STRATEGY: {CONTEXT_VERSION}; tier={iteration}\n"
         f"{evidence}"
-    )[:_MAX_EVIDENCE_CHARS]
+    )[:resolution.max_evidence_chars]
 
 
 def _boundary_name(architecture: ArchitectureMap, finding: Finding) -> str:
@@ -200,6 +229,10 @@ def challenge_finding(
     config: Config | None = None,
     self_critique: bool = True,
     snapshot_commit: str | None = None,
+    resolution: FalsificationResolution | None = None,
+    evidence_observer: Callable[[int, str], None] | None = None,
+    minimum_iterations: int = 1,
+    persist_artifacts: bool = True,
 ) -> FalsificationOutcome:
     """Attempt to disprove one candidate finding via the bounded loop. Returns a verdict.
 
@@ -215,13 +248,20 @@ def challenge_finding(
     reflect step — which the eval harness uses as the honest baseline to benchmark the
     net-new self-critique prompt against (it has no predecessor prompt file). It is an
     eval knob only; production callers leave it on.
+
+    `resolution`, `evidence_observer`, `minimum_iterations`, and `persist_artifacts` are
+    evaluation seams. Their defaults preserve production retrieval, early exit, and audit
+    writes. Convergence evaluation disables artifact persistence and forces each profile to
+    reach its declared tier; normal falsification does neither.
     """
     config = config or get_config()
+    resolution = resolution or FalsificationResolution()
     threshold = config.llm.confidence_threshold
     max_iterations = max(1, config.falsify.max_iterations)
+    minimum_iterations = max(1, min(minimum_iterations, max_iterations))
     boundary = _boundary_name(architecture, finding)
     slice_evidence = build_python_slice(index, finding) if index is not None else None
-    if slice_evidence is not None and finding.id is not None:
+    if persist_artifacts and slice_evidence is not None and finding.id is not None:
         claim = claim_from_slice(finding.id, slice_evidence, snapshot_commit)
         claim_id = db.upsert_security_claim(claim, config)
         claim = claim.model_copy(update={"id": claim_id})
@@ -238,8 +278,10 @@ def challenge_finding(
     for iteration in range(1, max_iterations + 1):
         # OBSERVE — gather evidence, broadening the retrieval window each round.
         evidence_block = _falsification_context(
-            index, finding, architecture, iteration, slice_evidence
+            index, finding, architecture, iteration, slice_evidence, resolution
         )
+        if evidence_observer is not None:
+            evidence_observer(iteration, evidence_block)
 
         # THINK / ACT — form a verdict against the current evidence.
         verdict_completion = llm.call(
@@ -253,7 +295,7 @@ def challenge_finding(
             context={
                 "stage": "falsify", "repo_id": finding.repo_id,
                 "finding_id": finding.id, "citation": finding.citation_snippet,
-                "iteration": iteration,
+                "iteration": iteration, "resolution": resolution.name,
             },
         )
         verdict = verdict_completion.value
@@ -272,6 +314,7 @@ def challenge_finding(
                     "stage": "falsify", "repo_id": finding.repo_id,
                     "finding_id": finding.id, "citation": finding.citation_snippet,
                     "iteration": iteration, "critique": True,
+                    "resolution": resolution.name,
                 },
             )
             critique = critique_completion.value
@@ -292,10 +335,13 @@ def challenge_finding(
             and upheld
         )
 
-        _log_iteration(finding, iteration, evidence_block, verdict, critique, committed, config)
+        if persist_artifacts:
+            _log_iteration(
+                finding, iteration, evidence_block, verdict, critique, committed, config
+            )
         last_verdict, last_critique = verdict, critique
 
-        if committed:
+        if committed and iteration >= minimum_iterations:
             return verdict
 
     # Budget exhausted without a confident, upheld verdict -> degrade to unresolved.
