@@ -30,6 +30,30 @@ jobs:
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Restore trusted pinned public snapshots
+        id: corpus-cache
+        if: >-
+          (github.event_name == 'workflow_dispatch' && inputs.scope == 'full-live') ||
+          github.event.schedule == '47 6 1 * *'
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            tests/fixtures/independent_*/snapshot
+            tests/fixtures/anchor_owasp_*/snapshot
+          key: public-corpus-v1-${{ runner.os }}-${{ hashFiles('tests/fixtures/materialize_public_corpus.py', 'tests/fixtures/independent_*/expected_findings.json', 'tests/fixtures/anchor_owasp_*/expected_findings.json') }}
+      - name: Require a validated corpus cache for full-live
+        if: >-
+          (
+            (github.event_name == 'workflow_dispatch' && inputs.scope == 'full-live') ||
+            github.event.schedule == '47 6 1 * *'
+          ) &&
+          steps.corpus-cache.outputs.cache-hit != 'true'
+        run: |
+          echo "No exact validated public-corpus cache exists for this revision." >&2
+          echo "Run the 'public corpus cache' workflow before spending live-model budget." >&2
+          exit 1
       - uses: astral-sh/setup-uv@v6
         with:
           enable-cache: true
@@ -66,7 +90,27 @@ jobs:
             (github.event_name == 'workflow_dispatch' && inputs.scope == 'full-live') ||
             github.event.schedule == '47 6 1 * *'
           )
-        run: uv run pytest -m "live and not instrument"
+        env:
+          REPOAUDITOR_UAT_RESULTS: live-corpus-results.json
+          REPOAUDITOR_UAT_SCANNER_COVERAGE: not-installed-live-model-only
+        run: >-
+          uv run pytest -m "live and not instrument" -s
+          --junitxml=live-corpus-junit.xml
+      - name: Retain live corpus evidence
+        if: >-
+          always() &&
+          (
+            (github.event_name == 'workflow_dispatch' && inputs.scope == 'full-live') ||
+            github.event.schedule == '47 6 1 * *'
+          )
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-corpus-${{ github.run_id }}
+          path: |
+            live-corpus-results.json
+            live-corpus-junit.xml
+          retention-days: 30
+          if-no-files-found: warn
       - name: Retain manufactured-control evidence
         if: always()
         uses: actions/upload-artifact@v4

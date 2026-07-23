@@ -61,8 +61,10 @@ def _append_live_uat_result(path: Path, benchmark_repo, score: dict, run, config
             "generated_at": datetime.now(timezone.utc).isoformat(),
             "mode": "live-model",
             "methodology": (
-                "Purpose-built lightweight fixture with human-authored ground truth; "
-                "not evidence of independent real-world performance."
+                "Mixed benchmark corpus with human-reviewed ground truth. Each result "
+                "retains its corpus kind: purpose-built fixture results are not evidence "
+                "of independent real-world performance, while independent-project labels "
+                "cover one documented historical CVE and are not exhaustive."
             ),
             "scanner_coverage": os.environ.get(
                 "REPOAUDITOR_UAT_SCANNER_COVERAGE", "environment-dependent"
@@ -197,6 +199,7 @@ def test_live_uat_artifact_is_explicitly_fixture_derived(tmp_config, tmp_path, m
 
     document = json.loads(artifact.read_text())
     assert "not evidence of independent real-world performance" in document["methodology"]
+    assert "not exhaustive" in document["methodology"]
     assert document["scanner_coverage"] == "not-installed-live-model-only"
     assert document["results"][0]["kind"] == "fixture"
     final = document["results"][0]["evaluation"]["final_countable_confirmed"]

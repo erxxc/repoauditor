@@ -117,6 +117,11 @@ def test_live_workflow_defaults_manual_runs_to_sentinels_and_keeps_monthly_full_
     assert 'cron: "17 6 * * 2"' in workflow
     assert 'cron: "47 6 1 * *"' in workflow
     assert 'pytest -m "live and not instrument"' in workflow
+    assert "actions/cache/restore@v4" in workflow
+    assert "Require a validated corpus cache for full-live" in workflow
+    assert "REPOAUDITOR_UAT_RESULTS: live-corpus-results.json" in workflow
+    assert "live-corpus-junit.xml" in workflow
+    assert "Retain live corpus evidence" in workflow
 
 
 def test_qualification_cli_exits_nonzero_on_miss(tmp_config, monkeypatch):
