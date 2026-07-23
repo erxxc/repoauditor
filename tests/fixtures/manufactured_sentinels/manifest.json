@@ -7,45 +7,45 @@
       "id": "positive-sqli-concatenation",
       "title": "Potential SQL injection in product search",
       "file": "app.py",
-      "line_start": 12,
-      "line_end": 12,
+      "line_start": 16,
+      "line_end": 16,
       "citation_snippet": "return db.execute(sql).fetchall()",
       "severity": "high",
       "expected": "confirmed",
-      "ground_truth_basis": "HTTP query input is concatenated into SQL syntax before execution."
+      "ground_truth_basis": "A registered HTTP route concatenates query input into SQL syntax before execution."
     },
     {
       "id": "negative-sqli-parameterized",
       "title": "Potential SQL injection in product search",
       "file": "app.py",
-      "line_start": 17,
-      "line_end": 20,
+      "line_start": 23,
+      "line_end": 26,
       "citation_snippet": "return db.execute(",
       "severity": "medium",
       "expected": "killed",
-      "ground_truth_basis": "HTTP query input is passed only as a bound parameter, never as SQL syntax."
+      "ground_truth_basis": "A registered HTTP route passes query input only as a bound parameter, never as SQL syntax."
     },
     {
       "id": "positive-ssrf-unrestricted",
       "title": "Potential SSRF in link preview",
       "file": "app.py",
-      "line_start": 25,
-      "line_end": 25,
+      "line_start": 32,
+      "line_end": 32,
       "citation_snippet": "return requests.get(target, timeout=2).text",
       "severity": "high",
       "expected": "confirmed",
-      "ground_truth_basis": "An attacker-provided URL flows directly into the outbound HTTP sink."
+      "ground_truth_basis": "A registered HTTP route sends an attacker-provided URL directly to the outbound HTTP sink."
     },
     {
       "id": "negative-ssrf-fixed-target",
       "title": "Potential SSRF in link preview",
       "file": "app.py",
-      "line_start": 33,
-      "line_end": 33,
+      "line_start": 41,
+      "line_end": 41,
       "citation_snippet": "return requests.get(target, timeout=2, allow_redirects=False).text",
       "severity": "medium",
       "expected": "killed",
-      "ground_truth_basis": "User input selects a key mapped to a fixed non-user-controlled URL, and redirects are disabled."
+      "ground_truth_basis": "A registered HTTP route maps user input to a fixed non-user-controlled URL and disables redirects."
     }
   ]
 }
