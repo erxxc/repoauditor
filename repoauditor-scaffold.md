@@ -220,6 +220,11 @@ tests/
   and seed availability;
   non-convergence never becomes an automatic production verdict. See
   `docs/convergence-evaluation.md`.
+- **Manufactured-solution controls** — two known exploitable paths and two close negative
+  controls qualify the falsification instrument on the protected weekly live cadence.
+  Their answer key stays outside the snapshot; all four must recover for that instrument
+  run to qualify. They are never injected into user scans and never presented as real-world
+  accuracy evidence. See `docs/manufactured-sentinels.md`.
 - **TrustBoundary** / **EntryPoint** / **DataStore** / **Integration** —
   output of the `map/` stage, referenced by findings via foreign key so
   every finding is traceable back to *why it matters architecturally*, not
