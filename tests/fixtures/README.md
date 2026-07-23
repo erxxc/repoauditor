@@ -74,7 +74,11 @@ independent project has one advisory-derived target rather than exhaustive label
 reports unmatched findings as `unadjudicated_candidate_count`, never as false positives. The
 artifact distinguishes binary availability from Semgrep's actual per-fixture run status and
 reports pair-stable/pre-only/post-only candidate deltas. The separate paid mode runs only
-`uat_lightweight_app` and labels its metrics fixture-derived.
+`uat_lightweight_app` and labels its metrics fixture-derived. That paid mode scores
+falsification-confirmed findings after production-equivalent duplicate grouping, excludes
+the SCA-only dependency case from its scanner-free model denominator, and reports
+killed/unresolved/deferred outcomes and severity agreement separately. Its version-2 JSON
+also retains per-case match evidence so a headline precision/recall value is auditable.
 
 ## Public vulnerable application anchors
 
