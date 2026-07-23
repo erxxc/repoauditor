@@ -118,6 +118,19 @@ def test_javascript_ast_caller_callee():
     assert run_query.language == "javascript"
 
 
+def test_javascript_ast_walk_handles_nesting_beyond_python_recursion_limit(tmp_path):
+    depth = 1_500
+    nested = "(" * depth + "userInput" + ")" * depth
+    (tmp_path / "deep.js").write_text(
+        f"function deeplyNested() {{ return sink({nested}); }}\n"
+    )
+
+    index = RetrievalIndex().build(tmp_path)
+
+    callers = index.find_callers("sink")
+    assert any(item.symbol == "deeplyNested" for item in callers)
+
+
 def test_typescript_ast_caller_callee():
     index = RetrievalIndex().build(MULTILANG)
     assert _callers_in(index, "lookup", "svc.ts") == {"fetchUser"}

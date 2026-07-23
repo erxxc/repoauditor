@@ -61,6 +61,14 @@ jobs:
         with:
           python-version: "3.12"
       - run: uv sync --frozen --dev
+      - name: Smoke-test restored Juice Shop retrieval
+        if: >-
+          (github.event_name == 'workflow_dispatch' && inputs.scope == 'full-live') ||
+          github.event.schedule == '47 6 1 * *'
+        run: >-
+          uv run pytest
+          tests/test_benchmark_corpus.py::test_materialized_juice_shop_retrieval_index_builds
+          -q
       - name: Require the protected live-test secret
         shell: bash
         run: |
@@ -94,7 +102,7 @@ jobs:
           REPOAUDITOR_UAT_RESULTS: live-corpus-results.json
           REPOAUDITOR_UAT_SCANNER_COVERAGE: not-installed-live-model-only
         run: >-
-          uv run pytest -m "live and not instrument" -s
+          uv run pytest -m "live and not instrument" -s -vv
           --junitxml=live-corpus-junit.xml
       - name: Retain live corpus evidence
         if: >-

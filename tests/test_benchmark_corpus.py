@@ -32,6 +32,7 @@ import pytest
 from conftest import FIXTURES_DIR, _load_fixture, benchmark_corpus_ids
 from repoauditor.detect import run_ensemble
 from repoauditor.detect.deterministic import SecretsAdapter
+from repoauditor.detect.retrieval import RetrievalIndex
 from repoauditor.eval import record_and_check
 from repoauditor.falsify import challenge
 from repoauditor.ingest import ingest_repo
@@ -177,6 +178,18 @@ def test_all_new_public_entries_are_pinned_acquisition_only():
         for fixture in entries
     )
     assert all(fixture.expected["source"].get("pinned_commit") for fixture in entries)
+
+
+@pytest.mark.integration
+def test_materialized_juice_shop_retrieval_index_builds():
+    """Cache-backed native-parser smoke test; never calls scanners or a model."""
+    fixture = _load_fixture("anchor_owasp_juice_shop")
+    if not fixture.snapshot_path.is_dir():
+        pytest.skip("Juice Shop pinned snapshot is not materialized")
+
+    index = RetrievalIndex().build(fixture.snapshot_path)
+
+    assert index.snapshot_path == fixture.snapshot_path.resolve()
 
 
 def test_live_uat_artifact_is_explicitly_fixture_derived(tmp_config, tmp_path, monkeypatch):

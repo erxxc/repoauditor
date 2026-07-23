@@ -409,7 +409,12 @@ def _index_treesitter_source(text: str, rel: str, ts_lang: str, parser) -> list[
     def_types = _DEF_TYPES[family]
     infos: list[FunctionInfo] = []
 
-    def visit(node) -> None:
+    # Tree-sitter can represent generated/minified JavaScript with nesting deeper
+    # than Python's call stack. Walk iteratively while preserving the recursive
+    # implementation's preorder (parent, then children from left to right).
+    stack = [tree.root_node]
+    while stack:
+        node = stack.pop()
         name: str | None = None
         body = node
         if node.type in def_types:
@@ -431,10 +436,7 @@ def _index_treesitter_source(text: str, rel: str, ts_lang: str, parser) -> list[
                 calls=_ts_collect_calls(body, family, src),
                 language=ts_lang,
             ))
-        for child in node.children:
-            visit(child)
-
-    visit(tree.root_node)
+        stack.extend(reversed(node.children))
     return infos
 
 
