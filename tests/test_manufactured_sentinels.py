@@ -20,6 +20,7 @@ from repoauditor.store import db
 from repoauditor.store.models import FalsificationStatus
 
 FIXTURE = Path(__file__).parent / "fixtures" / "manufactured_sentinels"
+WORKFLOW = Path(__file__).parents[1] / ".github" / "workflows" / "live-tests.yml"
 
 
 def _instrument_handler(_system, user, schema, _context):
@@ -98,6 +99,16 @@ def test_answer_key_is_outside_scanned_snapshot():
     assert manifest.kind == "manufactured_solution"
     assert not (snapshot / "manifest.json").exists()
     assert "expected" not in (snapshot / "app.py").read_text()
+
+
+def test_live_workflow_defaults_manual_runs_to_sentinels_and_keeps_monthly_full_lane():
+    workflow = WORKFLOW.read_text()
+
+    assert "default: sentinels-only" in workflow
+    assert "inputs.scope == 'full-live'" in workflow
+    assert 'cron: "17 6 * * 2"' in workflow
+    assert 'cron: "47 6 1 * *"' in workflow
+    assert 'pytest -m "live and not instrument"' in workflow
 
 
 def test_qualification_cli_exits_nonzero_on_miss(tmp_config, monkeypatch):

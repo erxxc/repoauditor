@@ -32,10 +32,11 @@ the evidence for those separate questions.
 
 ## Automatic cadence
 
-The protected paid live workflow runs the controls every Tuesday before the remaining live
-tests, publishes the structured result in the job summary, and retains it for 30 days. The
-same control is not repeated inside the subsequent pytest selection, preventing duplicate
-API cost.
+The protected paid live workflow runs the controls every Tuesday, publishes the structured
+result in the job summary, and retains it for 30 days. Manual dispatch defaults to
+`sentinels-only`; choose `full-live` explicitly for the broader corpus/golden sweep. The
+broader sweep remains automatically enforced on the first day of each month. The same
+control is not repeated inside that pytest selection, preventing duplicate API cost.
 
 Current Anthropic and OpenAI-compatible transports do not provide a configured sampling
 seed, so the result explicitly reports repeatability as unisolated. Gauge/repeatability
