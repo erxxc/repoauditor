@@ -10,9 +10,10 @@ evidence exists.
 
 ## Activation prerequisites
 
-1. **Authoritative usage accounting** — provider-reported input/output/cache tokens and
-   latency per call are persisted. Dollar cost may be calculated only from a dated,
-   provider/model-specific price source; otherwise report tokens and leave cost unavailable.
+1. **Authoritative usage accounting** — **implemented for the current bounded pipeline**:
+   provider-reported input/output/cache tokens and latency per attempt are persisted.
+   Calls whose failure response omits usage metadata remain counted and explicitly unknown.
+   Dollar cost stays unavailable until a dated, provider/model-specific price source exists.
 2. **Protected evaluation cohort** — independently authored, human-adjudicated repositories
    remain outside prompt development and training.
 3. **Baseline comparison** — compare the current bounded falsifier against the proposed

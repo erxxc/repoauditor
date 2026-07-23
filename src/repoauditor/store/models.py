@@ -55,6 +55,25 @@ class StageRun(BaseModel):
     failure_detail: str | None = None
 
 
+class ModelUsage(BaseModel):
+    """Authoritative provider-reported usage for one model request attempt."""
+
+    id: int | None = None
+    pipeline_run_id: int | None = None
+    stage: str
+    module: str
+    prompt_version: str
+    provider: str
+    model: str
+    usage_available: bool
+    input_tokens: int | None = None
+    output_tokens: int | None = None
+    cache_read_tokens: int | None = None
+    cache_write_tokens: int | None = None
+    latency_ms: int
+    recorded_at: str | None = None
+
+
 class Severity(StrEnum):
     INFO = "info"
     LOW = "low"

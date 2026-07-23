@@ -476,13 +476,39 @@ rerun without duplicating its persisted records. Existing downstream finding ver
 preserved. Run history records stage status, timing, artifacts, attributable failures, and
 the raw-to-review funnel: raw/unique candidates, duplicate amplification, triage suppression
 context, falsification outcomes, normalization abstentions, and review-request counts.
-Provider token usage and dollar cost are shown as not recorded rather than estimated until
-the configured backend supplies authoritative usage metadata.
+Successful provider responses record authoritative input, output, cache, and latency
+metadata per attempt. `repoauditor runs show <run-id>` reports the run totals. If a provider
+failure does not expose usage metadata, the attempt is still counted and is explicitly
+reported as `unknown-usage-calls`; repoauditor never invents a token value. Dollar cost
+remains unavailable because no dated provider/model price table is persisted.
+
+Two `[llm]` circuit breakers prevent an unattended run from issuing provider calls
+indefinitely:
+
+```toml
+max_calls_per_pipeline_run = 75
+max_tokens_per_pipeline_run = 250000
+```
+
+The call ceiling includes failed attempts, even when the provider withholds token metadata.
+The token ceiling uses only provider-reported input, output, and cache tokens and is checked
+before each request, so one in-flight request can cross the threshold before the next call
+is stopped. A budget stop is an attributable, resumable pipeline failure; review the stored
+usage with `runs show`, raise a limit deliberately if justified, then rerun the same source.
+Set a limit to `0` only when an external budget control is already in place.
+
+Each provider request also uses `[llm].timeout_seconds` (120 seconds by default). Provider
+SDK retries are disabled: repoauditor's shared reliability layer owns the bounded retry
+count and persisted attempts. Validation, connection, timeout, HTTP 408, and 5xx failures
+may retry within that bound. Authentication, permission, invalid-request/model, quota/429,
+and other terminal 4xx failures stop immediately instead of spending the remaining budget.
 
 More autonomous tool-using falsification is intentionally not enabled yet. The
 [agentic escalation gate](docs/agentic-escalation-gate.md) requires authoritative usage
 accounting, a protected real-world baseline, recall-safety evidence, read-only tools, and
 independent claim verification before such a mode can become available.
+The current cross-project sequence and evidence gates are recorded in
+[docs/project-priorities.md](docs/project-priorities.md).
 
 To test whether one falsification verdict survives increasing retrieval and iteration
 resolution without changing its stored result:

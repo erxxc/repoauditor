@@ -137,6 +137,12 @@ evidence, not training labels: to add a reviewed outcome to the triage corpus, s
 repository as a persistent engagement and use `repoauditor triage-label` with an analyst and
 rationale. Use `uncertain` when the evidence does not support TP or FP.
 
+The application also enforces the `[llm]` per-pipeline call and provider-reported token
+ceilings in `config.toml`. These complement the Actions wall-clock timeouts: the call limit
+terminates fast provider-error/retry storms, while the token limit stops before the next
+request after the recorded total reaches its ceiling. Provider calls without returned usage
+metadata count toward the call ceiling and remain explicitly unknown in token totals.
+
 The `live model tests` workflow's `bounded-independent` scope restores the same exact
 validated public-corpus cache before making any paid calls. It fails before evaluation when
 that cache is unavailable; it never silently skips acquisition-only entries or fetches a

@@ -53,13 +53,21 @@ class LLMConfig(BaseModel):
     base_url: str = "https://api.openai.com/v1"
     api_key_env: str = "OPENAI_API_KEY"
     response_format: Literal["json_schema", "json_object", "none"] = "json_schema"
+    # Per provider request. Both production transports disable hidden retries and use
+    # this shared timeout so the reliability layer owns the complete attempt budget.
     timeout_seconds: float = Field(default=120.0, gt=0.0)
 
     # Below this, a stage's reported confidence is treated as "not confident" and
     # routed to a broader-context re-score or to `unresolved` — never rounded up.
     confidence_threshold: float = 0.5
-    # Bounded retries on parse/validation failure before a ValidationFailure is logged.
+    # Bounded retries on parse/validation or plausibly transient provider failure before
+    # a ValidationFailure is logged. Terminal 4xx/quota/auth failures are never retried.
     max_retries: int = 2
+    # Operational circuit breakers, not risk-model priors. They apply across one
+    # orchestrated pipeline run and stop before the next provider request. Set either
+    # value to 0 to disable that particular ceiling.
+    max_calls_per_pipeline_run: int = Field(default=75, ge=0)
+    max_tokens_per_pipeline_run: int = Field(default=250_000, ge=0)
 
 
 class FalsifyConfig(BaseModel):

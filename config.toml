@@ -31,6 +31,10 @@ timeout_seconds = 120.0
 confidence_threshold = 0.5
 # Bounded retries on parse/validation failure before a ValidationFailure is logged.
 max_retries = 2
+# Paid-provider circuit breakers for one `repoauditor run`. A stopped run remains
+# resumable after an analyst raises the limit or narrows the target.
+max_calls_per_pipeline_run = 75
+max_tokens_per_pipeline_run = 250000
 
 [detect]
 # Deterministic tool adapters (src/repoauditor/detect/deterministic/).

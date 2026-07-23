@@ -13,12 +13,21 @@ from .backends import (
     OpenAICompatibleBackend,
     ScriptedBackend,
 )
-from .client import Completion, LLMClient, LLMValidationError, get_llm_client
+from .client import (
+    Completion,
+    LLMBudgetExceeded,
+    LLMClient,
+    LLMValidationError,
+    get_llm_client,
+    model_usage_scope,
+)
 
 __all__ = [
     "LLMClient",
     "Completion",
     "LLMValidationError",
+    "LLMBudgetExceeded",
+    "model_usage_scope",
     "get_llm_client",
     "Backend",
     "BackendError",

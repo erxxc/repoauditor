@@ -13,6 +13,7 @@ backend is in use.
 from __future__ import annotations
 
 import os
+from dataclasses import dataclass
 from typing import Callable, Protocol, runtime_checkable
 
 import httpx
@@ -24,9 +25,20 @@ from ..config import Config, get_config
 class BackendError(RuntimeError):
     """The backend produced no usable response (refusal, empty output)."""
 
-    def __init__(self, message: str, raw: str = ""):
+    def __init__(self, message: str, raw: str = "", *, retryable: bool = True):
         super().__init__(message)
         self.raw = raw
+        self.retryable = retryable
+
+
+@dataclass(frozen=True)
+class BackendUsage:
+    """Usage fields reported by the provider for one completed request."""
+
+    input_tokens: int
+    output_tokens: int
+    cache_read_tokens: int = 0
+    cache_write_tokens: int = 0
 
 
 @runtime_checkable
@@ -49,10 +61,19 @@ class AnthropicBackend:
         import anthropic  # lazy: importing this module never requires the SDK
 
         self._config = config or get_config()
-        self._client = anthropic.Anthropic()
+        self._anthropic = anthropic
+        # The shared LLM client is the sole owner of retry count. Disabling the SDK's
+        # hidden retries keeps configured budgets and persisted attempt counts exact.
+        self._client = anthropic.Anthropic(
+            timeout=self._config.llm.timeout_seconds,
+            max_retries=0,
+        )
         self.sampling_seed: int | None = None
+        self.last_usage: BackendUsage | None = None
+        self.tracks_usage = True
 
     def complete(self, *, system: str, user: str, schema: type[BaseModel], context: dict) -> str:
+        self.last_usage = None
         try:
             response = self._client.messages.parse(
                 model=self._config.model.name,
@@ -69,6 +90,33 @@ class AnthropicBackend:
             raise BackendError(
                 f"model returned invalid {schema.__name__}: {exc}"
             ) from exc
+        except self._anthropic.APIConnectionError as exc:
+            raise BackendError(
+                f"Anthropic request failed transiently ({type(exc).__name__})"
+            ) from exc
+        except self._anthropic.APIStatusError as exc:
+            status = int(getattr(exc, "status_code", 0) or 0)
+            response = getattr(exc, "response", None)
+            raw = getattr(response, "text", "") if response is not None else ""
+            retryable = status >= 500 or status == 408
+            raise BackendError(
+                f"Anthropic request failed (HTTP {status or 'unknown'}; "
+                f"{type(exc).__name__})",
+                raw=raw,
+                retryable=retryable,
+            ) from exc
+        usage = getattr(response, "usage", None)
+        if usage is not None:
+            self.last_usage = BackendUsage(
+                input_tokens=int(getattr(usage, "input_tokens", 0) or 0),
+                output_tokens=int(getattr(usage, "output_tokens", 0) or 0),
+                cache_read_tokens=int(
+                    getattr(usage, "cache_read_input_tokens", 0) or 0
+                ),
+                cache_write_tokens=int(
+                    getattr(usage, "cache_creation_input_tokens", 0) or 0
+                ),
+            )
         parsed = response.parsed_output
         if parsed is None:  # refusal or unparsable — surface, don't guess
             raise BackendError(
@@ -93,8 +141,11 @@ class OpenAICompatibleBackend:
         # The compatible transport does not currently send a seed because support is not
         # portable across endpoints. Convergence output must disclose this as unavailable.
         self.sampling_seed: int | None = None
+        self.last_usage: BackendUsage | None = None
+        self.tracks_usage = True
 
     def complete(self, *, system: str, user: str, schema: type[BaseModel], context: dict) -> str:
+        self.last_usage = None
         llm = self._config.llm
         schema_json = schema.model_json_schema()
         schema_instruction = (
@@ -133,9 +184,22 @@ class OpenAICompatibleBackend:
             response = self._client.post(url, headers=headers, json=payload)
             response.raise_for_status()
             body = response.json()
-        except (httpx.HTTPError, ValueError) as exc:
+        except httpx.HTTPStatusError as exc:
+            status = exc.response.status_code
+            raise BackendError(
+                f"OpenAI-compatible request failed (HTTP {status})",
+                raw=exc.response.text,
+                retryable=status >= 500 or status == 408,
+            ) from exc
+        except httpx.RequestError as exc:
+            raise BackendError(
+                f"OpenAI-compatible request failed transiently ({type(exc).__name__})"
+            ) from exc
+        except ValueError as exc:
             raw = getattr(locals().get("response"), "text", "")
-            raise BackendError(f"OpenAI-compatible request failed: {exc}", raw=raw) from exc
+            raise BackendError(
+                "OpenAI-compatible response was not valid JSON", raw=raw
+            ) from exc
 
         try:
             choice = body["choices"][0]
@@ -151,6 +215,20 @@ class OpenAICompatibleBackend:
                 f"OpenAI-compatible model returned no content"
                 + (f": {refusal}" if refusal else ""),
                 raw=str(body),
+            )
+        usage = body.get("usage")
+        if isinstance(usage, dict):
+            details = usage.get("prompt_tokens_details")
+            cached = details.get("cached_tokens", 0) if isinstance(details, dict) else 0
+            prompt_tokens = int(usage.get("prompt_tokens", 0) or 0)
+            cached_tokens = int(cached or 0)
+            self.last_usage = BackendUsage(
+                # OpenAI-compatible APIs commonly include cached tokens in
+                # prompt_tokens. Store the non-cached remainder so aggregate
+                # processed tokens do not double-count cache reads.
+                input_tokens=max(0, prompt_tokens - cached_tokens),
+                output_tokens=int(usage.get("completion_tokens", 0) or 0),
+                cache_read_tokens=cached_tokens,
             )
         return content
 
@@ -172,6 +250,8 @@ class ScriptedBackend:
         self._handler = handler
         self.calls: list[dict] = []
         self.sampling_seed: int | None = 0
+        self.last_usage: BackendUsage | None = None
+        self.tracks_usage = False
 
     def complete(self, *, system: str, user: str, schema: type[BaseModel], context: dict) -> str:
         self.calls.append({"schema": schema.__name__, "context": context})
