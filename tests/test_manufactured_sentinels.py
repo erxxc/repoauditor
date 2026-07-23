@@ -113,10 +113,11 @@ def test_live_workflow_defaults_manual_runs_to_sentinels_and_keeps_monthly_full_
     workflow = WORKFLOW.read_text()
 
     assert "default: sentinels-only" in workflow
-    assert "inputs.scope == 'full-live'" in workflow
+    assert "live-lightweight" in workflow
+    assert "bounded-independent" in workflow
+    assert "full-live" not in workflow
     assert 'cron: "17 6 * * 2"' in workflow
     assert 'cron: "47 6 1 * *"' in workflow
-    assert 'pytest -m "live and not instrument"' in workflow
     assert "retrieval-diagnostic" in workflow
     assert "actions/cache/restore@v4" in workflow
     assert "Require a validated corpus cache" in workflow
@@ -127,7 +128,15 @@ def test_live_workflow_defaults_manual_runs_to_sentinels_and_keeps_monthly_full_
     assert 'REPOAUDITOR_RETRIEVAL_TRACE_FILES: "1"' in workflow
     assert "success() &&" in workflow
     assert "hashFiles('manufactured-sentinels.json') != ''" in workflow
-    assert 'pytest -m "live and not instrument" -s -vv' in workflow
+    assert "timeout-minutes: 30" in workflow
+    assert "timeout-minutes: 22" in workflow
+    assert "timeout --signal=TERM --kill-after=30s 20m" in workflow
+    assert "-s -vv -x --junitxml=live-corpus-junit.xml" in workflow
+    assert "uat_lightweight_app" in workflow
+    assert (
+        "independent_serialize_javascript_pre,independent_serialize_javascript_post"
+        in workflow
+    )
 
 
 def test_qualification_cli_exits_nonzero_on_miss(tmp_config, monkeypatch):

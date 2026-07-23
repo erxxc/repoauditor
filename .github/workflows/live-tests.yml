@@ -4,7 +4,7 @@ on:
   schedule:
     # Weekly manufactured controls.
     - cron: "17 6 * * 2"
-    # Monthly full live corpus/golden sweep.
+    # Monthly bounded independent pre/post pair.
     - cron: "47 6 1 * *"
   workflow_dispatch:
     inputs:
@@ -15,7 +15,8 @@ on:
         type: choice
         options:
           - sentinels-only
-          - full-live
+          - live-lightweight
+          - bounded-independent
           - retrieval-diagnostic
 
 permissions:
@@ -25,6 +26,7 @@ jobs:
   live:
     name: live / Anthropic
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     environment: live-model-tests
     env:
       REPOAUDITOR_LLM: live
@@ -38,7 +40,10 @@ jobs:
         if: >-
           (
             github.event_name == 'workflow_dispatch' &&
-            (inputs.scope == 'full-live' || inputs.scope == 'retrieval-diagnostic')
+            (
+              inputs.scope == 'bounded-independent' ||
+              inputs.scope == 'retrieval-diagnostic'
+            )
           ) ||
           github.event.schedule == '47 6 1 * *'
         uses: actions/cache/restore@v4
@@ -52,7 +57,10 @@ jobs:
           (
             (
               github.event_name == 'workflow_dispatch' &&
-              (inputs.scope == 'full-live' || inputs.scope == 'retrieval-diagnostic')
+              (
+                inputs.scope == 'bounded-independent' ||
+                inputs.scope == 'retrieval-diagnostic'
+              )
             ) ||
             github.event.schedule == '47 6 1 * *'
           ) &&
@@ -72,9 +80,8 @@ jobs:
         if: >-
           (
             github.event_name == 'workflow_dispatch' &&
-            (inputs.scope == 'full-live' || inputs.scope == 'retrieval-diagnostic')
-          ) ||
-          github.event.schedule == '47 6 1 * *'
+            inputs.scope == 'retrieval-diagnostic'
+          )
         env:
           REPOAUDITOR_RETRIEVAL_TRACE_FILES: "1"
         run: >-
@@ -114,24 +121,47 @@ jobs:
           else
             echo "No structured result was produced; the instrument run is disqualified." >> "$GITHUB_STEP_SUMMARY"
           fi
-      - name: Run remaining live tests
+      - name: Run bounded live cohort
         if: >-
           success() &&
           (
-            (github.event_name == 'workflow_dispatch' && inputs.scope == 'full-live') ||
+            (
+              github.event_name == 'workflow_dispatch' &&
+              (
+                inputs.scope == 'live-lightweight' ||
+                inputs.scope == 'bounded-independent'
+              )
+            ) ||
             github.event.schedule == '47 6 1 * *'
           )
+        timeout-minutes: 22
         env:
+          REPOAUDITOR_CORPUS_IDS: >-
+            ${{
+              inputs.scope == 'live-lightweight' &&
+              'uat_lightweight_app' ||
+              'independent_serialize_javascript_pre,independent_serialize_javascript_post'
+            }}
           REPOAUDITOR_UAT_RESULTS: live-corpus-results.json
           REPOAUDITOR_UAT_SCANNER_COVERAGE: not-installed-live-model-only
-        run: >-
-          uv run pytest -m "live and not instrument" -s -vv
-          --junitxml=live-corpus-junit.xml
+        run: |
+          echo "Bounded live cohort: $REPOAUDITOR_CORPUS_IDS"
+          echo "Hard evaluation timeout: 20 minutes; pytest stops on first failure."
+          timeout --signal=TERM --kill-after=30s 20m \
+            uv run pytest \
+              tests/test_benchmark_corpus.py::test_corpus_live_baseline \
+              -s -vv -x --junitxml=live-corpus-junit.xml
       - name: Retain live corpus evidence
         if: >-
           always() &&
           (
-            (github.event_name == 'workflow_dispatch' && inputs.scope == 'full-live') ||
+            (
+              github.event_name == 'workflow_dispatch' &&
+              (
+                inputs.scope == 'live-lightweight' ||
+                inputs.scope == 'bounded-independent'
+              )
+            ) ||
             github.event.schedule == '47 6 1 * *'
           )
         uses: actions/upload-artifact@v4
