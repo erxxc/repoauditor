@@ -39,8 +39,11 @@ startup is not duplicated on each pull request.
 REPOAUDITOR_LLM=live ANTHROPIC_API_KEY=... uv run pytest -m live
 ```
 
-This paid/provider lane runs automatically every Tuesday and can also be dispatched
-manually. It exercises the golden and benchmark corpora against the configured live model.
+The manufactured-sentinel control runs automatically every Tuesday. The broader golden and
+benchmark corpus sweep runs automatically on the first day of each month. Manual dispatch
+defaults to `sentinels-only`; select `full-live` explicitly to include the broader sweep.
+This split keeps both checks automatic without spending full-corpus API budget on every
+weekly instrument qualification.
 Configure `ANTHROPIC_API_KEY` as an Actions environment secret in the
 `live-model-tests` environment; do not store it in repository variables, workflow YAML, or
 test output. The workflow checks only whether the secret is non-empty and never prints its

@@ -2,8 +2,20 @@ name: live model tests
 
 on:
   schedule:
+    # Weekly manufactured controls.
     - cron: "17 6 * * 2"
+    # Monthly full live corpus/golden sweep.
+    - cron: "47 6 1 * *"
   workflow_dispatch:
+    inputs:
+      scope:
+        description: Live evaluation scope
+        required: true
+        default: sentinels-only
+        type: choice
+        options:
+          - sentinels-only
+          - full-live
 
 permissions:
   contents: read
@@ -48,7 +60,12 @@ jobs:
             echo "No structured result was produced; the instrument run is disqualified." >> "$GITHUB_STEP_SUMMARY"
           fi
       - name: Run remaining live tests
-        if: always()
+        if: >-
+          always() &&
+          (
+            (github.event_name == 'workflow_dispatch' && inputs.scope == 'full-live') ||
+            github.event.schedule == '47 6 1 * *'
+          )
         run: uv run pytest -m "live and not instrument"
       - name: Retain manufactured-control evidence
         if: always()

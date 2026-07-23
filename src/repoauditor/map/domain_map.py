@@ -69,14 +69,20 @@ def recover_architecture(
     persisted ids. Standalone and testable — inject a scripted `llm` in tests.
     """
     config = config or get_config()
-    llm = llm or get_llm_client(config)
     snapshot_path = Path(snapshot_path)
+    context = _build_context(snapshot_path, _CHUNK_CHARS)
+    if not context.strip():
+        # Manifest-only repositories still proceed to SCA/detection. There is no
+        # architecture evidence to extract, and provider APIs reject an empty user
+        # message, so an explicit empty map is the only evidence-faithful result.
+        return ArchitectureMap(repo_id=repo_id, commit=commit)
+    llm = llm or get_llm_client(config)
 
     completion = llm.call(
         module="map",
         prompt_version=PROMPT_VERSION,
         system=PROMPT,
-        user=_build_context(snapshot_path, _CHUNK_CHARS),
+        user=context,
         schema=ArchitectureExtraction,
         context={"stage": "map", "repo_id": repo_id, "commit": commit},
     )
