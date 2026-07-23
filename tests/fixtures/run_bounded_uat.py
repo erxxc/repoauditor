@@ -138,9 +138,47 @@ def run_fixture(
         lambda: SecretsAdapter(timeout_seconds),
     )
     candidates: list[CandidateFinding] = []
+    semgrep_run_status = "not-observed"
     for factory in factories:
-        candidates.extend(factory().run(snapshot))
-    return evaluate_candidates(repo_id=repo_id, expected=expected, candidates=candidates)
+        adapter = factory()
+        candidates.extend(adapter.run(snapshot))
+        if getattr(adapter, "tool_name", None) == "sast":
+            semgrep_run_status = getattr(adapter, "run_status", None) or "unknown"
+    result = evaluate_candidates(repo_id=repo_id, expected=expected, candidates=candidates)
+    result["semgrep_run_status"] = semgrep_run_status
+    return result
+
+
+def _candidate_identity(candidate: dict) -> tuple:
+    return (
+        candidate["producer"], candidate["source_tool"], candidate["file"],
+        candidate["line_start"], candidate["line_end"], candidate["title"],
+        candidate["citation_snippet"],
+    )
+
+
+def build_pair_deltas(results: list[dict]) -> list[dict]:
+    """Collapse unchanged pre/post signals without discarding either raw record."""
+    projects: dict[str, dict[str, dict]] = {}
+    for row in results:
+        if row["variant"] in {"pre_fix", "post_fix"}:
+            projects.setdefault(row["project_id"], {})[row["variant"]] = row
+    deltas = []
+    for project_id, variants in sorted(projects.items()):
+        if set(variants) != {"pre_fix", "post_fix"}:
+            continue
+        pre = {_candidate_identity(candidate) for candidate in variants["pre_fix"]["candidates"]}
+        post = {_candidate_identity(candidate) for candidate in variants["post_fix"]["candidates"]}
+        deltas.append({
+            "project_id": project_id,
+            "pre_fix_candidate_count": len(pre),
+            "post_fix_candidate_count": len(post),
+            "stable_candidate_count": len(pre & post),
+            "pre_fix_only_candidate_count": len(pre - post),
+            "post_fix_only_candidate_count": len(post - pre),
+            "pair_collapsed_candidate_count": len(pre | post),
+        })
+    return deltas
 
 
 def main() -> None:
@@ -150,8 +188,8 @@ def main() -> None:
     parser.add_argument("--timeout-seconds", type=int, default=180)
     args = parser.parse_args()
 
-    coverage = {binary: shutil.which(binary) is not None for binary in REQUIRED_BINARIES}
-    missing = [binary for binary, available in coverage.items() if not available]
+    availability = {binary: shutil.which(binary) is not None for binary in REQUIRED_BINARIES}
+    missing = [binary for binary, available in availability.items() if not available]
     if missing:
         raise SystemExit(f"required scanner binaries are missing: {', '.join(missing)}")
 
@@ -159,15 +197,17 @@ def main() -> None:
         run_fixture(args.fixtures, repo_id, args.timeout_seconds)
         for repo_id in PILOT_FIXTURE_IDS
     ]
+    pair_deltas = build_pair_deltas(results)
+    anchors = [row for row in results if row["variant"] == "known_positive_anchor"]
     document = {
-        "schema_version": 1,
+        "schema_version": 2,
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "mode": "deterministic-scanners",
         "methodology": (
             "One reviewed CVE target per independent project; unmatched candidates are "
             "unadjudicated and are not counted as false positives."
         ),
-        "scanner_coverage": coverage,
+        "scanner_binary_availability": availability,
         "summary": {
             "fixture_count": len(results),
             "pre_fix_targets_detected": sum(
@@ -182,7 +222,16 @@ def main() -> None:
             "unadjudicated_candidate_count": sum(
                 row["unadjudicated_candidate_count"] for row in results
             ),
+            "raw_candidate_count": sum(len(row["candidates"]) for row in results),
+            "pair_collapsed_candidate_count": (
+                sum(row["pair_collapsed_candidate_count"] for row in pair_deltas)
+                + sum(len(row["candidates"]) for row in anchors)
+            ),
+            "semgrep_run_statuses": dict(sorted(Counter(
+                row["semgrep_run_status"] for row in results
+            ).items())),
         },
+        "pair_deltas": pair_deltas,
         "results": results,
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
