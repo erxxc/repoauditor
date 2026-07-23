@@ -496,6 +496,18 @@ This evaluation makes multiple model calls and may incur API cost. It reports ve
 flips, citation overlap, confidence spread, and provider seed availability; it never writes
 a finding or verdict. See the [convergence evaluation methodology](docs/convergence-evaluation.md).
 
+To qualify the configured falsification instrument against fixed positive and negative
+manufactured controls:
+
+```sh
+uv run repoauditor qualify-instrument
+```
+
+This paid, fail-closed control is also run automatically in the weekly live lane. A pass
+applies only to the four sentinels and is not real-world accuracy evidence; the cases are
+never injected into a user scan. See the
+[manufactured-sentinel methodology](docs/manufactured-sentinels.md).
+
 ## Output controls and automation
 
 Global output flags must appear before the command:

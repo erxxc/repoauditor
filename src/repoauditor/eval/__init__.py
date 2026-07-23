@@ -11,6 +11,11 @@ from .convergence import (
     render_convergence,
     run_finding_convergence,
 )
+from .sentinels import (
+    SentinelQualification,
+    evaluate_manufactured_sentinels,
+    render_sentinel_qualification,
+)
 
 __all__ = [
     "record_and_check",
@@ -20,4 +25,7 @@ __all__ = [
     "evaluate_finding_convergence",
     "run_finding_convergence",
     "render_convergence",
+    "SentinelQualification",
+    "evaluate_manufactured_sentinels",
+    "render_sentinel_qualification",
 ]

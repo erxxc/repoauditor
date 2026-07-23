@@ -1,0 +1,47 @@
+{
+  "schema_version": "manufactured-sentinels-v1",
+  "kind": "manufactured_solution",
+  "purpose": "Instrument qualification only; not real-world performance evidence.",
+  "cases": [
+    {
+      "id": "positive-sqli-concatenation",
+      "title": "Potential SQL injection in product search",
+      "file": "app.py",
+      "line_start": 10,
+      "line_end": 10,
+      "citation_snippet": "return db.execute(sql).fetchall()",
+      "severity": "high",
+      "expected": "confirmed"
+    },
+    {
+      "id": "negative-sqli-parameterized",
+      "title": "Potential SQL injection in product search",
+      "file": "app.py",
+      "line_start": 15,
+      "line_end": 18,
+      "citation_snippet": "return db.execute(",
+      "severity": "medium",
+      "expected": "killed"
+    },
+    {
+      "id": "positive-ssrf-unrestricted",
+      "title": "Potential SSRF in link preview",
+      "file": "app.py",
+      "line_start": 23,
+      "line_end": 23,
+      "citation_snippet": "return requests.get(target, timeout=2).text",
+      "severity": "high",
+      "expected": "confirmed"
+    },
+    {
+      "id": "negative-ssrf-allowlisted",
+      "title": "Potential SSRF in link preview",
+      "file": "app.py",
+      "line_start": 31,
+      "line_end": 31,
+      "citation_snippet": "return requests.get(target, timeout=2).text",
+      "severity": "medium",
+      "expected": "killed"
+    }
+  ]
+}

@@ -32,4 +32,29 @@ jobs:
             echo "ANTHROPIC_API_KEY is not configured in the live-model-tests environment." >&2
             exit 1
           fi
-      - run: uv run pytest -m live
+      - name: Qualify falsification instrument with manufactured controls
+        run: uv run repoauditor qualify-instrument --format json > manufactured-sentinels.json
+      - name: Publish manufactured-control result
+        if: always()
+        run: |
+          echo "## Manufactured falsification controls" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "This qualifies only the fixed sentinel cohort, not real-world accuracy." >> "$GITHUB_STEP_SUMMARY"
+          if [[ -f manufactured-sentinels.json ]]; then
+            echo '```json' >> "$GITHUB_STEP_SUMMARY"
+            cat manufactured-sentinels.json >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "No structured result was produced; the instrument run is disqualified." >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Run remaining live tests
+        if: always()
+        run: uv run pytest -m "live and not instrument"
+      - name: Retain manufactured-control evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: manufactured-sentinels-${{ github.run_id }}
+          path: manufactured-sentinels.json
+          retention-days: 30
+          if-no-files-found: error

@@ -29,7 +29,12 @@ from .analyze import quantify_appendix
 from .config import get_config
 from .detect import DetectionRun, run_ensemble
 from .detect.ensemble import CITATION_INTEGRITY_VERSION, LENS_PROMPT_VERSIONS
-from .eval import evaluate_finding_convergence, render_convergence
+from .eval import (
+    evaluate_finding_convergence,
+    evaluate_manufactured_sentinels,
+    render_convergence,
+    render_sentinel_qualification,
+)
 from .falsify import challenge
 from .falsify.challenger import (
     CONTEXT_VERSION as FALSIFY_CONTEXT_VERSION,
@@ -918,6 +923,30 @@ def falsify_convergence(
         if output_format is ListFormat.JSON
         else render_convergence(result)
     )
+
+
+@app.command(name="qualify-instrument")
+@_clean_errors("qualify-instrument")
+def qualify_instrument(
+    output_format: ListFormat = typer.Option(
+        ListFormat.HUMAN, "--format", help="Output format: human or json."
+    ),
+) -> None:
+    """Run paid manufactured controls against the falsification instrument.
+
+    This makes multiple model calls and may incur provider cost. It does not scan or
+    modify an ingested repository and does not measure real-world accuracy.
+    """
+    config = get_config()
+    fixture = config.root / "tests" / "fixtures" / "manufactured_sentinels"
+    result = evaluate_manufactured_sentinels(fixture, config=config)
+    typer.echo(
+        result.model_dump_json(indent=2)
+        if output_format is ListFormat.JSON
+        else render_sentinel_qualification(result)
+    )
+    if not result.qualified:
+        raise typer.Exit(code=1)
 
 
 @app.command()
