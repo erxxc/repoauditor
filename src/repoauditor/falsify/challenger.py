@@ -199,6 +199,7 @@ def challenge_finding(
     index: RetrievalIndex | None = None,
     config: Config | None = None,
     self_critique: bool = True,
+    snapshot_commit: str | None = None,
 ) -> FalsificationOutcome:
     """Attempt to disprove one candidate finding via the bounded loop. Returns a verdict.
 
@@ -221,10 +222,14 @@ def challenge_finding(
     boundary = _boundary_name(architecture, finding)
     slice_evidence = build_python_slice(index, finding) if index is not None else None
     if slice_evidence is not None and finding.id is not None:
-        claim = claim_from_slice(finding.id, slice_evidence)
+        claim = claim_from_slice(finding.id, slice_evidence, snapshot_commit)
         claim_id = db.upsert_security_claim(claim, config)
         claim = claim.model_copy(update={"id": claim_id})
-        verification = verify_structural_claim(claim, slice_evidence)
+        verification = verify_structural_claim(
+            claim,
+            index.snapshot_path if index is not None else None,
+            snapshot_commit,
+        )
         db.upsert_claim_verification(verification, config)
 
     last_verdict: FalsificationOutcome | None = None
@@ -411,8 +416,15 @@ def challenge(
 
     outcomes: list[FalsificationOutcome] = []
     for finding in selected:
-        outcome = challenge_finding(finding, architecture, llm, index, config,
-                                    self_critique=self_critique)
+        outcome = challenge_finding(
+            finding,
+            architecture,
+            llm,
+            index,
+            config,
+            self_critique=self_critique,
+            snapshot_commit=commit,
+        )
         db.update_falsification(finding.id, outcome.status, outcome.rationale, config)
         outcomes.append(outcome)
 

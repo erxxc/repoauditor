@@ -2001,12 +2001,14 @@ def upsert_security_claim(
         with conn:
             conn.execute(
                 "INSERT INTO security_claim "
-                "(finding_id, claim_version, mechanism, source_evidence, sink_evidence, "
+                "(finding_id, claim_version, snapshot_commit, mechanism, "
+                " source_evidence, sink_evidence, "
                 " path_nodes, path_predicates, control_candidate, producer_type, "
                 " producer_name, prompt_version) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
                 "ON CONFLICT (finding_id, claim_version) DO UPDATE SET "
-                "mechanism=excluded.mechanism, source_evidence=excluded.source_evidence, "
+                "snapshot_commit=excluded.snapshot_commit, mechanism=excluded.mechanism, "
+                "source_evidence=excluded.source_evidence, "
                 "sink_evidence=excluded.sink_evidence, path_nodes=excluded.path_nodes, "
                 "path_predicates=excluded.path_predicates, "
                 "control_candidate=excluded.control_candidate, "
@@ -2015,6 +2017,7 @@ def upsert_security_claim(
                 (
                     claim.finding_id,
                     claim.claim_version,
+                    claim.snapshot_commit,
                     claim.mechanism,
                     json.dumps([item.model_dump() for item in claim.source_evidence]),
                     json.dumps(claim.sink_evidence.model_dump())
@@ -2051,6 +2054,7 @@ def list_security_claims(
                 id=row["id"],
                 finding_id=row["finding_id"],
                 claim_version=row["claim_version"],
+                snapshot_commit=row["snapshot_commit"],
                 mechanism=row["mechanism"],
                 source_evidence=[
                     ClaimEvidence(**item) for item in json.loads(row["source_evidence"])

@@ -295,9 +295,11 @@ verdict. The decision path is deliberately staged:
    explicitly non-authoritative: it does not prove reachability, path feasibility, attacker
    control, or sanitizer effectiveness, and unsupported/dynamic flows are marked incomplete.
    Supported slices also produce an idempotent structured `SecurityClaim` plus a
-   `ClaimVerification` audit record. A `verified` claim means only that local source,
-   assignment-chain, and sink facts were structurally observed; review evidence states
-   explicitly that exploitability and end-to-end reachability remain unverified.
+   `ClaimVerification` audit record. The independently versioned checker reopens the pinned
+   snapshot and reconstructs the supported local AST/def-use facts without consuming the
+   slicer's in-memory evidence. A `structurally_verified` claim means only that exact source,
+   assignment-chain, and sink facts closed under that checker; it is not empirical validation
+   of exploitability, end-to-end reachability, control effectiveness, or risk.
 4. **Normalization reconciles evidence.** Findings that refer to the same underlying issue
    are grouped, source disagreements are adjudicated, and unresolved cases become review
    requests.

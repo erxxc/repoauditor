@@ -208,10 +208,12 @@ tests/
   reachability, path feasibility, attacker control, and sanitizer effectiveness remain
   unproven; unsupported or dynamic dependencies are explicitly `incomplete`.
 - **SecurityClaim / ClaimVerification** — an idempotent, structured audit trail for
-  source/sink/path-node/control-candidate facts and their verifier/version. `verified` is
-  narrowly structural and never means exploitable; `incomplete` preserves missing or
-  dynamic dependencies. These records are attached to unresolved review evidence but do
-  not change the falsification verdict.
+  source/sink/path-node/control-candidate facts, pinned snapshot commit, and their
+  verifier/version. The independently versioned checker reopens that snapshot rather than
+  accepting the slicer's in-memory evidence. `structurally_verified` is narrowly structural
+  and never means exploitable; `verification_incomplete` preserves missing or dynamic
+  dependencies. These records are attached to unresolved review evidence but do not change
+  the falsification verdict.
 - **TrustBoundary** / **EntryPoint** / **DataStore** / **Integration** —
   output of the `map/` stage, referenced by findings via foreign key so
   every finding is traceable back to *why it matters architecturally*, not

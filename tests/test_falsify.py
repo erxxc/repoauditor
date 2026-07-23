@@ -64,17 +64,18 @@ def test_challenge_persists_structural_claim_without_using_it_as_verdict(tmp_con
         ),
         index=RetrievalIndex().build(UAT_SNAPSHOT),
         config=tmp_config,
+        snapshot_commit="deadbeef",
     )
 
     assert outcome.status is FalsificationStatus.UNRESOLVED
     claims = db.list_security_claims(finding_id, tmp_config)
     assert len(claims) == 1
     verification = db.list_claim_verifications(claims[0].id, tmp_config)[0]
-    assert verification.status.value == "verified"
-    assert "exploitability remain unverified" in verification.reason
+    assert verification.status.value == "structurally_verified"
+    assert "real-world risk are not validated" in verification.reason
     requests = raise_review_requests("r", tmp_config)
     claim_evidence = requests[0].evidence["security_claims"][0]
-    assert claim_evidence["verifications"][0]["status"] == "verified"
+    assert claim_evidence["verifications"][0]["status"] == "structurally_verified"
     assert "reachability" in claim_evidence["verifications"][0]["reason"]
 
 

@@ -4,6 +4,8 @@ The persisted ground-truth meanings and evaluation-denominator rules are defined
 [adjudication-taxonomy.md](adjudication-taxonomy.md).
 The separate [agentic escalation gate](agentic-escalation-gate.md) records why autonomous
 tool-use remains deferred until usage accounting and recall-safe evaluation exist.
+The [prior-scope roadmap](prior-scope-roadmap.md) separately records future quantitative
+prior expansion; it does not change the current risk model.
 
 Status: active. This document is the durable execution plan for improving triage accuracy
 without presenting synthetic performance as real-world evidence.

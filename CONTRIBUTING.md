@@ -71,8 +71,9 @@ it must never independently confirm or kill a finding.
 
 `falsify/claims.py` translates supported slices into versioned structural claims and a
 separately versioned verifier result. Keep claim and verifier writes idempotent, preserve
-their exact evidence in `store/`, and never interpret `verified` as proof of exploitability
-or end-to-end reachability.
+their exact evidence and pinned snapshot commit in `store/`, and keep the verifier independent
+of the slicer's in-memory result. Never interpret `structurally_verified` as proof of
+exploitability, end-to-end reachability, control effectiveness, or risk.
 
 ## Public-corpus cache lane
 

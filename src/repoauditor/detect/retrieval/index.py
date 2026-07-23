@@ -115,11 +115,13 @@ class RetrievalIndex:
         self._file_texts: dict[str, str] = {}
         self._lexical_logged: set[str] = set()  # extensions already warned about
         self._built = False
+        self._snapshot_path: Path | None = None
 
     # ------------------------------------------------------------------ build
     def build(self, snapshot_path: Path) -> "RetrievalIndex":
         """Index the snapshot. Idempotent per instance; returns self for chaining."""
         snapshot_path = Path(snapshot_path)
+        self._snapshot_path = snapshot_path.resolve()
         for path in iter_source_files(snapshot_path):
             rel = path.relative_to(snapshot_path).as_posix()
             text = path.read_text(errors="replace")
@@ -134,6 +136,11 @@ class RetrievalIndex:
             self._add(infos)
         self._built = True
         return self
+
+    @property
+    def snapshot_path(self) -> Path | None:
+        """Root used to build this index; independent checkers may reopen it."""
+        return self._snapshot_path
 
     def _add(self, infos: list[FunctionInfo]) -> None:
         for info in infos:
