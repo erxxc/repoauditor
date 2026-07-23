@@ -155,3 +155,10 @@ the API-key check, manufactured controls, and all live corpus tests, so it makes
 calls. The final `retrieval diagnostic: indexing ...` log entry identifies the file active
 at a native crash. A failed smoke gate also blocks `full-live`; later live steps no longer
 run under `always()` after preflight failure.
+
+The July 2026 Juice Shop diagnostic isolated a native failure in
+`data/datacreator.ts`: `tree-sitter 0.26.0` returned corrupted TypeScript coordinates and
+then exited 139, while 0.25.2 extracted the same pinned file with valid locations. The
+runtime is therefore constrained to `>=0.25,<0.26` until a later release is independently
+verified against this cache-backed smoke test; do not relax that bound based only on unit
+fixtures.

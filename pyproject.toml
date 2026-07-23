@@ -30,7 +30,9 @@ dependencies = [
     # language-pack bundles the JS/TS/Java/Ruby (+ many more) grammars in one wheel, so
     # adding a language is a dispatch-table entry, not a new dependency. Files in
     # languages with no wired grammar fall back to lexical indexing (logged, never a gap).
-    "tree-sitter>=0.25",
+    # 0.26.0 corrupts TypeScript node coordinates and can segfault while walking a
+    # valid Juice Shop source file; 0.25.2 is verified against that pinned corpus.
+    "tree-sitter>=0.25,<0.26",
     "tree-sitter-language-pack>=1.13",
 ]
 
