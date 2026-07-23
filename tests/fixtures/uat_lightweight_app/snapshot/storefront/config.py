@@ -7,13 +7,15 @@ local checkout runnable without a full secrets setup.
 from __future__ import annotations
 
 import os
+import secrets
 
 
 class Config:
     """Application configuration, loaded once at startup by the app factory."""
 
-    # Flask session signing key. Overridden from the environment in production.
-    SECRET_KEY = os.environ.get("STOREFRONT_SECRET_KEY", "local-dev-session-key")
+    # Flask session signing key. Use an unpredictable per-process value for local
+    # inspection when no stable deployment secret has been configured.
+    SECRET_KEY = os.environ.get("STOREFRONT_SECRET_KEY") or secrets.token_hex(32)
 
     # Payments integration credential for the Stripe gateway used at checkout.
     # Loaded from the environment in production; the default is a throwaway

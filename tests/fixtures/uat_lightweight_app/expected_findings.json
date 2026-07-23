@@ -1,6 +1,6 @@
 {
   "repo_id": "uat_lightweight_app",
-  "schema_version": "uat-expectation-1",
+  "schema_version": "uat-expectation-2",
   "notes": "Ground truth + full validation matrix for the purpose-built UAT storefront fixture (12 Python source files, one framework = Flask, one manifest = requirements.txt). This file EXTENDS the corpus convention (`source` + `findings` + `expected_unresolved`, keyed by file/severity/source with citation-substring anchors; line numbers are approximate anchors, not exact-match assertions) with three added blocks the richer UAT expectation needs: `expected_killed` (falsify should kill these), `expected_map` (map/ architecture + production-exposure ground truth), and `planted_cases` (the per-case matrix required by the UAT spec). The two scripted-golden fixtures are NOT touched; this fixture is a Tier-2 benchmark-corpus fixture (has an `expected_findings.json`, is not in conftest.FIXTURE_LLM), so it is scored by the live model / real tools, never by canned answers.",
   "field_provenance": {
     "note": "Field names in `planted_cases[].exposure` mirror the current (risk-quant session B) output shapes so they are directly validatable — confirmed against store/models.py and analyze/ this session, not the session-A shape.",
@@ -11,6 +11,27 @@
     "entity_kind": "store.models.EntityKind — entry_point|data_store|integration|component.",
     "expected_disposition": "store.models.FalsificationStatus — confirmed|killed|unresolved(=requires-review). `architecture-exposure` is used for case 6, which is a map/exposure expectation, not a falsification verdict."
   },
+  "ground_truth_adjudication": {
+    "date": "2026-07-23",
+    "basis": "Human review of the complete fixture source and live UAT version-2 evidence; never inferred from the tool's headline score.",
+    "decisions": [
+      {
+        "case": 4,
+        "decision": "killed",
+        "reason": "The Stripe-shaped value is explicitly marked UATfixture/FAKE/DoNotUse/EXAMPLE and is not a working credential. It remains a valid deterministic secret-pattern detection target, but not a confirmed exploitable finding."
+      },
+      {
+        "case": 9,
+        "decision": "killed",
+        "reason": "The assessed backend stores and returns a value but never redirects to it. Hypothetical out-of-scope frontend behavior is not evidence for the specific open-redirect claim."
+      },
+      {
+        "candidate": "hardcoded-default-flask-session-key",
+        "decision": "fixture-corrected",
+        "reason": "The fixed local-dev-session-key was a genuine, unplanned session-forgery weakness outside the controlled ten-case matrix. The fixture now generates an unpredictable per-process local key when no deployment secret is configured."
+      }
+    ]
+  },
   "source": {
     "kind": "fixture",
     "fixture_detail": "purpose-built intentionally-vulnerable web app (UAT fixture)",
@@ -20,7 +41,7 @@
     "safety": "Intentionally insecure and inert by default — see snapshot/SECURITY.md. wsgi.py refuses to self-serve without STOREFRONT_ALLOW_RUN=1 and then binds 127.0.0.1 only with the debugger off. The pipeline only ever reads these files statically; it never imports or runs the app.",
     "fake_credential": {
       "file": "storefront/config.py",
-      "line": 22,
+      "line": 24,
       "pattern": "sk_live_<obviously-fake-placeholder>",
       "value_markers": ["FAKE", "DoNotUse", "EXAMPLE", "UATfixture"],
       "note": "Recognizable placeholder, not a working secret. Confirmed gitleaks-detectable this session (rule `stripe-access-token`, the only leak it reports).",
@@ -78,17 +99,6 @@
       "citation_contains": "FROM orders WHERE id = ?"
     },
     {
-      "case": 4,
-      "title": "Hardcoded Stripe secret key",
-      "file": "storefront/config.py",
-      "line_start": 22,
-      "line_end": 22,
-      "severity": "high",
-      "falsification_status": "confirmed",
-      "cwe": "CWE-798",
-      "citation_contains": "sk_live_"
-    },
-    {
       "case": 5,
       "title": "Vulnerable dependency requests 2.19.1 (CVE-2018-18074)",
       "file": "requirements.txt",
@@ -101,15 +111,15 @@
       "citation_contains": "requests"
     }
   ],
-  "expected_unresolved": [
-    {
-      "case": 9,
-      "file": "storefront/account.py",
-      "citation_contains": "return_target",
-      "reason": "Reflected/stored `next` value with no server-side redirect sink in-repo; exploitability depends on out-of-scope frontend consumption. Single source (no corroboration) and falsify cannot confidently confirm or kill -> unresolved -> review."
-    }
-  ],
+  "expected_unresolved": [],
   "expected_killed": [
+    {
+      "case": 4,
+      "file": "storefront/config.py",
+      "citation_contains": "sk_live_",
+      "kill_basis": "non-working-placeholder",
+      "reason": "The value is explicitly marked as a fake UAT placeholder and is not a working Stripe credential. Detection is expected; final confirmation is not."
+    },
     {
       "case": 7,
       "file": "storefront/invoices.py",
@@ -123,6 +133,20 @@
       "citation_contains": "os.system(\"curl -s \" + source",
       "kill_basis": "unreachable",
       "reason": "Real OS-command-injection pattern in dead code: legacy_bp is never registered by the app factory (storefront/__init__.py) AND the handler is gated behind ENABLE_LEGACY_IMPORT which is permanently False. falsify/'s reachability check should KILL it as unreachable."
+    },
+    {
+      "case": 9,
+      "file": "storefront/account.py",
+      "citation_contains": "return_target",
+      "kill_basis": "no_sink",
+      "reason": "The backend stores and returns the value but never issues a redirect. Out-of-scope hypothetical frontend behavior does not make the backend open-redirect claim valid."
+    },
+    {
+      "case": 10,
+      "file": "storefront/config.py",
+      "citation_contains": "sk_live_",
+      "kill_basis": "duplicate-of-case-4",
+      "reason": "The second source detects the same fake placeholder as case 4. Matching should recognize one physical candidate, and falsification should kill it rather than create a countable confirmed finding."
     }
   ],
   "expected_map": {
@@ -229,10 +253,10 @@
       "id": "hardcoded-stripe-secret",
       "category": "hardcoded-secret",
       "cwe": "CWE-798",
-      "location": {"file": "storefront/config.py", "symbol": "Config.STRIPE_SECRET_KEY", "line_approx": 22},
+      "location": {"file": "storefront/config.py", "symbol": "Config.STRIPE_SECRET_KEY", "line_approx": 24},
       "severity_range": ["high", "critical"],
-      "expected_disposition": "confirmed",
-      "disposition_basis": "Live-pattern (sk_live_) credential committed in source; gitleaks-detectable, obviously-fake value.",
+      "expected_disposition": "killed",
+      "disposition_basis": "Live-pattern (sk_live_) string committed in source and gitleaks-detectable, but explicitly marked as a non-working UAT placeholder; falsification should kill it.",
       "trust_boundary": "Stripe payments integration",
       "exposure": {
         "production_exposure_label": "direct",
@@ -243,10 +267,10 @@
         "scenario_input_origin_expected": "derived"
       },
       "expected_sources": [{"type": "tool", "name": "secrets"}, {"type": "lens", "name": "owasp"}],
-      "collapses_into_one_countable": true,
+      "collapses_into_one_countable": false,
       "collapse_partner_case": 10,
-      "in_findings_ground_truth": true,
-      "notes": "Also serves as case 10: flagged by BOTH gitleaks (source_tool=secrets, confirmed this session) and the owasp LLM lens on the same line -> matching.py line-overlap merge -> db.list_countable_findings collapses to ONE countable finding, not two."
+      "in_findings_ground_truth": false,
+      "notes": "Also serves as case 10: both gitleaks and the OWASP lens may detect the same line, but a fake external credential is not a countable confirmed vulnerability. The raw candidates should match and receive a killed disposition."
     },
     {
       "case": 5,
@@ -349,12 +373,12 @@
     {
       "case": 9,
       "id": "ambiguous-return-target",
-      "category": "ambiguous-requires-review",
+      "category": "no-redirect-sink",
       "cwe": "CWE-601",
       "location": {"file": "storefront/account.py", "route": "POST /account/return-target", "symbol": "set_return_target", "line_approx": 27},
       "severity_range": ["low", "medium"],
-      "expected_disposition": "requires-review",
-      "disposition_basis": "A `next` value is stored on the session and echoed back, but the backend never redirects to it — there is no server-side redirect sink in-repo. Exploitability (open redirect) depends on out-of-scope frontend behavior, so falsify can neither confirm nor kill, and it is uncorroborated (single lens). Reliability layer -> unresolved -> review/ per the licensing rule.",
+      "expected_disposition": "killed",
+      "disposition_basis": "A `next` value is stored on the session and echoed back, but the assessed backend never redirects to it. The specific open-redirect claim has no sink and should be killed; hypothetical frontend behavior is not evidence.",
       "trust_boundary": "authenticated customer session",
       "exposure": {
         "production_exposure_label": "internal",
@@ -362,38 +386,38 @@
         "entity_kind": "entry_point",
         "production_indicator_expected": null,
         "control_strength_expected": null,
-        "scenario_input_origin_expected": "n/a-held-at-review-until-confirmed"
+        "scenario_input_origin_expected": "n/a-killed-excluded-from-risk_quant"
       },
       "expected_sources": [{"type": "lens", "name": "owasp"}],
       "collapses_into_one_countable": false,
       "collapse_partner_case": null,
       "in_findings_ground_truth": false,
-      "notes": "Success criterion: routed to review/ as unresolved (a ReviewRequest opens), NOT silently confirmed or killed. It must lack both corroboration and a confident falsification verdict for this to hold."
+      "notes": "Adjudicated in expectation v2: success means the backend open-redirect candidate is killed for lack of a redirect sink."
     },
     {
       "case": 10,
       "id": "duplicate-secret-two-sources",
       "category": "duplicate-multi-source",
       "cwe": "CWE-798",
-      "location": {"file": "storefront/config.py", "symbol": "Config.STRIPE_SECRET_KEY", "line_approx": 22},
+      "location": {"file": "storefront/config.py", "symbol": "Config.STRIPE_SECRET_KEY", "line_approx": 24},
       "severity_range": ["high", "critical"],
-      "expected_disposition": "confirmed",
-      "disposition_basis": "Same physical finding as case 4. gitleaks (source_tool=secrets) and the owasp LLM lens both flag the sk_live_ key on the same line; matching.py matches on line-overlap and db.list_countable_findings collapses the group to a single countable finding.",
+      "expected_disposition": "killed",
+      "disposition_basis": "Same physical candidate as case 4. Gitleaks and the OWASP lens may both flag the sk_live_ pattern on the same line; matching identifies one candidate and falsification kills the explicitly fake placeholder.",
       "trust_boundary": "Stripe payments integration",
       "exposure": {
         "production_exposure_label": "direct",
         "exposure_component_range": [0.5, 1.0],
         "entity_kind": "integration",
         "production_indicator_expected": "payment",
-        "control_strength_expected": 0.0,
-        "scenario_input_origin_expected": "derived"
+        "control_strength_expected": null,
+        "scenario_input_origin_expected": "n/a-killed-excluded-from-risk_quant"
       },
       "expected_sources": [{"type": "tool", "name": "secrets"}, {"type": "lens", "name": "owasp"}],
-      "collapses_into_one_countable": true,
+      "collapses_into_one_countable": false,
       "collapse_partner_case": 4,
       "in_findings_ground_truth": false,
-      "counts_as_findings": 1,
-      "notes": "Rides on case 4 (per the UAT spec: 'a single real issue ... written so two independent sources both flag it'). Success criterion: exactly ONE countable finding after matching, corroborated_by shows the second source; two sources must NOT double-count."
+      "counts_as_findings": 0,
+      "notes": "Rides on case 4 as a cross-source duplicate-detection check. A correctly killed fake placeholder contributes zero countable confirmed findings."
     }
   ]
 }
