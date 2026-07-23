@@ -5,8 +5,10 @@ Deterministic caller/callee and similar-pattern lookup over an ingested snapshot
 candidate, the ensemble pulls in related call sites; the falsify stage uses the same
 index to look for mitigating controls elsewhere in the codebase.
 
-Narrow interface — `find_callers`, `find_callees`, `find_similar_patterns` — plus
-`build`. Indexing is AST-based per language:
+The query interface includes callers, callees, similar patterns, enclosing functions,
+bounded file excerpts, and literal repo-wide references. The latter three let falsification
+retrieve source-to-sink, decorator, module-config, and registration evidence even when a
+finding snippet contains no call token. Indexing is AST-based per language:
 
   * Python           via the stdlib `ast` module (dependency-free, exact).
   * JS / TS / Java /  via tree-sitter grammars (`tree_sitter_language_pack`), walking
@@ -101,6 +103,7 @@ class RetrievalIndex:
     def __init__(self) -> None:
         self._functions: list[FunctionInfo] = []
         self._by_name: dict[str, list[FunctionInfo]] = {}
+        self._file_texts: dict[str, str] = {}
         self._lexical_logged: set[str] = set()  # extensions already warned about
         self._built = False
 
@@ -111,6 +114,7 @@ class RetrievalIndex:
         for path in iter_source_files(snapshot_path):
             rel = path.relative_to(snapshot_path).as_posix()
             text = path.read_text(errors="replace")
+            self._file_texts[rel] = text
             suffix = path.suffix.lower()
             if suffix == ".py":
                 infos = _index_python(text, rel)
@@ -203,6 +207,79 @@ class RetrievalIndex:
         scored.sort(key=lambda pair: (-pair[0], pair[1].file, pair[1].line_start))
         return [info for _, info in scored[:limit]]
 
+    def find_enclosing(
+        self, file: str, line_start: int, line_end: int | None = None
+    ) -> list[FunctionInfo]:
+        """Functions overlapping a cited range, smallest enclosing region first."""
+        rel = self._resolve_file(file)
+        if rel is None:
+            return []
+        end = line_end if line_end is not None else line_start
+        hits = [
+            info for info in self._functions
+            if info.file == rel and info.line_start <= end and line_start <= info.line_end
+        ]
+        return sorted(
+            hits,
+            key=lambda info: (info.line_end - info.line_start, info.line_start, info.symbol),
+        )
+
+    def file_excerpt(
+        self, file: str, line_start: int, line_end: int | None = None, context_lines: int = 8
+    ) -> FunctionInfo | None:
+        """A bounded source excerpt around a citation, including module-level evidence."""
+        rel = self._resolve_file(file)
+        if rel is None:
+            return None
+        lines = self._file_texts[rel].splitlines()
+        end = line_end if line_end is not None else line_start
+        start_idx = max(0, line_start - context_lines - 1)
+        end_idx = min(len(lines), end + context_lines)
+        return FunctionInfo(
+            symbol=f"{rel}:context",
+            file=rel,
+            line_start=start_idx + 1,
+            line_end=max(end_idx, start_idx + 1),
+            source="\n".join(lines[start_idx:end_idx]),
+            language="context",
+        )
+
+    def find_text_references(
+        self, token: str, limit: int = 5, context_lines: int = 6
+    ) -> list[FunctionInfo]:
+        """Repo-wide literal references, including module-level config/registration code."""
+        if not token:
+            return []
+        hits: list[FunctionInfo] = []
+        for rel, text in sorted(self._file_texts.items()):
+            lines = text.splitlines()
+            for index, line in enumerate(lines):
+                if token not in line:
+                    continue
+                start = max(0, index - context_lines)
+                end = min(len(lines), index + context_lines + 1)
+                hits.append(FunctionInfo(
+                    symbol=f"reference:{token}",
+                    file=rel,
+                    line_start=start + 1,
+                    line_end=end,
+                    source="\n".join(lines[start:end]),
+                    language="reference",
+                ))
+                if len(hits) >= limit:
+                    return hits
+        return hits
+
+    def _resolve_file(self, file: str) -> str | None:
+        normalized = file.replace("\\", "/")
+        if normalized in self._file_texts:
+            return normalized
+        matches = [
+            rel for rel in self._file_texts
+            if normalized.endswith(rel) or rel.endswith(normalized)
+        ]
+        return min(matches, key=len) if matches else None
+
 
 # --------------------------------------------------------------------------- #
 # Python indexer (stdlib ast — exact, dependency-free)
@@ -218,12 +295,17 @@ def _index_python(text: str, rel: str) -> list[FunctionInfo]:
         if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             continue
         end = getattr(node, "end_lineno", node.lineno)
+        decorator_lines = [
+            decorator.lineno for decorator in node.decorator_list
+            if hasattr(decorator, "lineno")
+        ]
+        start = min([node.lineno, *decorator_lines])
         infos.append(FunctionInfo(
             symbol=node.name,
             file=rel,
-            line_start=node.lineno,
+            line_start=start,
             line_end=end,
-            source="\n".join(lines[node.lineno - 1 : end]),
+            source="\n".join(lines[start - 1 : end]),
             calls=_called_names(node),
             language="python",
         ))

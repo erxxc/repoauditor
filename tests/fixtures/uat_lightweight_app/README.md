@@ -114,6 +114,13 @@ valid vulnerability. Each must be **correctly killed**, not silently dropped, an
 must persist. Cases 4/10 additionally test that two sources can identify the same physical
 candidate without turning an explicitly fake credential into a confirmed issue.
 
+The live artifact reports two distinct negative-control signals. `negative_control_passed`
+is true when the detector raises nothing or falsification kills what it raises; this is the
+end-to-end false-positive result. `correct_disposition` is true only when a candidate was
+actually raised and killed, so the stage-specific falsification exercise remains visible.
+Source coverage is also explicit: the scanner-free paid lane marks the secrets half of case
+10 unavailable/partial rather than claiming the two-source duplicate check ran.
+
 ## Ground-truth adjudication (expectation v2)
 
 The 2026-07-23 live UAT exposed three answer-key problems, reviewed against the complete

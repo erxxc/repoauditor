@@ -332,7 +332,19 @@ def test_corpus_live_baseline(tmp_config, benchmark_repo, capsys):
 
     findings = db.list_findings(result.repo_id, tmp_config)
     if benchmark_repo.expected.get("planted_cases"):
-        score = score_live_uat(findings, benchmark_repo.expected)
+        scanner_coverage = os.environ.get(
+            "REPOAUDITOR_UAT_SCANNER_COVERAGE", "environment-dependent"
+        )
+        available_source_types = (
+            {"lens"}
+            if scanner_coverage == "not-installed-live-model-only"
+            else {"lens", "tool"}
+        )
+        score = score_live_uat(
+            findings,
+            benchmark_repo.expected,
+            available_source_types=available_source_types,
+        )
         final = score["final_countable_confirmed"]
         lineage = f"corpus-v2::{benchmark_repo.repo_id}"
     else:

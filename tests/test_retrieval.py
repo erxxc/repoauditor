@@ -54,6 +54,49 @@ def test_find_similar_patterns(tmp_path):
     assert {"run_query", "other"} <= symbols
 
 
+def test_find_enclosing_includes_decorators_and_local_source(tmp_path):
+    (tmp_path / "routes.py").write_text(
+        'from flask import Blueprint, request\n'
+        'bp = Blueprint("catalog", __name__)\n\n'
+        '@bp.route("/search")\n'
+        'def search():\n'
+        '    term = request.args.get("q", "")\n'
+        '    sql = "SELECT * FROM products WHERE name = \'" + term + "\'"\n'
+        '    return sql\n'
+    )
+    index = RetrievalIndex().build(tmp_path)
+
+    enclosing = index.find_enclosing("routes.py", 7, 7)
+
+    assert [item.symbol for item in enclosing] == ["search"]
+    assert enclosing[0].line_start == 4
+    assert '@bp.route("/search")' in enclosing[0].source
+    assert 'request.args.get("q"' in enclosing[0].source
+
+
+def test_file_excerpt_and_text_references_include_module_level_evidence(tmp_path):
+    (tmp_path / "legacy.py").write_text(
+        'ENABLE_LEGACY = False\n\n'
+        'def legacy_import():\n'
+        '    if not ENABLE_LEGACY:\n'
+        '        return None\n'
+        '    dangerous()\n'
+    )
+    (tmp_path / "app.py").write_text(
+        'def create_app():\n'
+        '    # legacy_import is intentionally not registered\n'
+        '    register(active_handler)\n'
+    )
+    index = RetrievalIndex().build(tmp_path)
+
+    excerpt = index.file_excerpt("legacy.py", 6, context_lines=6)
+    references = index.find_text_references("legacy_import")
+
+    assert excerpt is not None and "ENABLE_LEGACY = False" in excerpt.source
+    assert any(item.file == "app.py" and "register(active_handler)" in item.source
+               for item in references)
+
+
 # --------------------------------------------------------------------------- #
 # Multi-language AST indexing (tree-sitter): JS / TS / Java / Ruby share the
 # exact find_callers/find_callees/find_similar_patterns interface as Python.
