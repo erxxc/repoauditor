@@ -54,6 +54,15 @@ class FunctionInfo:
     language: str = "python"
 
 
+@dataclass(frozen=True)
+class CitationLocation:
+    """One exact occurrence of a verbatim citation in the indexed snapshot."""
+
+    file: str
+    line_start: int
+    line_end: int
+
+
 # --------------------------------------------------------------------------- #
 # Language dispatch
 # --------------------------------------------------------------------------- #
@@ -244,6 +253,13 @@ class RetrievalIndex:
             language="context",
         )
 
+    def source_text(self, file: str) -> tuple[str, str] | None:
+        """Return `(canonical_relative_path, text)` for deterministic analysis helpers."""
+        rel = self._resolve_file(file)
+        if rel is None:
+            return None
+        return rel, self._file_texts[rel]
+
     def find_text_references(
         self, token: str, limit: int = 5, context_lines: int = 6
     ) -> list[FunctionInfo]:
@@ -269,6 +285,27 @@ class RetrievalIndex:
                 if len(hits) >= limit:
                     return hits
         return hits
+
+    def locate_citation(self, citation: str) -> list[CitationLocation]:
+        """Locate every exact occurrence of a verbatim citation in source files."""
+        needle = citation.strip().replace("\r\n", "\n").replace("\r", "\n")
+        if not needle:
+            return []
+        locations: list[CitationLocation] = []
+        for rel, text in sorted(self._file_texts.items()):
+            start = 0
+            while True:
+                offset = text.find(needle, start)
+                if offset < 0:
+                    break
+                line_start = text.count("\n", 0, offset) + 1
+                locations.append(CitationLocation(
+                    file=rel,
+                    line_start=line_start,
+                    line_end=line_start + needle.count("\n"),
+                ))
+                start = offset + max(len(needle), 1)
+        return locations
 
     def _resolve_file(self, file: str) -> str | None:
         normalized = file.replace("\\", "/")

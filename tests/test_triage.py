@@ -20,6 +20,7 @@ from repoauditor.store.models import (
     TriageLabel,
     TriageLabelSource,
     TriageAssessmentOutcome,
+    TriageDisposition,
 )
 from repoauditor.triage import assess_finding, derive_labels, label_finding
 from repoauditor.triage import priors as triage_priors
@@ -350,6 +351,51 @@ def test_analyst_assessment_is_append_only_and_uncertain_abstains(cfg, tmp_path)
         TriageAssessmentOutcome.TRUE_POSITIVE,
     ]
     assert len(db.list_triage_labels(config=cfg)) == 1
+
+
+@pytest.mark.parametrize(
+    ("disposition", "actionable"),
+    [
+        (TriageDisposition.CONFIRMED_ACTIONABLE, True),
+        (TriageDisposition.TOOL_INCORRECT, False),
+        (TriageDisposition.UNREACHABLE, False),
+        (TriageDisposition.NOT_ATTACKER_CONTROLLED, False),
+        (TriageDisposition.MITIGATED, False),
+        (TriageDisposition.DUPLICATE, False),
+        (TriageDisposition.VALID_NOT_ACTIONABLE, False),
+    ],
+)
+def test_detailed_disposition_persists_and_projects_to_binary(
+    cfg, tmp_path, disposition, actionable
+):
+    db.init_db(cfg)
+    finding = _triage_three(cfg, tmp_path)["a.py"]
+
+    assessment, label = assess_finding(
+        finding.id, disposition, "human-reviewed rationale", "alice", [], cfg
+    )
+
+    assert assessment.disposition is disposition
+    assert label is not None and label.actionable is actionable
+    assert db.list_triage_assessments("eng1", cfg)[0].disposition is disposition
+
+
+def test_insufficient_evidence_persists_without_training_label(cfg, tmp_path):
+    db.init_db(cfg)
+    finding = _triage_three(cfg, tmp_path)["a.py"]
+
+    assessment, label = assess_finding(
+        finding.id,
+        TriageDisposition.INSUFFICIENT_EVIDENCE,
+        "runtime context unavailable",
+        "alice",
+        [],
+        cfg,
+    )
+
+    assert assessment.outcome is TriageAssessmentOutcome.UNCERTAIN
+    assert label is None
+    assert db.list_triage_labels(config=cfg) == []
 
 
 def test_synthetic_share_shrinks_as_real_labels_accumulate(cfg):

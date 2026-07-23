@@ -52,6 +52,28 @@ The three lane commands are intentionally mutually clear: `integration` covers l
 deterministic external tools and expensive local computation; `live` covers real model API
 calls; the default PR lane excludes both.
 
+Detection reliability includes semantic citation integrity in addition to schema validation.
+Every LLM citation must occur verbatim in indexed repository source. A unique match
+canonicalizes the file and line range with provenance; zero or multiple unresolved matches
+produce a `detect.citation` validation-failure record and no Finding. Regression fixtures
+must cover relocation as well as absent/ambiguous rejection.
+
+Repository text is adversarial model input. Detect and falsify compose their stage prompts
+with the shared versioned policy under `src/repoauditor/llm/prompts/` and delimit all
+candidate and retrieval evidence. Changes to that policy require a new artifact version,
+provenance update, adversarial boundary tests, and the same golden-harness regression gate
+as any other prompt change.
+
+The Python slicing MVP under `falsify/slicing.py` is evidence construction, not a verdict
+engine. Tests must preserve its explicit limitations and incomplete states. A slice may add
+source/assignment/sink or sanitizer-candidate context for SQLi, command injection, and SSRF;
+it must never independently confirm or kill a finding.
+
+`falsify/claims.py` translates supported slices into versioned structural claims and a
+separately versioned verifier result. Keep claim and verifier writes idempotent, preserve
+their exact evidence in `store/`, and never interpret `verified` as proof of exploitability
+or end-to-end reachability.
+
 ## Public-corpus cache lane
 
 The `public corpus cache` workflow runs every Sunday and on manual dispatch. It restores an

@@ -13,6 +13,7 @@ reflects the prompts actually in effect.
 from __future__ import annotations
 
 from ..config import Config, get_config
+from ..detect.ensemble import CITATION_INTEGRITY_VERSION as _CITATION_INTEGRITY_V
 from ..detect.ensemble import PROMPT_VERSION as _DETECT_PV
 from ..falsify.challenger import CRITIQUE_PROMPT_VERSION as _FALSIFY_CRITIQUE_PV
 from ..falsify.challenger import CONTEXT_VERSION as _FALSIFY_CONTEXT_V
@@ -29,7 +30,7 @@ from ..store.models import EvalRun
 # self-critique version would let a regression in the reflect step escape attribution.
 STAGE_PROMPT_VERSIONS: dict[str, str] = {
     "map": _MAP_PV,
-    "detect": _DETECT_PV,
+    "detect": f"{_DETECT_PV}+{_CITATION_INTEGRITY_V}",
     "falsify": f"{_FALSIFY_PV}+{_FALSIFY_CRITIQUE_PV}+{_FALSIFY_CONTEXT_V}",
     "normalize": _NORMALIZE_PV,
 }

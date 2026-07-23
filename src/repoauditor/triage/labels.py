@@ -49,6 +49,7 @@ from ..store.models import (
     ReviewDisposition,
     TriageAssessment,
     TriageAssessmentOutcome,
+    TriageDisposition,
     TriageLabel,
     TriageLabelSource,
 )
@@ -172,7 +173,7 @@ def label_finding(
 
 def assess_finding(
     finding_id: int,
-    outcome: TriageAssessmentOutcome,
+    outcome: TriageAssessmentOutcome | TriageDisposition,
     rationale: str,
     analyst: str,
     dimensions: list[str] | None = None,
@@ -180,9 +181,9 @@ def assess_finding(
 ) -> tuple[TriageAssessment, TriageLabel | None]:
     """Record an auditable analyst assessment and optionally produce a binary label.
 
-    `UNCERTAIN` is a first-class abstention: its evidence is retained but it never enters
-    the classifier's binary training corpus. Binary assessments update the effective manual
-    label only after the append-only assessment has been recorded.
+    The detailed disposition is retained while its deterministic projection preserves the
+    classifier's binary contract. `INSUFFICIENT_EVIDENCE`/legacy `UNCERTAIN` is a first-class
+    abstention and never enters training.
     """
     config = config or get_config()
     rationale = rationale.strip()
@@ -200,10 +201,23 @@ def assess_finding(
             f"finding {finding_id} has no triage features yet — run "
             f"`repoauditor triage {finding.repo_id}` first so it is assessable"
         )
+    if isinstance(outcome, TriageAssessmentOutcome):
+        disposition = {
+            TriageAssessmentOutcome.TRUE_POSITIVE:
+                TriageDisposition.CONFIRMED_ACTIONABLE,
+            TriageAssessmentOutcome.FALSE_POSITIVE:
+                TriageDisposition.TOOL_INCORRECT,
+            TriageAssessmentOutcome.UNCERTAIN:
+                TriageDisposition.INSUFFICIENT_EVIDENCE,
+        }[outcome]
+    else:
+        disposition = outcome
+        outcome = disposition.outcome
     clean_dimensions = sorted({item.strip() for item in dimensions or [] if item.strip()})
     assessment = TriageAssessment(
         finding_id=finding_id, engagement=record.engagement, outcome=outcome,
-        rationale=rationale, analyst=analyst, dimensions=clean_dimensions,
+        disposition=disposition, rationale=rationale, analyst=analyst,
+        dimensions=clean_dimensions,
     )
     assessment_id = db.insert_triage_assessment(assessment, config)
     assessment = assessment.model_copy(update={"id": assessment_id})

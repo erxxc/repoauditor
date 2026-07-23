@@ -158,6 +158,26 @@ def test_memo_discloses_validation_basis(cfg):
     assert falsified_id != corroborated_id
 
 
+def test_memo_labels_shared_model_lenses_as_correlated_agreement(cfg):
+    db.init_db(cfg)
+    tb = _tb(cfg)
+    finding_id = _finding(
+        cfg, title="Access control", sev="high", desc="[CWE-862]", tb=tb, start=3
+    )
+    db.add_corroboration(
+        Corroboration(
+            finding_id=finding_id,
+            source_type=SourceType.LENS,
+            source_name="supply_chain",
+        ),
+        cfg,
+    )
+
+    memo = build_memo("r", cfg)
+
+    assert "multi-lens agreement (shared model lineage) (supply_chain)" in memo
+
+
 def test_memo_surfaces_recorded_run_provenance_and_triage_context(cfg):
     db.init_db(cfg)
     tb = _tb(cfg)

@@ -73,6 +73,15 @@ def test_falsify_provenance_records_both_the_verdict_and_self_critique_prompts()
     assert CONTEXT_VERSION in recorded
 
 
+def test_detect_provenance_records_citation_integrity_version():
+    from repoauditor.detect.ensemble import CITATION_INTEGRITY_VERSION, PROMPT_VERSION
+    from repoauditor.eval.regression import STAGE_PROMPT_VERSIONS
+
+    recorded = STAGE_PROMPT_VERSIONS["detect"]
+    assert PROMPT_VERSION in recorded
+    assert CITATION_INTEGRITY_VERSION in recorded
+
+
 def test_default_recorded_run_carries_the_self_critique_prompt_version(tmp_config):
     """A run recorded with the default provenance (no explicit prompt_versions) attributes
     the self-critique prompt — so the golden harness now benchmarks it going forward."""

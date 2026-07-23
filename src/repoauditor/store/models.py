@@ -134,10 +134,11 @@ class Entity(BaseModel):
 
 
 class Corroboration(BaseModel):
-    """An independent lens/tool that also flagged a given finding.
+    """Another named lens/tool that also flagged a given finding.
 
+    Agreement is not automatically independence: shared-model lenses are correlated.
     `score` and `match_basis` are populated by `analyze/corroboration.py`: `score` is the
-    finding's independence-weighted agreement score in [0, 1] (the same aggregate is
+    finding's mechanism-diversity-weighted agreement score in [0, 1] (the same aggregate is
     written on every corroboration row of a finding), and `match_basis` records *why* this
     source was judged to be flagging the same underlying issue (the matched signals, e.g.
     "line_overlap+cwe; cross-class(tool↔lens)"). Both are nullable: rows written by
@@ -189,12 +190,11 @@ class Finding(BaseModel):
 
 
 class ValidationFailure(BaseModel):
-    """A logged, exhausted parse/validation retry from `llm/client.py`.
+    """A logged exhausted parse/schema retry or semantic citation failure.
 
-    The structured-output reliability trail: which module called the model, which
-    prompt version was in use, the truncated raw response, and the validation error.
-    Nothing is silently retried into oblivion — an exhausted retry is a logged
-    outcome, as much as a killed finding is.
+    The reliability trail records which module raised the failure, which prompt or
+    validator version was in use, the truncated raw response/candidate, and the error.
+    Nothing is silently retried or rejected into oblivion.
     """
 
     id: int | None = None
@@ -245,6 +245,27 @@ class TriageAssessmentOutcome(StrEnum):
     UNCERTAIN = "uncertain"
 
 
+class TriageDisposition(StrEnum):
+    """Detailed analyst ground truth; projected to binary training or abstention."""
+
+    CONFIRMED_ACTIONABLE = "confirmed_actionable"
+    TOOL_INCORRECT = "tool_incorrect"
+    UNREACHABLE = "unreachable"
+    NOT_ATTACKER_CONTROLLED = "not_attacker_controlled"
+    MITIGATED = "mitigated"
+    DUPLICATE = "duplicate"
+    VALID_NOT_ACTIONABLE = "valid_not_actionable"
+    INSUFFICIENT_EVIDENCE = "insufficient_evidence"
+
+    @property
+    def outcome(self) -> TriageAssessmentOutcome:
+        if self is TriageDisposition.CONFIRMED_ACTIONABLE:
+            return TriageAssessmentOutcome.TRUE_POSITIVE
+        if self is TriageDisposition.INSUFFICIENT_EVIDENCE:
+            return TriageAssessmentOutcome.UNCERTAIN
+        return TriageAssessmentOutcome.FALSE_POSITIVE
+
+
 class TriageAssessment(BaseModel):
     """Append-only analyst evidence behind a label, correction, or abstention."""
 
@@ -252,6 +273,7 @@ class TriageAssessment(BaseModel):
     finding_id: int
     engagement: str
     outcome: TriageAssessmentOutcome
+    disposition: TriageDisposition | None = None
     rationale: str = Field(min_length=1)
     analyst: str = Field(min_length=1)
     dimensions: list[str] = Field(default_factory=list)
@@ -627,3 +649,51 @@ class FalsificationIteration(BaseModel):
     critique_upholds: bool  # did the self-critique step uphold the verdict?
     critique_note: str
     committed: bool = False  # True on the round whose verdict was accepted (if any)
+
+
+class ClaimVerificationStatus(StrEnum):
+    """Structural verification outcome; never an exploitability verdict."""
+
+    VERIFIED = "verified"
+    REFUTED = "refuted"
+    INCOMPLETE = "incomplete"
+    UNSUPPORTED = "unsupported"
+
+
+class ClaimEvidence(BaseModel):
+    """One exact source location supporting a structured security claim."""
+
+    file: str
+    line: int = Field(ge=1)
+    source: str
+
+
+class SecurityClaim(BaseModel):
+    """A checkable structural claim derived from evidence, separate from a verdict."""
+
+    id: int | None = None
+    finding_id: int
+    claim_version: str
+    mechanism: str
+    source_evidence: list[ClaimEvidence] = Field(default_factory=list)
+    sink_evidence: ClaimEvidence | None = None
+    path_nodes: list[ClaimEvidence] = Field(default_factory=list)
+    path_predicates: list[str] = Field(default_factory=list)
+    control_candidate: ClaimEvidence | None = None
+    producer_type: str
+    producer_name: str
+    prompt_version: str | None = None
+    created_at: str | None = None
+
+
+class ClaimVerification(BaseModel):
+    """An idempotent verifier record scoped to structural facts only."""
+
+    id: int | None = None
+    claim_id: int
+    status: ClaimVerificationStatus
+    verifier_name: str
+    verifier_version: str
+    checks: dict[str, bool] = Field(default_factory=dict)
+    reason: str
+    created_at: str | None = None

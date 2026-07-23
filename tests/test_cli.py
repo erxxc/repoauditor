@@ -216,6 +216,23 @@ def test_triage_label_cli_records_uncertain_without_training_label(triage_cfg, t
     assert "explicit abstentions=1" in status.stdout
 
 
+def test_triage_label_cli_accepts_detailed_non_actionable_reason(triage_cfg, tmp_path):
+    sp = tmp_path / "scan.sarif"
+    sp.write_text(_sarif_one())
+    assert runner.invoke(cli.app, ["triage", "acme", "--sarif", str(sp)]).exit_code == 0
+    fid = db.list_findings("acme", triage_cfg)[0].id
+
+    result = runner.invoke(cli.app, [
+        "triage-label", str(fid), "--disposition", "mitigated",
+        "--rationale", "parameterized query blocks the flow", "--analyst", "alice",
+    ])
+
+    assert result.exit_code == 0, result.output
+    assert "mitigated" in result.stdout
+    assert db.list_triage_labels(config=triage_cfg)[0].actionable is False
+    assert db.list_triage_assessments("acme", triage_cfg)[0].disposition.value == "mitigated"
+
+
 def test_review_decide_rejects_wrong_repo(wired):
     cfg, held = wired
     request = db.get_review_request(held, cfg)
@@ -302,6 +319,7 @@ def test_run_stops_cleanly_when_no_review_is_needed(tmp_config, monkeypatch):
     pipeline = db.list_pipeline_runs(tmp_config, repo_id="acme")[0]
     summaries = {stage.stage: stage.summary for stage in db.list_stage_runs(pipeline.id, tmp_config)}
     assert summaries["detect"]["scanner_coverage"] == {"checked": True, "missing": []}
+    assert summaries["detect"]["model_usage"] == "not recorded"
     assert summaries["map"]["llm"]["prompt_versions"]["map"] == "architecture_recovery_v2"
     assert summaries["triage"]["real_labels"] == 7
     assert summaries["triage"]["evaluations"][0] == {
@@ -310,6 +328,12 @@ def test_run_stops_cleanly_when_no_review_is_needed(tmp_config, monkeypatch):
         "split_strategy": "real_row_random",
         "split_detail": "grouped validation not yet available (1 engagements, need 8)",
     }
+
+    detail = runner.invoke(cli.app, ["runs", "show", str(pipeline.id)])
+    assert detail.exit_code == 0, detail.output
+    assert "elapsed=" in detail.stdout
+    assert "summary:" in detail.stdout
+    assert '"model_usage": "not recorded"' in detail.stdout
 
 
 def test_run_ndjson_emits_parseable_stage_events(tmp_config, monkeypatch):

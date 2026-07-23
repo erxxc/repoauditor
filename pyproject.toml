@@ -54,6 +54,7 @@ packages = ["src/repoauditor"]
 "src/repoauditor/map/prompts" = "repoauditor/map/prompts"
 "src/repoauditor/detect/lenses" = "repoauditor/detect/lenses"
 "src/repoauditor/falsify/prompts" = "repoauditor/falsify/prompts"
+"src/repoauditor/llm/prompts" = "repoauditor/llm/prompts"
 "src/repoauditor/normalize/prompts" = "repoauditor/normalize/prompts"
 "src/repoauditor/report/templates" = "repoauditor/report/templates"
 "src/repoauditor/store/ddl" = "repoauditor/store/ddl"

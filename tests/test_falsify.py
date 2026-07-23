@@ -13,14 +13,69 @@ from pathlib import Path
 from repoauditor.config import FalsifyConfig
 from repoauditor.detect.retrieval import RetrievalIndex
 from repoauditor.falsify import challenge_finding
+from repoauditor.falsify.challenger import _falsification_context
 from repoauditor.falsify.outcome import FalsificationOutcome, SelfCritique
 from repoauditor.llm import LLMClient, ScriptedBackend
 from repoauditor.map import ArchitectureMap, EntryPoint
+from repoauditor.review import raise_review_requests
 from repoauditor.store import db
 from repoauditor.store.models import FalsificationStatus, Finding
 
 ARCH = ArchitectureMap(repo_id="r", commit="deadbeef")
 UAT_SNAPSHOT = Path(__file__).parent / "fixtures" / "uat_lightweight_app" / "snapshot"
+
+
+def test_supported_finding_context_contains_non_authoritative_slice():
+    finding = Finding(
+        repo_id="r", title="SQL injection [CWE-89]",
+        file="storefront/catalog.py", line_start=39, line_end=39,
+        citation_snippet="rows = db.query(sql)", source_tool="semgrep",
+        confidence=0.8, severity="high",
+    )
+
+    context = _falsification_context(
+        RetrievalIndex().build(UAT_SNAPSHOT), finding, ARCH, iteration=1
+    )
+
+    assert "DETERMINISTIC PYTHON SLICE" in context
+    assert "evidence only" in context
+    assert "path feasibility" in context
+
+
+def test_challenge_persists_structural_claim_without_using_it_as_verdict(tmp_config):
+    db.init_db(tmp_config)
+    finding = Finding(
+        repo_id="r", title="SQL injection [CWE-89]",
+        file="storefront/catalog.py", line_start=38, line_end=38,
+        citation_snippet="rows = db.query(sql)", source_tool="semgrep",
+        confidence=0.8, severity="high",
+    )
+    finding_id = db.insert_finding(finding, tmp_config)
+    finding = finding.model_copy(update={"id": finding_id})
+
+    outcome = challenge_finding(
+        finding,
+        ARCH,
+        LLMClient(
+            ScriptedBackend(
+                _handler(FalsificationStatus.UNRESOLVED, 0.9, True)
+            ),
+            tmp_config,
+        ),
+        index=RetrievalIndex().build(UAT_SNAPSHOT),
+        config=tmp_config,
+    )
+
+    assert outcome.status is FalsificationStatus.UNRESOLVED
+    claims = db.list_security_claims(finding_id, tmp_config)
+    assert len(claims) == 1
+    verification = db.list_claim_verifications(claims[0].id, tmp_config)[0]
+    assert verification.status.value == "verified"
+    assert "exploitability remain unverified" in verification.reason
+    requests = raise_review_requests("r", tmp_config)
+    claim_evidence = requests[0].evidence["security_claims"][0]
+    assert claim_evidence["verifications"][0]["status"] == "verified"
+    assert "reachability" in claim_evidence["verifications"][0]["reason"]
 
 
 def _handler(verdict_status, verdict_conf, upholds, critique_conf=0.9):

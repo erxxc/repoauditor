@@ -227,6 +227,24 @@ def test_unlicensed_severity_conflict_routes_to_unresolved(tmp_config):
     assert debate.outcome == "unresolved" and debate.resolved_severity is None
 
 
+def test_shared_model_lenses_cannot_license_severity_upgrade(tmp_config):
+    """Different ensemble prompts are correlated and cannot license one another."""
+    db.init_db(tmp_config)
+    a = _finding(source_lens="owasp", severity="medium", confidence=0.6)
+    b = _finding(source_lens="supply_chain", severity="high", confidence=0.9)
+
+    def boom(*args, **kwargs):
+        raise AssertionError("debate must not run on correlated multi-lens agreement")
+
+    resolved = adjudicate(
+        [a, b],
+        config=tmp_config,
+        llm=LLMClient(ScriptedBackend(boom), tmp_config),
+    )
+
+    assert resolved[0].falsification_status is FalsificationStatus.UNRESOLVED
+
+
 def test_falsification_confirmation_licenses_an_upgrade(tmp_config):
     """The second license (b): a falsification-confirmed member lets a non-corroborated
     conflict be resolved by the debate."""

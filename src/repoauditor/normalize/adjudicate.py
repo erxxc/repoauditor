@@ -92,11 +92,11 @@ def _positions(members: list[Finding]) -> list[DebatePosition]:
 def _license(group: MatchGroup) -> str | None:
     """The license (if any) permitting an upgrade for a conflicting group.
 
-    (a) `corroboration` — ≥2 distinct independent sources flagged the same issue; or
+    (a) `corroboration` — independently produced evidence flagged the same issue; or
     (b) `falsification` — a member was confirmed reachable by the falsify stage.
     `None` means no upgrade may be kept — route the conflict to review as unresolved.
     """
-    if group.is_corroborated:
+    if group.has_independent_corroboration:
         return "corroboration"
     if any(f.falsification_status is FalsificationStatus.CONFIRMED for f in group.findings):
         return "falsification"
@@ -114,7 +114,8 @@ def adjudicate(
 
     Groups with the shared matcher, then per group: single-source / already-agreeing groups
     pass through unchanged (no upgrade); a conflicting group may keep its higher severity
-    only if licensed (independent corroboration or a falsification confirmation), else it
+    only if licensed (independently produced corroboration or a falsification confirmation),
+    else it
     routes to review as `unresolved`. A licensed resolution is capped at the strongest
     asserted severity; the other sources become corroborations. Resolved severities are
     persisted (so review/ sees them) for findings that carry an id.
