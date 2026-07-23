@@ -29,7 +29,11 @@ from .config import get_config
 from .detect import DetectionRun, run_ensemble
 from .detect.ensemble import LENS_PROMPT_VERSIONS
 from .falsify import challenge
-from .falsify.challenger import CRITIQUE_PROMPT_VERSION, PROMPT_VERSION as FALSIFY_PROMPT_VERSION
+from .falsify.challenger import (
+    CONTEXT_VERSION as FALSIFY_CONTEXT_VERSION,
+    CRITIQUE_PROMPT_VERSION,
+    PROMPT_VERSION as FALSIFY_PROMPT_VERSION,
+)
 from .ingest import ingest_repo, snapshot_manifests
 from .ingest import latest_snapshot
 from .interactive import load_menu_state, render_main_menu
@@ -1041,6 +1045,7 @@ def run(
                     "prompt_versions": {
                         "falsify": FALSIFY_PROMPT_VERSION,
                         "falsify_critique": CRITIQUE_PROMPT_VERSION,
+                        "falsify_context": FALSIFY_CONTEXT_VERSION,
                     },
                 }
             }, []),

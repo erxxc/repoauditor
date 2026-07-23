@@ -63,18 +63,22 @@ def test_falsify_provenance_records_both_the_verdict_and_self_critique_prompts()
     """The falsify stage runs two prompts; a regression in the reflect step must remain
     attributable, so the recorded provenance carries the self-critique version too."""
     from repoauditor.eval.regression import STAGE_PROMPT_VERSIONS
-    from repoauditor.falsify.challenger import CRITIQUE_PROMPT_VERSION, PROMPT_VERSION
+    from repoauditor.falsify.challenger import (
+        CONTEXT_VERSION, CRITIQUE_PROMPT_VERSION, PROMPT_VERSION,
+    )
 
     recorded = STAGE_PROMPT_VERSIONS["falsify"]
     assert PROMPT_VERSION in recorded
     assert CRITIQUE_PROMPT_VERSION in recorded  # was previously omitted
+    assert CONTEXT_VERSION in recorded
 
 
 def test_default_recorded_run_carries_the_self_critique_prompt_version(tmp_config):
     """A run recorded with the default provenance (no explicit prompt_versions) attributes
     the self-critique prompt — so the golden harness now benchmarks it going forward."""
-    from repoauditor.falsify.challenger import CRITIQUE_PROMPT_VERSION
+    from repoauditor.falsify.challenger import CONTEXT_VERSION, CRITIQUE_PROMPT_VERSION
 
     db.init_db(tmp_config)
     run = record_and_check(lineage="prov", precision=1.0, recall=1.0, config=tmp_config)
     assert CRITIQUE_PROMPT_VERSION in run.prompt_versions["falsify"]
+    assert CONTEXT_VERSION in run.prompt_versions["falsify"]

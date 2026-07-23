@@ -30,6 +30,12 @@ def _evidence(finding: Finding) -> dict:
     }
 
 
+def _source_key(finding: Finding) -> tuple[str, str]:
+    if finding.source_tool is not None:
+        return ("tool", finding.source_tool)
+    return ("lens", finding.source_lens or "unknown")
+
+
 def _case_targets(expected: dict) -> tuple[list[dict], list[dict]]:
     """Return model-applicable confirmed cases and explicitly excluded cases."""
     finding_by_case = {item["case"]: item for item in expected.get("findings", [])}
@@ -167,10 +173,13 @@ def _disposition_target(expected: dict, case: dict, disposition: str) -> dict:
         "citation_contains": detail["citation_contains"],
         "severity_range": case["severity_range"],
         "expected_disposition": disposition,
+        "expected_sources": case["expected_sources"],
     }
 
 
-def _score_disposition(findings: list[Finding], target: dict) -> dict:
+def _score_disposition(
+    findings: list[Finding], target: dict, available_source_types: set[str]
+) -> dict:
     same_issue = [
         finding for finding in findings if _match_basis(finding, target)
     ]
@@ -180,10 +189,39 @@ def _score_disposition(findings: list[Finding], target: dict) -> dict:
         else FalsificationStatus.UNRESOLVED
     )
     correct = [finding for finding in same_issue if finding.falsification_status is expected_status]
+    expected_sources = {
+        (source["type"], source["name"]) for source in target["expected_sources"]
+    }
+    applicable_sources = {
+        source for source in expected_sources if source[0] in available_source_types
+    }
+    unavailable_sources = expected_sources - applicable_sources
+    observed_sources = {_source_key(finding) for finding in same_issue}
+    missing_applicable = applicable_sources - observed_sources
+    if unavailable_sources:
+        source_coverage_status = "partial"
+    elif missing_applicable:
+        source_coverage_status = "missing"
+    else:
+        source_coverage_status = "complete"
     return {
         **target,
         "candidate_raised": bool(same_issue),
         "correct_disposition": bool(correct),
+        "negative_control_passed": not same_issue or bool(correct),
+        "source_coverage_status": source_coverage_status,
+        "observed_sources": [
+            {"type": source_type, "name": name}
+            for source_type, name in sorted(observed_sources)
+        ],
+        "missing_available_sources": [
+            {"type": source_type, "name": name}
+            for source_type, name in sorted(missing_applicable)
+        ],
+        "unavailable_expected_sources": [
+            {"type": source_type, "name": name}
+            for source_type, name in sorted(unavailable_sources)
+        ],
         "observed_statuses": sorted({
             finding.falsification_status.value for finding in same_issue
         }),
@@ -191,8 +229,13 @@ def _score_disposition(findings: list[Finding], target: dict) -> dict:
     }
 
 
-def score_live_uat(findings: list[Finding], expected: dict) -> dict:
+def score_live_uat(
+    findings: list[Finding],
+    expected: dict,
+    available_source_types: set[str] | None = None,
+) -> dict:
     """Score final confirmed issues and disposition controls as separate populations."""
+    available_source_types = available_source_types or {"lens", "tool"}
     confirmed = [
         finding for finding in findings
         if finding.falsification_status is FalsificationStatus.CONFIRMED
@@ -210,9 +253,13 @@ def score_live_uat(findings: list[Finding], expected: dict) -> dict:
         _disposition_target(expected, case, "unresolved")
         for case in planted if case["expected_disposition"] == "requires-review"
     ]
-    killed_checks = [_score_disposition(findings, target) for target in killed_targets]
+    killed_checks = [
+        _score_disposition(findings, target, available_source_types)
+        for target in killed_targets
+    ]
     unresolved_checks = [
-        _score_disposition(findings, target) for target in unresolved_targets
+        _score_disposition(findings, target, available_source_types)
+        for target in unresolved_targets
     ]
 
     disposition_counts = Counter(
@@ -234,8 +281,11 @@ def score_live_uat(findings: list[Finding], expected: dict) -> dict:
         "methodology": (
             "Confirmed findings only are grouped with production matching semantics for "
             "precision/recall. Identity is file+citation or file+line overlap; severity is "
-            "evaluated separately. Tool-only expected cases are excluded from model recall."
+            "evaluated separately. Tool-only expected cases are excluded from model recall. "
+            "Negative controls pass when absent or correctly killed; expected sources that "
+            "were unavailable are disclosed rather than treated as exercised coverage."
         ),
+        "available_source_types": sorted(available_source_types),
         "raw_finding_count": len(findings),
         "raw_disposition_counts": dict(sorted(disposition_counts.items())),
         "raw_confirmed_finding_count": len(confirmed),

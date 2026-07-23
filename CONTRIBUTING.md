@@ -92,6 +92,9 @@ The manual `bounded corpus UAT` workflow has two deliberately separate modes:
   from model recall; killed, unresolved, and deferred findings are disclosed separately;
   and severity agreement is reported separately from finding identity. Each JSON result
   includes case-level matching evidence and unmatched confirmed groups for review.
+  Negative controls distinguish an end-to-end pass (absent or correctly killed) from a
+  falsification exercise (raised and killed), and unavailable expected scanner sources are
+  reported as partial coverage rather than silently treated as tested.
 
 The independent-project metadata documents one historical CVE per project; it is not an
 exhaustive vulnerability inventory. Therefore the deterministic mode does **not** call every

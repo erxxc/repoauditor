@@ -133,6 +133,7 @@ def test_live_uat_reports_killed_control_case_without_adding_it_to_recall():
 
     assert result["killed_case_checks"][0]["candidate_raised"] is True
     assert result["killed_case_checks"][0]["correct_disposition"] is True
+    assert result["killed_case_checks"][0]["negative_control_passed"] is True
     assert result["final_countable_confirmed"]["expected_case_count"] == 1
 
 
@@ -140,13 +141,21 @@ def test_live_uat_real_fixture_denominator_matches_adjudicated_model_scope():
     fixture = _load_fixture("uat_lightweight_app")
     expected = fixture.expected
 
-    result = score_live_uat([], expected)
+    result = score_live_uat([], expected, available_source_types={"lens"})
 
     assert expected["schema_version"] == "uat-expectation-2"
     assert result["final_countable_confirmed"]["expected_case_count"] == 3
     assert [case["case"] for case in result["excluded_expected_cases"]] == [5]
     assert [case["case"] for case in result["killed_case_checks"]] == [4, 7, 8, 9, 10]
     assert result["unresolved_case_checks"] == []
+    case7 = next(case for case in result["killed_case_checks"] if case["case"] == 7)
+    case10 = next(case for case in result["killed_case_checks"] if case["case"] == 10)
+    assert case7["negative_control_passed"] is True
+    assert case7["correct_disposition"] is False
+    assert case10["source_coverage_status"] == "partial"
+    assert case10["unavailable_expected_sources"] == [
+        {"type": "tool", "name": "secrets"}
+    ]
     config_source = (fixture.snapshot_path / "storefront" / "config.py").read_text()
     assert "local-dev-session-key" not in config_source
     assert "secrets.token_hex(32)" in config_source

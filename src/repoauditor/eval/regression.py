@@ -15,6 +15,7 @@ from __future__ import annotations
 from ..config import Config, get_config
 from ..detect.ensemble import PROMPT_VERSION as _DETECT_PV
 from ..falsify.challenger import CRITIQUE_PROMPT_VERSION as _FALSIFY_CRITIQUE_PV
+from ..falsify.challenger import CONTEXT_VERSION as _FALSIFY_CONTEXT_V
 from ..falsify.challenger import PROMPT_VERSION as _FALSIFY_PV
 from ..map.domain_map import PROMPT_VERSION as _MAP_PV
 from ..normalize.adjudicate import PROMPT_VERSION as _NORMALIZE_PV
@@ -29,7 +30,7 @@ from ..store.models import EvalRun
 STAGE_PROMPT_VERSIONS: dict[str, str] = {
     "map": _MAP_PV,
     "detect": _DETECT_PV,
-    "falsify": f"{_FALSIFY_PV}+{_FALSIFY_CRITIQUE_PV}",
+    "falsify": f"{_FALSIFY_PV}+{_FALSIFY_CRITIQUE_PV}+{_FALSIFY_CONTEXT_V}",
     "normalize": _NORMALIZE_PV,
 }
 

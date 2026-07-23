@@ -23,6 +23,7 @@ cross-source corroboration) that licenses a severity upgrade downstream.
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 from ..config import Config, get_config
@@ -49,27 +50,95 @@ CRITIQUE_PROMPT_VERSION = "falsification_selfcritique_v1"
 CRITIQUE_PROMPT = (
     Path(__file__).parent / "prompts" / f"{CRITIQUE_PROMPT_VERSION}.md"
 ).read_text()
+CONTEXT_VERSION = "falsification_context_v2"
 
 _TERMINAL = (FalsificationStatus.CONFIRMED, FalsificationStatus.KILLED)
+_REFERENCE_TOKEN_RE = re.compile(r"\b(?:[A-Z][A-Z0-9_]{3,}|[A-Za-z_]\w*_bp)\b")
+_MAX_EVIDENCE_CHARS = 12_000
 
 
-def _mitigating_context(index: RetrievalIndex | None, finding: Finding, limit: int) -> str:
-    """Related call sites that might mitigate the finding (empty if no index).
+def _format_context(label: str, blocks: list) -> str:
+    rendered = []
+    seen: set[tuple[str, int, int, str]] = set()
+    for info in blocks:
+        key = (info.file, info.line_start, info.line_end, info.source)
+        if key in seen:
+            continue
+        seen.add(key)
+        rendered.append(
+            f"# {label}: {info.symbol} ({info.file}:{info.line_start}-{info.line_end})\n"
+            f"{info.source}"
+        )
+    return "\n\n".join(rendered)
 
-    `limit` grows with the iteration so later rounds pull broader context before the
-    loop is allowed to give up — the confidence-gated broader-retrieval discipline,
-    applied inside the falsification loop.
-    """
+
+def _architecture_context(architecture: ArchitectureMap) -> str:
+    if not architecture.entry_points:
+        return "# ARCHITECTURE ENTRY POINTS\n(none recovered)"
+    rows = [
+        f"- {entry.name} | location={entry.location or '(unknown)'} | "
+        f"trust_boundary={entry.trust_boundary or '(unknown)'}"
+        for entry in architecture.entry_points[:30]
+    ]
+    return "# ARCHITECTURE ENTRY POINTS\n" + "\n".join(rows)
+
+
+def _falsification_context(
+    index: RetrievalIndex | None,
+    finding: Finding,
+    architecture: ArchitectureMap,
+    iteration: int,
+) -> str:
+    """Gather deterministic evidence with a genuinely broader strategy each round."""
     if index is None:
         return ""
-    similar = index.find_similar_patterns(finding.citation_snippet, limit=limit)
-    if not similar:
+    sections: list[str] = []
+    enclosing = index.find_enclosing(
+        finding.file, finding.line_start, finding.line_end
+    )
+    if enclosing:
+        sections.append(_format_context("ENCLOSING FUNCTION", enclosing[:2]))
+    else:
+        excerpt = index.file_excerpt(
+            finding.file, finding.line_start, finding.line_end, context_lines=10
+        )
+        if excerpt is not None:
+            sections.append(_format_context("LOCAL SOURCE", [excerpt]))
+
+    if iteration >= 2:
+        related = []
+        for info in enclosing[:2]:
+            related.extend(index.find_callers(info.symbol))
+            related.extend(index.find_callees(info.symbol))
+        related.extend(
+            index.find_similar_patterns(finding.citation_snippet, limit=2 + iteration)
+        )
+        if related:
+            sections.append(_format_context("CALL/PATTERN EVIDENCE", related))
+
+    if iteration >= 3:
+        excerpt = index.file_excerpt(
+            finding.file, finding.line_start, finding.line_end, context_lines=18
+        )
+        if excerpt is not None:
+            sections.append(_format_context("MODULE CONTEXT", [excerpt]))
+        sections.append(_architecture_context(architecture))
+        reference_seed = "\n".join(
+            [finding.citation_snippet, *(info.source for info in enclosing[:2])]
+        )
+        references = []
+        for token in sorted(set(_REFERENCE_TOKEN_RE.findall(reference_seed)))[:6]:
+            references.extend(index.find_text_references(token, limit=4))
+        if references:
+            sections.append(_format_context("CONFIG/REGISTRATION EVIDENCE", references))
+
+    evidence = "\n\n# ---\n\n".join(section for section in sections if section)
+    if not evidence:
         return ""
-    blocks = [
-        f"# {info.symbol} ({info.file}:{info.line_start})\n{info.source}"
-        for info in similar
-    ]
-    return "\n\n# --- related code that may already mitigate this ---\n" + "\n\n".join(blocks)
+    return (
+        f"# RETRIEVAL STRATEGY: {CONTEXT_VERSION}; tier={iteration}\n"
+        f"{evidence}"
+    )[:_MAX_EVIDENCE_CHARS]
 
 
 def _boundary_name(architecture: ArchitectureMap, finding: Finding) -> str:
@@ -142,7 +211,9 @@ def challenge_finding(
 
     for iteration in range(1, max_iterations + 1):
         # OBSERVE — gather evidence, broadening the retrieval window each round.
-        evidence_block = _mitigating_context(index, finding, limit=2 + iteration)
+        evidence_block = _falsification_context(
+            index, finding, architecture, iteration
+        )
 
         # THINK / ACT — form a verdict against the current evidence.
         verdict_completion = llm.call(
