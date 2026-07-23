@@ -21,6 +21,7 @@ from repoauditor.store.models import (
     FalsificationStatus,
     Finding,
     IngestedRepo,
+    ModelUsage,
     TriageLabelSource,
     TrustBoundary,
 )
@@ -359,11 +360,30 @@ def test_run_stops_cleanly_when_no_review_is_needed(tmp_config, monkeypatch):
         "split_detail": "grouped validation not yet available (1 engagements, need 8)",
     }
 
+    db.insert_model_usage(
+        ModelUsage(
+            pipeline_run_id=pipeline.id,
+            stage="detect",
+            module="detect",
+            prompt_version="lens_v1",
+            provider="anthropic",
+            model="test-model",
+            usage_available=True,
+            input_tokens=100,
+            output_tokens=20,
+            cache_read_tokens=10,
+            cache_write_tokens=0,
+            latency_ms=250,
+        ),
+        tmp_config,
+    )
     detail = runner.invoke(cli.app, ["runs", "show", str(pipeline.id)])
     assert detail.exit_code == 0, detail.output
     assert "elapsed=" in detail.stdout
     assert "summary:" in detail.stdout
     assert '"model_usage": "not recorded"' in detail.stdout
+    assert "model usage: calls=1; processed-tokens=130" in detail.stdout
+    assert "unknown-usage-calls=0" in detail.stdout
 
 
 def test_run_ndjson_emits_parseable_stage_events(tmp_config, monkeypatch):

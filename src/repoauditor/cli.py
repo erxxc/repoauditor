@@ -44,6 +44,7 @@ from .falsify.challenger import (
 from .ingest import ingest_repo, snapshot_manifests
 from .ingest import latest_snapshot
 from .interactive import load_menu_state, render_main_menu
+from .llm import model_usage_scope
 from .map import recover_architecture
 from .map.domain_map import PROMPT_VERSION as MAP_PROMPT_VERSION
 from .normalize import adjudicate_repo
@@ -1005,7 +1006,8 @@ def run(
         event(stage, "started")
         db.start_stage_run(pipeline.id, stage, config)
         try:
-            value = _run_step(stage, fn)
+            with model_usage_scope(pipeline.id):
+                value = _run_step(stage, fn)
         except BaseException as exc:
             detail = f"{type(exc).__name__}: {exc}"[:4000]
             db.finish_stage_run(
@@ -1018,6 +1020,8 @@ def run(
             event(stage, "failed", error=detail)
             raise
         summary, artifacts = metadata(value)
+        usage = db.summarize_model_usage(pipeline.id, config, stage=stage)
+        summary["model_usage"] = usage if usage["calls"] else "not recorded"
         db.finish_stage_run(
             pipeline.id, stage, RunStatus.COMPLETED, summary=summary,
             artifacts=artifacts, config=config,
@@ -1194,6 +1198,19 @@ def run(
         artifact_items.append(f"semgrep-sarif={detection.sarif_path}")
         artifact_paths.append(str(detection.sarif_path))
     artifact_items.append(f"review-requests={len(requests)}")
+    usage_totals = db.summarize_model_usage(pipeline.id, config)
+    if usage_totals["calls"]:
+        processed_tokens = (
+            usage_totals["input_tokens"] + usage_totals["output_tokens"]
+            + usage_totals["cache_read_tokens"] + usage_totals["cache_write_tokens"]
+        )
+        artifact_items.append(
+            f"model-usage={usage_totals['calls']} calls/{processed_tokens} known tokens"
+            + (
+                f"/{usage_totals['unknown_usage_calls']} call(s) without token metadata"
+                if usage_totals["unknown_usage_calls"] else ""
+            )
+        )
     db.finish_pipeline_run(
         pipeline.id, RunStatus.COMPLETED, artifacts=artifact_paths, config=config
     )
@@ -1206,6 +1223,7 @@ def run(
             "run", "completed", repo_id=repo_id,
             run_id=pipeline.id,
             open_review_requests=len(requests), artifacts=artifact_paths,
+            model_usage=usage_totals if usage_totals["calls"] else "not recorded",
             elapsed_seconds=round(time.monotonic() - run_started, 3),
             next_command=next_command,
         ))
@@ -1269,6 +1287,22 @@ def runs_show(run_id: int = typer.Argument(..., help="Pipeline run id.")) -> Non
         )
         if stage.summary:
             typer.echo("    summary: " + json.dumps(stage.summary, sort_keys=True))
+    usage = db.summarize_model_usage(run_id, config)
+    if usage["calls"]:
+        processed = (
+            usage["input_tokens"] + usage["output_tokens"]
+            + usage["cache_read_tokens"] + usage["cache_write_tokens"]
+        )
+        typer.echo(
+            f"model usage: calls={usage['calls']}; processed-tokens={processed}; "
+            f"input={usage['input_tokens']}; output={usage['output_tokens']}; "
+            f"cache-read={usage['cache_read_tokens']}; "
+            f"cache-write={usage['cache_write_tokens']}; "
+            f"unknown-usage-calls={usage['unknown_usage_calls']}; "
+            f"provider-latency-ms={usage['latency_ms']}"
+        )
+    else:
+        typer.echo("model usage: not recorded")
     if item.artifacts:
         typer.echo("artifacts: " + ", ".join(item.artifacts))
 

@@ -1,8 +1,9 @@
 """Read-only pipeline funnel metrics derived from stage return values.
 
 These helpers describe what happened; they never change ranking, verdicts, grouping, or
-persistence. Model token usage and dollar cost are intentionally absent until backends
-return authoritative provider usage metadata.
+persistence. Their stage-only projections use ``not recorded`` as a placeholder; the
+pipeline orchestrator replaces it with authoritative provider usage aggregated by store/.
+Dollar cost remains unavailable without a dated provider/model price source.
 """
 
 from __future__ import annotations

@@ -28,6 +28,7 @@ from .models import (
     FalsificationStatus,
     Finding,
     IngestedRepo,
+    ModelUsage,
     PipelineRun,
     PriorSource,
     ReviewDecision,
@@ -222,6 +223,71 @@ def finish_stage_run(
                 (str(status), json.dumps(summary or {}), json.dumps(artifacts or []),
                  failure_detail, run_id, stage),
             )
+    finally:
+        conn.close()
+
+
+def insert_model_usage(usage: ModelUsage, config: Config | None = None) -> int:
+    """Persist provider-reported model usage; callers never estimate missing values."""
+    conn = get_connection(config)
+    try:
+        with conn:
+            cur = conn.execute(
+                "INSERT INTO model_usage (pipeline_run_id, stage, module, prompt_version, "
+                "provider, model, usage_available, input_tokens, output_tokens, "
+                "cache_read_tokens, cache_write_tokens, latency_ms) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (
+                    usage.pipeline_run_id, usage.stage, usage.module, usage.prompt_version,
+                    usage.provider, usage.model, int(usage.usage_available),
+                    usage.input_tokens, usage.output_tokens, usage.cache_read_tokens,
+                    usage.cache_write_tokens, usage.latency_ms,
+                ),
+            )
+        return int(cur.lastrowid)
+    finally:
+        conn.close()
+
+
+def list_model_usage(
+    config: Config | None = None, *, pipeline_run_id: int | None = None
+) -> list[ModelUsage]:
+    conn = get_connection(config)
+    try:
+        if pipeline_run_id is None:
+            rows = conn.execute("SELECT * FROM model_usage ORDER BY id").fetchall()
+        else:
+            rows = conn.execute(
+                "SELECT * FROM model_usage WHERE pipeline_run_id = ? ORDER BY id",
+                (pipeline_run_id,),
+            ).fetchall()
+        return [ModelUsage(**dict(row)) for row in rows]
+    finally:
+        conn.close()
+
+
+def summarize_model_usage(
+    pipeline_run_id: int, config: Config | None = None, *, stage: str | None = None
+) -> dict[str, int]:
+    """Return authoritative token/call totals for one pipeline run."""
+    conn = get_connection(config)
+    try:
+        query = (
+            "SELECT COUNT(*) AS calls, COALESCE(SUM(input_tokens), 0) AS input_tokens, "
+            "COALESCE(SUM(output_tokens), 0) AS output_tokens, "
+            "COALESCE(SUM(cache_read_tokens), 0) AS cache_read_tokens, "
+            "COALESCE(SUM(cache_write_tokens), 0) AS cache_write_tokens, "
+            "COALESCE(SUM(CASE WHEN usage_available = 0 THEN 1 ELSE 0 END), 0) "
+            "AS unknown_usage_calls, "
+            "COALESCE(SUM(latency_ms), 0) AS latency_ms "
+            "FROM model_usage WHERE pipeline_run_id = ?"
+        )
+        params: tuple = (pipeline_run_id,)
+        if stage is not None:
+            query += " AND stage = ?"
+            params += (stage,)
+        row = conn.execute(query, params).fetchone()
+        return {key: int(row[key]) for key in row.keys()}
     finally:
         conn.close()
 

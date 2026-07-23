@@ -9,6 +9,8 @@ prior expansion; it does not change the current risk model.
 
 Status: active. This document is the durable execution plan for improving triage accuracy
 without presenting synthetic performance as real-world evidence.
+The cross-project implementation order is tracked in
+[project-priorities.md](project-priorities.md).
 
 Progress:
 

@@ -3,8 +3,9 @@
 Responsibilities (identical for map / detect / falsify / normalize):
 
 1. **Validate** the backend's raw response against the stage's Pydantic model.
-2. **Retry**, bounded (`config.llm.max_retries`, default 2), feeding the validation
-   error back into the retry prompt.
+2. **Retry**, bounded (`config.llm.max_retries`, default 2), for validation failures and
+   plausibly transient transport/5xx failures. Authentication, permission, invalid-model,
+   quota, and other terminal client errors stop immediately.
 3. On exhaustion, **log a `ValidationFailure`** to `store/` and **raise** — the client
    never swallows a hard failure; the calling stage decides what to do with it.
 4. **Confidence-gate**: if validation succeeds but the model's own reported confidence
@@ -18,14 +19,18 @@ stage's `module` name and `prompt_version` so failures are attributable.
 
 from __future__ import annotations
 
+import time
+from contextlib import contextmanager
+from contextvars import ContextVar
 from dataclasses import dataclass
+from typing import Iterator
 from typing import Generic, TypeVar
 
 from pydantic import BaseModel, ValidationError
 
 from ..config import Config, get_config
 from ..store import db
-from ..store.models import ValidationFailure
+from ..store.models import ModelUsage, ValidationFailure
 from .backends import AnthropicBackend, Backend, BackendError, OpenAICompatibleBackend
 
 T = TypeVar("T", bound=BaseModel)
@@ -35,6 +40,25 @@ _RAW_TRUNCATE = 2000
 
 class LLMValidationError(RuntimeError):
     """Raised when a call fails validation after all bounded retries are exhausted."""
+
+
+class LLMBudgetExceeded(RuntimeError):
+    """Raised before a request that would continue an exhausted pipeline budget."""
+
+
+_pipeline_run_id: ContextVar[int | None] = ContextVar(
+    "repoauditor_pipeline_run_id", default=None
+)
+
+
+@contextmanager
+def model_usage_scope(pipeline_run_id: int) -> Iterator[None]:
+    """Attribute model calls in this context to one durable pipeline run."""
+    token = _pipeline_run_id.set(pipeline_run_id)
+    try:
+        yield
+    finally:
+        _pipeline_run_id.reset(token)
 
 
 @dataclass
@@ -73,6 +97,54 @@ class LLMClient:
         """Backend-reported deterministic seed, or None when no seed is supported."""
         return getattr(self._backend, "sampling_seed", None)
 
+    def _check_pipeline_budget(self, pipeline_run_id: int | None) -> None:
+        if pipeline_run_id is None:
+            return
+        totals = db.summarize_model_usage(pipeline_run_id, self._config)
+        max_calls = self._config.llm.max_calls_per_pipeline_run
+        max_tokens = self._config.llm.max_tokens_per_pipeline_run
+        processed_tokens = (
+            totals["input_tokens"] + totals["output_tokens"]
+            + totals["cache_read_tokens"] + totals["cache_write_tokens"]
+        )
+        if max_calls and totals["calls"] >= max_calls:
+            raise LLMBudgetExceeded(
+                f"LLM call budget exhausted for pipeline run #{pipeline_run_id}: "
+                f"{totals['calls']}/{max_calls} provider calls; raise "
+                "[llm].max_calls_per_pipeline_run before resuming"
+            )
+        if max_tokens and processed_tokens >= max_tokens:
+            raise LLMBudgetExceeded(
+                f"LLM token budget exhausted for pipeline run #{pipeline_run_id}: "
+                f"{processed_tokens}/{max_tokens} provider-reported tokens; raise "
+                "[llm].max_tokens_per_pipeline_run before resuming"
+            )
+
+    def _record_usage(
+        self, *, pipeline_run_id: int | None, module: str, prompt_version: str,
+        context: dict, latency_ms: int,
+    ) -> None:
+        if not getattr(self._backend, "tracks_usage", False):
+            return
+        usage = getattr(self._backend, "last_usage", None)
+        db.insert_model_usage(
+            ModelUsage(
+                pipeline_run_id=pipeline_run_id,
+                stage=str(context.get("stage") or module),
+                module=module,
+                prompt_version=prompt_version,
+                provider=self._config.llm.provider,
+                model=self._config.model.name,
+                usage_available=usage is not None,
+                input_tokens=usage.input_tokens if usage is not None else None,
+                output_tokens=usage.output_tokens if usage is not None else None,
+                cache_read_tokens=usage.cache_read_tokens if usage is not None else None,
+                cache_write_tokens=usage.cache_write_tokens if usage is not None else None,
+                latency_ms=latency_ms,
+            ),
+            self._config,
+        )
+
     def call(
         self,
         *,
@@ -94,15 +166,34 @@ class LLMClient:
         last_error = "no response"
         last_raw = ""
         attempt_user = user
+        pipeline_run_id = _pipeline_run_id.get()
 
         for _ in range(max_retries + 1):
+            self._check_pipeline_budget(pipeline_run_id)
+            started = time.monotonic()
             try:
                 raw = self._backend.complete(
                     system=system, user=attempt_user, schema=schema, context=ctx
                 )
             except BackendError as exc:
                 last_error, last_raw = str(exc), exc.raw
+                self._record_usage(
+                    pipeline_run_id=pipeline_run_id,
+                    module=module,
+                    prompt_version=prompt_version,
+                    context=ctx,
+                    latency_ms=max(0, round((time.monotonic() - started) * 1000)),
+                )
+                if not exc.retryable:
+                    raise
             else:
+                self._record_usage(
+                    pipeline_run_id=pipeline_run_id,
+                    module=module,
+                    prompt_version=prompt_version,
+                    context=ctx,
+                    latency_ms=max(0, round((time.monotonic() - started) * 1000)),
+                )
                 last_raw = raw
                 try:
                     value = schema.model_validate_json(raw)
