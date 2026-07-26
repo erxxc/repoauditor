@@ -11,6 +11,7 @@ from __future__ import annotations
 import getpass
 import io
 import json
+import shlex
 import sys
 import threading
 import time
@@ -142,6 +143,10 @@ _verbose_enabled: ContextVar[bool] = ContextVar("repoauditor_verbose", default=F
 
 def _timestamp() -> str:
     return datetime.now().astimezone().isoformat(timespec="seconds")
+
+
+def _rerun_command(source: str) -> str:
+    return f"repoauditor run {shlex.quote(source)}"
 
 
 def _elapsed(seconds: float) -> str:
@@ -397,6 +402,13 @@ def _falsify_stage(repo_id: str, config):
         f"falsified {repo_id}: confirmed={counts['confirmed']}, killed={counts['killed']}, "
         f"unresolved={counts['unresolved']}, deferred={result.deferred_count}", timing
     )
+    if result.remaining_call_capacity is not None and not _quiet_enabled.get():
+        typer.echo(
+            f"  cost preflight: pending={result.pending_count}; "
+            f"minimum={result.minimum_calls_per_finding} calls/finding; "
+            f"reserved={result.reserved_calls_per_finding} including iteration/retry envelope; "
+            f"capacity-at-start={result.remaining_call_capacity}"
+        )
     return result
 
 
@@ -628,6 +640,40 @@ def demo(
         typer.secho("demo stopped: preflight requirements are not satisfied", err=True)
         raise typer.Exit(code=1)
 
+    db.init_db(config)
+    pipeline = db.start_pipeline_run(str(snapshot), config)
+    try:
+        with model_usage_scope(pipeline.id):
+            artifacts, identity = _execute_demo(
+                config, snapshot, expectations, trials, seed, non_interactive
+            )
+        if identity is not None:
+            db.update_pipeline_run_identity(
+                pipeline.id, identity.repo_id, identity.commit, config
+            )
+        db.finish_pipeline_run(
+            pipeline.id, RunStatus.COMPLETED, artifacts=artifacts, config=config
+        )
+    except BaseException as exc:
+        # A normal zero-code Click exit is an expected review pause; every other exit or
+        # exception is durable failure evidence for the same protected run.
+        if isinstance(exc, typer.Exit) and exc.exit_code == 0:
+            db.finish_pipeline_run(
+                pipeline.id, RunStatus.COMPLETED, artifacts=[str(snapshot)], config=config
+            )
+        else:
+            db.finish_pipeline_run(
+                pipeline.id, RunStatus.FAILED, failed_stage="demo",
+                failure_detail=f"{type(exc).__name__}: {exc}"[:4000], config=config,
+            )
+        raise
+
+
+def _execute_demo(
+    config, snapshot: Path, expectations: Path, trials: int, seed: int,
+    non_interactive: bool,
+) -> tuple[list[str], object | None]:
+    """Execute the guided workflow inside demo's durable model-usage scope."""
     typer.echo(
         "Demo safety: this fixture is intentionally vulnerable. repoauditor reads it "
         "statically and will not start the web application."
@@ -654,7 +700,15 @@ def demo(
         "triage",
         lambda: _triage_stage(_DEMO_REPO_ID, config, sarif=detection.sarif_path),
     )
-    _run_step("falsify", lambda: _falsify_stage(_DEMO_REPO_ID, config))
+    falsification = _run_step(
+        "falsify", lambda: _falsify_stage(_DEMO_REPO_ID, config)
+    )
+    if falsification.deferred_count:
+        typer.echo(
+            f"Demo paused safely with {falsification.deferred_count} deferred finding(s); "
+            "rerun `repoauditor demo` to continue the bounded queue before reporting."
+        )
+        return [str(ingested.snapshot_path)], ingested
     _run_step("normalize", lambda: _normalize_stage(_DEMO_REPO_ID, config))
     _run_step("review checkpoint", lambda: raise_review_requests(_DEMO_REPO_ID, config))
 
@@ -666,7 +720,7 @@ def demo(
                 f"Demo paused successfully. Decide requests with `repoauditor review decide "
                 f"{_DEMO_REPO_ID} ...`, then rerun the demo."
             )
-            raise typer.Exit(code=0)
+            return [str(ingested.snapshot_path)], ingested
         reviewer = typer.prompt("Reviewer name", default=getpass.getuser())
         for request in requests:
             disposition = typer.prompt(
@@ -706,8 +760,10 @@ def demo(
         f"Demo complete: {scorecard.passed}/{scorecard.total} expected behaviors passed."
     )
     typer.echo("Artifacts:")
-    for path in [*engineering, *memo, scorecard.markdown_path, scorecard.json_path]:
+    artifacts = [*engineering, *memo, scorecard.markdown_path, scorecard.json_path]
+    for path in artifacts:
         typer.echo(f"  {path}")
+    return [str(path) for path in artifacts], ingested
 
 
 @app.command()
@@ -1185,7 +1241,7 @@ def run(
             }, []),
         )
     if "falsify" not in completed:
-        step(
+        falsification = step(
             "falsify", lambda: _falsify_stage(repo_id, config),
             lambda value: ({
                 **falsification_metrics(value, getattr(value, "deferred_count", 0)),
@@ -1200,7 +1256,14 @@ def run(
                 }
             }, []),
         )
-    if "normalize" not in completed:
+        deferred_after_falsify = getattr(falsification, "deferred_count", 0)
+    else:
+        deferred_after_falsify = int(
+            completed["falsify"].summary.get("deferred", 0) or 0
+        )
+    # A bounded falsify batch is a successful stage result, but deferred findings have
+    # not been adjudicated and must not enter normalize/review/report as if examined.
+    if not deferred_after_falsify and "normalize" not in completed:
         step(
             "normalize", lambda: _normalize_stage(repo_id, config),
             lambda value: ({
@@ -1212,7 +1275,7 @@ def run(
                 }
             }, []),
         )
-    if "review checkpoint" not in completed:
+    if not deferred_after_falsify and "review checkpoint" not in completed:
         step(
             "review checkpoint",
             lambda: raise_review_requests(
@@ -1225,6 +1288,7 @@ def run(
         )
 
     requests = open_review_requests(repo_id, config)
+    deferred = db.list_deferred_findings(repo_id, config)
     if detection.semgrep_status not in {"complete", "empty"}:
         typer.secho(
             f"coverage notice: Semgrep status is {detection.semgrep_status}; "
@@ -1238,6 +1302,7 @@ def run(
         artifact_items.append(f"semgrep-sarif={detection.sarif_path}")
         artifact_paths.append(str(detection.sarif_path))
     artifact_items.append(f"review-requests={len(requests)}")
+    artifact_items.append(f"deferred-findings={len(deferred)}")
     usage_totals = db.summarize_model_usage(pipeline.id, config)
     if usage_totals["calls"]:
         processed_tokens = (
@@ -1256,19 +1321,34 @@ def run(
     )
     if machine:
         next_command = (
-            f"repoauditor review list {repo_id}" if requests
-            else f"repoauditor finalize {repo_id}"
+            _rerun_command(source)
+            if deferred else (
+                f"repoauditor review list {repo_id}" if requests
+                else f"repoauditor finalize {repo_id}"
+            )
         )
         typer.echo(ndjson_event(
             "run", "completed", repo_id=repo_id,
             run_id=pipeline.id,
-            open_review_requests=len(requests), artifacts=artifact_paths,
+            open_review_requests=len(requests), deferred_findings=len(deferred),
+            artifacts=artifact_paths,
             model_usage=usage_totals if usage_totals["calls"] else "not recorded",
             elapsed_seconds=round(time.monotonic() - run_started, 3),
             next_command=next_command,
         ))
         return
-    if requests:
+    if deferred:
+        typer.echo(
+            f"run complete for {repo_id}; {len(deferred)} finding(s) remain deferred "
+            "by the safe falsification budget and are not ready for analysis."
+        )
+        if requests:
+            typer.echo(
+                f"Review checkpoint also has {len(requests)} open request(s): "
+                f"repoauditor review list {repo_id}"
+            )
+        typer.echo(f"Next: {_rerun_command(source)}")
+    elif requests:
         typer.echo(
             f"run complete for {repo_id}; stopped at review checkpoint with "
             f"{len(requests)} open request(s)."
@@ -1363,6 +1443,22 @@ def finalize(
 ) -> None:
     """After review, quantify risk and write both reports; optionally retain an audit run."""
     config = get_config()
+    db.init_db(config)
+    deferred = db.list_deferred_findings(repo_id, config)
+    if deferred:
+        ids = ", ".join(f"#{finding.id}" for finding in deferred[:10])
+        suffix = " ..." if len(deferred) > 10 else ""
+        typer.secho(
+            f"finalize blocked for {repo_id}: {len(deferred)} finding(s) have not been "
+            f"falsified yet ({ids}{suffix})",
+            fg=typer.colors.RED,
+            err=True,
+        )
+        typer.echo(
+            "Continue the bounded queue by rerunning `repoauditor run <same-source>`.",
+            err=True,
+        )
+        raise typer.Exit(code=1)
     _run_step("review checkpoint", lambda: raise_review_requests(repo_id, config))
     requests = open_review_requests(repo_id, config)
     if requests:

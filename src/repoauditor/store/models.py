@@ -188,6 +188,10 @@ class Finding(BaseModel):
     line_start: int
     line_end: int
     citation_snippet: str
+    # Optional detector-supplied natural identity. SCA uses a canonical
+    # ecosystem/package/version/advisory key because every manifest-level advisory is
+    # otherwise anchored to the same synthetic line range.
+    identity_key: str | None = None
     source_lens: str | None = None
     source_tool: str | None = None
     confidence: float = Field(ge=0.0, le=1.0)

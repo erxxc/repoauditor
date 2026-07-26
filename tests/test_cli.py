@@ -386,6 +386,34 @@ def test_run_stops_cleanly_when_no_review_is_needed(tmp_config, monkeypatch):
     assert "unknown-usage-calls=0" in detail.stdout
 
 
+def test_run_points_back_to_bounded_queue_when_findings_are_deferred(
+    tmp_config, monkeypatch
+):
+    monkeypatch.setattr(cli, "get_config", lambda: tmp_config)
+    calls = _wire_run_stages(monkeypatch, [])
+    monkeypatch.setattr(
+        cli, "_falsify_stage",
+        lambda repo_id, config: (
+            calls.append("falsify"),
+            SimpleNamespace(deferred_count=2),
+        )[1],
+    )
+    monkeypatch.setattr(
+        cli.db, "list_deferred_findings",
+        lambda repo_id, config: [SimpleNamespace(id=91), SimpleNamespace(id=92)],
+    )
+
+    result = runner.invoke(cli.app, ["run", "/target with spaces"])
+
+    assert result.exit_code == 0, result.output
+    assert "2 finding(s) remain deferred" in result.stdout
+    assert "not ready for analysis" in result.stdout
+    assert "repoauditor run '/target with spaces'" in result.stdout
+    assert "repoauditor finalize" not in result.stdout
+    assert "normalize" not in calls
+    assert "checkpoint" not in calls
+
+
 def test_run_ndjson_emits_parseable_stage_events(tmp_config, monkeypatch):
     monkeypatch.setattr(cli, "get_config", lambda: tmp_config)
     _wire_run_stages(monkeypatch, [])
@@ -541,6 +569,27 @@ def test_finalize_refuses_open_review_request(wired, monkeypatch):
     assert result.exit_code == 1
     assert f"#{request.id} (finding #{held})" in result.output
     assert "repoauditor review list r" in result.output
+
+
+def test_finalize_refuses_deferred_findings_before_reporting(tmp_config, monkeypatch):
+    monkeypatch.setattr(cli, "get_config", lambda: tmp_config)
+    db.init_db(tmp_config)
+    deferred_id = db.insert_finding(Finding(
+        repo_id="r", title="not examined", file="app.py", line_start=1, line_end=1,
+        citation_snippet="candidate", source_lens="owasp", confidence=0.7,
+        severity="high", falsification_status=FalsificationStatus.DEFERRED,
+    ), tmp_config)
+    monkeypatch.setattr(
+        cli, "raise_review_requests",
+        lambda *args, **kwargs: pytest.fail("review should not run before backlog clears"),
+    )
+
+    result = runner.invoke(cli.app, ["finalize", "r"])
+
+    assert result.exit_code == 1
+    assert f"#{deferred_id}" in result.output
+    assert "have not been falsified yet" in result.output
+    assert "repoauditor run <same-source>" in result.output
 
 
 def test_finalize_runs_quantify_and_both_reports(tmp_config, monkeypatch):

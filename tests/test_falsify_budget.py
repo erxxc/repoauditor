@@ -16,6 +16,7 @@ from repoauditor.falsify import challenge
 from repoauditor.falsify.challenger import _budget_order, _budget_partition
 from repoauditor.ingest import ingest_repo
 from repoauditor.map import recover_architecture
+from repoauditor.llm import model_usage_scope
 from repoauditor.store import db
 from repoauditor.store.models import (
     FalsificationStatus,
@@ -101,6 +102,32 @@ def test_unlimited_budget_challenges_everything_in_one_run(
     challenge(repo_id, cfg, llm=scripted_llm)
     assert _status(cfg, repo_id, FalsificationStatus.DEFERRED) == []
     assert db.finding_ids_with_iterations(repo_id, cfg)  # everything examined
+
+
+def test_pipeline_call_capacity_safely_bounds_an_unlimited_falsify_queue(
+    tmp_config, scripted_llm, stub_deterministic_tools
+):
+    # Default self-critique, three iterations, and two retries reserve 18 provider
+    # attempts per finding. An 18-call run can safely schedule exactly one.
+    cfg = _budget_config(tmp_config, 0).model_copy(update={
+        "llm": tmp_config.llm.model_copy(update={
+            "max_calls_per_pipeline_run": 18,
+            "max_tokens_per_pipeline_run": 0,
+        }),
+    })
+    db.init_db(cfg)
+    repo_id = _detect(cfg, scripted_llm)
+    pipeline = db.start_pipeline_run("fixture", cfg)
+
+    with model_usage_scope(pipeline.id):
+        result = challenge(repo_id, cfg, llm=scripted_llm)
+
+    assert len(result) == 1
+    assert result.pending_count == 3
+    assert result.minimum_calls_per_finding == 2
+    assert result.reserved_calls_per_finding == 18
+    assert result.remaining_call_capacity == 18
+    assert result.deferred_count == 2
 
 
 # --------------------------------------------------------------------------- #

@@ -35,6 +35,12 @@ _MANIFEST_GLOBS = ("requirements*.txt", "poetry.lock", "Pipfile.lock", "pdm.lock
 _SCA_CONFIDENCE = 0.6
 
 
+def _identity(ecosystem: str, package: str, version: str, advisory_id: str) -> str:
+    """Canonical natural key for one affected dependency/advisory tuple."""
+    parts = (ecosystem, package, version, advisory_id)
+    return "sca:" + ":".join(str(part).strip().lower() for part in parts)
+
+
 class ScaAdapter:
     """Runs / parses pip-audit + OSV-Scanner and normalizes to candidate findings."""
 
@@ -93,6 +99,7 @@ class ScaAdapter:
                     title=f"Vulnerable dependency {name} ({vid})",
                     file=manifest, line_start=1, line_end=1,
                     citation_snippet=f"{name}=={version} — {vid}",
+                    identity_key=_identity("pypi", name, version, vid),
                     source_tool=self.tool_name, confidence=_SCA_CONFIDENCE,
                     producer="pip-audit",
                     severity=Severity.MEDIUM,
@@ -132,6 +139,7 @@ class ScaAdapter:
             for pkg in result.get("packages", []) or []:
                 info = pkg.get("package", {}) or {}
                 name, version = info.get("name", "?"), info.get("version", "?")
+                ecosystem = info.get("ecosystem", "unknown")
                 for vuln in pkg.get("vulnerabilities", []) or []:
                     vid = vuln.get("id", "UNKNOWN")
                     summary = (vuln.get("summary") or vuln.get("details") or "").strip()
@@ -139,6 +147,7 @@ class ScaAdapter:
                         title=f"Vulnerable dependency {name} ({vid})",
                         file=manifest, line_start=1, line_end=1,
                         citation_snippet=f"{name}@{version} — {vid}",
+                        identity_key=_identity(ecosystem, name, version, vid),
                         source_tool=self.tool_name, confidence=_SCA_CONFIDENCE,
                         producer="osv-scanner",
                         severity=Severity.MEDIUM, rationale=summary[:500],

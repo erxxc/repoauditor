@@ -20,6 +20,7 @@ from .client import (
     LLMValidationError,
     get_llm_client,
     model_usage_scope,
+    remaining_pipeline_call_capacity,
 )
 
 __all__ = [
@@ -28,6 +29,7 @@ __all__ = [
     "LLMValidationError",
     "LLMBudgetExceeded",
     "model_usage_scope",
+    "remaining_pipeline_call_capacity",
     "get_llm_client",
     "Backend",
     "BackendError",

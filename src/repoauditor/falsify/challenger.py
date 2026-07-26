@@ -30,7 +30,7 @@ from typing import Callable
 
 from ..config import Config, get_config
 from ..ingest import latest_snapshot
-from ..llm import LLMClient, get_llm_client
+from ..llm import LLMClient, get_llm_client, remaining_pipeline_call_capacity
 from ..map import ArchitectureMap, load_architecture
 from ..store import db
 from ..store.models import (
@@ -407,9 +407,17 @@ def _unresolved(
 class FalsificationRun(list[FalsificationOutcome]):
     """List-compatible outcomes with the number deferred by this run's budget."""
 
-    def __init__(self, outcomes: list[FalsificationOutcome], deferred_count: int):
+    def __init__(
+        self, outcomes: list[FalsificationOutcome], deferred_count: int, *,
+        pending_count: int = 0, minimum_calls_per_finding: int = 0,
+        reserved_calls_per_finding: int = 0, remaining_call_capacity: int | None = None,
+    ):
         super().__init__(outcomes)
         self.deferred_count = deferred_count
+        self.pending_count = pending_count
+        self.minimum_calls_per_finding = minimum_calls_per_finding
+        self.reserved_calls_per_finding = reserved_calls_per_finding
+        self.remaining_call_capacity = remaining_call_capacity
 
 
 def challenge(
@@ -430,10 +438,11 @@ def challenge(
     candidates.
 
     `config.falsify.max_findings_per_run` caps how many get the (expensive) loop this
-    run. Candidates beyond the cap are persisted `deferred` — never dropped — and resumed
-    by a later run. `0` means unlimited (challenge every candidate). Findings the loop
-    already examined (they carry iteration rows) are left untouched, so a resumed run
-    never re-litigates a verdict it already reached.
+    run. The active pipeline's remaining provider-call capacity can lower that cap using
+    the full configured iteration/retry envelope. Candidates beyond the effective cap are
+    persisted `deferred` — never dropped — and resumed by a later run. `0` disables only
+    the stage-local cap. Findings the loop already examined (they carry iteration rows)
+    are left untouched, so a resumed run never re-litigates a verdict it already reached.
 
     `self_critique` is forwarded to `challenge_finding` (default on = round-5 behavior);
     the eval harness sets it `False` to benchmark the reflect step against its prior.
@@ -452,8 +461,27 @@ def challenge(
     ]
     pending = _budget_order(pending, triage)
 
-    budget = config.falsify.max_findings_per_run
-    if budget and budget > 0:
+    configured_budget = config.falsify.max_findings_per_run
+    remaining_calls = remaining_pipeline_call_capacity(config)
+    logical_calls_per_iteration = 2 if self_critique else 1
+    minimum_calls = logical_calls_per_iteration
+    # Reserve the full configured iteration/retry envelope. A successful verdict often
+    # exits earlier, but scheduling against the optimistic case would allow a queue of
+    # individually valid retries to consume the run ceiling midway through a finding.
+    reserved_calls = (
+        logical_calls_per_iteration
+        * max(1, config.falsify.max_iterations)
+        * (config.llm.max_retries + 1)
+    )
+    capacity_budget = (
+        remaining_calls // reserved_calls if remaining_calls is not None else None
+    )
+    budgets = [
+        value for value in (configured_budget or None, capacity_budget)
+        if value is not None
+    ]
+    budget = min(budgets) if budgets else 0
+    if budgets:
         selected, deferred = _budget_partition(
             pending, triage, budget, config.falsify.min_untriaged_per_run
         )
@@ -479,11 +507,16 @@ def challenge(
     for finding in deferred:
         db.update_falsification(
             finding.id, FalsificationStatus.DEFERRED,
-            f"Deferred: outside this falsify run's budget of {budget} finding(s); ranked "
+            f"Deferred: outside this falsify run's safe budget of {budget} finding(s); ranked "
             f"below the cutoff and will be resumed by a later run.",
             config,
         )
-    return FalsificationRun(outcomes, len(deferred))
+    return FalsificationRun(
+        outcomes, len(deferred), pending_count=len(pending),
+        minimum_calls_per_finding=minimum_calls,
+        reserved_calls_per_finding=reserved_calls,
+        remaining_call_capacity=remaining_calls,
+    )
 
 
 _PENDING_STATUSES = (FalsificationStatus.UNRESOLVED, FalsificationStatus.DEFERRED)

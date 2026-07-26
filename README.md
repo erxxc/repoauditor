@@ -482,8 +482,8 @@ failure does not expose usage metadata, the attempt is still counted and is expl
 reported as `unknown-usage-calls`; repoauditor never invents a token value. Dollar cost
 remains unavailable because no dated provider/model price table is persisted.
 
-Two `[llm]` circuit breakers prevent an unattended run from issuing provider calls
-indefinitely:
+Two `[llm]` circuit breakers prevent an unattended `run` or guided `demo` from issuing
+provider calls indefinitely:
 
 ```toml
 max_calls_per_pipeline_run = 75
@@ -496,6 +496,20 @@ before each request, so one in-flight request can cross the threshold before the
 is stopped. A budget stop is an attributable, resumable pipeline failure; review the stored
 usage with `runs show`, raise a limit deliberately if justified, then rerun the same source.
 Set a limit to `0` only when an external budget control is already in place.
+
+Before falsification, repoauditor compares the pending queue with the active run's remaining
+call capacity. It prints both the optimistic minimum (verdict plus self-critique) and the
+conservative reservation covering every configured iteration and retry. Only the batch that
+fits that reservation is attempted; the rest is recorded as deferred and remains resumable.
+The independent token ceiling still applies before every request—future token consumption is
+not guessed from prior calls. When a deferred backlog remains, `run` pauses before
+normalize/review and points back to the same source for the next bounded batch; `finalize`
+refuses to exclude that unexamined work silently.
+
+Dependency advisories also carry a canonical ecosystem/package/version/advisory identity.
+This prevents unrelated CVEs from being merged merely because SCA scanners report them all
+at manifest line 1, while allowing the same advisory returned by pip-audit and OSV-Scanner
+to be treated as the same underlying issue.
 
 Each provider request also uses `[llm].timeout_seconds` (120 seconds by default). Provider
 SDK retries are disabled: repoauditor's shared reliability layer owns the bounded retry

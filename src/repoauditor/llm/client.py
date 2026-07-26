@@ -61,6 +61,23 @@ def model_usage_scope(pipeline_run_id: int) -> Iterator[None]:
         _pipeline_run_id.reset(token)
 
 
+def remaining_pipeline_call_capacity(config: Config | None = None) -> int | None:
+    """Return authoritative remaining provider-call capacity for the active run.
+
+    ``None`` means there is no active pipeline scope or the call ceiling is disabled.
+    Token capacity is intentionally not estimated here: provider token usage is only
+    authoritative after a response, and the regular pre-request circuit breaker remains
+    responsible for enforcing that independent ceiling.
+    """
+    pipeline_run_id = _pipeline_run_id.get()
+    config = config or get_config()
+    maximum = config.llm.max_calls_per_pipeline_run
+    if pipeline_run_id is None or maximum == 0:
+        return None
+    used = db.summarize_model_usage(pipeline_run_id, config)["calls"]
+    return max(0, maximum - used)
+
+
 @dataclass
 class Completion(Generic[T]):
     """A validated model result plus its confidence signal.

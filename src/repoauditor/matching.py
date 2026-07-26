@@ -108,6 +108,21 @@ class MatchDecision:
 
 def same_issue(a: Finding, b: Finding) -> MatchDecision:
     """Do two findings point at the same underlying issue? Conservative; source-agnostic."""
+    # A detector-supplied natural identity is stronger than a display location. In
+    # particular, SCA advisories all anchor to manifest line 1: different keys must not
+    # collapse merely because they share that synthetic line, and an unkeyed neighbor
+    # must not transitively bridge two distinct advisories.
+    if a.identity_key is not None or b.identity_key is not None:
+        if a.identity_key is not None and a.identity_key == b.identity_key:
+            return MatchDecision(
+                matched=True, basis=["natural_identity"],
+                reason=f"same detector natural identity {a.identity_key}",
+            )
+        return MatchDecision(
+            matched=False, basis=["natural_identity_conflict"],
+            reason="distinct or unavailable detector natural identities",
+        )
+
     cw_a, cw_b = cwes_of(a), cwes_of(b)
     shared_cwe = cw_a & cw_b
     both_classified = bool(cw_a) and bool(cw_b)
