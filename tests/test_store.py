@@ -71,6 +71,7 @@ def test_pre_methodology_database_migrates_without_losing_audit_data(
             "0018_security_claims.sql",
             "0019_structural_claim_verification.sql",
             "0020_model_usage.sql",
+            "0021_finding_identity.sql",
     ]
 
     assert db.list_findings("r", tmp_config)[0].id == finding_id
@@ -119,6 +120,7 @@ def test_structural_status_migration_preserves_claim_audit_data(
     assert db.init_db(tmp_config) == [
         "0019_structural_claim_verification.sql",
         "0020_model_usage.sql",
+        "0021_finding_identity.sql",
     ]
 
     claim = db.list_security_claims(finding_id, tmp_config)[0]

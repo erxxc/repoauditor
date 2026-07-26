@@ -495,31 +495,40 @@ def insert_finding(finding: Finding, config: Config | None = None) -> int:
     conn = get_connection(config)
     try:
         with conn:
-            cur = conn.execute(
-                "INSERT INTO finding "
-                "(repo_id, title, file, line_start, line_end, citation_snippet, "
-                " source_lens, source_tool, confidence, severity, "
-                " falsification_status, falsification_reason, trust_boundary_id, "
-                " entity_id, description) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                (
-                    finding.repo_id,
-                    finding.title,
-                    finding.file,
-                    finding.line_start,
-                    finding.line_end,
-                    finding.citation_snippet,
-                    finding.source_lens,
-                    finding.source_tool,
-                    finding.confidence,
-                    str(finding.severity),
-                    str(finding.falsification_status),
-                    finding.falsification_reason,
-                    finding.trust_boundary_id,
-                    finding.entity_id,
-                    finding.description,
-                ),
+            values = (
+                finding.repo_id, finding.title, finding.file, finding.line_start,
+                finding.line_end, finding.citation_snippet,
             )
+            tail = (
+                finding.source_lens, finding.source_tool, finding.confidence,
+                str(finding.severity), str(finding.falsification_status),
+                finding.falsification_reason, finding.trust_boundary_id,
+                finding.entity_id, finding.description,
+            )
+            if "identity_key" in {
+                row["name"] for row in conn.execute("PRAGMA table_info(finding)")
+            }:
+                cur = conn.execute(
+                    "INSERT INTO finding "
+                    "(repo_id, title, file, line_start, line_end, citation_snippet, identity_key, "
+                    " source_lens, source_tool, confidence, severity, falsification_status, "
+                    " falsification_reason, trust_boundary_id, entity_id, description) "
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    (*values, finding.identity_key, *tail),
+                )
+            else:
+                # Migration tests intentionally exercise historical schemas through the
+                # current store API. A keyed finding cannot be represented before 0021.
+                if finding.identity_key is not None:
+                    raise RuntimeError("finding identity requires migration 0021")
+                cur = conn.execute(
+                    "INSERT INTO finding "
+                    "(repo_id, title, file, line_start, line_end, citation_snippet, "
+                    " source_lens, source_tool, confidence, severity, falsification_status, "
+                    " falsification_reason, trust_boundary_id, entity_id, description) "
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    (*values, *tail),
+                )
             finding_id = int(cur.lastrowid)
             for corr in finding.corroborated_by:
                 conn.execute(
@@ -548,11 +557,12 @@ def upsert_detected_finding(finding: Finding, config: Config | None = None) -> i
         row = conn.execute(
             "SELECT id FROM finding WHERE repo_id = ? AND source_lens IS ? "
             "AND source_tool IS ? AND file = ? AND line_start = ? AND line_end = ? "
-            "AND title = ? AND citation_snippet = ? ORDER BY id LIMIT 1",
+            "AND title = ? AND citation_snippet = ? AND identity_key IS ? "
+            "ORDER BY id LIMIT 1",
             (
                 finding.repo_id, finding.source_lens, finding.source_tool, finding.file,
                 finding.line_start, finding.line_end, finding.title,
-                finding.citation_snippet,
+                finding.citation_snippet, finding.identity_key,
             ),
         ).fetchone()
         if row is not None:
@@ -560,13 +570,14 @@ def upsert_detected_finding(finding: Finding, config: Config | None = None) -> i
             return int(row["id"])
         cur = conn.execute(
             "INSERT INTO finding "
-            "(repo_id, title, file, line_start, line_end, citation_snippet, "
+            "(repo_id, title, file, line_start, line_end, citation_snippet, identity_key, "
             " source_lens, source_tool, confidence, severity, falsification_status, "
             " falsification_reason, trust_boundary_id, entity_id, description) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (
                 finding.repo_id, finding.title, finding.file, finding.line_start,
-                finding.line_end, finding.citation_snippet, finding.source_lens,
+                finding.line_end, finding.citation_snippet, finding.identity_key,
+                finding.source_lens,
                 finding.source_tool, finding.confidence, str(finding.severity),
                 str(finding.falsification_status), finding.falsification_reason,
                 finding.trust_boundary_id, finding.entity_id, finding.description,
@@ -610,6 +621,7 @@ def _hydrate_findings(conn: sqlite3.Connection, rows: list[sqlite3.Row]) -> list
                 line_start=row["line_start"],
                 line_end=row["line_end"],
                 citation_snippet=row["citation_snippet"],
+                identity_key=row["identity_key"] if "identity_key" in row.keys() else None,
                 source_lens=row["source_lens"],
                 source_tool=row["source_tool"],
                 confidence=row["confidence"],
@@ -639,6 +651,22 @@ def list_findings(repo_id: str | None = None, config: Config | None = None) -> l
             rows = conn.execute(
                 "SELECT * FROM finding WHERE repo_id = ? ORDER BY id", (repo_id,)
             ).fetchall()
+        return _hydrate_findings(conn, rows)
+    finally:
+        conn.close()
+
+
+def list_deferred_findings(
+    repo_id: str, config: Config | None = None
+) -> list[Finding]:
+    """Return findings not yet examined because they fell outside a falsify budget."""
+    conn = get_connection(config)
+    try:
+        rows = conn.execute(
+            "SELECT * FROM finding WHERE repo_id = ? AND falsification_status = ? "
+            "ORDER BY id",
+            (repo_id, str(FalsificationStatus.DEFERRED)),
+        ).fetchall()
         return _hydrate_findings(conn, rows)
     finally:
         conn.close()

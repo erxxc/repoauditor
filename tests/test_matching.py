@@ -16,13 +16,14 @@ from repoauditor.store.models import Finding, SourceType
 
 
 def _f(*, id=None, lens=None, tool=None, sev="high", conf=0.8, desc="", file="app.py",
-       start=10, end=10, entity=None, tb=None):
+       start=10, end=10, entity=None, tb=None, identity=None):
     if lens is None and tool is None:
         lens = "owasp"  # Finding requires a source; default to a lens for source-agnostic tests
     return Finding(
         id=id, repo_id="r", title="issue", file=file, line_start=start, line_end=end,
         citation_snippet="code", source_lens=lens, source_tool=tool, confidence=conf,
         severity=sev, description=desc, entity_id=entity, trust_boundary_id=tb,
+        identity_key=identity,
     )
 
 
@@ -44,6 +45,26 @@ def test_source_and_cwe_and_overlap_primitives():
 def test_overlapping_lines_match():
     d = same_issue(_f(lens="owasp", start=10, end=10), _f(tool="secrets", start=10, end=10))
     assert d.matched and "line_overlap" in d.basis
+
+
+def test_manifest_advisories_require_the_same_natural_identity():
+    cve_a = _f(
+        tool="sca", file="requirements.txt", start=1, end=1,
+        identity="sca:pypi:requests:2.19.1:cve-2018-18074",
+    )
+    cve_b = _f(
+        tool="sca", file="requirements.txt", start=1, end=1,
+        identity="sca:pypi:requests:2.19.1:ghsa-9wx4-h78v-vm56",
+    )
+    same_from_another_scanner = _f(
+        tool="sca", file="requirements.txt", start=1, end=1,
+        identity=cve_a.identity_key,
+    )
+
+    assert not same_issue(cve_a, cve_b).matched
+    decision = same_issue(cve_a, same_from_another_scanner)
+    assert decision.matched and decision.basis == ["natural_identity"]
+    assert len(find_matches([cve_a, cve_b, same_from_another_scanner]).groups) == 2
 
 
 def test_conflicting_cwe_on_same_lines_is_a_divergence_not_a_match():

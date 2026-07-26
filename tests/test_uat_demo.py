@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import json
+from types import SimpleNamespace
 
 from typer.testing import CliRunner
 
 from repoauditor import cli
 from repoauditor.config import REPO_ROOT
+from repoauditor.llm import remaining_pipeline_call_capacity
 from repoauditor.store import db
 from repoauditor.store.models import (
     Entity, EntityKind, FalsificationStatus, Finding,
@@ -73,3 +75,31 @@ def test_demo_missing_key_message_is_explicit(tmp_config, monkeypatch):
     assert "Demo cannot start: no API key present" in result.output
     assert 'export ANTHROPIC_API_KEY="your-key-here"' in result.output
     assert "never written to the repository" in result.output
+
+
+def test_demo_executes_inside_a_durable_usage_budget_scope(tmp_config, monkeypatch):
+    cfg = tmp_config.model_copy(update={
+        "root": REPO_ROOT,
+        "llm": tmp_config.llm.model_copy(update={
+            "max_calls_per_pipeline_run": 7,
+            "max_tokens_per_pipeline_run": 1000,
+        }),
+    })
+    monkeypatch.setattr(cli, "get_config", lambda: cfg)
+    monkeypatch.setattr(cli, "_preflight", lambda config: cli.PreflightResult())
+    observed = {}
+
+    def execute(config, snapshot, expectations, trials, seed, non_interactive):
+        observed["remaining"] = remaining_pipeline_call_capacity(config)
+        return [str(snapshot)], SimpleNamespace(
+            repo_id="uat_lightweight_app", commit="fixture-commit"
+        )
+
+    monkeypatch.setattr(cli, "_execute_demo", execute)
+    result = runner.invoke(cli.app, ["demo", "--non-interactive"])
+
+    assert result.exit_code == 0, result.output
+    assert observed["remaining"] == 7
+    pipeline = db.list_pipeline_runs(cfg, repo_id="uat_lightweight_app")[0]
+    assert pipeline.status.value == "completed"
+    assert pipeline.commit_hash == "fixture-commit"

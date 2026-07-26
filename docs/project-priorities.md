@@ -18,6 +18,9 @@ order so future sessions do not have to reconstruct it from conversation history
     terminal client errors;
   - retain bounded retries only for plausibly transient connection/timeout/5xx failures;
   - complete usage, budget-stop, and `runs show` regression coverage.
+  - protect guided `demo` with the same durable run scope; bound falsification against
+    remaining provider-call capacity; preserve distinct manifest advisories with explicit
+    natural identities; and block finalization while safely deferred work remains.
 - [x] Re-check the suspected aggregate macOS exit-139 during repeated triage classifier
   training. It was a 30-second command-output yield being mistaken for process completion;
   polling the persistent session produced a clean exit (`26 passed` for the triage file).
@@ -27,6 +30,11 @@ order so future sessions do not have to reconstruct it from conversation history
   `usage-calibration` report. Paid evidence still requires one successful lightweight run
   and one protected independent pre/post pair after cache/provider access returns. Treat
   the limits as safety ceilings, not statistically calibrated defaults; never auto-raise.
+- [ ] Add a budget-scoped deferred-queue continuation that reuses the immutable ingested
+  snapshot and completed map/detect/triage evidence without paying to repeat those stages.
+  Until then, rerunning the same source is safe and idempotent but operationally expensive;
+  standalone model-backed stage commands also need the same durable usage scope before they
+  are recommended as the continuation path.
 
 ## P1 — controlled real-world evidence
 

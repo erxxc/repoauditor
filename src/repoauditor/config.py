@@ -84,8 +84,8 @@ class FalsifyConfig(BaseModel):
     # LLM budget for a single falsify run: the maximum number of candidate findings put
     # through the (expensive) observe-think-act-reflect loop this run. Candidates are
     # taken in triage-priority order (highest P(actionable) first); any beyond the budget
-    # are persisted `deferred` — not dropped — and resumed by a later run. `0` means
-    # unlimited (challenge every unresolved candidate, the pre-budget behavior).
+    # are persisted `deferred` — not dropped — and resumed by a later run. `0` disables
+    # only this stage-local cap; an active pipeline call ceiling still derives a safe batch.
     max_findings_per_run: int = 0
     # On bounded runs with room for both streams, reserve this many slots for findings
     # that have no deterministic triage score (normally LLM-lens / novel findings).

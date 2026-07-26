@@ -91,6 +91,7 @@ class CandidateFinding(BaseModel):
     line_start: int
     line_end: int
     citation_snippet: str
+    identity_key: str | None = None
     source_tool: str
     producer: str | None = Field(default=None, exclude=True)
     confidence: float = Field(ge=0.0, le=1.0)
@@ -350,6 +351,7 @@ def _persist_tool_candidate(
         line_start=cand.line_start,
         line_end=max(cand.line_end, cand.line_start),
         citation_snippet=cand.citation_snippet,
+        identity_key=cand.identity_key,
         source_tool=cand.source_tool,
         confidence=min(max(cand.confidence, 0.0), 1.0),
         severity=cand.severity,

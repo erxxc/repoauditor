@@ -112,6 +112,7 @@ def test_sca_adapter_parses_pip_audit_json():
     assert len(cands) == 1
     c = cands[0]
     assert c.source_tool == "sca"
+    assert c.identity_key == "sca:pypi:flask:0.5:pysec-2019-179"
     assert c.file == "requirements.txt" and c.line_start == 1 and c.line_end == 1
     assert "flask" in c.citation_snippet and "PYSEC-2019-179" in c.citation_snippet
 
@@ -128,6 +129,7 @@ def test_sca_adapter_parses_osv_scanner_json_and_auto_detects_format():
     assert len(cands) == 1
     c = cands[0]
     assert c.source_tool == "sca" and c.file == "requirements.txt" and c.line_start == 1
+    assert c.identity_key == "sca:pypi:django:2.0:ghsa-abcd"
     assert "django" in c.citation_snippet and "GHSA-abcd" in c.citation_snippet
 
 

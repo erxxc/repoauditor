@@ -52,7 +52,8 @@ tool_timeout_seconds = 180
 max_iterations = 3
 # LLM budget per falsify run: max candidates put through the loop, taken in triage
 # priority order (highest P(actionable) first). Candidates beyond the budget are
-# persisted `deferred` and resumed by a later run. 0 = unlimited.
+# persisted `deferred` and resumed by a later run. 0 removes this stage-local cap;
+# the active pipeline's provider-call ceiling still derives a conservative safe batch.
 max_findings_per_run = 0
 # For bounded runs with at least two slots, reserve capacity for LLM/novel findings that
 # have no deterministic triage score. 0 restores strict triaged-first behavior.
