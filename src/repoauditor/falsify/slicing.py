@@ -16,7 +16,7 @@ from dataclasses import dataclass, field
 from ..detect.retrieval import RetrievalIndex
 from ..store.models import Finding
 
-SLICE_VERSION = "python_local_slice_v3"
+SLICE_VERSION = "python_local_slice_v4"
 
 _MECHANISM_TERMS = {
     "sql_injection": ("sql injection", "sqli", "cwe-89"),
@@ -53,6 +53,13 @@ class CallerSliceLine:
     source: str
 
 
+@dataclass(frozen=True)
+class RegistrationSliceLine:
+    file: str
+    line: int
+    source: str
+
+
 @dataclass
 class PythonSliceEvidence:
     mechanism: str
@@ -62,6 +69,7 @@ class PythonSliceEvidence:
     entry_evidence: list[SliceLine] = field(default_factory=list)
     caller_evidence: list[CallerSliceLine] = field(default_factory=list)
     authorization_candidates: list[SliceLine] = field(default_factory=list)
+    registration_evidence: list[RegistrationSliceLine] = field(default_factory=list)
     source_evidence: list[SliceLine] = field(default_factory=list)
     assignments: list[SliceLine] = field(default_factory=list)
     sink: SliceLine | None = None
@@ -85,6 +93,10 @@ class PythonSliceEvidence:
         lines.extend(
             f"caller {item.file}:L{item.line}: {item.source}"
             for item in self.caller_evidence
+        )
+        lines.extend(
+            f"registration {item.file}:L{item.line}: {item.source}"
+            for item in self.registration_evidence
         )
         if self.sink:
             lines.append(f"sink L{self.sink.line}: {self.sink.source}")
@@ -174,6 +186,59 @@ def _direct_python_callers(
     return sorted(evidence, key=lambda pair: (pair[0], pair[1].line, pair[1].source))
 
 
+def _route_subjects(function: ast.AST) -> set[str]:
+    """Blueprint symbols used by local Flask-style route decorators."""
+    subjects: set[str] = set()
+    for decorator in function.decorator_list:
+        if (
+            isinstance(decorator, ast.Call)
+            and isinstance(decorator.func, ast.Attribute)
+            and decorator.func.attr in {"route", "get", "post", "put", "patch", "delete"}
+            and isinstance(decorator.func.value, ast.Name)
+        ):
+            subjects.add(decorator.func.value.id)
+    return subjects
+
+
+def _blueprint_registrations(
+    index: RetrievalIndex, subjects: set[str]
+) -> list[RegistrationSliceLine]:
+    """Find exact Python ``register_blueprint(subject)`` syntax for route subjects."""
+    evidence: list[RegistrationSliceLine] = []
+    seen: set[tuple[str, int, str]] = set()
+    files = {
+        reference.file
+        for subject in subjects
+        for reference in index.find_text_references(subject, limit=50)
+    }
+    for file in sorted(files):
+        source = index.source_text(file)
+        if source is None or not file.endswith(".py"):
+            continue
+        relative, text = source
+        try:
+            tree = ast.parse(text)
+        except SyntaxError:
+            continue
+        lines = text.splitlines()
+        for node in ast.walk(tree):
+            if (
+                not isinstance(node, ast.Call)
+                or _call_name(node) != "register_blueprint"
+                or not any(
+                    isinstance(argument, ast.Name) and argument.id in subjects
+                    for argument in node.args
+                )
+            ):
+                continue
+            item = _line(lines, node)
+            key = (relative, item.line, item.source)
+            if key not in seen:
+                seen.add(key)
+                evidence.append(RegistrationSliceLine(relative, item.line, item.source))
+    return sorted(evidence, key=lambda item: (item.file, item.line, item.source))
+
+
 def build_python_slice(
     index: RetrievalIndex, finding: Finding
 ) -> PythonSliceEvidence | None:
@@ -234,6 +299,9 @@ def build_python_slice(
         CallerSliceLine(relative, item.line, item.source)
         for relative, item in _direct_python_callers(index, function.name)
     ]
+    result.registration_evidence = _blueprint_registrations(
+        index, _route_subjects(function)
+    )
 
     calls = [
         node for node in ast.walk(function)

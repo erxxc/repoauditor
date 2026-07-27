@@ -33,12 +33,13 @@ evidence exists.
 7. **Independent verification — partial.** Agent-produced claims use the persisted
    `SecurityClaim` contract, bind to an immutable snapshot commit, and are checked by a
    separately versioned deterministic verifier that reopens the snapshot and reconstructs
-   supported facts without consuming the producer's evidence object. Version 5 additionally
+   supported facts without consuming the producer's evidence object. Version 6 additionally
    checks persisted local HTTP-entry evidence, request-input identity, and control-candidate
    identity/def-use placement, plus exact direct Python call-site and narrow same-function
-   authorization-candidate syntax. Authentication-only syntax is excluded. These remain
-   syntax facts—not runtime reachability, attacker control, authorization scope/effectiveness,
-   or control effectiveness. The agent never verifies its own claim.
+   authorization-candidate syntax and Flask blueprint registration tied to the route subject.
+   Authentication-only syntax is excluded. These remain syntax facts—not application
+   startup, runtime reachability, attacker control, authorization scope/effectiveness, or
+   control effectiveness. The agent never verifies its own claim.
 
 ## Proposed eligibility
 

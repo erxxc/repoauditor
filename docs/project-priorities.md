@@ -102,13 +102,14 @@ order so future sessions do not have to reconstruct it from conversation history
 
 - [ ] Improve language-specific slicing and authorization/source-to-sink context before
   changing the classifier.
-- [~] Expand independently checked `SecurityClaim` certificates. Version 5 now persists and
+- [~] Expand independently checked `SecurityClaim` certificates. Version 6 now persists and
   checks local HTTP-entry syntax, request-input identity, control-candidate identity, and
   placement on the intraprocedural def-use chain, plus exact direct Python caller syntax
   and same-function authorization-candidate syntax independently reparsed from the snapshot.
-  Authentication-only syntax is excluded. Runtime/interprocedural reachability, deployed
-  attacker control, authorization scope/effectiveness, and control effectiveness remain
-  explicitly unverified.
+  Authentication-only syntax is excluded. Flask blueprint registration calls are also tied
+  back to their route subject and reparsed independently. Application startup,
+  runtime/interprocedural reachability, deployed attacker control, authorization
+  scope/effectiveness, and control effectiveness remain explicitly unverified.
 - [ ] Evaluate in-family/out-of-family novelty as an investigation-depth trigger. Do not
   train a novelty prioritizer until enough manually reviewed LLM findings exist.
 
@@ -152,7 +153,7 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
    MVP. Exact direct Python caller syntax is now persisted and independently checked without
    being promoted to runtime reachability. A narrow authorization-candidate vocabulary is
    also independently checked and kept separate from authentication, but authorization
-   scope/effectiveness, broader registration/reference evidence, cross-file data flow, and
+   scope/effectiveness, non-Flask registration/reference evidence, cross-file data flow, and
    additional trusted checker languages remain. Preserve explicit unsupported/incomplete
    outcomes.
 3. Expand manufactured positive/negative controls only for mechanisms with independently

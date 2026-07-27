@@ -40,6 +40,10 @@ def test_sql_slice_connects_request_assignments_to_query_sink():
     assert evidence.function == "search_products"
     assert evidence.sink and "db.query(sql)" in evidence.sink.source
     assert any('request.args.get("q"' in item.source for item in evidence.source_evidence)
+    assert any(
+        "register_blueprint(catalog_bp)" in item.source
+        for item in evidence.registration_evidence
+    )
     assert "reachability" in evidence.render()
 
 
@@ -60,6 +64,10 @@ def test_ssrf_slice_connects_request_target_to_http_sink():
     assert any(
         "require_admin()" in item.source
         for item in evidence.authorization_candidates
+    )
+    assert any(
+        "register_blueprint(integrations_bp)" in item.source
+        for item in evidence.registration_evidence
     )
 
 

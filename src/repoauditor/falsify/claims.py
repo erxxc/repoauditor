@@ -19,9 +19,9 @@ from ..store.models import (
 )
 from .slicing import PythonSliceEvidence, SLICE_VERSION
 
-CLAIM_VERSION = "security_claim_v5"
+CLAIM_VERSION = "security_claim_v6"
 VERIFIER_NAME = "python-local-certificate-checker"
-VERIFIER_VERSION = "python_local_certificate_checker_v5"
+VERIFIER_VERSION = "python_local_certificate_checker_v6"
 
 # Intentionally separate from the slicer's rule table: this is the small checker policy.
 _CHECKER_SINKS = {
@@ -76,6 +76,10 @@ def claim_from_slice(
         authorization_evidence=[
             _evidence(evidence.file, item)
             for item in evidence.authorization_candidates
+        ],
+        registration_evidence=[
+            ClaimEvidence(file=item.file, line=item.line, source=item.source)
+            for item in evidence.registration_evidence
         ],
         source_evidence=sources,
         sink_evidence=sink,
@@ -165,6 +169,30 @@ def _route_parameter_names(decorators: list[ast.AST]) -> set[str]:
             for item in re.findall(r"<([^>]+)>", route.value)
         )
     return names
+
+
+def _route_registration_subjects(decorators: list[ast.AST]) -> set[str]:
+    """Blueprint names referenced by independently parsed HTTP decorators."""
+    return {
+        decorator.func.value.id
+        for decorator in decorators
+        if isinstance(decorator, ast.Call)
+        and isinstance(decorator.func, ast.Attribute)
+        and isinstance(decorator.func.value, ast.Name)
+    }
+
+
+def _registration_at_line(tree: ast.AST, line: int, subjects: set[str]) -> bool:
+    return any(
+        isinstance(node, ast.Call)
+        and node.lineno == line
+        and _call_name(node) == "register_blueprint"
+        and any(
+            isinstance(argument, ast.Name) and argument.id in subjects
+            for argument in node.args
+        )
+        for node in ast.walk(tree)
+    )
 
 
 def _request_input_at_line(function, line: int) -> bool:
@@ -306,6 +334,8 @@ def verify_structural_claim(
         "direct_callers_verified": False,
         "authorization_candidate_present": bool(claim.authorization_evidence),
         "authorization_syntax_verified": False,
+        "registration_evidence_present": bool(claim.registration_evidence),
+        "blueprint_registration_verified": False,
         "attacker_input_source_present": False,
         "control_candidate_present": False,
         "control_on_local_def_use": False,
@@ -425,6 +455,58 @@ def verify_structural_claim(
                                     checks=checks,
                                     reason=reason,
                                 )
+                            entry_decorators = _http_entry_decorators(function)
+                            registration_subjects = _route_registration_subjects(
+                                entry_decorators
+                            )
+                            registration_checks: list[bool] = []
+                            for evidence in claim.registration_evidence:
+                                registration_path = _safe_file(
+                                    snapshot_path, evidence.file
+                                )
+                                if (
+                                    registration_path is None
+                                    or registration_path.suffix != ".py"
+                                ):
+                                    registration_checks.append(False)
+                                    continue
+                                registration_text = registration_path.read_text(
+                                    errors="replace"
+                                )
+                                registration_lines = registration_text.splitlines()
+                                try:
+                                    registration_tree = ast.parse(registration_text)
+                                except SyntaxError:
+                                    registration_checks.append(False)
+                                    continue
+                                registration_checks.append(
+                                    _matches_line(registration_lines, evidence)
+                                    and _registration_at_line(
+                                        registration_tree,
+                                        evidence.line,
+                                        registration_subjects,
+                                    )
+                                )
+                            checks["blueprint_registration_verified"] = bool(
+                                registration_checks and all(registration_checks)
+                            )
+                            if (
+                                registration_checks
+                                and not checks["blueprint_registration_verified"]
+                            ):
+                                status = ClaimVerificationStatus.STRUCTURALLY_REFUTED
+                                reason = (
+                                    "Claimed blueprint registration does not match an "
+                                    "independently parsed route subject and call site."
+                                )
+                                return ClaimVerification(
+                                    claim_id=claim.id or 0,
+                                    status=status,
+                                    verifier_name=VERIFIER_NAME,
+                                    verifier_version=VERIFIER_VERSION,
+                                    checks=checks,
+                                    reason=reason,
+                                )
                             authorization_checks = [
                                 _matches_line(lines, evidence)
                                 and _recognized_authorization_at_line(
@@ -453,7 +535,6 @@ def verify_structural_claim(
                                     reason=reason,
                                 )
                             closure_lines, parameters = _local_closure(function, sink)
-                            entry_decorators = _http_entry_decorators(function)
                             entry_lines = {item.line for item in claim.entry_evidence}
                             checks["http_entrypoint_present"] = bool(
                                 entry_decorators
@@ -515,7 +596,9 @@ def verify_structural_claim(
                                     "control checks identify local syntax only. Any direct "
                                     "caller evidence proves call syntax, not runtime reachability. "
                                     "Authorization evidence identifies candidate syntax only, "
-                                    "not authentication, scope, or control effectiveness."
+                                    "not authentication, scope, or control effectiveness. "
+                                    "Blueprint registration evidence proves syntax only, "
+                                    "not application startup or external reachability."
                                 )
     return ClaimVerification(
         claim_id=claim.id or 0,

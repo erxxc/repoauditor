@@ -4,8 +4,8 @@
 The producer may retrieve and slice broadly; the checker reopens the immutable snapshot,
 parses it independently, and accepts only narrowly defined structural facts.
 
-Current certificate version: `security_claim_v5`
-Current verifier: `python_local_certificate_checker_v5`
+Current certificate version: `security_claim_v6`
+Current verifier: `python_local_certificate_checker_v6`
 
 ## Checked facts
 
@@ -27,12 +27,15 @@ Current verifier: `python_local_certificate_checker_v5`
 - Same-function Python authorization-candidate syntax from a deliberately narrow checker
   vocabulary, including ownership, role, and permission guards. The checker independently
   matches the exact snapshot text and AST location.
+- Flask blueprint-registration syntax tied to the blueprint symbol on the local route
+  decorator. The checker independently reparses the registration file and requires an exact
+  `register_blueprint(...)` argument match.
 
 ## Explicit non-claims
 
 Structural verification does **not** establish:
 
-- runtime route or framework registration;
+- that syntactically verified framework registration executes during application startup;
 - interprocedural or cross-service reachability;
 - that a syntactically verified direct caller executes, is externally reachable, or reaches
   the callee under feasible runtime conditions;
@@ -57,3 +60,8 @@ Authentication-only syntax such as `login_required` or `current_customer_id()` i
 classified as authorization evidence. Conversely, a recognized authorization-like name is
 only a candidate identity—not grounds to kill a finding without separately checked control
 semantics and effectiveness.
+
+Blueprint registration is similarly a syntax fact. It does not prove that the application
+factory runs, that deployment selects that factory, or that a reverse proxy/network path
+exposes the route. Direct `@app.route` endpoints do not receive a separate blueprint-
+registration claim.

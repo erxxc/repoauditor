@@ -707,6 +707,7 @@ class SecurityClaim(BaseModel):
     entry_evidence: list[ClaimEvidence] = Field(default_factory=list)
     caller_evidence: list[ClaimEvidence] = Field(default_factory=list)
     authorization_evidence: list[ClaimEvidence] = Field(default_factory=list)
+    registration_evidence: list[ClaimEvidence] = Field(default_factory=list)
     source_evidence: list[ClaimEvidence] = Field(default_factory=list)
     sink_evidence: ClaimEvidence | None = None
     path_nodes: list[ClaimEvidence] = Field(default_factory=list)

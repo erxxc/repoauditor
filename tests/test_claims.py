@@ -38,6 +38,8 @@ def test_structural_claim_round_trip_is_idempotent_and_scoped(tmp_config):
     assert first == second
     stored = db.list_security_claims(finding_id, tmp_config)[0]
     assert stored.entry_evidence
+    assert stored.registration_evidence
+    assert "register_blueprint(catalog_bp)" in stored.registration_evidence[0].source
     assert '@catalog_bp.route("/products/search")' in stored.entry_evidence[0].source
     assert stored.sink_evidence and "db.query(sql)" in stored.sink_evidence.source
     assert any("request.args.get" in item.source for item in stored.source_evidence)
@@ -50,6 +52,8 @@ def test_structural_claim_round_trip_is_idempotent_and_scoped(tmp_config):
     assert saved.status is ClaimVerificationStatus.STRUCTURALLY_VERIFIED
     assert "real-world risk are not validated" in saved.reason
     assert saved.checks["http_entrypoint_present"] is True
+    assert saved.checks["registration_evidence_present"] is True
+    assert saved.checks["blueprint_registration_verified"] is True
     assert saved.checks["attacker_input_source_present"] is True
     assert saved.checks["control_candidate_present"] is False
 
@@ -239,6 +243,52 @@ def test_checker_refutes_forged_authorization_evidence(tmp_path):
 
     assert verification.status is ClaimVerificationStatus.STRUCTURALLY_REFUTED
     assert verification.checks["authorization_syntax_verified"] is False
+
+
+def test_checker_refutes_registration_for_a_different_blueprint():
+    finding = _finding()
+    evidence = build_python_slice(RetrievalIndex().build(UAT), finding)
+    assert evidence is not None and evidence.registration_evidence
+    claim = claim_from_slice(1, evidence, "commit-abc").model_copy(update={"id": 1})
+    forged = claim.model_copy(update={
+        "registration_evidence": [
+            claim.registration_evidence[0].model_copy(
+                update={"source": "app.register_blueprint(account_bp)"}
+            )
+        ]
+    })
+
+    verification = verify_structural_claim(forged, UAT, "commit-abc")
+
+    assert verification.status is ClaimVerificationStatus.STRUCTURALLY_REFUTED
+    assert verification.checks["blueprint_registration_verified"] is False
+    assert "blueprint registration" in verification.reason
+
+
+def test_direct_app_route_makes_no_separate_blueprint_registration_claim(tmp_path):
+    (tmp_path / "svc.py").write_text(
+        "import os\n"
+        "from flask import request\n\n"
+        "@app.route('/run')\n"
+        "def run():\n"
+        "    command = request.args.get('cmd', '')\n"
+        "    os.system(command)\n"
+    )
+    finding = Finding(
+        repo_id="r", title="Command injection [CWE-78]", file="svc.py",
+        line_start=7, line_end=7, citation_snippet="os.system(command)",
+        source_tool="semgrep", confidence=0.8, severity="high",
+    )
+    evidence = build_python_slice(RetrievalIndex().build(tmp_path), finding)
+    assert evidence is not None
+    assert evidence.registration_evidence == []
+    claim = claim_from_slice(1, evidence, "commit-abc").model_copy(update={"id": 1})
+
+    verification = verify_structural_claim(claim, tmp_path, "commit-abc")
+
+    assert verification.status is ClaimVerificationStatus.STRUCTURALLY_VERIFIED
+    assert verification.checks["registration_evidence_present"] is False
+    assert verification.checks["blueprint_registration_verified"] is False
 
 
 def test_checker_refutes_forged_entrypoint_evidence():
