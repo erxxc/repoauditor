@@ -5,7 +5,7 @@ from __future__ import annotations
 from conftest import _load_fixture
 from repoauditor.store.models import FalsificationStatus, Finding, Severity
 
-from uat_scoring import score_live_uat
+from uat_scoring import score_independent_target, score_live_uat
 
 
 def _finding(**updates) -> Finding:
@@ -79,6 +79,25 @@ def _expected() -> dict:
                 "location": {"line_approx": 30},
             },
         ],
+    }
+
+
+def _independent_expected(variant: str) -> dict:
+    target = {
+        "title": "Cross-site scripting through serialized regular expressions",
+        "file": "index.js",
+        "line_start": 191,
+        "line_end": 191,
+        "citation_contains": "regexps[valueIndex].toString()",
+        "cve": "CVE-2019-16769",
+    }
+    return {
+        "source": {
+            "project_id": "serialize_javascript",
+            "variant": variant,
+        },
+        "findings": [target] if variant == "pre_fix" else [],
+        "expected_absent": [target] if variant == "post_fix" else [],
     }
 
 
@@ -159,3 +178,85 @@ def test_live_uat_real_fixture_denominator_matches_adjudicated_model_scope():
     config_source = (fixture.snapshot_path / "storefront" / "config.py").read_text()
     assert "local-dev-session-key" not in config_source
     assert "secrets.token_hex(32)" in config_source
+
+
+def test_independent_pre_fix_unresolved_target_is_abstention_not_recovery():
+    findings = [
+        _finding(
+            file="index.js",
+            line_start=191,
+            line_end=191,
+            citation_snippet="return regexps[valueIndex].toString()",
+            falsification_status=FalsificationStatus.UNRESOLVED,
+        ),
+    ]
+
+    result = score_independent_target(
+        findings, _independent_expected("pre_fix")
+    )
+
+    assert result["target_confirmed_count"] == 0
+    assert result["target_candidate_count"] == 1
+    assert result["pre_fix_confirmed_recovery"] is False
+    assert result["target_signals"][0]["disposition"] == "unresolved"
+    assert result["unadjudicated_confirmed_group_count"] == 0
+    assert "precision" not in result
+
+
+def test_independent_pre_fix_confirmed_target_is_recovered():
+    findings = [
+        _finding(
+            file="index.js",
+            line_start=191,
+            line_end=191,
+            citation_snippet="return regexps[valueIndex].toString()",
+        ),
+    ]
+
+    result = score_independent_target(
+        findings, _independent_expected("pre_fix")
+    )
+
+    assert result["target_confirmed_count"] == 1
+    assert result["pre_fix_confirmed_recovery"] is True
+    assert result["target_signals"][0]["disposition"] == "confirmed"
+
+
+def test_independent_post_fix_unrelated_confirmation_is_unadjudicated():
+    findings = [
+        _finding(
+            title="Function-body serialization may execute attacker code",
+            file="index.js",
+            line_start=185,
+            line_end=185,
+            citation_snippet="return value.toString()",
+        ),
+    ]
+
+    result = score_independent_target(
+        findings, _independent_expected("post_fix")
+    )
+
+    assert result["post_fix_confirmed_persistence"] is False
+    assert result["post_fix_any_signal_persistence"] is False
+    assert result["unadjudicated_confirmed_group_count"] == 1
+    assert "precision" not in result
+
+
+def test_independent_post_fix_confirmed_target_is_persistent():
+    findings = [
+        _finding(
+            file="index.js",
+            line_start=191,
+            line_end=191,
+            citation_snippet="return regexps[valueIndex].toString()",
+        ),
+    ]
+
+    result = score_independent_target(
+        findings, _independent_expected("post_fix")
+    )
+
+    assert result["post_fix_confirmed_persistence"] is True
+    assert result["post_fix_any_signal_persistence"] is True
+    assert result["unadjudicated_confirmed_group_count"] == 0

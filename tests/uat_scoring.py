@@ -298,3 +298,102 @@ def score_live_uat(
         "unresolved_findings": unresolved,
         "deferred_findings": deferred,
     }
+
+
+def score_independent_target(findings: list[Finding], expected: dict) -> dict:
+    """Score one reviewed CVE target without claiming exhaustive-project precision.
+
+    Pre-fix recovery requires a falsification-confirmed target match. Unresolved matches are
+    explicit abstentions, never true positives. For a post-fix snapshot, both confirmed
+    persistence and any residual target signal are reported. Confirmed findings outside the
+    reviewed target remain unadjudicated and never become automatic false positives.
+    """
+    source = expected["source"]
+    variant = source["variant"]
+    targets = (
+        expected.get("findings", [])
+        if variant == "pre_fix"
+        else expected.get("expected_absent", [])
+    )
+    confirmed = [
+        finding for finding in findings
+        if finding.falsification_status is FalsificationStatus.CONFIRMED
+    ]
+    confirmed_groups = find_matches(confirmed).groups
+    matched_group_indexes: set[int] = set()
+    target_signals: list[dict] = []
+    for target in targets:
+        matches = [
+            finding for finding in findings if _match_basis(finding, target)
+        ]
+        confirmed_matches = [
+            finding for finding in matches
+            if finding.falsification_status is FalsificationStatus.CONFIRMED
+        ]
+        unresolved_matches = [
+            finding for finding in matches
+            if finding.falsification_status is FalsificationStatus.UNRESOLVED
+        ]
+        killed_matches = [
+            finding for finding in matches
+            if finding.falsification_status is FalsificationStatus.KILLED
+        ]
+        for index, group in enumerate(confirmed_groups):
+            if _group_match_basis(group, target):
+                matched_group_indexes.add(index)
+        if confirmed_matches:
+            disposition = "confirmed"
+        elif unresolved_matches:
+            disposition = "unresolved"
+        elif killed_matches:
+            disposition = "killed"
+        else:
+            disposition = "not_detected"
+        target_signals.append({
+            "title": target["title"],
+            "cve": target.get("cve"),
+            "file": target["file"],
+            "citation_contains": target.get("citation_contains"),
+            "disposition": disposition,
+            "candidate_raised": bool(matches),
+            "confirmed": bool(confirmed_matches),
+            "matches": [_evidence(finding) for finding in matches],
+        })
+
+    target_confirmed = sum(signal["confirmed"] for signal in target_signals)
+    target_candidates = sum(signal["candidate_raised"] for signal in target_signals)
+    unadjudicated_groups = [
+        group for index, group in enumerate(confirmed_groups)
+        if index not in matched_group_indexes
+    ]
+    return {
+        "methodology": (
+            "One human-reviewed historical CVE target; confirmed target recovery and "
+            "post-fix target persistence are reported directly. Unresolved target matches "
+            "are abstentions. Because repository ground truth is non-exhaustive, confirmed "
+            "findings outside the target are disclosed as unadjudicated and are not counted "
+            "as false positives. No project-wide precision is claimed."
+        ),
+        "project_id": source["project_id"],
+        "variant": variant,
+        "target_count": len(target_signals),
+        "target_confirmed_count": target_confirmed,
+        "target_candidate_count": target_candidates,
+        "pre_fix_confirmed_recovery": (
+            target_confirmed == len(target_signals) if variant == "pre_fix" else None
+        ),
+        "post_fix_confirmed_persistence": (
+            target_confirmed > 0 if variant == "post_fix" else None
+        ),
+        "post_fix_any_signal_persistence": (
+            target_candidates > 0 if variant == "post_fix" else None
+        ),
+        "target_signals": target_signals,
+        "unadjudicated_confirmed_group_count": len(unadjudicated_groups),
+        "unadjudicated_confirmed_groups": [
+            _group_evidence(group) for group in unadjudicated_groups
+        ],
+        "raw_disposition_counts": dict(sorted(Counter(
+            finding.falsification_status.value for finding in findings
+        ).items())),
+    }
