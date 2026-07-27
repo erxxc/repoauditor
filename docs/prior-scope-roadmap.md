@@ -1,6 +1,7 @@
 # Prior-scope roadmap
 
-Status: recorded for future expansion; no quantitative-model behavior changes in this phase.
+Status: applicability inventory implemented; cohort metadata, empirical validation, and any
+quantitative-model changes remain gated.
 
 The first applicability inventory is now executable through
 `repoauditor quant-audit <repo-id>` and documented in
@@ -29,6 +30,7 @@ Before expanding their scope, preserve these gates:
 - Do not invent scaling curves or subgroup adjustments when source data cannot support them;
   retain and label the broader conservative baseline instead.
 
-Candidate implementation order is: inventory current prior applicability, define cohort
-metadata, establish adequate real-data coverage, run prior-predictive and held-out checks,
-then introduce versioned hierarchical priors behind an explicit compatibility boundary.
+Remaining implementation order is: define cohort metadata/effective dates, explicitly model
+aleatory versus epistemic uncertainty, establish adequate real-data coverage, run
+prior-predictive and held-out checks, then introduce versioned hierarchical priors behind an
+explicit compatibility boundary.

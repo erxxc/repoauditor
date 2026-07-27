@@ -33,8 +33,9 @@ Progress:
   it orders triaged findings by P(actionable), applies its run budget, and resumes deferred
   findings later.
 - `triage-stats` withholds threshold curves until 40 real scored labels exist.
-- Engagement-grouped validation activates at 40 usable labels and 8 engagements. Before
-  that, evaluation explicitly reports its row-random or synthetic fallback.
+- Evaluation-family-grouped validation activates at 40 usable labels and 8 families. The
+  separate collection gate still requires labels from 8 genuine source repositories.
+  Before activation, evaluation explicitly reports its row-random or synthetic fallback.
 
 ## Phase 1 — Pre-UAT accuracy safeguards
 
@@ -94,8 +95,9 @@ fixture is one controlled engagement and cannot by itself satisfy repository div
 ## Phase 4 — Validation maturity
 
 At 40 labels, enable descriptive threshold tables. At 40 labels and 8 evaluation families,
-activate grouped validation and report held-out repositories, class counts, sample size, and metric
-uncertainty. Add train-before/evaluate-after validation only after chronological depth exists.
+activate grouped validation and report held-out repositories, class counts, sample size, and
+metric uncertainty. Add train-before/evaluate-after validation only after chronological
+depth exists.
 Use repository-aware bootstrap ranges once the held-out repository count supports them.
 Keep related vulnerability families, clones, and pre/post-fix pairs in one partition via
 explicit `[triage.evaluation_family_overrides]`; this grouping is evaluation-only and never

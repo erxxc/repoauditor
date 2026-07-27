@@ -8,6 +8,7 @@ local def-use closure. It never consumes `PythonSliceEvidence`.
 from __future__ import annotations
 
 import ast
+import re
 from pathlib import Path
 
 from ..store.models import (
@@ -18,9 +19,9 @@ from ..store.models import (
 )
 from .slicing import PythonSliceEvidence, SLICE_VERSION
 
-CLAIM_VERSION = "security_claim_v2"
+CLAIM_VERSION = "security_claim_v3"
 VERIFIER_NAME = "python-local-certificate-checker"
-VERIFIER_VERSION = "python_local_certificate_checker_v2"
+VERIFIER_VERSION = "python_local_certificate_checker_v3"
 
 # Intentionally separate from the slicer's rule table: this is the small checker policy.
 _CHECKER_SINKS = {
@@ -32,6 +33,14 @@ _IGNORED_NAMES = {
     "db", "requests", "httpx", "urllib", "os", "subprocess",
     "request", "flask_request",
 }
+_HTTP_DECORATORS = {"route", "get", "post", "put", "patch", "delete"}
+_REQUEST_INPUT_CONTAINERS = {
+    "args", "form", "values", "json", "files", "headers", "cookies",
+}
+_CONTROL_NAME = re.compile(
+    r"(?:saniti[sz]e|escape|quote|allowlist|validate|parameteri[sz]|owns_resource)",
+    re.IGNORECASE,
+)
 
 
 def _evidence(file: str, item) -> ClaimEvidence:
@@ -53,6 +62,7 @@ def claim_from_slice(
         claim_version=CLAIM_VERSION,
         snapshot_commit=snapshot_commit,
         mechanism=evidence.mechanism,
+        entry_evidence=[_evidence(evidence.file, item) for item in evidence.entry_evidence],
         source_evidence=sources,
         sink_evidence=sink,
         path_nodes=[*sources, *assignments, *([sink] if sink else [])],
@@ -98,6 +108,62 @@ def _matches_line(lines: list[str], evidence: ClaimEvidence) -> bool:
 def _parameter_name(evidence: ClaimEvidence) -> str | None:
     prefix = "function parameter: "
     return evidence.source[len(prefix):].strip() if evidence.source.startswith(prefix) else None
+
+
+def _attribute_chain(node: ast.AST) -> tuple[str, ...]:
+    parts: list[str] = []
+    while isinstance(node, ast.Attribute):
+        parts.append(node.attr)
+        node = node.value
+    if isinstance(node, ast.Name):
+        parts.append(node.id)
+    return tuple(reversed(parts))
+
+
+def _http_entry_decorators(function) -> list[ast.AST]:
+    return [
+        decorator for decorator in function.decorator_list
+        if isinstance(decorator, ast.Call)
+        and _call_name(decorator) in _HTTP_DECORATORS
+    ]
+
+
+def _route_parameter_names(decorators: list[ast.AST]) -> set[str]:
+    names: set[str] = set()
+    for decorator in decorators:
+        if not isinstance(decorator, ast.Call) or not decorator.args:
+            continue
+        route = decorator.args[0]
+        if not isinstance(route, ast.Constant) or not isinstance(route.value, str):
+            continue
+        names.update(
+            item.rsplit(":", 1)[-1]
+            for item in re.findall(r"<([^>]+)>", route.value)
+        )
+    return names
+
+
+def _request_input_at_line(function, line: int) -> bool:
+    for node in ast.walk(function):
+        if getattr(node, "lineno", None) != line:
+            continue
+        chain = _attribute_chain(node)
+        if (
+            len(chain) >= 2
+            and chain[0] in {"request", "flask_request"}
+            and chain[1] in _REQUEST_INPUT_CONTAINERS
+        ):
+            return True
+    return False
+
+
+def _recognized_control_at_line(function, line: int) -> bool:
+    return any(
+        isinstance(node, ast.Call)
+        and node.lineno == line
+        and bool(_CONTROL_NAME.search(_call_name(node)))
+        for node in ast.walk(function)
+    )
 
 
 def _enclosing_function(tree: ast.AST, line: int):
@@ -192,6 +258,10 @@ def verify_structural_claim(
         "evidence_matches_snapshot": False,
         "supported_sink_present": False,
         "local_def_use_closes": False,
+        "http_entrypoint_present": False,
+        "attacker_input_source_present": False,
+        "control_candidate_present": False,
+        "control_on_local_def_use": False,
     }
     status = ClaimVerificationStatus.VERIFICATION_INCOMPLETE
     reason = "Certificate verification could not complete."
@@ -213,6 +283,7 @@ def verify_structural_claim(
     else:
         files = {
             item.file for item in [
+                *claim.entry_evidence,
                 *claim.source_evidence,
                 *claim.path_nodes,
                 *([claim.sink_evidence] if claim.sink_evidence else []),
@@ -236,6 +307,7 @@ def verify_structural_claim(
                 else:
                     ordinary = [
                         item for item in [
+                            *claim.entry_evidence,
                             *claim.source_evidence,
                             *claim.path_nodes,
                             *([claim.sink_evidence] if claim.sink_evidence else []),
@@ -266,6 +338,39 @@ def verify_structural_claim(
                             reason = "Supported sink is not enclosed by a Python function."
                         else:
                             closure_lines, parameters = _local_closure(function, sink)
+                            entry_decorators = _http_entry_decorators(function)
+                            entry_lines = {item.line for item in claim.entry_evidence}
+                            checks["http_entrypoint_present"] = bool(
+                                entry_decorators
+                                and all(
+                                    decorator.lineno in entry_lines
+                                    for decorator in entry_decorators
+                                    if _call_name(decorator) in _HTTP_DECORATORS
+                                )
+                            )
+                            route_parameters = _route_parameter_names(entry_decorators)
+                            checks["attacker_input_source_present"] = any(
+                                (
+                                    (name := _parameter_name(item)) is not None
+                                    and name in route_parameters
+                                )
+                                or (
+                                    _parameter_name(item) is None
+                                    and _request_input_at_line(function, item.line)
+                                )
+                                for item in claim.source_evidence
+                            )
+                            if claim.control_candidate is not None:
+                                checks["control_candidate_present"] = (
+                                    _recognized_control_at_line(
+                                        function, claim.control_candidate.line
+                                    )
+                                )
+                                checks["control_on_local_def_use"] = (
+                                    checks["control_candidate_present"]
+                                    and claim.control_candidate.line in closure_lines
+                                    and claim.control_candidate.line <= sink.lineno
+                                )
                             parameter_ok = all(
                                 name in parameters and item.line == function.lineno
                                 for item in claim.source_evidence
@@ -291,7 +396,8 @@ def verify_structural_claim(
                                     "certificate text, supported sink AST, and local def-use "
                                     "closure match. Exploitability, end-to-end reachability, "
                                     "attacker control, control effectiveness, and real-world "
-                                    "risk are not validated."
+                                    "risk are not validated. Entry-point, request-input, and "
+                                    "control checks identify local syntax only."
                                 )
     return ClaimVerification(
         claim_id=claim.id or 0,

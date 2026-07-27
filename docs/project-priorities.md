@@ -28,8 +28,10 @@ order so future sessions do not have to reconstruct it from conversation history
 - [~] Calibrate the initial 75-call/250,000-token guardrails. Offline readiness is shipped:
   fixed evaluation roles, a zero-network corpus audit, and the fail-closed
   `usage-calibration` report. The bounded lightweight and protected independent pair have
-  now run; the formal persistent-store comparison is still outstanding. Treat
-  the limits as safety ceilings, not statistically calibrated defaults; never auto-raise.
+  now run, but their Actions artifacts used separate temporary stores; the formal
+  same-persistent-store comparison is still outstanding. Do not merge those databases or
+  match overlapping run ids. Treat the limits as safety ceilings, not statistically
+  calibrated defaults; never auto-raise.
   - The first merged `live-lightweight` attempt (Actions run `30228015245`) qualified all
     four manufactured controls, then safely stopped with 18 deferred findings before
     normalize/scoring. It is safety evidence only: no accuracy score was produced and the
@@ -57,7 +59,7 @@ order so future sessions do not have to reconstruct it from conversation history
   represented, across at least eight genuinely distinct engagements. Prefer 100–200 labels.
 - [ ] Review high-ranked, reserved novel, and sampled low-ranked findings. Preserve
   `insufficient_evidence` as abstention and record evidence-based rationales.
-- [~] Freeze a protected baseline. The serialize-javascript pre/post bounded run completed
+- [x] Freeze a protected baseline. The serialize-javascript pre/post bounded run completed
   in Actions run `30230644266`. Corrected target-CVE scoring shows that the pre-fix target
   was detected but unresolved (confirmed recovery failed), while the post-fix target was
   absent (negative control passed). One unrelated post-fix confirmation remains
@@ -73,9 +75,10 @@ order so future sessions do not have to reconstruct it from conversation history
   actionability and technical validity must be reported separately. The latter treats
   `confirmed_actionable` and `valid_not_actionable` as technically positive while preserving
   abstentions and duplicate exclusions.
-- [x] Ship repository-grouped validation that activates at 40 labels across eight
-  engagements, with an explicit row-random fallback below the gate. Real held-out evidence
-  still awaits the data gate; metric uncertainty remains open below.
+- [x] Ship evaluation-family-grouped validation that activates at 40 labels across eight
+  families, with an explicit row-random fallback below the gate. Real held-out evidence
+  still awaits the separate human-label/source-repository data gate; metric uncertainty
+  remains open below.
 - [x] Keep vulnerability families, clones, and pre/post-fix pairs in one evaluation
   partition through explicit `[triage.evaluation_family_overrides]`; the default remains
   the stable engagement id and the mapping affects validation grouping only.
@@ -99,8 +102,10 @@ order so future sessions do not have to reconstruct it from conversation history
 
 - [ ] Improve language-specific slicing and authorization/source-to-sink context before
   changing the classifier.
-- [ ] Expand independently checked `SecurityClaim` certificates for reachability, attacker
-  control, sanitizer identity, and mitigating controls.
+- [~] Expand independently checked `SecurityClaim` certificates. Version 3 now persists and
+  checks local HTTP-entry syntax, request-input identity, control-candidate identity, and
+  placement on the intraprocedural def-use chain. Runtime/interprocedural reachability,
+  deployed attacker control, and control effectiveness remain explicitly unverified.
 - [ ] Evaluate in-family/out-of-family novelty as an investigation-depth trigger. Do not
   train a novelty prioritizer until enough manually reviewed LLM findings exist.
 
@@ -112,10 +117,11 @@ order so future sessions do not have to reconstruct it from conversation history
   for double counting. The read-only `quant-audit` now exposes scope gaps and confirmed that
   the organization-level IRIS frequency baseline is repeated per finding within a scenario.
   The model correction is blocked pending a sourced allocation/decomposition decision.
-- [ ] Follow the prior-scope roadmap: inventory applicability, capture cohort metadata,
-  establish data coverage, run prior-predictive/held-out checks, then consider versioned
-  hierarchical priors. Preserve effective dates and explicitly separate aleatory variability
-  from epistemic uncertainty. Never fabricate subgroup scaling.
+- [x] Inventory current prior applicability through the read-only `quant-audit`.
+- [ ] Continue the prior-scope roadmap: capture cohort metadata/effective dates, establish
+  data coverage, run prior-predictive/held-out checks, then consider versioned hierarchical
+  priors. Explicitly separate aleatory variability from epistemic uncertainty. Never
+  fabricate subgroup scaling.
 
 ## P5 — gated later capabilities
 
@@ -127,19 +133,54 @@ order so future sessions do not have to reconstruct it from conversation history
 - [x] Retire the unused placeholder `report/templates/memo_v1.md`; memo generation remains
   on its single programmatic, benchmarked path.
 
-## Execution order
+## Consolidated remaining agenda
 
 Paid model calls and provider-backed tuning are intentionally deferred until the offline
-backlog below is complete. Existing limits remain unchanged during that pause.
+backlog below is exhausted. Existing limits remain unchanged during that pause.
 
-1. Retire the unused memo-template placeholder.
-2. Add the actionability/technical-validity views and offline adjudication QA.
-3. Collect controlled human adjudications and freeze the protected baseline.
-4. Keep related-family evaluation partitions and cohort sufficiency gates ready to activate
-   when collection volume supports them.
-5. Audit quantitative input applicability and double-counting offline.
-6. Resume paid work with the formal persistent-store usage comparison; do not raise limits
-   automatically.
-7. Then characterize repeatability and improve model-backed slicing/checkable claims.
-8. Add live EPSS/KEV enrichment only after its offline cache/staleness contract is fixed.
-9. Revisit hierarchical priors, cost calculation, and agentic escalation last.
+### A — offline engineering available now
+
+1. Persist trustworthy language and detector cohort metadata with triage labels/features;
+   then extend the existing sufficiency gate without inferring either field from rule names.
+2. Continue deterministic context/certificate work beyond the Python intraprocedural MVP:
+   authorization semantics, callers/references, and additional languages. Preserve explicit
+   unsupported/incomplete outcomes.
+3. Expand manufactured positive/negative controls only for mechanisms with independently
+   checkable ground truth. Fixture construction and deterministic checks are offline; live
+   provider qualification remains deferred.
+4. Add prior cohort metadata and effective dates without changing distributions. Define the
+   representation of aleatory variability versus epistemic uncertainty before adding any
+   hierarchical prior.
+5. Decide whether material adjudications need an explicit persisted materiality marker and
+   enforced second-review gate; current QA can report disagreement but cannot infer
+   materiality.
+
+### B — evidence/data gated
+
+1. Collect at least 40 usable human labels, both classes, across eight genuine source
+   repositories; prefer 100–200. Review high-ranked, reserved-novel, and sampled-low-ranked
+   findings while retaining abstentions.
+2. After adequate held-out family breadth exists, add family-aware bootstrap intervals.
+3. Add temporal validation only after sufficient chronological depth exists.
+4. Evaluate novelty as an investigation-depth trigger only after enough manually reviewed
+   LLM findings exist; do not train a novelty prioritizer earlier.
+5. Run prior-predictive and held-out loss checks only after applicable organization/incident
+   data exists; hierarchical priors remain behind that gate.
+
+### C — methodology blocked
+
+1. Resolve the confirmed organization-frequency error before changing quantitative output:
+   the IRIS organization-level annual rate is currently repeated per finding. Choose no
+   allocation/decomposition until a defensible source or explicit model specification exists.
+
+### D — paid/network deferred
+
+1. Produce the formal three-run usage comparison in one persistent store; do not merge
+   temporary databases or raise limits automatically.
+2. Characterize repeatability on identical inputs, separating sampling variance from
+   retrieval-resolution sensitivity.
+3. Add dated/cached EPSS and KEV enrichment only with fixed stale/offline behavior and
+   real-CVE-only matching.
+4. Add provider dollar cost only from a dated, versioned provider/model price source.
+5. Consider agentic falsification only after every gate in
+   [agentic-escalation-gate.md](agentic-escalation-gate.md) is satisfied.

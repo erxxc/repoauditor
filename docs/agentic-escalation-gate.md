@@ -10,28 +10,32 @@ evidence exists.
 
 ## Activation prerequisites
 
-1. **Authoritative usage accounting** — **implemented for all current model-backed CLI
-   entry points**: provider-reported input/output/cache tokens and latency per attempt are
-   persisted, deferred batches carry durable parent links, and linked batches are aggregated
-   as one logical scan.
+1. **Authoritative usage accounting — implemented for current paths.** All model-backed CLI
+   entry points persist provider-reported input/output/cache tokens and latency per attempt;
+   deferred batches carry durable parent links, and linked batches are aggregated as one
+   logical scan.
    Calls whose failure response omits usage metadata remain counted and explicitly unknown.
    Dollar cost stays unavailable until a dated, provider/model-specific price source exists.
-2. **Protected evaluation cohort** — independently authored, human-adjudicated repositories
-   remain outside prompt development and training.
-3. **Baseline comparison** — compare the current bounded falsifier against the proposed
-   agent on unique issues, reporting precision, recall, abstention coverage, latency, token
-   use, and cost per uniquely validated issue.
-4. **Recall safety** — aggressive false-positive reduction must not silently suppress true
-   vulnerabilities. Any unresolved case remains reviewable.
-5. **Cohort breakdown** — results are separated by mechanism/CWE, language, provider/model,
-   and repository family; pooled gains cannot hide a weak subgroup.
-6. **Read-only tools** — the agent may request indexed source, slices, callers, references,
-   and stored architecture evidence. It may not execute repository code, invoke repository
-   tools, access arbitrary networks, or mutate the checkout.
-7. **Independent verification** — agent-produced claims use the persisted `SecurityClaim`
-   contract, bind to an immutable snapshot commit, and are checked by a separately versioned
-   deterministic verifier that reopens the snapshot and reconstructs supported facts without
-   consuming the producer's evidence object. The agent never verifies its own claim.
+2. **Protected evaluation cohort — partial.** The frozen serialize-javascript pair remains
+   outside prompt development and training, but one pair is not a broad real-world cohort.
+3. **Baseline comparison — open/paid.** Compare the current bounded falsifier against the
+   proposed agent on unique issues, reporting precision, recall, abstention coverage,
+   latency, token use, and cost per uniquely validated issue.
+4. **Recall safety — open/evidence-gated.** Aggressive false-positive reduction must not
+   silently suppress true vulnerabilities. Any unresolved case remains reviewable.
+5. **Cohort breakdown — partial/evidence-gated.** Family and analyst-declared mechanism
+   gates exist; trustworthy language/detector label metadata and adequate cohort sizes do
+   not yet exist. Pooled gains cannot hide a weak subgroup.
+6. **Read-only tools — design only.** The agent may request indexed source, slices, callers,
+   references, and stored architecture evidence. It may not execute repository code, invoke
+   repository tools, access arbitrary networks, or mutate the checkout.
+7. **Independent verification — partial.** Agent-produced claims use the persisted
+   `SecurityClaim` contract, bind to an immutable snapshot commit, and are checked by a
+   separately versioned deterministic verifier that reopens the snapshot and reconstructs
+   supported facts without consuming the producer's evidence object. Version 3 additionally
+   checks persisted local HTTP-entry evidence, request-input identity, and control-candidate
+   identity/def-use placement. These remain syntax facts—not runtime reachability, attacker
+   control, or control effectiveness. The agent never verifies its own claim.
 
 ## Proposed eligibility
 
