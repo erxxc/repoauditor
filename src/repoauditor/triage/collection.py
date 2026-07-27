@@ -59,6 +59,8 @@ class CollectionStatus:
     material_confirmed: int = 0
     material_pending: int = 0
     material_disagreements: int = 0
+    assessment_only_decided: int = 0
+    assessment_only_abstentions: int = 0
     dimension_cohorts: dict[str, dict[str, int | bool]] = field(default_factory=dict)
     language_cohorts: dict[str, dict[str, int | bool]] = field(default_factory=dict)
     detector_cohorts: dict[str, dict[str, int | bool]] = field(default_factory=dict)
@@ -281,6 +283,10 @@ def collection_status(
         assessment.outcome is TriageAssessmentOutcome.UNCERTAIN
         for assessment in latest_by_finding.values()
     )
+    assessment_only = [
+        assessment for assessment in latest_by_finding.values()
+        if not assessment.classifier_eligible
+    ]
     dimensions = Counter(
         dimension
         for assessment in latest_by_finding.values()
@@ -308,6 +314,14 @@ def collection_status(
         material_confirmed=material_confirmed,
         material_pending=material_pending,
         material_disagreements=material_disagreements,
+        assessment_only_decided=sum(
+            item.outcome is not TriageAssessmentOutcome.UNCERTAIN
+            for item in assessment_only
+        ),
+        assessment_only_abstentions=sum(
+            item.outcome is TriageAssessmentOutcome.UNCERTAIN
+            for item in assessment_only
+        ),
         dimension_cohorts=dimension_cohorts,
         language_cohorts=language_cohorts,
         detector_cohorts=detector_cohorts,
@@ -341,6 +355,9 @@ def render_collection_status(status: CollectionStatus) -> str:
         "material-review gate: "
         f"confirmed={status.material_confirmed}, pending={status.material_pending}, "
         f"disagreements={status.material_disagreements}",
+        "assessment-only evidence (excluded from classifier gate): "
+        f"decided={status.assessment_only_decided}, "
+        f"abstentions={status.assessment_only_abstentions}",
         "label sources: " + (
             ", ".join(f"{key}={value}" for key, value in status.source_counts.items())
             or "none"

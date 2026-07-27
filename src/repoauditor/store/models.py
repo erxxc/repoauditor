@@ -318,6 +318,7 @@ class TriageAssessment(BaseModel):
     rationale: str = Field(min_length=1)
     analyst: str = Field(min_length=1)
     material: bool = False
+    classifier_eligible: bool = True
     dimensions: list[str] = Field(default_factory=list)
     created_at: str | None = None
 

@@ -228,3 +228,6 @@ methodology-blocking. This hold is the priority-10 decision, not an incomplete t
 - [ ] Validate the bounded planner on independent projects without tuning its selection
   against advisory target locations. Treat missed omitted-region targets as coverage
   evidence, not false-negative model judgments.
+- [x] Allow auditable human assessment of every canonical detector finding while explicitly
+  withholding non-SARIF assessment-only evidence from the SAST classifier label/training
+  gate. Never synthesize missing feature vectors to inflate the usable-label count.

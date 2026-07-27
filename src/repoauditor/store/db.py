@@ -1213,12 +1213,13 @@ def insert_triage_assessment(
             cur = conn.execute(
                 "INSERT INTO triage_assessment "
                 "(finding_id, engagement, outcome, disposition, rationale, analyst, "
-                " material, dimensions) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                " material, classifier_eligible, dimensions) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (
                     assessment.finding_id, assessment.engagement, str(assessment.outcome),
                     str(assessment.disposition) if assessment.disposition else None,
                     assessment.rationale, assessment.analyst,
-                    int(assessment.material),
+                    int(assessment.material), int(assessment.classifier_eligible),
                     json.dumps(assessment.dimensions),
                 ),
             )
@@ -1247,6 +1248,7 @@ def list_triage_assessments(
                 TriageDisposition(row["disposition"]) if row["disposition"] else None
             ),
             analyst=row["analyst"], material=bool(row["material"]),
+            classifier_eligible=bool(row["classifier_eligible"]),
             dimensions=json.loads(row["dimensions"]),
             created_at=row["created_at"],
         ) for row in rows]

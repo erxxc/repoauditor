@@ -198,11 +198,7 @@ def assess_finding(
     if finding is None:
         raise ValueError(f"no finding with id {finding_id}")
     record = db.get_triage_features(finding_id, config)
-    if record is None:
-        raise ValueError(
-            f"finding {finding_id} has no triage features yet — run "
-            f"`repoauditor triage {finding.repo_id}` first so it is assessable"
-        )
+    engagement = record.engagement if record is not None else finding.repo_id
     if isinstance(outcome, TriageAssessmentOutcome):
         disposition = {
             TriageAssessmentOutcome.TRUE_POSITIVE:
@@ -217,9 +213,10 @@ def assess_finding(
         outcome = disposition.outcome
     clean_dimensions = sorted({item.strip() for item in dimensions or [] if item.strip()})
     assessment = TriageAssessment(
-        finding_id=finding_id, engagement=record.engagement, outcome=outcome,
+        finding_id=finding_id, engagement=engagement, outcome=outcome,
         disposition=disposition, rationale=rationale, analyst=analyst,
-        material=material, dimensions=clean_dimensions,
+        material=material, classifier_eligible=record is not None,
+        dimensions=clean_dimensions,
     )
     assessment_id = db.insert_triage_assessment(assessment, config)
     assessment = assessment.model_copy(update={"id": assessment_id})
@@ -228,7 +225,7 @@ def assess_finding(
     if material:
         latest_by_analyst = {
             item.analyst: item
-            for item in db.list_triage_assessments(record.engagement, config)
+            for item in db.list_triage_assessments(engagement, config)
             if item.finding_id == finding_id and item.material
         }
         independently_confirmed = any(
@@ -238,10 +235,13 @@ def assess_finding(
             for item in latest_by_analyst.values()
         )
         if not independently_confirmed:
-            db.delete_triage_label_projection(
-                record.engagement, record.fingerprint, config
-            )
+            if record is not None:
+                db.delete_triage_label_projection(
+                    record.engagement, record.fingerprint, config
+                )
             return assessment, None
+    if record is None:
+        return assessment, None
     label = label_finding(
         finding_id,
         actionable=outcome is TriageAssessmentOutcome.TRUE_POSITIVE,

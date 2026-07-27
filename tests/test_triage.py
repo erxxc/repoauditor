@@ -428,6 +428,40 @@ def test_insufficient_evidence_persists_without_training_label(cfg, tmp_path):
     assert db.list_triage_labels(config=cfg) == []
 
 
+def test_non_sarif_finding_accepts_assessment_without_classifier_label(cfg):
+    db.init_db(cfg)
+    finding_id = db.insert_finding(
+        Finding(
+            repo_id="eng1",
+            title="LLM candidate",
+            file="app.py",
+            line_start=3,
+            line_end=3,
+            citation_snippet="dangerous(value)",
+            source_lens="owasp",
+            confidence=0.7,
+            severity=Severity.MEDIUM,
+        ),
+        cfg,
+    )
+
+    assessment, label = assess_finding(
+        finding_id,
+        TriageDisposition.CONFIRMED_ACTIONABLE,
+        "human verified the cited path",
+        "alice",
+        ["business-logic"],
+        cfg,
+    )
+
+    assert assessment.classifier_eligible is False
+    assert assessment.engagement == "eng1"
+    assert label is None
+    assert db.list_triage_labels(config=cfg) == []
+    persisted = db.list_triage_assessments("eng1", cfg)
+    assert persisted[0].classifier_eligible is False
+
+
 def test_material_assessment_requires_matching_independent_review(cfg, tmp_path):
     db.init_db(cfg)
     finding = _triage_three(cfg, tmp_path)["a.py"]

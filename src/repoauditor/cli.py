@@ -1014,6 +1014,17 @@ def triage_label(
         typer.secho(str(exc), fg=typer.colors.RED, err=True)
         raise typer.Exit(code=1)
     if label is None:
+        if not assessment.classifier_eligible:
+            material_note = (
+                " Material-review evidence remains subject to independent agreement."
+                if assessment.material else ""
+            )
+            typer.echo(
+                f"recorded assessment #{assessment.id}: finding #{finding_id} has no "
+                "compatible triage feature row, so this is assessment-only evidence and "
+                f"was excluded from classifier training.{material_note}"
+            )
+            return
         if assessment.material and (
             assessment.outcome is not TriageAssessmentOutcome.UNCERTAIN
         ):

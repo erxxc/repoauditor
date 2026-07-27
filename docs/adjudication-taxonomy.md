@@ -27,6 +27,13 @@ disproving condition or control where relevant, and any deployment assumption. A
 model must not adjudicate its own output. Ambiguous cases remain `insufficient_evidence`;
 they are not converted to negatives to improve apparent precision.
 
+Every canonical persisted finding may be assessed, including LLM, secrets, and SCA
+candidates that do not have a Semgrep/SARIF triage feature row. Those rows are explicitly
+`classifier_eligible=false`: they remain assessment evidence for detector/falsification
+evaluation but never project into `TriageLabel` or classifier training. The classifier
+activation gate continues to count only feature-schema-compatible labels; assessment-only
+evidence is reported separately rather than fabricated into SAST features.
+
 For disputed cases, use a second human reviewer and retain corrections as later assessment
 rows. Never rewrite the earlier assessment.
 

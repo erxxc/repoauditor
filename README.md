@@ -357,7 +357,10 @@ effective mitigations, duplicates, and technically valid-but-non-actionable issu
 [adjudication taxonomy and evaluation protocol](docs/adjudication-taxonomy.md).
 `insufficient_evidence` (and legacy `uncertain`) assessments are retained in an append-only
 audit history but never enter model training. Decided outcomes update the effective manual
-binary label. For a material case, add `--material`: the assessment remains withheld until
+binary label only when the finding has a compatible triage feature row. LLM, secrets, and
+SCA findings without that row can still be assessed, but are clearly recorded as
+assessment-only evidence and excluded from the classifier gate/training. For a material
+case, add `--material`: the assessment remains withheld until
 a second distinct analyst records the same detailed disposition. Materiality is explicit,
 never inferred from severity, and disagreement remains visible rather than becoming a
 training label. Repeat `--dimension` with analyst-verified coverage descriptors such as
