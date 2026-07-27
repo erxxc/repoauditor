@@ -19,9 +19,9 @@ from ..store.models import (
 )
 from .slicing import StructuralSliceEvidence, SLICE_VERSION
 
-CLAIM_VERSION = "security_claim_v8"
+CLAIM_VERSION = "security_claim_v9"
 VERIFIER_NAME = "deterministic-structural-certificate-checker"
-VERIFIER_VERSION = "deterministic_structural_certificate_checker_v8"
+VERIFIER_VERSION = "deterministic_structural_certificate_checker_v9"
 
 # Intentionally separate from the slicer's rule table: this is the small checker policy.
 _CHECKER_SINKS = {
@@ -50,6 +50,7 @@ _AUTHORIZATION_NAME = re.compile(
 _CHECKER_AXIOS_URL_METHODS = {
     "get", "post", "put", "patch", "delete", "head", "options",
 }
+_CHECKER_CHILD_PROCESS_METHODS = {"exec", "execSync"}
 
 
 def _evidence(file: str, item) -> ClaimEvidence:
@@ -310,19 +311,19 @@ def _local_closure(function, sink: ast.Call) -> tuple[set[int], set[str]]:
     return lines, reached_parameters
 
 
-def _verify_javascript_ssrf_claim(
+def _verify_javascript_claim(
     claim: SecurityClaim,
     snapshot_path: Path | None,
     expected_commit: str | None,
 ) -> ClaimVerification:
-    """Independently reparse and check one local JS/TS request-input→fetch certificate."""
+    """Independently check one local JS/TS request-input→supported-sink certificate."""
     checks = {
         "snapshot_bound": bool(claim.snapshot_commit and expected_commit),
         "snapshot_matches": bool(
             claim.snapshot_commit and expected_commit
             and claim.snapshot_commit == expected_commit
         ),
-        "supported_mechanism": claim.mechanism == "ssrf",
+        "supported_mechanism": claim.mechanism in {"ssrf", "command_injection"},
         "certificate_complete": bool(
             claim.source_evidence and claim.sink_evidence and claim.path_nodes
         ),
@@ -335,7 +336,7 @@ def _verify_javascript_ssrf_claim(
     reason = "JavaScript/TypeScript certificate verification could not complete."
     if not checks["supported_mechanism"]:
         status = ClaimVerificationStatus.UNSUPPORTED
-        reason = "The JS/TS checker currently supports SSRF only."
+        reason = "The JS/TS checker supports SSRF and command injection only."
     elif not checks["snapshot_bound"]:
         reason = "Claim or verification request lacks an immutable snapshot commit."
     elif not checks["snapshot_matches"]:
@@ -414,21 +415,32 @@ def _verify_javascript_ssrf_claim(
                                 continue
                             function = node.child_by_field_name("function")
                             kind = None
-                            if function is not None and node_text(function) == "fetch":
-                                kind = "fetch"
-                            elif (
-                                function is not None
-                                and function.type == "member_expression"
+                            if (
+                                claim.mechanism == "ssrf"
+                                and function is not None
+                                and node_text(function) == "fetch"
                             ):
+                                kind = "fetch"
+                            elif function is not None and function.type == "member_expression":
                                 obj = function.child_by_field_name("object")
                                 prop = function.child_by_field_name("property")
                                 if (
-                                    obj is not None and prop is not None
+                                    claim.mechanism == "ssrf"
+                                    and obj is not None and prop is not None
                                     and obj.type == "identifier"
                                     and node_text(obj) == "axios"
                                     and node_text(prop) in _CHECKER_AXIOS_URL_METHODS
                                 ):
                                     kind = "axios." + node_text(prop)
+                                elif (
+                                    claim.mechanism == "command_injection"
+                                    and obj is not None and prop is not None
+                                    and obj.type == "identifier"
+                                    and node_text(obj) == "child_process"
+                                    and node_text(prop)
+                                    in _CHECKER_CHILD_PROCESS_METHODS
+                                ):
+                                    kind = "child_process." + node_text(prop)
                             if kind is not None:
                                 sink_calls.append(node)
                                 sink_kinds[id(node)] = kind
@@ -445,10 +457,11 @@ def _verify_javascript_ssrf_claim(
                                 argument = args[0]
                                 argument_text = node_text(argument)
                                 request_pattern = (
-                                    r"\b(?:req|request)\s*\.\s*"
-                                    r"(?:query|body|params|headers)\b"
+                                    r"^(?:req|request)\s*\.\s*"
+                                    r"(?:query|body|params|headers)\s*\.\s*"
+                                    r"[A-Za-z_$][A-Za-z0-9_$]*$"
                                 )
-                                if re.search(request_pattern, argument_text):
+                                if re.fullmatch(request_pattern, argument_text):
                                     valid_source = any(
                                         item.source == argument_text
                                         for item in claim.source_evidence
@@ -465,7 +478,7 @@ def _verify_javascript_ssrf_claim(
                                         if (
                                             name is not None and value is not None
                                             and node_text(name) == argument_text
-                                            and re.search(
+                                            and re.fullmatch(
                                                 request_pattern, node_text(value)
                                             )
                                             and any(
@@ -501,13 +514,14 @@ def _verify_javascript_ssrf_claim(
                         elif not valid_source:
                             status = ClaimVerificationStatus.STRUCTURALLY_REFUTED
                             reason = (
-                                "Fetch URL does not close to the claimed local request input."
+                                "Sink input does not close to one claimed direct request "
+                                "property."
                             )
                         else:
                             status = ClaimVerificationStatus.STRUCTURALLY_VERIFIED
                             reason = (
                                 "Structurally verified local JS/TS request-input-to-supported "
-                                "HTTP-client syntax. Runtime reachability, deployed request "
+                                "sink syntax. Runtime reachability, deployed request "
                                 "provenance, path feasibility, exploitability, and risk are "
                                 "not validated."
                             )
@@ -532,7 +546,7 @@ def verify_structural_claim(
     close under this checker. It never validates exploitability or real-world risk.
     """
     if claim.language in {"javascript", "typescript"}:
-        return _verify_javascript_ssrf_claim(claim, snapshot_path, expected_commit)
+        return _verify_javascript_claim(claim, snapshot_path, expected_commit)
     if claim.language != "python":
         return ClaimVerification(
             claim_id=claim.id or 0,

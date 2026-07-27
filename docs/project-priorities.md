@@ -103,7 +103,7 @@ order so future sessions do not have to reconstruct it from conversation history
 - [~] Improve language-specific slicing and authorization/source-to-sink context before
   changing the classifier. Python and bounded JS/TS SSRF paths now exist; broader mechanism,
   framework, and language coverage remains.
-- [~] Expand independently checked `SecurityClaim` certificates. Version 8 now persists and
+- [~] Expand independently checked `SecurityClaim` certificates. Version 9 now persists and
   checks local HTTP-entry syntax, request-input identity, control-candidate identity, and
   placement on the intraprocedural def-use chain, plus exact direct Python caller syntax
   and same-function authorization-candidate syntax independently reparsed from the snapshot.
@@ -113,7 +113,9 @@ order so future sessions do not have to reconstruct it from conversation history
   scope/effectiveness, and control effectiveness remain explicitly unverified.
   JavaScript/TypeScript SSRF now has a separate tree-sitter producer/checker for bounded
   local request-input chains into `fetch` or explicit global Axios URL-first methods.
-  Aliased/object-form Axios and other JS/TS mechanisms remain unsupported/incomplete.
+  Command injection now supports exact `child_process.exec/execSync` with one direct local
+  request-property input. Aliased/object-form Axios, child-process aliases/composition, and
+  other JS/TS mechanisms remain unsupported/incomplete.
 - [ ] Evaluate in-family/out-of-family novelty as an investigation-depth trigger. Do not
   train a novelty prioritizer until enough manually reviewed LLM findings exist.
 
@@ -158,8 +160,8 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
    being promoted to runtime reachability. A narrow authorization-candidate vocabulary is
    also independently checked and kept separate from authentication, but authorization
    scope/effectiveness, non-Flask registration/reference evidence, cross-file data flow,
-   additional JS/TS mechanisms/clients and Axios shapes, and Java/Ruby trusted checkers
-   remain. Preserve explicit unsupported/incomplete outcomes.
+   additional JS/TS mechanisms/clients, Axios/child-process shapes, and Java/Ruby trusted
+   checkers remain. Preserve explicit unsupported/incomplete outcomes.
 3. Expand manufactured positive/negative controls only for mechanisms with independently
    checkable ground truth. Fixture construction and deterministic checks are offline; live
    provider qualification remains deferred.

@@ -383,12 +383,12 @@ def test_typescript_checker_verifies_direct_request_expression(tmp_path):
     assert verification.checks["request_input_source_present"] is True
 
 
-def test_javascript_checker_reports_non_ssrf_mechanism_unsupported(tmp_path):
+def test_javascript_checker_reports_unimplemented_mechanism_unsupported(tmp_path):
     (tmp_path / "run.js").write_text(
         "function run(command) {\n  return exec(command);\n}\n"
     )
     finding = Finding(
-        repo_id="r", title="Command injection [CWE-78]", file="run.js",
+        repo_id="r", title="SQL injection [CWE-89]", file="run.js",
         line_start=2, line_end=2, citation_snippet="exec(command)",
         source_tool="semgrep", confidence=0.8, severity="high",
     )
@@ -399,7 +399,7 @@ def test_javascript_checker_reports_non_ssrf_mechanism_unsupported(tmp_path):
     verification = verify_structural_claim(claim, tmp_path, "commit-js")
 
     assert verification.status is ClaimVerificationStatus.UNSUPPORTED
-    assert "supports SSRF only" in verification.reason
+    assert "supports SSRF and command injection only" in verification.reason
 
 
 def test_javascript_checker_independently_verifies_axios_post_url(tmp_path):
@@ -423,7 +423,7 @@ def test_javascript_checker_independently_verifies_axios_post_url(tmp_path):
 
     assert verification.status is ClaimVerificationStatus.STRUCTURALLY_VERIFIED
     assert verification.checks["supported_sink_present"] is True
-    assert "supported HTTP-client syntax" in verification.reason
+    assert "supported sink syntax" in verification.reason
 
 
 def test_javascript_checker_refutes_axios_claim_changed_to_generic_client(tmp_path):
@@ -452,6 +452,76 @@ def test_javascript_checker_refutes_axios_claim_changed_to_generic_client(tmp_pa
 
     assert verification.status is ClaimVerificationStatus.STRUCTURALLY_REFUTED
     assert verification.checks["supported_sink_present"] is False
+
+
+def test_javascript_checker_independently_verifies_child_process_execsync(tmp_path):
+    (tmp_path / "run.js").write_text(
+        "function run(req) {\n"
+        "  const command = req.body.command;\n"
+        "  return child_process.execSync(command, {timeout: 1000});\n"
+        "}\n"
+    )
+    finding = Finding(
+        repo_id="r", title="Command injection [CWE-78]", file="run.js",
+        line_start=3, line_end=3,
+        citation_snippet="child_process.execSync(command, {timeout: 1000})",
+        source_tool="semgrep", confidence=0.8, severity="high",
+    )
+    evidence = build_structural_slice(RetrievalIndex().build(tmp_path), finding)
+    assert evidence is not None and evidence.status == "local"
+    claim = claim_from_slice(1, evidence, "commit-command").model_copy(update={"id": 1})
+
+    verification = verify_structural_claim(claim, tmp_path, "commit-command")
+
+    assert verification.status is ClaimVerificationStatus.STRUCTURALLY_VERIFIED
+    assert verification.checks["supported_sink_present"] is True
+    assert verification.checks["request_input_source_present"] is True
+
+
+def test_javascript_checker_refutes_child_process_alias_claim(tmp_path):
+    (tmp_path / "run.js").write_text(
+        "function run(req) {\n"
+        "  const command = req.body.command;\n"
+        "  return cp.exec(command);\n"
+        "}\n"
+    )
+    evidence = StructuralSliceEvidence(
+        mechanism="command_injection", status="local", file="run.js",
+        language="javascript",
+        source_evidence=[SliceLine(2, "const command = req.body.command;")],
+        assignments=[SliceLine(2, "const command = req.body.command;")],
+        sink=SliceLine(3, "cp.exec(command)"),
+    )
+    claim = claim_from_slice(1, evidence, "commit-alias").model_copy(update={"id": 1})
+
+    verification = verify_structural_claim(claim, tmp_path, "commit-alias")
+
+    assert verification.status is ClaimVerificationStatus.STRUCTURALLY_REFUTED
+    assert verification.checks["supported_sink_present"] is False
+
+
+def test_javascript_checker_refutes_composed_command_source(tmp_path):
+    (tmp_path / "run.js").write_text(
+        "function run(req) {\n"
+        "  const command = 'cat ' + req.query.path;\n"
+        "  return child_process.exec(command);\n"
+        "}\n"
+    )
+    evidence = StructuralSliceEvidence(
+        mechanism="command_injection", status="local", file="run.js",
+        language="javascript",
+        source_evidence=[
+            SliceLine(2, "const command = 'cat ' + req.query.path;")
+        ],
+        assignments=[SliceLine(2, "const command = 'cat ' + req.query.path;")],
+        sink=SliceLine(3, "child_process.exec(command)"),
+    )
+    claim = claim_from_slice(1, evidence, "commit-composed").model_copy(update={"id": 1})
+
+    verification = verify_structural_claim(claim, tmp_path, "commit-composed")
+
+    assert verification.status is ClaimVerificationStatus.STRUCTURALLY_REFUTED
+    assert verification.checks["request_input_source_present"] is False
 
 
 def test_checker_refutes_forged_entrypoint_evidence():

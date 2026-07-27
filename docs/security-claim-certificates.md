@@ -4,8 +4,8 @@
 The producer may retrieve and slice broadly; the checker reopens the immutable snapshot,
 parses it independently, and accepts only narrowly defined structural facts.
 
-Current certificate version: `security_claim_v8`
-Current verifier: `deterministic_structural_certificate_checker_v8`
+Current certificate version: `security_claim_v9`
+Current verifier: `deterministic_structural_certificate_checker_v9`
 
 ## Checked facts
 
@@ -35,6 +35,10 @@ Current verifier: `deterministic_structural_certificate_checker_v8`
   flowing into exactly one cited `fetch(...)` URL argument or the first URL argument of
   `axios.get/post/put/patch/delete/head/options(...)`. The checker loads its own tree-sitter
   grammar and independently reconstructs this local chain and client identity.
+- For JavaScript and TypeScript command injection: one direct local `req`/`request`
+  property, optionally assigned once, flowing into the first argument of the exact
+  `child_process.exec(...)` or `child_process.execSync(...)` member call. The independent
+  checker requires the literal `child_process` object identity.
 
 ## Explicit non-claims
 
@@ -80,3 +84,9 @@ object-form `axios.request({url: ...})` are not inferred and remain incomplete. 
 mechanisms and HTTP clients are unsupported. Missing grammars, parse errors,
 multiple/ambiguous sinks, and unresolved URL assignments remain incomplete rather than
 falling back to lexical guesses.
+
+Command-injection support is similarly narrow. Destructured imports (`exec(...)`), aliases
+such as `cp.exec(...)`, `spawn`/`spawnSync`, dynamic member access, helper wrappers, and
+composed command expressions remain incomplete/unsupported. In particular, seeing request
+data somewhere inside string concatenation or a template literal is not treated as a
+closed local certificate.

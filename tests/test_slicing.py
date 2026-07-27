@@ -199,14 +199,14 @@ def test_javascript_typescript_ssrf_slice_is_local_and_explicit(
     assert "runtime reachability" in evidence.render()
 
 
-def test_javascript_non_ssrf_mechanism_is_explicitly_unsupported(tmp_path):
+def test_javascript_unimplemented_mechanism_is_explicitly_unsupported(tmp_path):
     (tmp_path / "run.js").write_text(
         "function run(command) {\n"
         "  return exec(command);\n"
         "}\n"
     )
     finding = _finding(
-        "Command injection [CWE-78]", "run.js", 2, "exec(command)"
+        "SQL injection [CWE-89]", "run.js", 2, "exec(command)"
     )
 
     evidence = build_structural_slice(RetrievalIndex().build(tmp_path), finding)
@@ -214,7 +214,7 @@ def test_javascript_non_ssrf_mechanism_is_explicitly_unsupported(tmp_path):
     assert evidence is not None
     assert evidence.status == "unsupported"
     assert evidence.language == "javascript"
-    assert "supports SSRF only" in evidence.limitations[0]
+    assert "supports SSRF and command injection only" in evidence.limitations[0]
 
 
 @pytest.mark.parametrize(
@@ -264,4 +264,68 @@ def test_unapproved_axios_like_shapes_remain_incomplete(tmp_path, sink):
 
     assert evidence is not None
     assert evidence.status == "incomplete"
-    assert "supported HTTP sink" in evidence.limitations[-1]
+    assert "supported sink" in evidence.limitations[-1]
+
+
+@pytest.mark.parametrize(
+    ("filename", "sink"),
+    [
+        ("run.js", "child_process.exec(command)"),
+        ("run.ts", "child_process.execSync(command, {timeout: 1000})"),
+    ],
+)
+def test_javascript_typescript_command_sink_is_bounded(tmp_path, filename, sink):
+    (tmp_path / filename).write_text(
+        "function run(req) {\n"
+        "  const command = req.body.command;\n"
+        f"  return {sink};\n"
+        "}\n"
+    )
+    finding = _finding("Command injection [CWE-78]", filename, 3, sink)
+
+    evidence = build_structural_slice(RetrievalIndex().build(tmp_path), finding)
+
+    assert evidence is not None and evidence.status == "local"
+    assert evidence.mechanism == "command_injection"
+    assert evidence.sink and evidence.sink.source == sink
+    assert "req.body.command" in evidence.source_evidence[0].source
+
+
+@pytest.mark.parametrize(
+    "sink",
+    [
+        "cp.exec(command)",
+        "exec(command)",
+        "child_process.spawn(command)",
+    ],
+)
+def test_unapproved_child_process_shapes_remain_incomplete(tmp_path, sink):
+    (tmp_path / "run.js").write_text(
+        "function run(req) {\n"
+        "  const command = req.body.command;\n"
+        f"  return {sink};\n"
+        "}\n"
+    )
+    finding = _finding("Command injection [CWE-78]", "run.js", 3, sink)
+
+    evidence = build_structural_slice(RetrievalIndex().build(tmp_path), finding)
+
+    assert evidence is not None and evidence.status == "incomplete"
+    assert "supported sink" in evidence.limitations[-1]
+
+
+def test_composed_command_input_remains_incomplete(tmp_path):
+    (tmp_path / "run.js").write_text(
+        "function run(req) {\n"
+        "  const command = 'cat ' + req.query.path;\n"
+        "  return child_process.exec(command);\n"
+        "}\n"
+    )
+    finding = _finding(
+        "Command injection [CWE-78]", "run.js", 3, "child_process.exec(command)"
+    )
+
+    evidence = build_structural_slice(RetrievalIndex().build(tmp_path), finding)
+
+    assert evidence is not None and evidence.status == "incomplete"
+    assert "direct local request property" in evidence.limitations[-1]

@@ -16,7 +16,7 @@ from dataclasses import dataclass, field
 from ..detect.retrieval import RetrievalIndex
 from ..store.models import Finding
 
-SLICE_VERSION = "structural_slice_v5"
+SLICE_VERSION = "structural_slice_v6"
 
 _MECHANISM_TERMS = {
     "sql_injection": ("sql injection", "sqli", "cwe-89"),
@@ -39,6 +39,7 @@ _AUTHORIZATION_HINT = re.compile(
     re.IGNORECASE,
 )
 _AXIOS_URL_METHODS = {"get", "post", "put", "patch", "delete", "head", "options"}
+_CHILD_PROCESS_COMMAND_METHODS = {"exec", "execSync"}
 
 
 @dataclass(frozen=True)
@@ -456,23 +457,42 @@ def _js_ssrf_sink_kind(node, source: bytes) -> str | None:
 
 
 def _js_request_source(node, source: bytes) -> bool:
-    text = _ts_source(node, source)
-    return bool(
-        re.search(r"\b(?:req|request)\s*\.\s*(?:query|body|params|headers)\b", text)
-    )
+    """Accept one direct request-property chain, not composition or helper calls."""
+    text = _ts_source(node, source).strip()
+    return bool(re.fullmatch(
+        r"(?:req|request)\s*\.\s*(?:query|body|params|headers)\s*\.\s*"
+        r"[A-Za-z_$][A-Za-z0-9_$]*",
+        text,
+    ))
 
 
-def build_javascript_ssrf_slice(
+def _js_command_sink_kind(node, source: bytes) -> str | None:
+    function = node.child_by_field_name("function")
+    if function is None or function.type != "member_expression":
+        return None
+    obj = function.child_by_field_name("object")
+    prop = function.child_by_field_name("property")
+    if (
+        obj is not None and prop is not None
+        and obj.type == "identifier"
+        and _ts_source(obj, source) == "child_process"
+        and _ts_source(prop, source) in _CHILD_PROCESS_COMMAND_METHODS
+    ):
+        return "child_process." + _ts_source(prop, source)
+    return None
+
+
+def build_javascript_slice(
     index: RetrievalIndex, finding: Finding
 ) -> StructuralSliceEvidence | None:
-    """Build a bounded JS/TS SSRF slice with explicit unsupported-mechanism evidence."""
+    """Build bounded JS/TS SSRF or command-injection evidence."""
     mechanism = _mechanism(finding)
     if mechanism is None:
         return None
     source_record = index.source_text(finding.file)
     if source_record is None:
         return StructuralSliceEvidence(
-            "ssrf", "incomplete", finding.file, language="javascript",
+            mechanism, "incomplete", finding.file, language="javascript",
             limitations=["cited file is not present in the retrieval index"],
         )
     relative, text = source_record
@@ -480,43 +500,54 @@ def build_javascript_ssrf_slice(
     language = "typescript" if suffix in {"ts", "tsx"} else "javascript"
     if suffix not in {"js", "jsx", "mjs", "cjs", "ts", "tsx"}:
         return None
-    if mechanism != "ssrf":
+    if mechanism not in {"ssrf", "command_injection"}:
         return StructuralSliceEvidence(
             mechanism, "unsupported", relative, language=language,
-            limitations=["JavaScript/TypeScript certificate checker supports SSRF only"],
+            limitations=[
+                "JavaScript/TypeScript certificate checker supports SSRF and "
+                "command injection only"
+            ],
         )
     parser = _ts_parser("tsx" if suffix == "tsx" else language)
     if parser is None:
         return StructuralSliceEvidence(
-            "ssrf", "incomplete", relative, language=language,
+            mechanism, "incomplete", relative, language=language,
             limitations=[f"tree-sitter grammar unavailable for {language}"],
         )
     source = text.encode("utf-8", errors="replace")
     tree = parser.parse(source)
     if tree.root_node.has_error:
         return StructuralSliceEvidence(
-            "ssrf", "incomplete", relative, language=language,
+            mechanism, "incomplete", relative, language=language,
             limitations=[f"{language} source could not be parsed without errors"],
         )
     calls = [
         node for node in _ts_walk(tree.root_node)
         if node.type == "call_expression"
-        and _js_ssrf_sink_kind(node, source) is not None
+        and (
+            _js_ssrf_sink_kind(node, source) is not None
+            if mechanism == "ssrf"
+            else _js_command_sink_kind(node, source) is not None
+        )
         and node.start_point.row + 1 <= finding.line_end
         and finding.line_start <= node.end_point.row + 1
     ]
     result = StructuralSliceEvidence(
-        "ssrf", "incomplete", relative, language=language,
+        mechanism, "incomplete", relative, language=language,
         limitations=[
-            "local JavaScript/TypeScript SSRF slice only; runtime reachability and "
-            "request-object provenance are not proven"
+            f"local JavaScript/TypeScript {mechanism} slice only; runtime reachability "
+            "and request-object provenance are not proven"
         ],
     )
     if len(calls) != 1:
-        result.limitations.append("exactly one cited supported HTTP sink was not found")
+        result.limitations.append("exactly one cited supported sink was not found")
         return result
     sink = calls[0]
-    sink_kind = _js_ssrf_sink_kind(sink, source)
+    sink_kind = (
+        _js_ssrf_sink_kind(sink, source)
+        if mechanism == "ssrf"
+        else _js_command_sink_kind(sink, source)
+    )
     result.sink = SliceLine(
         sink.start_point.row + 1, _ts_source(sink, source)
     )
@@ -526,10 +557,10 @@ def build_javascript_ssrf_slice(
     ]
     if not argument_nodes or (sink_kind == "fetch" and len(argument_nodes) != 1):
         result.limitations.append(
-            "supported HTTP sink does not have the required first URL argument"
+            "supported sink does not have the required first input argument"
         )
         return result
-    argument = argument_nodes[0]  # Axios methods may have later body/config arguments.
+    argument = argument_nodes[0]  # Some supported sinks may have later body/config args.
     if _js_request_source(argument, source):
         result.source_evidence.append(
             SliceLine(argument.start_point.row + 1, _ts_source(argument, source))
@@ -562,7 +593,9 @@ def build_javascript_ssrf_slice(
             result.source_evidence.append(evidence)
             result.assignments.append(evidence)
     if not result.source_evidence:
-        result.limitations.append("fetch URL was not tied to a local request input")
+        result.limitations.append(
+            "sink input was not tied to one direct local request property"
+        )
         return result
     result.status = "local"
     return result
@@ -576,5 +609,5 @@ def build_structural_slice(
     if suffix == "py":
         return build_python_slice(index, finding)
     if suffix in {"js", "jsx", "mjs", "cjs", "ts", "tsx"}:
-        return build_javascript_ssrf_slice(index, finding)
+        return build_javascript_slice(index, finding)
     return None
