@@ -324,7 +324,7 @@ uv run repoauditor triage-stats             # all engagements
 uv run repoauditor triage-stats <repo-id>   # one engagement
 uv run repoauditor triage-stats --label-source derived  # automation-derived cohort
 uv run repoauditor triage-stats --run-id <triage-run-id> # one compatible score cohort
-uv run repoauditor triage-collection        # progress toward the real-label activation gate
+uv run repoauditor triage-collection        # label gate, dual verdict views, review QA
 ```
 
 Below 40 real scored labels, this command deliberately withholds the curve. Engagement-

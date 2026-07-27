@@ -20,8 +20,8 @@ Progress:
 - [x] Phase 1.4 — stable engagement identity audit
 - [x] Phase 2 — score and label provenance
 - [~] Phase 3 — collection infrastructure shipped; real UAT gate not yet met
-- [~] Phase 4 — threshold/grouped mechanisms shipped; real-data activation, uncertainty,
-  technical-validity reporting, and temporal depth remain open
+- [~] Phase 4 — threshold/grouped mechanisms and dual adjudication reporting shipped;
+  real-data activation, uncertainty, and temporal depth remain open
 - [ ] Phase 5 — see gates below
 
 ## Current baseline
@@ -97,9 +97,10 @@ At 40 labels, enable descriptive threshold tables. At 40 labels and 8 engagement
 grouped validation and report held-out repositories, class counts, sample size, and metric
 uncertainty. Add train-before/evaluate-after validation only after chronological depth exists.
 Use repository-aware bootstrap ranges once the held-out repository count supports them.
-Keep related vulnerability families, clones, and pre/post-fix pairs in one partition. Report
-both the operational-actionability and technical-validity views defined by the adjudication
-taxonomy; the latter is not yet implemented.
+Keep related vulnerability families, clones, and pre/post-fix pairs in one partition.
+`triage-collection` reports both operational-actionability and technical-validity views,
+excluding duplicates and abstentions from their decided denominators, plus observable
+reassessment, independent-review, and cross-analyst-disagreement counts.
 
 ## Phase 5 — Nonstandard-finding optimization
 
