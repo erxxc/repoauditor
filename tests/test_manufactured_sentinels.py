@@ -125,7 +125,7 @@ def test_live_workflow_defaults_manual_runs_to_sentinels_and_keeps_monthly_full_
     assert "--require-materialized" in workflow
     assert "corpus-readiness.json" in workflow
     assert "REPOAUDITOR_UAT_RESULTS: live-corpus-results.json" in workflow
-    assert 'REPOAUDITOR_UAT_MAX_BATCHES: "4"' in workflow
+    assert 'REPOAUDITOR_UAT_MAX_BATCHES: "6"' in workflow
     assert "REPOAUDITOR_UAT_DATA_DIR: live-uat-data" in workflow
     assert "live-uat-data/repoauditor.db" in workflow
     assert "live-corpus-junit.xml" in workflow

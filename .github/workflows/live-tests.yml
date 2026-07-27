@@ -155,7 +155,7 @@ jobs:
             }}
           REPOAUDITOR_UAT_RESULTS: live-corpus-results.json
           REPOAUDITOR_UAT_SCANNER_COVERAGE: not-installed-live-model-only
-          REPOAUDITOR_UAT_MAX_BATCHES: "4"
+          REPOAUDITOR_UAT_MAX_BATCHES: "6"
           REPOAUDITOR_UAT_DATA_DIR: live-uat-data
         run: |
           echo "Bounded live cohort: $REPOAUDITOR_CORPUS_IDS"
