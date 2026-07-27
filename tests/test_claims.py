@@ -524,6 +524,89 @@ def test_javascript_checker_refutes_composed_command_source(tmp_path):
     assert verification.checks["request_input_source_present"] is False
 
 
+def test_java_ssrf_claim_round_trip_and_independent_verification(
+    tmp_path, tmp_config
+):
+    db.init_db(tmp_config)
+    (tmp_path / "Preview.java").write_text(
+        "class Preview {\n"
+        "  void preview(HttpServletRequest request) throws Exception {\n"
+        '    String target = request.getParameter("url");\n'
+        "    new URL(target).openStream();\n"
+        "  }\n"
+        "}\n"
+    )
+    finding = Finding(
+        repo_id="r", title="SSRF [CWE-918]", file="Preview.java",
+        line_start=4, line_end=4,
+        citation_snippet="new URL(target).openStream()",
+        source_tool="semgrep", confidence=0.8, severity="high",
+    )
+    finding_id = db.insert_finding(finding, tmp_config)
+    evidence = build_structural_slice(RetrievalIndex().build(tmp_path), finding)
+    assert evidence is not None and evidence.status == "local"
+    claim_id = db.upsert_security_claim(
+        claim_from_slice(finding_id, evidence, "commit-java"), tmp_config
+    )
+    claim = db.list_security_claims(finding_id, tmp_config)[0]
+
+    verification = verify_structural_claim(claim, tmp_path, "commit-java")
+
+    assert claim.id == claim_id
+    assert claim.language == "java"
+    assert verification.status is ClaimVerificationStatus.STRUCTURALLY_VERIFIED
+    assert verification.checks["supported_sink_present"] is True
+    assert verification.checks["request_parameter_source_present"] is True
+
+
+def test_java_checker_refutes_forged_request_parameter_source(tmp_path):
+    (tmp_path / "Preview.java").write_text(
+        "class Preview {\n"
+        "  void preview(HttpServletRequest request) throws Exception {\n"
+        '    String target = request.getParameter("url");\n'
+        "    new URL(target).openConnection();\n"
+        "  }\n"
+        "}\n"
+    )
+    finding = Finding(
+        repo_id="r", title="SSRF [CWE-918]", file="Preview.java",
+        line_start=4, line_end=4,
+        citation_snippet="new URL(target).openConnection()",
+        source_tool="semgrep", confidence=0.8, severity="high",
+    )
+    evidence = build_structural_slice(RetrievalIndex().build(tmp_path), finding)
+    assert evidence is not None
+    claim = claim_from_slice(1, evidence, "commit-java").model_copy(update={"id": 1})
+    forged_source = claim.source_evidence[0].model_copy(
+        update={"source": 'String target = config.get("url");'}
+    )
+    forged = claim.model_copy(update={
+        "source_evidence": [forged_source],
+        "path_nodes": [
+            forged_source if item == claim.source_evidence[0] else item
+            for item in claim.path_nodes
+        ],
+    })
+
+    verification = verify_structural_claim(forged, tmp_path, "commit-java")
+
+    assert verification.status is ClaimVerificationStatus.STRUCTURALLY_REFUTED
+    assert verification.checks["evidence_matches_snapshot"] is False
+
+
+def test_java_checker_reports_other_mechanisms_unsupported(tmp_path):
+    evidence = StructuralSliceEvidence(
+        mechanism="command_injection", status="unsupported", file="Run.java",
+        language="java",
+    )
+    claim = claim_from_slice(1, evidence, "commit-java").model_copy(update={"id": 1})
+
+    verification = verify_structural_claim(claim, tmp_path, "commit-java")
+
+    assert verification.status is ClaimVerificationStatus.UNSUPPORTED
+    assert "supports SSRF only" in verification.reason
+
+
 def test_checker_refutes_forged_entrypoint_evidence():
     finding = _finding()
     evidence = build_python_slice(RetrievalIndex().build(UAT), finding)

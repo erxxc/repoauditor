@@ -329,3 +329,95 @@ def test_composed_command_input_remains_incomplete(tmp_path):
 
     assert evidence is not None and evidence.status == "incomplete"
     assert "direct local request property" in evidence.limitations[-1]
+
+
+@pytest.mark.parametrize(
+    ("source_line", "sink"),
+    [
+        (
+            'String target = request.getParameter("url");',
+            "new URL(target).openStream()",
+        ),
+        (
+            "",
+            'new URL(request.getParameter("url")).openConnection()',
+        ),
+    ],
+)
+def test_java_ssrf_slice_supports_one_direct_url_shape(
+    tmp_path, source_line, sink
+):
+    lines = [
+        "class Preview {",
+        "  void preview(HttpServletRequest request) throws Exception {",
+    ]
+    if source_line:
+        lines.append(f"    {source_line}")
+    sink_line = len(lines) + 1
+    lines.extend([f"    {sink};", "  }", "}"])
+    (tmp_path / "Preview.java").write_text("\n".join(lines) + "\n")
+    finding = _finding("SSRF [CWE-918]", "Preview.java", sink_line, sink)
+
+    evidence = build_structural_slice(RetrievalIndex().build(tmp_path), finding)
+
+    assert evidence is not None and evidence.status == "local"
+    assert evidence.language == "java"
+    assert evidence.sink and evidence.sink.source == sink
+    assert "getParameter" in evidence.source_evidence[0].source
+
+
+@pytest.mark.parametrize(
+    "sink",
+    [
+        "url.openConnection()",
+        "new URI(target).toURL().openStream()",
+    ],
+)
+def test_java_unapproved_url_shapes_remain_incomplete(tmp_path, sink):
+    (tmp_path / "Preview.java").write_text(
+        "class Preview {\n"
+        "  void preview(HttpServletRequest request) throws Exception {\n"
+        '    String target = request.getParameter("url");\n'
+        f"    {sink};\n"
+        "  }\n"
+        "}\n"
+    )
+    finding = _finding("SSRF [CWE-918]", "Preview.java", 4, sink)
+
+    evidence = build_structural_slice(RetrievalIndex().build(tmp_path), finding)
+
+    assert evidence is not None and evidence.status == "incomplete"
+    assert "new URL" in evidence.limitations[-1]
+
+
+def test_java_composed_url_input_remains_incomplete(tmp_path):
+    (tmp_path / "Preview.java").write_text(
+        "class Preview {\n"
+        "  void preview(HttpServletRequest request) throws Exception {\n"
+        '    String target = "https://proxy/" + request.getParameter("url");\n'
+        "    new URL(target).openStream();\n"
+        "  }\n"
+        "}\n"
+    )
+    finding = _finding(
+        "SSRF [CWE-918]", "Preview.java", 4, "new URL(target).openStream()"
+    )
+
+    evidence = build_structural_slice(RetrievalIndex().build(tmp_path), finding)
+
+    assert evidence is not None and evidence.status == "incomplete"
+    assert "direct request.getParameter" in evidence.limitations[-1]
+
+
+def test_java_non_ssrf_mechanism_is_explicitly_unsupported(tmp_path):
+    (tmp_path / "Preview.java").write_text(
+        "class Preview {\n  void run(String command) { Runtime.exec(command); }\n}\n"
+    )
+    finding = _finding(
+        "Command injection [CWE-78]", "Preview.java", 2, "Runtime.exec(command)"
+    )
+
+    evidence = build_structural_slice(RetrievalIndex().build(tmp_path), finding)
+
+    assert evidence is not None and evidence.status == "unsupported"
+    assert "supports SSRF only" in evidence.limitations[0]

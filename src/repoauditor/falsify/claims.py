@@ -19,9 +19,9 @@ from ..store.models import (
 )
 from .slicing import StructuralSliceEvidence, SLICE_VERSION
 
-CLAIM_VERSION = "security_claim_v9"
+CLAIM_VERSION = "security_claim_v10"
 VERIFIER_NAME = "deterministic-structural-certificate-checker"
-VERIFIER_VERSION = "deterministic_structural_certificate_checker_v9"
+VERIFIER_VERSION = "deterministic_structural_certificate_checker_v10"
 
 # Intentionally separate from the slicer's rule table: this is the small checker policy.
 _CHECKER_SINKS = {
@@ -535,6 +535,229 @@ def _verify_javascript_claim(
     )
 
 
+def _verify_java_ssrf_claim(
+    claim: SecurityClaim,
+    snapshot_path: Path | None,
+    expected_commit: str | None,
+) -> ClaimVerification:
+    """Independently check one Java request.getParameter→new URL→open* certificate."""
+    checks = {
+        "snapshot_bound": bool(claim.snapshot_commit and expected_commit),
+        "snapshot_matches": bool(
+            claim.snapshot_commit and expected_commit
+            and claim.snapshot_commit == expected_commit
+        ),
+        "supported_mechanism": claim.mechanism == "ssrf",
+        "certificate_complete": bool(
+            claim.source_evidence and claim.sink_evidence and claim.path_nodes
+        ),
+        "evidence_matches_snapshot": False,
+        "supported_sink_present": False,
+        "request_parameter_source_present": False,
+        "local_def_use_closes": False,
+    }
+    status = ClaimVerificationStatus.VERIFICATION_INCOMPLETE
+    reason = "Java certificate verification could not complete."
+    if not checks["supported_mechanism"]:
+        status = ClaimVerificationStatus.UNSUPPORTED
+        reason = "The Java checker currently supports SSRF only."
+    elif not checks["snapshot_bound"]:
+        reason = "Claim or verification request lacks an immutable snapshot commit."
+    elif not checks["snapshot_matches"]:
+        status = ClaimVerificationStatus.STRUCTURALLY_REFUTED
+        reason = "Claim snapshot commit does not match the snapshot being checked."
+    elif not checks["certificate_complete"]:
+        reason = "Certificate lacks required source, sink, or path-node evidence."
+    elif snapshot_path is None:
+        reason = "No pinned snapshot path was available to the independent checker."
+    else:
+        files = {
+            item.file for item in [
+                *claim.source_evidence,
+                *claim.path_nodes,
+                *([claim.sink_evidence] if claim.sink_evidence else []),
+            ]
+        }
+        if len(files) != 1:
+            reason = "The Java checker accepts exactly one source file."
+        else:
+            relative = next(iter(files))
+            path = _safe_file(snapshot_path, relative)
+            if path is None or path.suffix.lower() != ".java":
+                reason = "Claimed Java source file is absent or escapes the snapshot."
+            else:
+                try:
+                    from tree_sitter_language_pack import get_parser
+
+                    parser = get_parser("java")
+                except Exception:
+                    reason = "Required Java tree-sitter grammar is unavailable."
+                else:
+                    text = path.read_text(errors="replace")
+                    source = text.encode("utf-8", errors="replace")
+                    tree = parser.parse(source)
+                    if tree.root_node.has_error:
+                        reason = "Claimed Java source cannot be parsed without errors."
+                    else:
+                        def node_text(node) -> str:
+                            return source[node.start_byte:node.end_byte].decode(
+                                "utf-8", errors="replace"
+                            )
+
+                        stack = [tree.root_node]
+                        nodes = []
+                        while stack:
+                            node = stack.pop()
+                            nodes.append(node)
+                            stack.extend(reversed(node.children))
+
+                        def request_parameter(node) -> bool:
+                            if node is None or node.type != "method_invocation":
+                                return False
+                            obj = node.child_by_field_name("object")
+                            name = node.child_by_field_name("name")
+                            arguments = node.child_by_field_name("arguments")
+                            args = (
+                                list(arguments.named_children)
+                                if arguments is not None else []
+                            )
+                            return bool(
+                                obj is not None and name is not None
+                                and obj.type == "identifier"
+                                and node_text(obj) in {"req", "request"}
+                                and node_text(name) == "getParameter"
+                                and len(args) == 1
+                                and args[0].type == "string_literal"
+                            )
+
+                        def url_argument(node):
+                            if (
+                                node is None
+                                or node.type != "object_creation_expression"
+                            ):
+                                return None
+                            type_node = node.child_by_field_name("type")
+                            arguments = node.child_by_field_name("arguments")
+                            args = (
+                                list(arguments.named_children)
+                                if arguments is not None else []
+                            )
+                            if (
+                                type_node is None or node_text(type_node) != "URL"
+                                or len(args) != 1
+                            ):
+                                return None
+                            return args[0]
+
+                        evidence = [
+                            *claim.source_evidence,
+                            *claim.path_nodes,
+                            *([claim.sink_evidence] if claim.sink_evidence else []),
+                        ]
+                        checks["evidence_matches_snapshot"] = all(
+                            any(
+                                node.start_point.row + 1 == item.line
+                                and node_text(node).strip() == item.source.strip()
+                                for node in nodes
+                            )
+                            for item in evidence
+                        )
+                        sinks = []
+                        for node in nodes:
+                            if (
+                                node.type != "method_invocation"
+                                or node.start_point.row + 1
+                                != claim.sink_evidence.line
+                            ):
+                                continue
+                            name = node.child_by_field_name("name")
+                            argument = url_argument(
+                                node.child_by_field_name("object")
+                            )
+                            if (
+                                name is not None
+                                and node_text(name)
+                                in {"openStream", "openConnection"}
+                                and argument is not None
+                            ):
+                                sinks.append((node, argument))
+                        checks["supported_sink_present"] = len(sinks) == 1
+                        valid_source = False
+                        if checks["supported_sink_present"]:
+                            sink, argument = sinks[0]
+                            if request_parameter(argument):
+                                valid_source = any(
+                                    item.source == node_text(argument)
+                                    for item in claim.source_evidence
+                                )
+                            elif argument.type == "identifier":
+                                argument_name = node_text(argument)
+                                for node in nodes:
+                                    if (
+                                        node.type != "variable_declarator"
+                                        or node.start_byte >= sink.start_byte
+                                    ):
+                                        continue
+                                    name = node.child_by_field_name("name")
+                                    value = node.child_by_field_name("value")
+                                    statement = (
+                                        node.parent
+                                        if node.parent is not None
+                                        and node.parent.type
+                                        == "local_variable_declaration"
+                                        else node
+                                    )
+                                    if (
+                                        name is not None and value is not None
+                                        and node_text(name) == argument_name
+                                        and request_parameter(value)
+                                        and any(
+                                            item.line
+                                            == statement.start_point.row + 1
+                                            and item.source == node_text(statement)
+                                            for item in claim.source_evidence
+                                        )
+                                    ):
+                                        valid_source = True
+                        checks["request_parameter_source_present"] = valid_source
+                        checks["local_def_use_closes"] = (
+                            checks["evidence_matches_snapshot"]
+                            and checks["supported_sink_present"]
+                            and valid_source
+                        )
+                        if not checks["evidence_matches_snapshot"]:
+                            status = ClaimVerificationStatus.STRUCTURALLY_REFUTED
+                            reason = "Certificate text does not match the pinned snapshot."
+                        elif not checks["supported_sink_present"]:
+                            status = ClaimVerificationStatus.STRUCTURALLY_REFUTED
+                            reason = (
+                                "Certificate sink is not one exact "
+                                "new URL(...).openStream/openConnection call."
+                            )
+                        elif not valid_source:
+                            status = ClaimVerificationStatus.STRUCTURALLY_REFUTED
+                            reason = (
+                                "URL input does not close to one claimed direct "
+                                "request.getParameter literal."
+                            )
+                        else:
+                            status = ClaimVerificationStatus.STRUCTURALLY_VERIFIED
+                            reason = (
+                                "Structurally verified local Java request.getParameter-to-"
+                                "new URL open syntax. Servlet binding, runtime reachability, "
+                                "deployed request provenance, exploitability, and risk are "
+                                "not validated."
+                            )
+    return ClaimVerification(
+        claim_id=claim.id or 0,
+        status=status,
+        verifier_name=VERIFIER_NAME,
+        verifier_version=VERIFIER_VERSION,
+        checks=checks,
+        reason=reason,
+    )
+
+
 def verify_structural_claim(
     claim: SecurityClaim,
     snapshot_path: Path | None,
@@ -547,6 +770,8 @@ def verify_structural_claim(
     """
     if claim.language in {"javascript", "typescript"}:
         return _verify_javascript_claim(claim, snapshot_path, expected_commit)
+    if claim.language == "java":
+        return _verify_java_ssrf_claim(claim, snapshot_path, expected_commit)
     if claim.language != "python":
         return ClaimVerification(
             claim_id=claim.id or 0,

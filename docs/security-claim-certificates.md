@@ -4,8 +4,8 @@
 The producer may retrieve and slice broadly; the checker reopens the immutable snapshot,
 parses it independently, and accepts only narrowly defined structural facts.
 
-Current certificate version: `security_claim_v9`
-Current verifier: `deterministic_structural_certificate_checker_v9`
+Current certificate version: `security_claim_v10`
+Current verifier: `deterministic_structural_certificate_checker_v10`
 
 ## Checked facts
 
@@ -39,6 +39,10 @@ Current verifier: `deterministic_structural_certificate_checker_v9`
   property, optionally assigned once, flowing into the first argument of the exact
   `child_process.exec(...)` or `child_process.execSync(...)` member call. The independent
   checker requires the literal `child_process` object identity.
+- For Java SSRF: one literal-key `request.getParameter(...)`/`req.getParameter(...)`
+  expression, optionally assigned once to a local variable, flowing into the constructor
+  argument of the exact `new URL(...).openStream()` or `openConnection()` shape. The checker
+  independently loads the Java grammar and reconstructs the same local chain.
 
 ## Explicit non-claims
 
@@ -90,3 +94,9 @@ such as `cp.exec(...)`, `spawn`/`spawnSync`, dynamic member access, helper wrapp
 composed command expressions remain incomplete/unsupported. In particular, seeing request
 data somewhere inside string concatenation or a template literal is not treated as a
 closed local certificate.
+
+Java support is intentionally one-shape evidence, not a general Java taint engine. URL
+variables (`url.openConnection()`), `URI` conversion chains, `HttpClient`, Spring clients,
+composed URL expressions, non-literal parameter keys, and other vulnerability mechanisms
+remain incomplete/unsupported. Servlet binding and the deployed provenance of the
+`request` object are not established.

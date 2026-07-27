@@ -117,7 +117,7 @@ are reported as unavailable and never assigned by rule-name or file-extension in
 
 Expand unscripted live benchmarks by vulnerability family, language, trust boundary, and
 single-file versus cross-service reasoning. Improve detection/retrieval and authorization
-context before applying the SARIF-oriented classifier to LLM findings. Version-9 structural
+context before applying the SARIF-oriented classifier to LLM findings. Version-10 structural
 certificates add independently reparsed direct Python caller and narrow same-function
 authorization-candidate syntax, explicitly without claiming runtime/interprocedural
 reachability or authorization effectiveness. Authentication-only syntax is excluded.
@@ -129,7 +129,12 @@ JavaScript/TypeScript now has separately parsed local SSRF certificates for `fet
 explicit global Axios URL-first methods. Aliased/object-form Axios remains incomplete;
 exact `child_process.exec/execSync` command-injection chains are also supported for one
 direct request property. Aliases, composition, other mechanisms/clients, and Java/Ruby
-remain explicitly unsupported/incomplete.
+remain explicitly unsupported/incomplete. Java adds one separately parsed local
+`request.getParameter` to `new URL(...).openStream/openConnection` SSRF shape.
+
+This is the current deterministic-certificate phase boundary. Additional client/framework
+enumeration and cross-file flow should resume only when corpus misses demonstrate a specific
+coverage need; the active offline priority returns to manufactured controls.
 Consider a separate novelty prioritizer only after enough manually reviewed LLM findings
 exist to show a held-out benefit.
 

@@ -16,7 +16,7 @@ from dataclasses import dataclass, field
 from ..detect.retrieval import RetrievalIndex
 from ..store.models import Finding
 
-SLICE_VERSION = "structural_slice_v6"
+SLICE_VERSION = "structural_slice_v7"
 
 _MECHANISM_TERMS = {
     "sql_injection": ("sql injection", "sqli", "cwe-89"),
@@ -601,6 +601,143 @@ def build_javascript_slice(
     return result
 
 
+def _java_request_parameter(node, source: bytes) -> bool:
+    if node.type != "method_invocation":
+        return False
+    obj = node.child_by_field_name("object")
+    name = node.child_by_field_name("name")
+    arguments = node.child_by_field_name("arguments")
+    args = list(arguments.named_children) if arguments is not None else []
+    return bool(
+        obj is not None and name is not None
+        and obj.type == "identifier"
+        and _ts_source(obj, source) in {"req", "request"}
+        and _ts_source(name, source) == "getParameter"
+        and len(args) == 1 and args[0].type == "string_literal"
+    )
+
+
+def _java_url_constructor_argument(node, source: bytes):
+    if node is None or node.type != "object_creation_expression":
+        return None
+    type_node = node.child_by_field_name("type")
+    arguments = node.child_by_field_name("arguments")
+    args = list(arguments.named_children) if arguments is not None else []
+    if (
+        type_node is None or _ts_source(type_node, source) != "URL"
+        or len(args) != 1
+    ):
+        return None
+    return args[0]
+
+
+def build_java_ssrf_slice(
+    index: RetrievalIndex, finding: Finding
+) -> StructuralSliceEvidence | None:
+    """Build one bounded Java request.getParameter→new URL→open* SSRF slice."""
+    mechanism = _mechanism(finding)
+    if mechanism is None:
+        return None
+    source_record = index.source_text(finding.file)
+    if source_record is None:
+        return StructuralSliceEvidence(
+            mechanism, "incomplete", finding.file, language="java",
+            limitations=["cited file is not present in the retrieval index"],
+        )
+    relative, text = source_record
+    if not relative.endswith(".java"):
+        return None
+    if mechanism != "ssrf":
+        return StructuralSliceEvidence(
+            mechanism, "unsupported", relative, language="java",
+            limitations=["Java certificate checker supports SSRF only"],
+        )
+    parser = _ts_parser("java")
+    if parser is None:
+        return StructuralSliceEvidence(
+            mechanism, "incomplete", relative, language="java",
+            limitations=["tree-sitter grammar unavailable for Java"],
+        )
+    source = text.encode("utf-8", errors="replace")
+    tree = parser.parse(source)
+    if tree.root_node.has_error:
+        return StructuralSliceEvidence(
+            mechanism, "incomplete", relative, language="java",
+            limitations=["Java source could not be parsed without errors"],
+        )
+    sinks = []
+    for node in _ts_walk(tree.root_node):
+        if (
+            node.type != "method_invocation"
+            or node.start_point.row + 1 > finding.line_end
+            or finding.line_start > node.end_point.row + 1
+        ):
+            continue
+        name = node.child_by_field_name("name")
+        obj = node.child_by_field_name("object")
+        if (
+            name is not None
+            and _ts_source(name, source) in {"openStream", "openConnection"}
+            and _java_url_constructor_argument(obj, source) is not None
+        ):
+            sinks.append(node)
+    result = StructuralSliceEvidence(
+        mechanism, "incomplete", relative, language="java",
+        limitations=[
+            "local Java SSRF slice only; servlet binding, runtime reachability, and "
+            "request provenance are not proven"
+        ],
+    )
+    if len(sinks) != 1:
+        result.limitations.append(
+            "exactly one cited new URL(...).openStream/openConnection sink was not found"
+        )
+        return result
+    sink = sinks[0]
+    result.sink = SliceLine(sink.start_point.row + 1, _ts_source(sink, source))
+    argument = _java_url_constructor_argument(
+        sink.child_by_field_name("object"), source
+    )
+    if _java_request_parameter(argument, source):
+        result.source_evidence.append(
+            SliceLine(argument.start_point.row + 1, _ts_source(argument, source))
+        )
+    elif argument is not None and argument.type == "identifier":
+        name = _ts_source(argument, source)
+        declarations = []
+        for node in _ts_walk(tree.root_node):
+            if node.type != "variable_declarator" or node.start_byte >= sink.start_byte:
+                continue
+            declared = node.child_by_field_name("name")
+            value = node.child_by_field_name("value")
+            if (
+                declared is not None and value is not None
+                and _ts_source(declared, source) == name
+                and _java_request_parameter(value, source)
+            ):
+                declarations.append(node)
+        if declarations:
+            declaration = max(declarations, key=lambda item: item.start_byte)
+            statement = (
+                declaration.parent
+                if declaration.parent is not None
+                and declaration.parent.type == "local_variable_declaration"
+                else declaration
+            )
+            evidence = SliceLine(
+                statement.start_point.row + 1, _ts_source(statement, source)
+            )
+            result.source_evidence.append(evidence)
+            result.assignments.append(evidence)
+    if not result.source_evidence:
+        result.limitations.append(
+            "URL constructor was not tied to one direct request.getParameter literal"
+        )
+        return result
+    result.status = "local"
+    return result
+
+
 def build_structural_slice(
     index: RetrievalIndex, finding: Finding
 ) -> StructuralSliceEvidence | None:
@@ -610,4 +747,6 @@ def build_structural_slice(
         return build_python_slice(index, finding)
     if suffix in {"js", "jsx", "mjs", "cjs", "ts", "tsx"}:
         return build_javascript_slice(index, finding)
+    if suffix == "java":
+        return build_java_ssrf_slice(index, finding)
     return None

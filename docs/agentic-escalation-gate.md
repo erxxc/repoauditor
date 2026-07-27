@@ -33,7 +33,7 @@ evidence exists.
 7. **Independent verification — partial.** Agent-produced claims use the persisted
    `SecurityClaim` contract, bind to an immutable snapshot commit, and are checked by a
    separately versioned deterministic verifier that reopens the snapshot and reconstructs
-   supported facts without consuming the producer's evidence object. Version 9 additionally
+   supported facts without consuming the producer's evidence object. Version 10 additionally
    checks persisted local HTTP-entry evidence, request-input identity, and control-candidate
    identity/def-use placement, plus exact direct Python call-site and narrow same-function
    authorization-candidate syntax and Flask blueprint registration tied to the route subject.
@@ -44,7 +44,9 @@ evidence exists.
    aliased/object-form Axios is not inferred and other JS/TS mechanisms remain unsupported.
    Exact `child_process.exec/execSync` command-injection syntax is also checked for one
    direct request property; aliases and composed commands are not inferred. The agent never
-   verifies its own claim.
+   verifies its own claim. A third checker path covers one direct Java
+   `request.getParameter` to `new URL(...).openStream/openConnection` SSRF shape; broader
+   Java clients remain unsupported.
 
 ## Proposed eligibility
 

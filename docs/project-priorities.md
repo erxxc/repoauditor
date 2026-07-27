@@ -103,7 +103,7 @@ order so future sessions do not have to reconstruct it from conversation history
 - [~] Improve language-specific slicing and authorization/source-to-sink context before
   changing the classifier. Python and bounded JS/TS SSRF paths now exist; broader mechanism,
   framework, and language coverage remains.
-- [~] Expand independently checked `SecurityClaim` certificates. Version 9 now persists and
+- [~] Expand independently checked `SecurityClaim` certificates. Version 10 now persists and
   checks local HTTP-entry syntax, request-input identity, control-candidate identity, and
   placement on the intraprocedural def-use chain, plus exact direct Python caller syntax
   and same-function authorization-candidate syntax independently reparsed from the snapshot.
@@ -116,6 +116,9 @@ order so future sessions do not have to reconstruct it from conversation history
   Command injection now supports exact `child_process.exec/execSync` with one direct local
   request-property input. Aliased/object-form Axios, child-process aliases/composition, and
   other JS/TS mechanisms remain unsupported/incomplete.
+  Java SSRF now supports one direct `request.getParameter` to
+  `new URL(...).openStream/openConnection` shape. Broader Java clients and mechanisms remain
+  unsupported/incomplete.
 - [ ] Evaluate in-family/out-of-family novelty as an investigation-depth trigger. Do not
   train a novelty prioritizer until enough manually reviewed LLM findings exist.
 
@@ -155,13 +158,13 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
    travel with the triaged feature/label join, and `triage-collection` reports their
    sufficiency. Missing metadata remains `unknown`; rule names and file extensions are
    never used as substitutes.
-2. [~] Continue deterministic context/certificate work beyond the Python intraprocedural
-   MVP. Exact direct Python caller syntax is now persisted and independently checked without
-   being promoted to runtime reachability. A narrow authorization-candidate vocabulary is
-   also independently checked and kept separate from authentication, but authorization
-   scope/effectiveness, non-Flask registration/reference evidence, cross-file data flow,
-   additional JS/TS mechanisms/clients, Axios/child-process shapes, and Java/Ruby trusted
-   checkers remain. Preserve explicit unsupported/incomplete outcomes.
+2. [x] Complete the bounded deterministic certificate expansion phase beyond the Python
+   intraprocedural MVP. Direct Python callers, authorization candidates, and Flask blueprint
+   registration are independently checked without being promoted to runtime facts. Bounded
+   JS/TS SSRF and command-injection paths plus one Java SSRF shape prove the multi-language
+   checker contract. Authorization effectiveness, non-Flask registration, further
+   client/mechanism enumeration, cross-file data flow, and Ruby support are deferred until
+   corpus results justify them; explicit unsupported/incomplete outcomes remain the default.
 3. Expand manufactured positive/negative controls only for mechanisms with independently
    checkable ground truth. Fixture construction and deterministic checks are offline; live
    provider qualification remains deferred.
