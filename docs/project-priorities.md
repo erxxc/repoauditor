@@ -27,26 +27,22 @@ order so future sessions do not have to reconstruct it from conversation history
   No classifier or native-runtime change was justified.
 - [~] Calibrate the initial 75-call/250,000-token guardrails. Offline readiness is shipped:
   fixed evaluation roles, a zero-network corpus audit, and the fail-closed
-  `usage-calibration` report. Paid evidence still requires one successful lightweight run
-  and one protected independent pre/post pair after cache/provider access returns. Treat
+  `usage-calibration` report. The bounded lightweight and protected independent pair have
+  now run; the formal persistent-store comparison is still outstanding. Treat
   the limits as safety ceilings, not statistically calibrated defaults; never auto-raise.
   - The first merged `live-lightweight` attempt (Actions run `30228015245`) qualified all
     four manufactured controls, then safely stopped with 18 deferred findings before
     normalize/scoring. It is safety evidence only: no accuracy score was produced and the
     failure artifact omitted partial usage totals.
-  - [ ] Persist usage totals, queue state, batch identity, and failure detail in paid-run
+  - [x] Persist usage totals, queue state, batch identity, and failure detail in paid-run
     artifacts on both success and failure.
-  - [ ] Drive live evaluation through the production run/resume continuation path (or one
+  - [x] Drive live evaluation through the production run/resume continuation path (or one
     shared orchestration primitive), preserving linked batches and never repeating completed
     map/detect/triage work.
-  - [ ] Require a zero deferred backlog before normalize/scoring, aggregate linked-batch
+  - [x] Require a zero deferred backlog before normalize/scoring, aggregate linked-batch
     usage in the terminal artifact, and cover failure plus multi-batch success offline.
-  - [ ] Rerun `live-lightweight` under the unchanged ceilings and inspect its completed
+  - [x] Rerun `live-lightweight` under the unchanged ceilings and inspect its completed
     artifact before authorizing the protected pre/post pair.
-    The first continuation-enabled rerun used four batches, 74 calls, and 238,555 known
-    tokens, then stopped with eight deferred findings. Six total batches are approved for
-    the next lightweight attempt based on the observed four-findings-per-continuation rate;
-    per-batch ceilings and the 20-minute timeout remain unchanged.
 - [x] Add a budget-scoped deferred-queue continuation that reuses the immutable ingested
   snapshot and completed map/detect/triage evidence without paying to repeat those stages.
   Continuation batches have fresh ceilings, durable parent links, and aggregate into one
@@ -61,10 +57,13 @@ order so future sessions do not have to reconstruct it from conversation history
   represented, across at least eight genuinely distinct engagements. Prefer 100–200 labels.
 - [ ] Review high-ranked, reserved novel, and sampled low-ranked findings. Preserve
   `insufficient_evidence` as abstention and record evidence-based rationales.
-- [~] Freeze a protected baseline. The serialize-javascript pre/post commits are explicitly
-  designated as a protected holdout and checked offline; provider/model/prompt/configured
-  result evidence remains pending the bounded online run. Keep fixtures/benchmarks separate
-  from independent evidence and protected holdouts out of training.
+- [~] Freeze a protected baseline. The serialize-javascript pre/post bounded run completed
+  in Actions run `30230644266`. Corrected target-CVE scoring shows that the pre-fix target
+  was detected but unresolved (confirmed recovery failed), while the post-fix target was
+  absent (negative control passed). One unrelated post-fix confirmation remains
+  unadjudicated because the fixture is not exhaustive; no project-wide precision is
+  claimed. Keep fixtures/benchmarks separate from independent evidence and protected
+  holdouts out of training.
 
 ## P2 — validation maturity
 
@@ -121,14 +120,10 @@ order so future sessions do not have to reconstruct it from conversation history
 
 ## Execution order
 
-1. Correct the paid live harness so failure evidence is retained and deferred work uses the
-   production continuation path.
-2. Rerun the bounded lightweight scan under unchanged limits; review its complete evidence
-   before running the protected pre/post pair.
-3. Produce the formal persistent-store usage comparison; do not raise limits automatically.
-4. Collect controlled human adjudications and freeze the protected baseline.
-5. Add the actionability/technical-validity views and adjudication QA, then activate
+1. Produce the formal persistent-store usage comparison; do not raise limits automatically.
+2. Collect controlled human adjudications and freeze the protected baseline.
+3. Add the actionability/technical-validity views and adjudication QA, then activate
    validation gates only when their evidence floors are met.
-6. Characterize repeatability, then improve slicing/checkable claims.
-7. Add real EPSS/KEV enrichment.
-8. Revisit hierarchical priors, cost calculation, and agentic escalation last.
+4. Characterize repeatability, then improve slicing/checkable claims.
+5. Add real EPSS/KEV enrichment.
+6. Revisit hierarchical priors, cost calculation, and agentic escalation last.

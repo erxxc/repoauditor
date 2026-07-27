@@ -114,6 +114,28 @@ Reaching any bound produces a failure artifact rather than a partial score. Afte
 successful lightweight rerun, inspect actual usage and accuracy before authorizing
 `bounded-independent`; these are ceilings, not intended consumption.
 
+### Protected-pair observation
+
+Actions run `30230644266` completed both serialize-javascript snapshots with no deferred
+findings. The pre-fix scan used 28 calls and 121,403 known input/output tokens across two
+batches; the post-fix scan used 18 calls and 97,018 known tokens in one batch. These are
+operational observations, not permission to raise a limit.
+
+The original artifact's legacy precision/recall fields are invalid for this protected pair:
+the ground truth covers one reviewed historical CVE, not every possible finding in the
+repository, and the legacy scorer treated unresolved findings as countable. Offline
+rescoring against the retained database gives the defensible interpretation:
+
+- pre-fix: the CVE-2019-16769 target was raised but remained `unresolved`; this is an
+  abstention, so confirmed target recovery failed;
+- post-fix: no confirmed or unresolved signal matched CVE-2019-16769; the negative control
+  passed; and
+- one different post-fix confirmation is `unadjudicated`, not an automatic false positive.
+
+Protected-pair evaluation therefore reports target recovery/persistence and unadjudicated
+confirmed groups, never project-wide precision. Only falsification-confirmed target matches
+count as recovery; unresolved matches remain visible abstentions.
+
 ## Analyst decision after collection
 
 Keep the current limits unless the three-run evidence demonstrates a specific operational

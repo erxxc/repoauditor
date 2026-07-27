@@ -52,7 +52,7 @@ from test_golden_harness import (  # noqa: E402
     _run_pipeline,
     score_precision_recall,
 )
-from uat_scoring import score_live_uat
+from uat_scoring import score_independent_target, score_live_uat
 from fixtures.audit_corpus_readiness import build_corpus_readiness
 
 
@@ -113,6 +113,22 @@ def _pipeline_evidence(config, repo_id: str) -> dict | None:
             for batch in chain
         },
         "deferred_findings": len(db.list_deferred_findings(repo_id, config)),
+    }
+
+
+def _live_prompt_versions() -> dict[str, str]:
+    return {
+        "map": cli.MAP_PROMPT_VERSION,
+        "detect": "+".join([
+            *cli.LENS_PROMPT_VERSIONS.values(),
+            cli.CITATION_INTEGRITY_VERSION,
+        ]),
+        "falsify": "+".join([
+            cli.FALSIFY_PROMPT_VERSION,
+            cli.CRITIQUE_PROMPT_VERSION,
+            cli.FALSIFY_CONTEXT_VERSION,
+        ]),
+        "normalize": cli.NORMALIZE_PROMPT_VERSION,
     }
 
 
@@ -560,7 +576,12 @@ def test_corpus_live_baseline(tmp_config, benchmark_repo, capsys, monkeypatch):
         )
 
         findings = db.list_findings(repo_id, tmp_config)
-        if benchmark_repo.expected.get("planted_cases"):
+        is_planted_uat = bool(benchmark_repo.expected.get("planted_cases"))
+        is_protected_target = (
+            benchmark_repo.expected.get("source", {}).get("evaluation_role")
+            == "protected_holdout"
+        )
+        if is_planted_uat:
             scanner_coverage = os.environ.get(
                 "REPOAUDITOR_UAT_SCANNER_COVERAGE", "environment-dependent"
             )
@@ -576,9 +597,12 @@ def test_corpus_live_baseline(tmp_config, benchmark_repo, capsys, monkeypatch):
             )
             final = score["final_countable_confirmed"]
             lineage = f"corpus-v2::{benchmark_repo.repo_id}"
+        elif is_protected_target:
+            score = score_independent_target(findings, benchmark_repo.expected)
+            run = SimpleNamespace(
+                id=None, prompt_versions=_live_prompt_versions()
+            )
         else:
-            # Non-UAT corpus fixtures retain their existing legacy scorer. They do not carry
-            # the planted-case source/disposition metadata needed for the v2 UAT method.
             legacy_survivors = [
                 finding for finding in findings
                 if finding.falsification_status is not FalsificationStatus.KILLED
@@ -586,11 +610,15 @@ def test_corpus_live_baseline(tmp_config, benchmark_repo, capsys, monkeypatch):
             final = score_precision_recall(
                 legacy_survivors, benchmark_repo.expected["findings"]
             )
-            score = {"methodology": "legacy corpus scorer", "final_countable_confirmed": final}
+            score = {
+                "methodology": "legacy corpus scorer",
+                "final_countable_confirmed": final,
+            }
             lineage = f"corpus::{benchmark_repo.repo_id}"
-        run = record_and_check(
-            lineage=lineage,
-            precision=final["precision"], recall=final["recall"], config=tmp_config)
+        if not is_protected_target:
+            run = record_and_check(
+                lineage=lineage,
+                precision=final["precision"], recall=final["recall"], config=tmp_config)
     except BaseException as exc:
         if repo_id is None:
             matching = [
@@ -613,7 +641,16 @@ def test_corpus_live_baseline(tmp_config, benchmark_repo, capsys, monkeypatch):
         )
 
     with capsys.disabled():
-        print(f"\n[live corpus] {benchmark_repo.repo_id}: "
-              f"precision={final['precision']:.2f} recall={final['recall']:.2f} "
-              f"(tp={final['tp']} fp={final['fp']} fn={final['fn']})")
-    assert run.id is not None
+        if not is_protected_target:
+            print(f"\n[live corpus] {benchmark_repo.repo_id}: "
+                  f"precision={final['precision']:.2f} recall={final['recall']:.2f} "
+                  f"(tp={final['tp']} fp={final['fp']} fn={final['fn']})")
+            assert run.id is not None
+        else:
+            print(
+                f"\n[live corpus target] {benchmark_repo.repo_id}: "
+                f"variant={score['variant']} confirmed="
+                f"{score['target_confirmed_count']}/{score['target_count']}; "
+                f"unadjudicated-confirmed="
+                f"{score['unadjudicated_confirmed_group_count']}"
+            )
