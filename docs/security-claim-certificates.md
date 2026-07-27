@@ -4,8 +4,8 @@
 The producer may retrieve and slice broadly; the checker reopens the immutable snapshot,
 parses it independently, and accepts only narrowly defined structural facts.
 
-Current certificate version: `security_claim_v4`
-Current verifier: `python_local_certificate_checker_v4`
+Current certificate version: `security_claim_v5`
+Current verifier: `python_local_certificate_checker_v5`
 
 ## Checked facts
 
@@ -24,6 +24,9 @@ Current verifier: `python_local_certificate_checker_v4`
 - Exact direct Python call-site syntax for persisted caller evidence. The checker reparses
   each caller file independently and confirms that the claimed line invokes the sliced
   function.
+- Same-function Python authorization-candidate syntax from a deliberately narrow checker
+  vocabulary, including ownership, role, and permission guards. The checker independently
+  matches the exact snapshot text and AST location.
 
 ## Explicit non-claims
 
@@ -36,6 +39,8 @@ Structural verification does **not** establish:
 - that a recognized input is attacker-controlled in the deployed environment;
 - path feasibility or predicate satisfaction;
 - sanitizer or mitigating-control effectiveness;
+- whether an authorization candidate authenticates the right principal, protects the right
+  object/action, executes in the deployed framework, or is effective;
 - exploitability, severity, or real-world risk.
 
 A plain function parameter is not treated as attacker-controlled unless the same local
@@ -47,3 +52,8 @@ The local source-to-sink proof remains intraprocedural. Direct Python callers ar
 context facts, not extensions of that def-use proof. Unsupported caller languages,
 cross-file data-flow paths, path predicates, missing immutable snapshots, or incomplete
 certificates remain incomplete/unsupported rather than being guessed.
+
+Authentication-only syntax such as `login_required` or `current_customer_id()` is not
+classified as authorization evidence. Conversely, a recognized authorization-like name is
+only a candidate identity—not grounds to kill a finding without separately checked control
+semantics and effectiveness.

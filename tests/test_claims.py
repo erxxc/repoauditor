@@ -151,6 +151,96 @@ def test_checker_refutes_forged_direct_caller_evidence(tmp_path):
     assert "direct-caller evidence" in verification.reason
 
 
+def test_checker_verifies_authorization_candidate_syntax_not_effectiveness(
+    tmp_path, tmp_config
+):
+    db.init_db(tmp_config)
+    (tmp_path / "svc.py").write_text(
+        "import os\n"
+        "from flask import request\n\n"
+        "@app.route('/run/<job_id>')\n"
+        "@owns_resource('job')\n"
+        "def run(job_id):\n"
+        "    command = request.args.get('cmd', '')\n"
+        "    os.system(command)\n"
+    )
+    finding = Finding(
+        repo_id="r", title="Command injection [CWE-78]", file="svc.py",
+        line_start=8, line_end=8, citation_snippet="os.system(command)",
+        source_tool="semgrep", confidence=0.8, severity="high",
+    )
+    finding_id = db.insert_finding(finding, tmp_config)
+    evidence = build_python_slice(RetrievalIndex().build(tmp_path), finding)
+    assert evidence is not None and len(evidence.authorization_candidates) == 1
+    claim_id = db.upsert_security_claim(
+        claim_from_slice(finding_id, evidence, "commit-abc"), tmp_config
+    )
+    claim = db.list_security_claims(finding_id, tmp_config)[0]
+    assert claim.id == claim_id
+    assert claim.authorization_evidence[0].source == "@owns_resource('job')"
+
+    verification = verify_structural_claim(claim, tmp_path, "commit-abc")
+
+    assert verification.status is ClaimVerificationStatus.STRUCTURALLY_VERIFIED
+    assert verification.checks["authorization_candidate_present"] is True
+    assert verification.checks["authorization_syntax_verified"] is True
+    assert "not authentication, scope, or control effectiveness" in verification.reason
+
+
+def test_checker_does_not_treat_authentication_as_authorization(tmp_path):
+    (tmp_path / "svc.py").write_text(
+        "import os\n\n"
+        "@login_required\n"
+        "def run(command):\n"
+        "    current_customer_id()\n"
+        "    os.system(command)\n"
+    )
+    finding = Finding(
+        repo_id="r", title="Command injection [CWE-78]", file="svc.py",
+        line_start=6, line_end=6, citation_snippet="os.system(command)",
+        source_tool="semgrep", confidence=0.8, severity="high",
+    )
+    evidence = build_python_slice(RetrievalIndex().build(tmp_path), finding)
+    assert evidence is not None
+    assert evidence.authorization_candidates == []
+    claim = claim_from_slice(1, evidence, "commit-abc").model_copy(update={"id": 1})
+
+    verification = verify_structural_claim(claim, tmp_path, "commit-abc")
+
+    assert verification.status is ClaimVerificationStatus.STRUCTURALLY_VERIFIED
+    assert verification.checks["authorization_candidate_present"] is False
+    assert verification.checks["authorization_syntax_verified"] is False
+
+
+def test_checker_refutes_forged_authorization_evidence(tmp_path):
+    (tmp_path / "svc.py").write_text(
+        "import os\n\n"
+        "@owns_resource('job')\n"
+        "def run(command):\n"
+        "    os.system(command)\n"
+    )
+    finding = Finding(
+        repo_id="r", title="Command injection [CWE-78]", file="svc.py",
+        line_start=5, line_end=5, citation_snippet="os.system(command)",
+        source_tool="semgrep", confidence=0.8, severity="high",
+    )
+    evidence = build_python_slice(RetrievalIndex().build(tmp_path), finding)
+    assert evidence is not None
+    claim = claim_from_slice(1, evidence, "commit-abc").model_copy(update={"id": 1})
+    forged = claim.model_copy(update={
+        "authorization_evidence": [
+            claim.authorization_evidence[0].model_copy(
+                update={"source": "@require_admin"}
+            )
+        ]
+    })
+
+    verification = verify_structural_claim(forged, tmp_path, "commit-abc")
+
+    assert verification.status is ClaimVerificationStatus.STRUCTURALLY_REFUTED
+    assert verification.checks["authorization_syntax_verified"] is False
+
+
 def test_checker_refutes_forged_entrypoint_evidence():
     finding = _finding()
     evidence = build_python_slice(RetrievalIndex().build(UAT), finding)

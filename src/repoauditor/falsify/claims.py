@@ -19,9 +19,9 @@ from ..store.models import (
 )
 from .slicing import PythonSliceEvidence, SLICE_VERSION
 
-CLAIM_VERSION = "security_claim_v4"
+CLAIM_VERSION = "security_claim_v5"
 VERIFIER_NAME = "python-local-certificate-checker"
-VERIFIER_VERSION = "python_local_certificate_checker_v4"
+VERIFIER_VERSION = "python_local_certificate_checker_v5"
 
 # Intentionally separate from the slicer's rule table: this is the small checker policy.
 _CHECKER_SINKS = {
@@ -39,6 +39,12 @@ _REQUEST_INPUT_CONTAINERS = {
 }
 _CONTROL_NAME = re.compile(
     r"(?:saniti[sz]e|escape|quote|allowlist|validate|parameteri[sz]|owns_resource)",
+    re.IGNORECASE,
+)
+_AUTHORIZATION_NAME = re.compile(
+    r"^(?:owns_resource|require_(?:admin|role|permission)|authorize|"
+    r"check_(?:permission|access|ownership)|enforce_(?:permission|access|ownership)|"
+    r"has_permission)$",
     re.IGNORECASE,
 )
 
@@ -67,6 +73,10 @@ def claim_from_slice(
             ClaimEvidence(file=item.file, line=item.line, source=item.source)
             for item in evidence.caller_evidence
         ],
+        authorization_evidence=[
+            _evidence(evidence.file, item)
+            for item in evidence.authorization_candidates
+        ],
         source_evidence=sources,
         sink_evidence=sink,
         path_nodes=[*sources, *assignments, *([sink] if sink else [])],
@@ -82,6 +92,16 @@ def _call_name(call: ast.Call) -> str:
         return call.func.id
     if isinstance(call.func, ast.Attribute):
         return call.func.attr
+    return ""
+
+
+def _callable_name(node: ast.AST) -> str:
+    if isinstance(node, ast.Call):
+        return _call_name(node)
+    if isinstance(node, ast.Name):
+        return node.id
+    if isinstance(node, ast.Attribute):
+        return node.attr
     return ""
 
 
@@ -168,6 +188,25 @@ def _recognized_control_at_line(function, line: int) -> bool:
         and bool(_CONTROL_NAME.search(_call_name(node)))
         for node in ast.walk(function)
     )
+
+
+def _recognized_authorization_at_line(
+    tree: ast.AST, function: ast.AST, line: int
+) -> bool:
+    """Recognize only checker-owned authorization candidate syntax on this function."""
+    decorator_match = any(
+        getattr(node, "lineno", None) == line
+        and bool(_AUTHORIZATION_NAME.fullmatch(_callable_name(node)))
+        for node in function.decorator_list
+    )
+    call_match = any(
+        isinstance(node, ast.Call)
+        and node.lineno == line
+        and bool(_AUTHORIZATION_NAME.fullmatch(_call_name(node)))
+        and _enclosing_function(tree, line) is function
+        for node in ast.walk(function)
+    )
+    return decorator_match or call_match
 
 
 def _enclosing_function(tree: ast.AST, line: int):
@@ -265,6 +304,8 @@ def verify_structural_claim(
         "http_entrypoint_present": False,
         "caller_evidence_present": bool(claim.caller_evidence),
         "direct_callers_verified": False,
+        "authorization_candidate_present": bool(claim.authorization_evidence),
+        "authorization_syntax_verified": False,
         "attacker_input_source_present": False,
         "control_candidate_present": False,
         "control_on_local_def_use": False,
@@ -290,6 +331,7 @@ def verify_structural_claim(
         files = {
             item.file for item in [
                 *claim.entry_evidence,
+                *claim.authorization_evidence,
                 *claim.source_evidence,
                 *claim.path_nodes,
                 *([claim.sink_evidence] if claim.sink_evidence else []),
@@ -314,6 +356,7 @@ def verify_structural_claim(
                     ordinary = [
                         item for item in [
                             *claim.entry_evidence,
+                            *claim.authorization_evidence,
                             *claim.source_evidence,
                             *claim.path_nodes,
                             *([claim.sink_evidence] if claim.sink_evidence else []),
@@ -373,6 +416,33 @@ def verify_structural_claim(
                                 reason = (
                                     "Claimed direct-caller evidence does not match an "
                                     "independently parsed Python call site."
+                                )
+                                return ClaimVerification(
+                                    claim_id=claim.id or 0,
+                                    status=status,
+                                    verifier_name=VERIFIER_NAME,
+                                    verifier_version=VERIFIER_VERSION,
+                                    checks=checks,
+                                    reason=reason,
+                                )
+                            authorization_checks = [
+                                _matches_line(lines, evidence)
+                                and _recognized_authorization_at_line(
+                                    tree, function, evidence.line
+                                )
+                                for evidence in claim.authorization_evidence
+                            ]
+                            checks["authorization_syntax_verified"] = bool(
+                                authorization_checks and all(authorization_checks)
+                            )
+                            if (
+                                authorization_checks
+                                and not checks["authorization_syntax_verified"]
+                            ):
+                                status = ClaimVerificationStatus.STRUCTURALLY_REFUTED
+                                reason = (
+                                    "Claimed authorization evidence does not match "
+                                    "independently recognized same-function syntax."
                                 )
                                 return ClaimVerification(
                                     claim_id=claim.id or 0,
@@ -443,7 +513,9 @@ def verify_structural_claim(
                                     "attacker control, control effectiveness, and real-world "
                                     "risk are not validated. Entry-point, request-input, and "
                                     "control checks identify local syntax only. Any direct "
-                                    "caller evidence proves call syntax, not runtime reachability."
+                                    "caller evidence proves call syntax, not runtime reachability. "
+                                    "Authorization evidence identifies candidate syntax only, "
+                                    "not authentication, scope, or control effectiveness."
                                 )
     return ClaimVerification(
         claim_id=claim.id or 0,

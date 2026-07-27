@@ -117,12 +117,13 @@ are reported as unavailable and never assigned by rule-name or file-extension in
 
 Expand unscripted live benchmarks by vulnerability family, language, trust boundary, and
 single-file versus cross-service reasoning. Improve detection/retrieval and authorization
-context before applying the SARIF-oriented classifier to LLM findings. Version-4 structural
-certificates now add independently reparsed direct Python caller syntax, explicitly without
-claiming runtime/interprocedural reachability; authorization semantics, registration
-evidence, and trusted non-Python checkers remain open. Consider a separate novelty
-prioritizer only after enough manually reviewed LLM findings exist to show a held-out
-benefit.
+context before applying the SARIF-oriented classifier to LLM findings. Version-5 structural
+certificates add independently reparsed direct Python caller and narrow same-function
+authorization-candidate syntax, explicitly without claiming runtime/interprocedural
+reachability or authorization effectiveness. Authentication-only syntax is excluded.
+Authorization scope/effectiveness, registration evidence, and trusted non-Python checkers
+remain open. Consider a separate novelty prioritizer only after enough manually reviewed LLM
+findings exist to show a held-out benefit.
 
 ## Explicit non-goals
 

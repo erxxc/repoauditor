@@ -16,7 +16,7 @@ from dataclasses import dataclass, field
 from ..detect.retrieval import RetrievalIndex
 from ..store.models import Finding
 
-SLICE_VERSION = "python_local_slice_v2"
+SLICE_VERSION = "python_local_slice_v3"
 
 _MECHANISM_TERMS = {
     "sql_injection": ("sql injection", "sqli", "cwe-89"),
@@ -30,6 +30,12 @@ _SINKS = {
 }
 _SANITIZER_HINT = re.compile(
     r"(?:saniti[sz]e|escape|quote|allowlist|validate|urlparse|parameteri[sz])",
+    re.IGNORECASE,
+)
+_AUTHORIZATION_HINT = re.compile(
+    r"^(?:owns_resource|require_(?:admin|role|permission)|authorize|"
+    r"check_(?:permission|access|ownership)|enforce_(?:permission|access|ownership)|"
+    r"has_permission)$",
     re.IGNORECASE,
 )
 
@@ -55,6 +61,7 @@ class PythonSliceEvidence:
     function: str | None = None
     entry_evidence: list[SliceLine] = field(default_factory=list)
     caller_evidence: list[CallerSliceLine] = field(default_factory=list)
+    authorization_candidates: list[SliceLine] = field(default_factory=list)
     source_evidence: list[SliceLine] = field(default_factory=list)
     assignments: list[SliceLine] = field(default_factory=list)
     sink: SliceLine | None = None
@@ -69,6 +76,7 @@ class PythonSliceEvidence:
         ]
         for label, evidence in (
             ("entry", self.entry_evidence),
+            ("authorization-candidate", self.authorization_candidates),
             ("source", self.source_evidence),
             ("assignment", self.assignments),
             ("sanitizer-candidate", self.sanitizer_candidates),
@@ -104,6 +112,16 @@ def _call_name(call: ast.Call) -> str:
         return fn.id
     if isinstance(fn, ast.Attribute):
         return fn.attr
+    return ""
+
+
+def _callable_name(node: ast.AST) -> str:
+    if isinstance(node, ast.Call):
+        return _call_name(node)
+    if isinstance(node, ast.Name):
+        return node.id
+    if isinstance(node, ast.Attribute):
+        return node.attr
     return ""
 
 
@@ -202,6 +220,14 @@ def build_python_slice(
 
     for decorator in function.decorator_list:
         result.entry_evidence.append(_line(lines, decorator))
+        if _AUTHORIZATION_HINT.fullmatch(_callable_name(decorator)):
+            result.authorization_candidates.append(_line(lines, decorator))
+    for call in (
+        node for node in ast.walk(function)
+        if isinstance(node, ast.Call)
+        and _AUTHORIZATION_HINT.fullmatch(_call_name(node))
+    ):
+        result.authorization_candidates.append(_line(lines, call))
     # SliceLine has no file field because most evidence is local. Caller file identity is
     # carried separately when the certificate is constructed.
     result.caller_evidence = [
@@ -299,6 +325,7 @@ def build_python_slice(
         result.source_evidence,
         result.assignments,
         result.sanitizer_candidates,
+        result.authorization_candidates,
     ):
         values[:] = sorted(set(values), key=lambda item: (item.line, item.source))
     return result

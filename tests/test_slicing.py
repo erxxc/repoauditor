@@ -57,6 +57,10 @@ def test_ssrf_slice_connects_request_target_to_http_sink():
     assert evidence is not None and evidence.status == "local"
     assert evidence.sink and "requests.get(target" in evidence.sink.source
     assert any('request.args.get("url"' in item.source for item in evidence.source_evidence)
+    assert any(
+        "require_admin()" in item.source
+        for item in evidence.authorization_candidates
+    )
 
 
 def test_dynamic_or_unresolved_dependency_is_explicitly_incomplete(tmp_path):
@@ -101,6 +105,36 @@ def test_command_slice_surfaces_control_candidate_without_calling_it_effective(t
     assert evidence is not None
     assert any("sanitize_command" in item.source for item in evidence.sanitizer_candidates)
     assert "sanitizer effectiveness" in evidence.render()
+
+
+def test_slice_separates_authorization_candidates_from_authentication(tmp_path):
+    (tmp_path / "svc.py").write_text(
+        "import os\n\n"
+        "@app.route('/run/<job_id>')\n"
+        "@owns_resource('job')\n"
+        "def run(job_id, command):\n"
+        "    current_customer_id()\n"
+        "    os.system(command)\n"
+    )
+    evidence = build_python_slice(
+        RetrievalIndex().build(tmp_path),
+        _finding(
+            "Command injection [CWE-78]",
+            "svc.py",
+            7,
+            "os.system(command)",
+        ),
+    )
+
+    assert evidence is not None
+    assert [item.source for item in evidence.authorization_candidates] == [
+        "@owns_resource('job')"
+    ]
+    assert all(
+        "current_customer_id" not in item.source
+        for item in evidence.authorization_candidates
+    )
+    assert "authorization-candidate" in evidence.render()
 
 
 def test_unsupported_mechanism_does_not_emit_a_slice():

@@ -78,6 +78,7 @@ def test_pre_methodology_database_migrates_without_losing_audit_data(
         "0023_claim_entry_evidence.sql",
         "0024_triage_cohort_metadata.sql",
         "0025_claim_caller_evidence.sql",
+        "0026_claim_authorization_evidence.sql",
     ]
 
     assert db.list_findings("r", tmp_config)[0].id == finding_id
@@ -131,6 +132,7 @@ def test_structural_status_migration_preserves_claim_audit_data(
         "0023_claim_entry_evidence.sql",
         "0024_triage_cohort_metadata.sql",
         "0025_claim_caller_evidence.sql",
+        "0026_claim_authorization_evidence.sql",
     ]
 
     claim = db.list_security_claims(finding_id, tmp_config)[0]
@@ -138,6 +140,7 @@ def test_structural_status_migration_preserves_claim_audit_data(
     assert claim.snapshot_commit is None
     assert claim.entry_evidence == []
     assert claim.caller_evidence == []
+    assert claim.authorization_evidence == []
     assert verification.status.value == "verification_incomplete"
     assert verification.checks == {"source_present": True}
     assert verification.reason == "legacy structural result"
