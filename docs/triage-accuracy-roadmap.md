@@ -117,7 +117,7 @@ are reported as unavailable and never assigned by rule-name or file-extension in
 
 Expand unscripted live benchmarks by vulnerability family, language, trust boundary, and
 single-file versus cross-service reasoning. Improve detection/retrieval and authorization
-context before applying the SARIF-oriented classifier to LLM findings. Version-7 structural
+context before applying the SARIF-oriented classifier to LLM findings. Version-8 structural
 certificates add independently reparsed direct Python caller and narrow same-function
 authorization-candidate syntax, explicitly without claiming runtime/interprocedural
 reachability or authorization effectiveness. Authentication-only syntax is excluded.
@@ -125,8 +125,9 @@ Flask blueprint registration syntax is now independently tied to its route subje
 claiming application startup or external reachability. Authorization scope/effectiveness,
 non-Flask registration, cross-file data flow, and broader trusted non-Python coverage remain
 open.
-JavaScript/TypeScript now has a separately parsed local SSRF request-input-to-`fetch`
-certificate, while other mechanisms/clients and Java/Ruby remain explicitly unsupported.
+JavaScript/TypeScript now has separately parsed local SSRF certificates for `fetch` and
+explicit global Axios URL-first methods. Aliased/object-form Axios remains incomplete;
+other mechanisms/clients and Java/Ruby remain explicitly unsupported.
 Consider a separate novelty prioritizer only after enough manually reviewed LLM findings
 exist to show a held-out benefit.
 

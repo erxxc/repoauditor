@@ -19,9 +19,9 @@ from ..store.models import (
 )
 from .slicing import StructuralSliceEvidence, SLICE_VERSION
 
-CLAIM_VERSION = "security_claim_v7"
+CLAIM_VERSION = "security_claim_v8"
 VERIFIER_NAME = "deterministic-structural-certificate-checker"
-VERIFIER_VERSION = "deterministic_structural_certificate_checker_v7"
+VERIFIER_VERSION = "deterministic_structural_certificate_checker_v8"
 
 # Intentionally separate from the slicer's rule table: this is the small checker policy.
 _CHECKER_SINKS = {
@@ -47,6 +47,9 @@ _AUTHORIZATION_NAME = re.compile(
     r"has_permission)$",
     re.IGNORECASE,
 )
+_CHECKER_AXIOS_URL_METHODS = {
+    "get", "post", "put", "patch", "delete", "head", "options",
+}
 
 
 def _evidence(file: str, item) -> ClaimEvidence:
@@ -402,6 +405,7 @@ def _verify_javascript_ssrf_claim(
                             for item in evidence
                         )
                         sink_calls = []
+                        sink_kinds: dict[int, str] = {}
                         for node in nodes:
                             if (
                                 node.type != "call_expression"
@@ -409,8 +413,25 @@ def _verify_javascript_ssrf_claim(
                             ):
                                 continue
                             function = node.child_by_field_name("function")
+                            kind = None
                             if function is not None and node_text(function) == "fetch":
+                                kind = "fetch"
+                            elif (
+                                function is not None
+                                and function.type == "member_expression"
+                            ):
+                                obj = function.child_by_field_name("object")
+                                prop = function.child_by_field_name("property")
+                                if (
+                                    obj is not None and prop is not None
+                                    and obj.type == "identifier"
+                                    and node_text(obj) == "axios"
+                                    and node_text(prop) in _CHECKER_AXIOS_URL_METHODS
+                                ):
+                                    kind = "axios." + node_text(prop)
+                            if kind is not None:
                                 sink_calls.append(node)
+                                sink_kinds[id(node)] = kind
                         checks["supported_sink_present"] = len(sink_calls) == 1
                         valid_source = False
                         if checks["supported_sink_present"]:
@@ -419,7 +440,8 @@ def _verify_javascript_ssrf_claim(
                                 list(arguments.named_children)
                                 if arguments is not None else []
                             )
-                            if len(args) == 1:
+                            sink_kind = sink_kinds[id(sink_calls[0])]
+                            if args and (sink_kind != "fetch" or len(args) == 1):
                                 argument = args[0]
                                 argument_text = node_text(argument)
                                 request_pattern = (
@@ -472,7 +494,10 @@ def _verify_javascript_ssrf_claim(
                             reason = "Certificate text does not match the pinned snapshot."
                         elif not checks["supported_sink_present"]:
                             status = ClaimVerificationStatus.STRUCTURALLY_REFUTED
-                            reason = "Certificate sink is not one exact fetch(...) call."
+                            reason = (
+                                "Certificate sink is not one exact supported fetch/Axios "
+                                "member call."
+                            )
                         elif not valid_source:
                             status = ClaimVerificationStatus.STRUCTURALLY_REFUTED
                             reason = (
@@ -481,9 +506,10 @@ def _verify_javascript_ssrf_claim(
                         else:
                             status = ClaimVerificationStatus.STRUCTURALLY_VERIFIED
                             reason = (
-                                "Structurally verified local JS/TS request-input-to-fetch "
-                                "syntax. Runtime reachability, deployed request provenance, "
-                                "path feasibility, exploitability, and risk are not validated."
+                                "Structurally verified local JS/TS request-input-to-supported "
+                                "HTTP-client syntax. Runtime reachability, deployed request "
+                                "provenance, path feasibility, exploitability, and risk are "
+                                "not validated."
                             )
     return ClaimVerification(
         claim_id=claim.id or 0,

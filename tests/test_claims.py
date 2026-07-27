@@ -4,7 +4,12 @@ from pathlib import Path
 
 from repoauditor.detect.retrieval import RetrievalIndex
 from repoauditor.falsify.claims import claim_from_slice, verify_structural_claim
-from repoauditor.falsify.slicing import build_python_slice, build_structural_slice
+from repoauditor.falsify.slicing import (
+    SliceLine,
+    StructuralSliceEvidence,
+    build_python_slice,
+    build_structural_slice,
+)
 from repoauditor.store import db
 from repoauditor.store.models import ClaimVerificationStatus, Finding
 
@@ -395,6 +400,58 @@ def test_javascript_checker_reports_non_ssrf_mechanism_unsupported(tmp_path):
 
     assert verification.status is ClaimVerificationStatus.UNSUPPORTED
     assert "supports SSRF only" in verification.reason
+
+
+def test_javascript_checker_independently_verifies_axios_post_url(tmp_path):
+    (tmp_path / "preview.js").write_text(
+        "async function preview(req) {\n"
+        "  const target = req.body.callback;\n"
+        "  return axios.post(target, {status: 'ready'});\n"
+        "}\n"
+    )
+    finding = Finding(
+        repo_id="r", title="SSRF [CWE-918]", file="preview.js",
+        line_start=3, line_end=3,
+        citation_snippet="axios.post(target, {status: 'ready'})",
+        source_tool="semgrep", confidence=0.8, severity="high",
+    )
+    evidence = build_structural_slice(RetrievalIndex().build(tmp_path), finding)
+    assert evidence is not None and evidence.status == "local"
+    claim = claim_from_slice(1, evidence, "commit-axios").model_copy(update={"id": 1})
+
+    verification = verify_structural_claim(claim, tmp_path, "commit-axios")
+
+    assert verification.status is ClaimVerificationStatus.STRUCTURALLY_VERIFIED
+    assert verification.checks["supported_sink_present"] is True
+    assert "supported HTTP-client syntax" in verification.reason
+
+
+def test_javascript_checker_refutes_axios_claim_changed_to_generic_client(tmp_path):
+    (tmp_path / "preview.js").write_text(
+        "async function preview(req) {\n"
+        "  const target = req.query.url;\n"
+        "  return client.get(target);\n"
+        "}\n"
+    )
+    finding = Finding(
+        repo_id="r", title="SSRF [CWE-918]", file="preview.js",
+        line_start=3, line_end=3, citation_snippet="client.get(target)",
+        source_tool="semgrep", confidence=0.8, severity="high",
+    )
+    # Construct the claimed sink explicitly: the independent checker must not accept a
+    # generic `.get` merely because its property name resembles Axios.
+    evidence = StructuralSliceEvidence(
+        mechanism="ssrf", status="local", file="preview.js", language="javascript",
+        source_evidence=[SliceLine(2, "const target = req.query.url;")],
+        assignments=[SliceLine(2, "const target = req.query.url;")],
+        sink=SliceLine(3, "client.get(target)"),
+    )
+    claim = claim_from_slice(1, evidence, "commit-client").model_copy(update={"id": 1})
+
+    verification = verify_structural_claim(claim, tmp_path, "commit-client")
+
+    assert verification.status is ClaimVerificationStatus.STRUCTURALLY_REFUTED
+    assert verification.checks["supported_sink_present"] is False
 
 
 def test_checker_refutes_forged_entrypoint_evidence():

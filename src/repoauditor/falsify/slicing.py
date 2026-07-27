@@ -16,7 +16,7 @@ from dataclasses import dataclass, field
 from ..detect.retrieval import RetrievalIndex
 from ..store.models import Finding
 
-SLICE_VERSION = "python_local_slice_v4"
+SLICE_VERSION = "structural_slice_v5"
 
 _MECHANISM_TERMS = {
     "sql_injection": ("sql injection", "sqli", "cwe-89"),
@@ -38,6 +38,7 @@ _AUTHORIZATION_HINT = re.compile(
     r"has_permission)$",
     re.IGNORECASE,
 )
+_AXIOS_URL_METHODS = {"get", "post", "put", "patch", "delete", "head", "options"}
 
 
 @dataclass(frozen=True)
@@ -433,6 +434,27 @@ def _js_call_name(node, source: bytes) -> str:
     return ""
 
 
+def _js_ssrf_sink_kind(node, source: bytes) -> str | None:
+    """Return the exact supported HTTP-client shape, never a property-name guess."""
+    function = node.child_by_field_name("function")
+    if function is None:
+        return None
+    if function.type == "identifier" and _ts_source(function, source) == "fetch":
+        return "fetch"
+    if function.type != "member_expression":
+        return None
+    obj = function.child_by_field_name("object")
+    prop = function.child_by_field_name("property")
+    if (
+        obj is not None and prop is not None
+        and obj.type == "identifier"
+        and _ts_source(obj, source) == "axios"
+        and _ts_source(prop, source) in _AXIOS_URL_METHODS
+    ):
+        return "axios." + _ts_source(prop, source)
+    return None
+
+
 def _js_request_source(node, source: bytes) -> bool:
     text = _ts_source(node, source)
     return bool(
@@ -479,7 +501,7 @@ def build_javascript_ssrf_slice(
     calls = [
         node for node in _ts_walk(tree.root_node)
         if node.type == "call_expression"
-        and _js_call_name(node, source) == "fetch"
+        and _js_ssrf_sink_kind(node, source) is not None
         and node.start_point.row + 1 <= finding.line_end
         and finding.line_start <= node.end_point.row + 1
     ]
@@ -491,9 +513,10 @@ def build_javascript_ssrf_slice(
         ],
     )
     if len(calls) != 1:
-        result.limitations.append("exactly one cited fetch(...) sink was not found")
+        result.limitations.append("exactly one cited supported HTTP sink was not found")
         return result
     sink = calls[0]
+    sink_kind = _js_ssrf_sink_kind(sink, source)
     result.sink = SliceLine(
         sink.start_point.row + 1, _ts_source(sink, source)
     )
@@ -501,10 +524,12 @@ def build_javascript_ssrf_slice(
     argument_nodes = [
         child for child in (arguments.named_children if arguments is not None else [])
     ]
-    if len(argument_nodes) != 1:
-        result.limitations.append("fetch sink must have exactly one URL argument")
+    if not argument_nodes or (sink_kind == "fetch" and len(argument_nodes) != 1):
+        result.limitations.append(
+            "supported HTTP sink does not have the required first URL argument"
+        )
         return result
-    argument = argument_nodes[0]
+    argument = argument_nodes[0]  # Axios methods may have later body/config arguments.
     if _js_request_source(argument, source):
         result.source_evidence.append(
             SliceLine(argument.start_point.row + 1, _ts_source(argument, source))

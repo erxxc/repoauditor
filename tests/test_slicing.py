@@ -215,3 +215,53 @@ def test_javascript_non_ssrf_mechanism_is_explicitly_unsupported(tmp_path):
     assert evidence.status == "unsupported"
     assert evidence.language == "javascript"
     assert "supports SSRF only" in evidence.limitations[0]
+
+
+@pytest.mark.parametrize(
+    "sink",
+    [
+        "axios.get(target)",
+        "axios.post(target, {preview: true})",
+        "axios.delete(target, {timeout: 1000})",
+    ],
+)
+def test_javascript_axios_url_member_calls_extend_ssrf_slice(tmp_path, sink):
+    (tmp_path / "preview.js").write_text(
+        "async function preview(req) {\n"
+        "  const target = req.query.url;\n"
+        f"  return {sink};\n"
+        "}\n"
+    )
+    finding = _finding(
+        "SSRF [CWE-918]", "preview.js", 3, sink
+    )
+
+    evidence = build_structural_slice(RetrievalIndex().build(tmp_path), finding)
+
+    assert evidence is not None and evidence.status == "local"
+    assert evidence.sink and evidence.sink.source == sink
+    assert "req.query.url" in evidence.source_evidence[0].source
+
+
+@pytest.mark.parametrize(
+    "sink",
+    [
+        "client.get(target)",
+        "axios.request({url: target})",
+        "get(target)",
+    ],
+)
+def test_unapproved_axios_like_shapes_remain_incomplete(tmp_path, sink):
+    (tmp_path / "preview.js").write_text(
+        "async function preview(req) {\n"
+        "  const target = req.query.url;\n"
+        f"  return {sink};\n"
+        "}\n"
+    )
+    finding = _finding("SSRF [CWE-918]", "preview.js", 3, sink)
+
+    evidence = build_structural_slice(RetrievalIndex().build(tmp_path), finding)
+
+    assert evidence is not None
+    assert evidence.status == "incomplete"
+    assert "supported HTTP sink" in evidence.limitations[-1]
