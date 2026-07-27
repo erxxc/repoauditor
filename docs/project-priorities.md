@@ -69,7 +69,7 @@ order so future sessions do not have to reconstruct it from conversation history
 
 - [x] Ship descriptive threshold tradeoff tables that activate at 40 real labels. The
   mechanism is tested; publishing operational evidence still awaits the data gate.
-- [ ] Add the second adjudication reporting view promised by the taxonomy: operational
+- [x] Add the second adjudication reporting view promised by the taxonomy: operational
   actionability and technical validity must be reported separately. The latter treats
   `confirmed_actionable` and `valid_not_actionable` as technically positive while preserving
   abstentions and duplicate exclusions.
@@ -80,8 +80,10 @@ order so future sessions do not have to reconstruct it from conversation history
   partition. Once the held-out repository count supports it, add repository-aware bootstrap
   ranges rather than presenting bare point metrics.
 - [ ] Add temporal validation only after adequate chronological depth exists.
-- [ ] Add an explicit second-review workflow or audit check for disputed/material
-  adjudications, retaining both reviewers' append-only evidence and reporting disagreement.
+- [x] Add an adjudication audit for reassessment, independent-review coverage, and
+  cross-analyst disagreement while retaining append-only evidence. Materiality is not
+  inferred because it is not currently persisted; an enforced material-case second-review
+  workflow remains a possible later schema change.
 - [ ] Break evaluation out by language, mechanism, detector, and detailed disposition only
   when each cohort has enough observations; otherwise label it insufficient.
 - [ ] Characterize repeatability on identical inputs, separating sampling variance from
@@ -116,14 +118,22 @@ order so future sessions do not have to reconstruct it from conversation history
 - [ ] Keep agentic falsification opt-in and deferred until every escalation gate is met:
   protected evaluation, baseline comparison, recall safety, cohort breakdowns, read-only
   tools, and independent deterministic certificate verification.
-- [ ] Remove or clearly retire the unused placeholder `report/templates/memo_v1.md`.
+- [x] Retire the unused placeholder `report/templates/memo_v1.md`; memo generation remains
+  on its single programmatic, benchmarked path.
 
 ## Execution order
 
-1. Produce the formal persistent-store usage comparison; do not raise limits automatically.
-2. Collect controlled human adjudications and freeze the protected baseline.
-3. Add the actionability/technical-validity views and adjudication QA, then activate
-   validation gates only when their evidence floors are met.
-4. Characterize repeatability, then improve slicing/checkable claims.
-5. Add real EPSS/KEV enrichment.
-6. Revisit hierarchical priors, cost calculation, and agentic escalation last.
+Paid model calls and provider-backed tuning are intentionally deferred until the offline
+backlog below is complete. Existing limits remain unchanged during that pause.
+
+1. Retire the unused memo-template placeholder.
+2. Add the actionability/technical-validity views and offline adjudication QA.
+3. Collect controlled human adjudications and freeze the protected baseline.
+4. Keep related-family evaluation partitions and cohort sufficiency gates ready to activate
+   when collection volume supports them.
+5. Audit quantitative input applicability and double-counting offline.
+6. Resume paid work with the formal persistent-store usage comparison; do not raise limits
+   automatically.
+7. Then characterize repeatability and improve model-backed slicing/checkable claims.
+8. Add live EPSS/KEV enrichment only after its offline cache/staleness contract is fixed.
+9. Revisit hierarchical priors, cost calculation, and agentic escalation last.

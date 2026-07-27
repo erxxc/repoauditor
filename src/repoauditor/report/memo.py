@@ -20,11 +20,11 @@ finding or severity. The deal-weighting stays `persist=False` regardless. The ap
 artifact files (markdown + charts) are written to disk by `generate_appendix` as its normal
 output; this module consumes that output rather than reimplementing it.
 
-The flat `templates/memo_v1.md` is a versioned-artifact placeholder (never edited in place,
-per CLAUDE.md). The memo is composed programmatically here — mirroring how
+The memo is composed programmatically here — mirroring how
 `risk_quant._appendix_markdown` builds its artifact — because the top-risks section and the
-embedded appendix are variable-length generated blocks a flat template can't hold. A future
-`memo_v2.md` template could supersede this.
+embedded appendix are variable-length generated blocks a flat template cannot hold.
+The unused `memo_v1.md` placeholder was retired rather than leaving a second, misleading
+presentation path. A future versioned template requires its own benchmarked implementation.
 """
 
 from __future__ import annotations
