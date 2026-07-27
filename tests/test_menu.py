@@ -49,6 +49,24 @@ def test_scan_menu_dispatches_existing_run_command(tmp_config, monkeypatch):
     assert "Equivalent command: repoauditor run /tmp/example" in result.output
 
 
+def test_scan_menu_offers_state_aware_deferred_resume(tmp_config, monkeypatch):
+    monkeypatch.setattr(cli, "get_config", lambda: tmp_config)
+    state = MenuState((RepositoryState("r", "/repo", 0, deferred_findings=3),))
+    monkeypatch.setattr(cli, "load_menu_state", lambda config: state)
+    calls = []
+    monkeypatch.setattr(
+        cli, "resume", lambda repo_id, output_format: calls.append(
+            (repo_id, output_format)
+        ),
+    )
+
+    result = runner.invoke(cli.app, ["menu"], input="2\ny\n1\n")
+
+    assert result.exit_code == 0, result.output
+    assert calls == [("r", cli.RunFormat.HUMAN)]
+    assert "Equivalent command: repoauditor resume r" in result.output
+
+
 def test_finalize_menu_explains_review_block(tmp_config, monkeypatch):
     monkeypatch.setattr(cli, "get_config", lambda: tmp_config)
     state = MenuState((RepositoryState("r", "/repo", 2),))

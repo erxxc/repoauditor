@@ -144,12 +144,16 @@ def record_ingested_repo(repo: IngestedRepo, config: Config | None = None) -> No
         conn.close()
 
 
-def start_pipeline_run(source: str, config: Config | None = None) -> PipelineRun:
+def start_pipeline_run(
+    source: str, config: Config | None = None, *, parent_run_id: int | None = None
+) -> PipelineRun:
     conn = get_connection(config)
     try:
         with conn:
             cur = conn.execute(
-                "INSERT INTO pipeline_run (source, status) VALUES (?, 'running')", (source,)
+                "INSERT INTO pipeline_run (source, status, parent_run_id) "
+                "VALUES (?, 'running', ?)",
+                (source, parent_run_id),
             )
             row = conn.execute("SELECT * FROM pipeline_run WHERE id = ?", (cur.lastrowid,)).fetchone()
         return _pipeline_run_from_row(row)
@@ -317,6 +321,60 @@ def get_pipeline_run(run_id: int, config: Config | None = None) -> PipelineRun |
         conn.close()
 
 
+def get_latest_pipeline_run(
+    repo_id: str, config: Config | None = None, *, commit_hash: str | None = None
+) -> PipelineRun | None:
+    """Return the newest run record for a repository, regardless of status."""
+    conn = get_connection(config)
+    try:
+        if commit_hash is None:
+            row = conn.execute(
+                "SELECT * FROM pipeline_run WHERE repo_id = ? ORDER BY id DESC LIMIT 1",
+                (repo_id,),
+            ).fetchone()
+        else:
+            row = conn.execute(
+                "SELECT * FROM pipeline_run WHERE repo_id = ? AND commit_hash = ? "
+                "ORDER BY id DESC LIMIT 1",
+                (repo_id, commit_hash),
+            ).fetchone()
+        return _pipeline_run_from_row(row) if row else None
+    finally:
+        conn.close()
+
+
+def list_pipeline_run_chain(
+    run_id: int, config: Config | None = None
+) -> list[PipelineRun]:
+    """Return one logical scan's linked batches, root first; fail on a broken cycle."""
+    chain: list[PipelineRun] = []
+    seen: set[int] = set()
+    current = get_pipeline_run(run_id, config)
+    while current is not None:
+        if current.id is None or current.id in seen:
+            raise ValueError(f"invalid pipeline continuation chain at run #{run_id}")
+        seen.add(current.id)
+        chain.append(current)
+        if current.parent_run_id is None:
+            break
+        current = get_pipeline_run(current.parent_run_id, config)
+    return list(reversed(chain))
+
+
+def summarize_model_usage_chain(
+    run_id: int, config: Config | None = None
+) -> tuple[list[PipelineRun], dict[str, int], list[dict[str, int]]]:
+    """Aggregate authoritative usage over a linked continuation chain."""
+    chain = list_pipeline_run_chain(run_id, config)
+    per_run = [summarize_model_usage(item.id, config) for item in chain]
+    keys = (
+        "calls", "input_tokens", "output_tokens", "cache_read_tokens",
+        "cache_write_tokens", "unknown_usage_calls", "latency_ms",
+    )
+    totals = {key: sum(item[key] for item in per_run) for key in keys}
+    return chain, totals, per_run
+
+
 def find_resumable_pipeline_run(
     source: str, config: Config | None = None
 ) -> PipelineRun | None:
@@ -393,6 +451,22 @@ def list_ingested_repos(
             )
         rows = conn.execute(query).fetchall()
         return [IngestedRepo(**dict(row)) for row in rows]
+    finally:
+        conn.close()
+
+
+def get_latest_ingested_repo(
+    repo_id: str, config: Config | None = None
+) -> IngestedRepo | None:
+    """Return the newest immutable snapshot record for one repository id."""
+    conn = get_connection(config)
+    try:
+        row = conn.execute(
+            "SELECT repo_id, source, commit_hash, ingested_at FROM ingested_repo "
+            "WHERE repo_id = ? ORDER BY ingested_at DESC, rowid DESC LIMIT 1",
+            (repo_id,),
+        ).fetchone()
+        return IngestedRepo(**dict(row)) if row else None
     finally:
         conn.close()
 

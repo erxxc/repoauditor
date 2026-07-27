@@ -30,11 +30,13 @@ order so future sessions do not have to reconstruct it from conversation history
   `usage-calibration` report. Paid evidence still requires one successful lightweight run
   and one protected independent pre/post pair after cache/provider access returns. Treat
   the limits as safety ceilings, not statistically calibrated defaults; never auto-raise.
-- [ ] Add a budget-scoped deferred-queue continuation that reuses the immutable ingested
+- [x] Add a budget-scoped deferred-queue continuation that reuses the immutable ingested
   snapshot and completed map/detect/triage evidence without paying to repeat those stages.
-  Until then, rerunning the same source is safe and idempotent but operationally expensive;
-  standalone model-backed stage commands also need the same durable usage scope before they
-  are recommended as the continuation path.
+  Continuation batches have fresh ceilings, durable parent links, and aggregate into one
+  logical scan for calibration.
+- [x] Put every standalone model-backed CLI path inside a durable usage scope: direct
+  map/detect/falsify/normalize, doctor model checks, convergence evaluation, and
+  manufactured-sentinel qualification now share the same ceilings as run/resume/demo.
 
 ## P1 — controlled real-world evidence
 
@@ -49,10 +51,23 @@ order so future sessions do not have to reconstruct it from conversation history
 
 ## P2 — validation maturity
 
-- [ ] At 40 real labels, publish descriptive threshold tradeoff tables.
-- [ ] At 40 labels across eight engagements, activate repository-grouped validation with
-  held-out repositories, class counts, sample size, and uncertainty disclosed.
+- [x] Ship descriptive threshold tradeoff tables that activate at 40 real labels. The
+  mechanism is tested; publishing operational evidence still awaits the data gate.
+- [ ] Add the second adjudication reporting view promised by the taxonomy: operational
+  actionability and technical validity must be reported separately. The latter treats
+  `confirmed_actionable` and `valid_not_actionable` as technically positive while preserving
+  abstentions and duplicate exclusions.
+- [x] Ship repository-grouped validation that activates at 40 labels across eight
+  engagements, with an explicit row-random fallback below the gate. Real held-out evidence
+  still awaits the data gate; metric uncertainty remains open below.
+- [ ] Keep vulnerability families, clones, and pre/post-fix pairs in one evaluation
+  partition. Once the held-out repository count supports it, add repository-aware bootstrap
+  ranges rather than presenting bare point metrics.
 - [ ] Add temporal validation only after adequate chronological depth exists.
+- [ ] Add an explicit second-review workflow or audit check for disputed/material
+  adjudications, retaining both reviewers' append-only evidence and reporting disagreement.
+- [ ] Break evaluation out by language, mechanism, detector, and detailed disposition only
+  when each cohort has enough observations; otherwise label it insufficient.
 - [ ] Characterize repeatability on identical inputs, separating sampling variance from
   retrieval-resolution sensitivity. Report verdict/citation/confidence/token/latency spread.
 - [ ] Expand manufactured controls only where positive and negative mechanisms have
@@ -75,7 +90,8 @@ order so future sessions do not have to reconstruct it from conversation history
   counting.
 - [ ] Follow the prior-scope roadmap: inventory applicability, capture cohort metadata,
   establish data coverage, run prior-predictive/held-out checks, then consider versioned
-  hierarchical priors. Never fabricate subgroup scaling.
+  hierarchical priors. Preserve effective dates and explicitly separate aleatory variability
+  from epistemic uncertainty. Never fabricate subgroup scaling.
 
 ## P5 — gated later capabilities
 
@@ -88,11 +104,13 @@ order so future sessions do not have to reconstruct it from conversation history
 
 ## Execution order
 
-1. Finish P0 provider safeguards and merge authoritative usage accounting.
-2. Diagnose native test instability.
-3. Calibrate operational budgets.
-4. Collect controlled human adjudications and freeze the protected baseline.
-5. Activate validation gates only when their evidence floors are met.
-6. Characterize repeatability, then improve slicing/checkable claims.
-7. Add real EPSS/KEV enrichment.
-8. Revisit hierarchical priors, cost calculation, and agentic escalation last.
+1. Merge the completed P0 provider safeguards, deferred continuation, and authoritative
+   logical-chain usage accounting.
+2. Run the bounded paid lightweight and protected pre/post evidence needed to calibrate
+   operational ceilings; do not raise them automatically.
+3. Collect controlled human adjudications and freeze the protected baseline.
+4. Add the actionability/technical-validity views and adjudication QA, then activate
+   validation gates only when their evidence floors are met.
+5. Characterize repeatability, then improve slicing/checkable claims.
+6. Add real EPSS/KEV enrichment.
+7. Revisit hierarchical priors, cost calculation, and agentic escalation last.

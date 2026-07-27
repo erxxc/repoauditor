@@ -9,6 +9,7 @@ from repoauditor.store import db
 from repoauditor.store.models import (
     Corroboration,
     Finding,
+    IngestedRepo,
     ReviewDecision,
     ReviewDisposition,
     ReviewRequest,
@@ -72,6 +73,7 @@ def test_pre_methodology_database_migrates_without_losing_audit_data(
             "0019_structural_claim_verification.sql",
             "0020_model_usage.sql",
             "0021_finding_identity.sql",
+            "0022_pipeline_run_parent.sql",
     ]
 
     assert db.list_findings("r", tmp_config)[0].id == finding_id
@@ -121,6 +123,7 @@ def test_structural_status_migration_preserves_claim_audit_data(
         "0019_structural_claim_verification.sql",
         "0020_model_usage.sql",
         "0021_finding_identity.sql",
+        "0022_pipeline_run_parent.sql",
     ]
 
     claim = db.list_security_claims(finding_id, tmp_config)[0]
@@ -129,6 +132,25 @@ def test_structural_status_migration_preserves_claim_audit_data(
     assert verification.status.value == "verification_incomplete"
     assert verification.checks == {"source_present": True}
     assert verification.reason == "legacy structural result"
+
+
+def test_latest_ingested_repo_is_scoped_by_repo_id_and_newest_snapshot(tmp_config):
+    db.init_db(tmp_config)
+    db.record_ingested_repo(
+        IngestedRepo(repo_id="acme", source="/src/acme", commit_hash="old"), tmp_config
+    )
+    db.record_ingested_repo(
+        IngestedRepo(repo_id="other", source="/src/other", commit_hash="other"), tmp_config
+    )
+    db.record_ingested_repo(
+        IngestedRepo(repo_id="acme", source="/src/acme", commit_hash="new"), tmp_config
+    )
+
+    latest = db.get_latest_ingested_repo("acme", tmp_config)
+
+    assert latest is not None
+    assert latest.commit_hash == "new"
+    assert db.get_latest_ingested_repo("missing", tmp_config) is None
 
 
 def _f(cfg, *, lens=None, tool=None, sev="high", conf=0.8, desc="", file="app.py",

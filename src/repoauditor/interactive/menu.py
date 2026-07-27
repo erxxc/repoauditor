@@ -18,6 +18,7 @@ class RepositoryState:
     repo_id: str
     source: str
     open_reviews: int
+    deferred_findings: int = 0
 
 
 @dataclass(frozen=True)
@@ -38,6 +39,7 @@ def load_menu_state(config: Config) -> MenuState:
             repo_id=repo.repo_id,
             source=repo.source,
             open_reviews=len(open_review_requests(repo.repo_id, config)),
+            deferred_findings=len(db.list_deferred_findings(repo.repo_id, config)),
         )
         for repo in repositories
     ))
@@ -49,6 +51,8 @@ def render_main_menu(state: MenuState) -> str:
     review_note = (
         f" ({state.open_reviews} pending)" if state.open_reviews else " (none pending)"
     )
+    deferred = sum(repo.deferred_findings for repo in state.repositories)
+    scan_note = f" ({deferred} deferred)" if deferred else ""
     width = 47
 
     def row(label: str) -> str:
@@ -59,7 +63,7 @@ def render_main_menu(state: MenuState) -> str:
         row("RepoAuditor"),
         "├" + "─" * width + "┤",
         row("1. Run guided demo"),
-        row("2. Scan a repository"),
+        row(f"2. Scan or resume a repository{scan_note}"),
         row(f"3. Review pending findings{review_note}"),
         row("4. Finalize reports"),
         row(f"5. View repositories and run history ({repo_count})"),

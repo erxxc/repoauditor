@@ -15,6 +15,8 @@ from typer.testing import CliRunner
 
 from repoauditor import cli
 from repoauditor.config import load_deal_risk, load_priors
+from repoauditor.falsify.outcome import FalsificationOutcome
+from repoauditor.llm import remaining_pipeline_call_capacity
 from repoauditor.review import raise_review_requests
 from repoauditor.store import db
 from repoauditor.store.models import (
@@ -29,7 +31,7 @@ from repoauditor.store.models import (
 runner = CliRunner()
 
 
-def test_falsify_convergence_cli_is_thin_and_supports_json(monkeypatch):
+def test_falsify_convergence_cli_is_thin_and_supports_json(tmp_config, monkeypatch):
     from repoauditor.eval.convergence import ConvergenceResult
 
     result_model = ConvergenceResult(
@@ -49,6 +51,14 @@ def test_falsify_convergence_cli_is_thin_and_supports_json(monkeypatch):
     )
     monkeypatch.setattr(
         cli, "evaluate_finding_convergence", lambda finding_id, config: result_model
+    )
+    monkeypatch.setattr(cli, "get_config", lambda: tmp_config)
+    monkeypatch.setattr(
+        cli.db, "get_finding", lambda finding_id, config: SimpleNamespace(repo_id="r")
+    )
+    monkeypatch.setattr(
+        cli, "_metered_repo_stage",
+        lambda repo_id, stage, fn, config: (fn(), SimpleNamespace(id=1)),
     )
 
     result = runner.invoke(
@@ -408,10 +418,251 @@ def test_run_points_back_to_bounded_queue_when_findings_are_deferred(
     assert result.exit_code == 0, result.output
     assert "2 finding(s) remain deferred" in result.stdout
     assert "not ready for analysis" in result.stdout
-    assert "repoauditor run '/target with spaces'" in result.stdout
+    assert "repoauditor resume acme" in result.stdout
     assert "repoauditor finalize" not in result.stdout
     assert "normalize" not in calls
     assert "checkpoint" not in calls
+
+
+def _resume_fixture(tmp_config, monkeypatch, count=2):
+    monkeypatch.setattr(cli, "get_config", lambda: tmp_config)
+    monkeypatch.setattr(cli, "_preflight", lambda config: cli.PreflightResult())
+    db.init_db(tmp_config)
+    snapshot = tmp_config.raw_dir / "acme" / "abc"
+    snapshot.mkdir(parents=True)
+    db.record_ingested_repo(IngestedRepo(
+        repo_id="acme", source="/original/source", commit_hash="abc"
+    ), tmp_config)
+    root = db.start_pipeline_run("/original/source", tmp_config)
+    db.update_pipeline_run_identity(root.id, "acme", "abc", tmp_config)
+    db.finish_pipeline_run(root.id, cli.RunStatus.COMPLETED, config=tmp_config)
+    ids = [
+        db.insert_finding(Finding(
+            repo_id="acme", title=f"candidate-{index}", file="app.py",
+            line_start=index, line_end=index, citation_snippet=f"sink-{index}",
+            source_lens="owasp", confidence=0.8, severity="high",
+            falsification_status=FalsificationStatus.DEFERRED,
+        ), tmp_config)
+        for index in range(1, count + 1)
+    ]
+    return ids
+
+
+def test_resume_uses_fresh_budget_without_repeating_upstream_stages(
+    tmp_config, monkeypatch
+):
+    ids = _resume_fixture(tmp_config, monkeypatch)
+    observed = {}
+
+    class Batch(list):
+        deferred_count = 1
+
+    def falsify(repo_id, config):
+        observed["capacity"] = remaining_pipeline_call_capacity(config)
+        db.update_falsification(
+            ids[0], FalsificationStatus.CONFIRMED, "confirmed in batch", config
+        )
+        return Batch([FalsificationOutcome(
+            status=FalsificationStatus.CONFIRMED, rationale="confirmed in batch"
+        )])
+
+    monkeypatch.setattr(cli, "_falsify_stage", falsify)
+    monkeypatch.setattr(
+        cli, "_map_stage", lambda *args, **kwargs: pytest.fail("map must not repeat")
+    )
+    monkeypatch.setattr(
+        cli, "_detect_stage", lambda *args, **kwargs: pytest.fail("detect must not repeat")
+    )
+    monkeypatch.setattr(
+        cli, "_triage_stage", lambda *args, **kwargs: pytest.fail("triage must not repeat")
+    )
+    monkeypatch.setattr(
+        cli, "_normalize_stage",
+        lambda *args, **kwargs: pytest.fail("normalize waits for an empty backlog"),
+    )
+
+    result = runner.invoke(cli.app, ["resume", "acme"])
+
+    assert result.exit_code == 0, result.output
+    assert observed["capacity"] == tmp_config.llm.max_calls_per_pipeline_run
+    assert "backlog 2 -> 1" in result.stdout
+    assert "Next: repoauditor resume acme" in result.stdout
+    pipeline = db.list_pipeline_runs(tmp_config, repo_id="acme")[0]
+    assert pipeline.source == "/original/source"
+    assert pipeline.commit_hash == "abc"
+    assert pipeline.parent_run_id is not None
+    assert [item.id for item in db.list_pipeline_run_chain(pipeline.id, tmp_config)] == [
+        pipeline.parent_run_id, pipeline.id
+    ]
+    assert [stage.stage for stage in db.list_stage_runs(pipeline.id, tmp_config)] == [
+        "falsify"
+    ]
+
+
+def test_resume_clears_backlog_then_normalizes_and_opens_checkpoint_ndjson(
+    tmp_config, monkeypatch
+):
+    ids = _resume_fixture(tmp_config, monkeypatch)
+    calls = []
+
+    class Batch(list):
+        deferred_count = 0
+
+    def falsify(repo_id, config):
+        calls.append("falsify")
+        for finding_id in ids:
+            db.update_falsification(
+                finding_id, FalsificationStatus.CONFIRMED, "confirmed", config
+            )
+        return Batch([
+            FalsificationOutcome(
+                status=FalsificationStatus.CONFIRMED, rationale="confirmed"
+            )
+            for _ in ids
+        ])
+
+    monkeypatch.setattr(cli, "_falsify_stage", falsify)
+    monkeypatch.setattr(
+        cli, "_normalize_stage",
+        lambda repo_id, config: (
+            calls.append("normalize"), db.list_findings(repo_id, config)
+        )[1],
+    )
+    monkeypatch.setattr(
+        cli, "raise_review_requests",
+        lambda repo_id, config, **kwargs: (calls.append("checkpoint"), [])[1],
+    )
+    monkeypatch.setattr(cli, "open_review_requests", lambda repo_id, config: [])
+
+    result = runner.invoke(cli.app, ["resume", "acme", "--format", "ndjson"])
+
+    assert result.exit_code == 0, result.output
+    events = [json.loads(line) for line in result.stdout.splitlines()]
+    assert calls == ["falsify", "normalize", "checkpoint"]
+    assert [event["stage"] for event in events if event["status"] == "started"] == [
+        "preflight", "falsify", "normalize", "review checkpoint"
+    ]
+    assert events[-1]["stage"] == "resume"
+    assert events[-1]["deferred_findings"] == 0
+    assert events[-1]["next_command"] == "repoauditor finalize acme"
+
+
+def test_resume_failure_is_attributed_to_its_fresh_pipeline_run(
+    tmp_config, monkeypatch
+):
+    _resume_fixture(tmp_config, monkeypatch, count=1)
+    monkeypatch.setattr(
+        cli, "_falsify_stage",
+        lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError("provider timeout")),
+    )
+
+    result = runner.invoke(cli.app, ["resume", "acme"])
+
+    assert result.exit_code == 1
+    assert "pipeline failed at falsify: RuntimeError: provider timeout" in result.output
+    pipeline = db.list_pipeline_runs(tmp_config, repo_id="acme")[0]
+    assert pipeline.status.value == "failed"
+    assert pipeline.failed_stage == "falsify"
+
+
+@pytest.mark.parametrize(
+    ("command", "stage_attr", "stage_name"),
+    [
+        ("map", "_map_stage", "map"),
+        ("detect", "_detect_stage", "detect"),
+        ("normalize", "_normalize_stage", "normalize"),
+    ],
+)
+def test_standalone_model_stage_has_fresh_durable_budget(
+    tmp_config, monkeypatch, command, stage_attr, stage_name
+):
+    _resume_fixture(tmp_config, monkeypatch, count=0)
+    observed = {}
+
+    def invoke(repo_id, config):
+        observed["capacity"] = remaining_pipeline_call_capacity(config)
+        return []
+
+    monkeypatch.setattr(cli, stage_attr, invoke)
+    result = runner.invoke(cli.app, [command, "acme"])
+
+    assert result.exit_code == 0, result.output
+    assert observed["capacity"] == tmp_config.llm.max_calls_per_pipeline_run
+    pipeline = db.list_pipeline_runs(tmp_config, repo_id="acme")[0]
+    assert pipeline.status.value == "completed"
+    assert pipeline.parent_run_id is None
+    assert [item.stage for item in db.list_stage_runs(pipeline.id, tmp_config)] == [
+        stage_name
+    ]
+
+
+def test_standalone_falsify_is_metered_and_points_to_resume(
+    tmp_config, monkeypatch
+):
+    _resume_fixture(tmp_config, monkeypatch, count=1)
+    observed = {}
+
+    class Batch(list):
+        deferred_count = 1
+
+    def invoke(repo_id, config):
+        observed["capacity"] = remaining_pipeline_call_capacity(config)
+        return Batch()
+
+    monkeypatch.setattr(cli, "_falsify_stage", invoke)
+    result = runner.invoke(cli.app, ["falsify", "acme"])
+
+    assert result.exit_code == 0, result.output
+    assert observed["capacity"] == tmp_config.llm.max_calls_per_pipeline_run
+    assert "Next: repoauditor resume acme" in result.stdout
+    pipeline = db.list_pipeline_runs(tmp_config, repo_id="acme")[0]
+    assert pipeline.parent_run_id is None
+    assert db.list_stage_runs(pipeline.id, tmp_config)[0].stage == "falsify"
+
+
+def test_doctor_model_probe_has_durable_budget_scope(tmp_config, monkeypatch):
+    monkeypatch.setattr(cli, "get_config", lambda: tmp_config)
+    monkeypatch.setattr(cli, "_preflight", lambda config: cli.PreflightResult())
+    observed = {}
+
+    def probe(config):
+        observed["capacity"] = remaining_pipeline_call_capacity(config)
+        return SimpleNamespace(
+            ready=True, error=None, provider="anthropic", model="test",
+            response_format="json_schema",
+        )
+
+    monkeypatch.setattr(cli, "check_model", probe)
+    result = runner.invoke(cli.app, ["doctor", "--check-model"])
+
+    assert result.exit_code == 0, result.output
+    assert observed["capacity"] == tmp_config.llm.max_calls_per_pipeline_run
+    pipeline = db.list_pipeline_runs(tmp_config)[0]
+    assert pipeline.source == "diagnostic:model-check"
+    assert db.list_stage_runs(pipeline.id, tmp_config)[0].stage == "doctor"
+
+
+def test_qualification_evaluation_has_durable_budget_scope(tmp_config, monkeypatch):
+    monkeypatch.setattr(cli, "get_config", lambda: tmp_config)
+    observed = {}
+    fake = SimpleNamespace(
+        qualified=True,
+        model_dump_json=lambda **kwargs: '{"qualified": true}',
+    )
+
+    def evaluate(*args, **kwargs):
+        observed["capacity"] = remaining_pipeline_call_capacity(tmp_config)
+        return fake
+
+    monkeypatch.setattr(cli, "evaluate_manufactured_sentinels", evaluate)
+    monkeypatch.setattr(cli, "render_sentinel_qualification", lambda value: "qualified")
+    result = runner.invoke(cli.app, ["qualify-instrument"])
+
+    assert result.exit_code == 0, result.output
+    assert observed["capacity"] == tmp_config.llm.max_calls_per_pipeline_run
+    pipeline = db.list_pipeline_runs(tmp_config)[0]
+    assert pipeline.source == "evaluation:manufactured-sentinels"
+    assert db.list_stage_runs(pipeline.id, tmp_config)[0].stage == "qualify-instrument"
 
 
 def test_run_ndjson_emits_parseable_stage_events(tmp_config, monkeypatch):
@@ -494,28 +745,20 @@ def test_run_resumes_after_last_completed_stage(tmp_config, monkeypatch):
 
 def test_individual_stage_failure_is_concise(tmp_config, monkeypatch):
     monkeypatch.setattr(cli, "get_config", lambda: tmp_config)
-    monkeypatch.setattr(
-        cli,
-        "_map_stage",
-        lambda repo_id, config: (_ for _ in ()).throw(
-            FileNotFoundError(f"no ingested snapshot for {repo_id}")
-        ),
-    )
-
     result = runner.invoke(cli.app, ["map", "missing-repo"])
 
     assert result.exit_code == 1
-    assert "map failed: FileNotFoundError: no ingested snapshot for missing-repo" in result.output
+    assert "map failed: FileNotFoundError: no ingested repository named missing-repo" in result.output
     assert "Traceback" not in result.output
 
 
 def test_debug_preserves_unexpected_exception(tmp_config, monkeypatch):
-    monkeypatch.setattr(cli, "get_config", lambda: tmp_config)
+    _resume_fixture(tmp_config, monkeypatch, count=0)
     monkeypatch.setattr(
         cli, "_detect_stage", lambda repo_id, config: (_ for _ in ()).throw(RuntimeError("boom"))
     )
 
-    result = runner.invoke(cli.app, ["--debug", "detect", "r"])
+    result = runner.invoke(cli.app, ["--debug", "detect", "acme"])
 
     assert result.exit_code == 1
     assert isinstance(result.exception, RuntimeError)
@@ -589,7 +832,7 @@ def test_finalize_refuses_deferred_findings_before_reporting(tmp_config, monkeyp
     assert result.exit_code == 1
     assert f"#{deferred_id}" in result.output
     assert "have not been falsified yet" in result.output
-    assert "repoauditor run <same-source>" in result.output
+    assert "repoauditor resume r" in result.output
 
 
 def test_finalize_runs_quantify_and_both_reports(tmp_config, monkeypatch):

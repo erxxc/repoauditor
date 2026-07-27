@@ -56,8 +56,9 @@ Only after the provider allowance and protected cache are available:
    their declared commits.
 2. Run one fresh foreground pipeline over the lightweight snapshot.
 3. Run one fresh foreground pipeline over each protected pre/post snapshot.
-4. Record the three pipeline run IDs. Review/finalize is not required for usage calibration;
-   the measured scope is the existing run-through-review-checkpoint contract.
+4. If a run stops with a deferred backlog, use `repoauditor resume <repo-id>` until the
+   backlog reaches zero. Record the **terminal run id** for each logical scan. Linked
+   continuation batches are aggregated automatically; review/finalize is not required.
 5. Produce the offline comparison:
 
 ```sh
@@ -68,9 +69,12 @@ uv run repoauditor usage-calibration \
   --format json
 ```
 
-The command makes no provider calls. It fails closed unless all three runs completed, each
-recorded provider calls, and every call returned token metadata. It reports utilization of
-the current 75-call/250,000-token ceilings but never recommends or applies a new limit.
+The command makes no provider calls. It fails closed unless the terminal batch completed,
+the terminal falsify stage has no deferred findings, the logical scan recorded provider
+calls, and every call returned token metadata. Intermediate recovered-failure statuses
+remain disclosed in the chain and their usage is retained. The report shows total chain
+usage plus peak single-batch utilization of the current 75-call/250,000-token ceilings, but
+never recommends or applies a new limit.
 
 ## Analyst decision after collection
 
