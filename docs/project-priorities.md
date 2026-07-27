@@ -43,6 +43,10 @@ order so future sessions do not have to reconstruct it from conversation history
     usage in the terminal artifact, and cover failure plus multi-batch success offline.
   - [ ] Rerun `live-lightweight` under the unchanged ceilings and inspect its completed
     artifact before authorizing the protected pre/post pair.
+    The first continuation-enabled rerun used four batches, 74 calls, and 238,555 known
+    tokens, then stopped with eight deferred findings. Six total batches are approved for
+    the next lightweight attempt based on the observed four-findings-per-continuation rate;
+    per-batch ceilings and the 20-minute timeout remain unchanged.
 - [x] Add a budget-scoped deferred-queue continuation that reuses the immutable ingested
   snapshot and completed map/detect/triage evidence without paying to repeat those stages.
   Continuation batches have fresh ceilings, durable parent links, and aggregate into one

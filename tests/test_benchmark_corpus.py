@@ -120,8 +120,8 @@ def _run_live_pipeline(
     benchmark_repo, config, *, max_batches: int,
 ) -> str:
     """Run upstream once, then use only production continuation until the queue closes."""
-    if not 1 <= max_batches <= 4:
-        raise ValueError("REPOAUDITOR_UAT_MAX_BATCHES must be between 1 and 4")
+    if not 1 <= max_batches <= 6:
+        raise ValueError("REPOAUDITOR_UAT_MAX_BATCHES must be between 1 and 6")
     source = str(benchmark_repo.snapshot_path)
     cli.run(source, cli.RunFormat.NDJSON, fresh=True)
     ingested = [
@@ -550,9 +550,9 @@ def test_corpus_live_baseline(tmp_config, benchmark_repo, capsys, monkeypatch):
     db.init_db(tmp_config)
     monkeypatch.setattr(cli, "get_config", lambda: tmp_config)
     artifact_path = os.environ.get("REPOAUDITOR_UAT_RESULTS")
-    max_batches = int(os.environ.get("REPOAUDITOR_UAT_MAX_BATCHES", "4"))
-    if not 1 <= max_batches <= 4:
-        raise ValueError("REPOAUDITOR_UAT_MAX_BATCHES must be between 1 and 4")
+    max_batches = int(os.environ.get("REPOAUDITOR_UAT_MAX_BATCHES", "6"))
+    if not 1 <= max_batches <= 6:
+        raise ValueError("REPOAUDITOR_UAT_MAX_BATCHES must be between 1 and 6")
     repo_id: str | None = None
     try:
         repo_id = _run_live_pipeline(
