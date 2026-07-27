@@ -108,8 +108,10 @@ order so future sessions do not have to reconstruct it from conversation history
 
 - [ ] Add dated, cached EPSS and KEV enrichment only for real CVE-backed findings. Define
   stale/offline behavior and retain the labeled industry fallback when no signal exists.
-- [ ] Audit EPSS, KEV, exposure, control strength, and loss-scale adjustments for double
-  counting.
+- [~] Audit EPSS, KEV, exposure, control strength, loss scale, and baseline applicability
+  for double counting. The read-only `quant-audit` now exposes scope gaps and confirmed that
+  the organization-level IRIS frequency baseline is repeated per finding within a scenario.
+  The model correction is blocked pending a sourced allocation/decomposition decision.
 - [ ] Follow the prior-scope roadmap: inventory applicability, capture cohort metadata,
   establish data coverage, run prior-predictive/held-out checks, then consider versioned
   hierarchical priors. Preserve effective dates and explicitly separate aleatory variability
