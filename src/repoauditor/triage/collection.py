@@ -56,6 +56,9 @@ class CollectionStatus:
     reassessed_findings: int = 0
     independently_reviewed_findings: int = 0
     cross_analyst_disagreements: int = 0
+    material_confirmed: int = 0
+    material_pending: int = 0
+    material_disagreements: int = 0
     dimension_cohorts: dict[str, dict[str, int | bool]] = field(default_factory=dict)
     language_cohorts: dict[str, dict[str, int | bool]] = field(default_factory=dict)
     detector_cohorts: dict[str, dict[str, int | bool]] = field(default_factory=dict)
@@ -141,6 +144,36 @@ def _review_audit(assessments: list[TriageAssessment]) -> tuple[int, int, int]:
         }
         disagreements += len(positions) > 1
     return reassessed, independently_reviewed, disagreements
+
+
+def _material_review_audit(
+    assessments: list[TriageAssessment],
+) -> tuple[int, int, int]:
+    """Report the explicit two-analyst gate without inferring materiality."""
+    by_finding: dict[int, list[TriageAssessment]] = {}
+    for assessment in assessments:
+        if assessment.material:
+            by_finding.setdefault(assessment.finding_id, []).append(assessment)
+    confirmed = pending = disagreements = 0
+    for history in by_finding.values():
+        latest_by_analyst = {
+            assessment.analyst: assessment for assessment in history
+        }
+        positions = Counter(
+            (
+                assessment.disposition.value
+                if assessment.disposition is not None
+                else assessment.outcome.value
+            )
+            for assessment in latest_by_analyst.values()
+            if assessment.outcome is not TriageAssessmentOutcome.UNCERTAIN
+        )
+        if any(count >= 2 for count in positions.values()):
+            confirmed += 1
+        else:
+            pending += 1
+            disagreements += len(positions) > 1
+    return confirmed, pending, disagreements
 
 
 def _cohort_sufficiency(
@@ -232,6 +265,9 @@ def collection_status(
         duplicates,
     ) = _adjudication_views(list(latest_by_finding.values()))
     reassessed, independently_reviewed, disagreements = _review_audit(assessments)
+    material_confirmed, material_pending, material_disagreements = (
+        _material_review_audit(assessments)
+    )
     dimension_cohorts, disposition_counts = _cohort_sufficiency(
         list(latest_by_finding.values())
     )
@@ -269,6 +305,9 @@ def collection_status(
         reassessed_findings=reassessed,
         independently_reviewed_findings=independently_reviewed,
         cross_analyst_disagreements=disagreements,
+        material_confirmed=material_confirmed,
+        material_pending=material_pending,
+        material_disagreements=material_disagreements,
         dimension_cohorts=dimension_cohorts,
         language_cohorts=language_cohorts,
         detector_cohorts=detector_cohorts,
@@ -299,6 +338,9 @@ def render_collection_status(status: CollectionStatus) -> str:
         f"reassessed={status.reassessed_findings}, independently reviewed="
         f"{status.independently_reviewed_findings}, cross-analyst disagreements="
         f"{status.cross_analyst_disagreements}",
+        "material-review gate: "
+        f"confirmed={status.material_confirmed}, pending={status.material_pending}, "
+        f"disagreements={status.material_disagreements}",
         "label sources: " + (
             ", ".join(f"{key}={value}" for key, value in status.source_counts.items())
             or "none"

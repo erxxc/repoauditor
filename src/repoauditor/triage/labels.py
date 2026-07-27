@@ -178,6 +178,8 @@ def assess_finding(
     analyst: str,
     dimensions: list[str] | None = None,
     config: Config | None = None,
+    *,
+    material: bool = False,
 ) -> tuple[TriageAssessment, TriageLabel | None]:
     """Record an auditable analyst assessment and optionally produce a binary label.
 
@@ -217,12 +219,29 @@ def assess_finding(
     assessment = TriageAssessment(
         finding_id=finding_id, engagement=record.engagement, outcome=outcome,
         disposition=disposition, rationale=rationale, analyst=analyst,
-        dimensions=clean_dimensions,
+        material=material, dimensions=clean_dimensions,
     )
     assessment_id = db.insert_triage_assessment(assessment, config)
     assessment = assessment.model_copy(update={"id": assessment_id})
     if outcome is TriageAssessmentOutcome.UNCERTAIN:
         return assessment, None
+    if material:
+        latest_by_analyst = {
+            item.analyst: item
+            for item in db.list_triage_assessments(record.engagement, config)
+            if item.finding_id == finding_id and item.material
+        }
+        independently_confirmed = any(
+            item.analyst != analyst
+            and item.outcome is outcome
+            and item.disposition is disposition
+            for item in latest_by_analyst.values()
+        )
+        if not independently_confirmed:
+            db.delete_triage_label_projection(
+                record.engagement, record.fingerprint, config
+            )
+            return assessment, None
     label = label_finding(
         finding_id,
         actionable=outcome is TriageAssessmentOutcome.TRUE_POSITIVE,

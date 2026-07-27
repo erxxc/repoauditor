@@ -86,17 +86,19 @@ order so future sessions do not have to reconstruct it from conversation history
   ranges rather than presenting bare point metrics.
 - [ ] Add temporal validation only after adequate chronological depth exists.
 - [x] Add an adjudication audit for reassessment, independent-review coverage, and
-  cross-analyst disagreement while retaining append-only evidence. Materiality is not
-  inferred because it is not currently persisted; an enforced material-case second-review
-  workflow remains a possible later schema change.
+  cross-analyst disagreement while retaining append-only evidence. Analyst-declared
+  materiality is persisted and a matching disposition from a second distinct analyst is
+  required before classifier training; materiality is never inferred.
 - [x] Gate cohort views on adequate decided observations and both classes. Analyst-declared
   mechanism dimensions, detailed dispositions, and explicitly persisted SARIF
   language/detector cohorts are reported. Unavailable metadata remains visible and is never
   inferred from rule names or file extensions.
 - [ ] Characterize repeatability on identical inputs, separating sampling variance from
   retrieval-resolution sensitivity. Report verdict/citation/confidence/token/latency spread.
-- [ ] Expand manufactured controls only where positive and negative mechanisms have
-  independently checkable ground truth.
+- [x] Expand manufactured controls only where positive and negative mechanisms have
+  independently checkable ground truth. Eight zero-token certificate controls now cover
+  JS/TS SSRF, JS/TS command injection, Java SSRF, and authorization-versus-authentication
+  semantics without expanding the paid weekly sentinel cohort.
 
 ## P3 — nonstandard-finding optimization
 
@@ -165,15 +167,17 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
    checker contract. Authorization effectiveness, non-Flask registration, further
    client/mechanism enumeration, cross-file data flow, and Ruby support are deferred until
    corpus results justify them; explicit unsupported/incomplete outcomes remain the default.
-3. Expand manufactured positive/negative controls only for mechanisms with independently
-   checkable ground truth. Fixture construction and deterministic checks are offline; live
-   provider qualification remains deferred.
-4. Add prior cohort metadata and effective dates without changing distributions. Define the
-   representation of aleatory variability versus epistemic uncertainty before adding any
-   hierarchical prior.
-5. Decide whether material adjudications need an explicit persisted materiality marker and
-   enforced second-review gate; current QA can report disagreement but cannot infer
-   materiality.
+3. [x] Expand manufactured positive/negative controls only for mechanisms with independently
+   checkable ground truth. Eight fast-lane, zero-token controls cover the bounded
+   multi-language certificates and authorization/authentication distinction; live provider
+   qualification remains separate and deferred.
+4. [x] Persist prior target-population and temporal-scope fields without changing
+   distributions. Aleatory representations and unquantified epistemic limitations are
+   separate. Exact effective date/data vintage remain null—and visibly warned by
+   `quant-audit`—because the configured citation does not establish them.
+5. [x] Persist analyst-declared materiality and enforce a matching review by a second,
+   distinct analyst before a material disposition enters classifier training. Materiality
+   is never inferred; pending and disputed reviews remain visible in `triage-collection`.
 
 ### B — evidence/data gated
 
@@ -204,3 +208,11 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
 4. Add provider dollar cost only from a dated, versioned provider/model price source.
 5. Consider agentic falsification only after every gate in
    [agentic-escalation-gate.md](agentic-escalation-gate.md) is satisfied.
+
+## Pre-tuning checkpoint
+
+The current evidence-backed decision is recorded in
+[pre-tuning-readiness.md](pre-tuning-readiness.md). Tuning is on hold: the local persistent
+store has no usable human-label cohort or completed same-store three-run calibration,
+repeatability is uncharacterized, and the organization-frequency defect remains
+methodology-blocking. This hold is the priority-10 decision, not an incomplete tuning run.

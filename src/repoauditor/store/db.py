@@ -1109,6 +1109,24 @@ def list_triage_labels(
         conn.close()
 
 
+def delete_triage_label_projection(
+    engagement: str,
+    finding_fingerprint: str,
+    config: Config | None = None,
+) -> None:
+    """Remove an effective training projection while retaining assessment evidence."""
+    conn = get_connection(config)
+    try:
+        with conn:
+            conn.execute(
+                "DELETE FROM triage_label "
+                "WHERE engagement = ? AND finding_fingerprint = ?",
+                (engagement, finding_fingerprint),
+            )
+    finally:
+        conn.close()
+
+
 def insert_triage_assessment(
     assessment: TriageAssessment, config: Config | None = None
 ) -> int:
@@ -1118,12 +1136,13 @@ def insert_triage_assessment(
         with conn:
             cur = conn.execute(
                 "INSERT INTO triage_assessment "
-                "(finding_id, engagement, outcome, disposition, rationale, analyst, dimensions) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?)",
+                "(finding_id, engagement, outcome, disposition, rationale, analyst, "
+                " material, dimensions) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
                 (
                     assessment.finding_id, assessment.engagement, str(assessment.outcome),
                     str(assessment.disposition) if assessment.disposition else None,
                     assessment.rationale, assessment.analyst,
+                    int(assessment.material),
                     json.dumps(assessment.dimensions),
                 ),
             )
@@ -1151,7 +1170,8 @@ def list_triage_assessments(
             disposition=(
                 TriageDisposition(row["disposition"]) if row["disposition"] else None
             ),
-            analyst=row["analyst"], dimensions=json.loads(row["dimensions"]),
+            analyst=row["analyst"], material=bool(row["material"]),
+            dimensions=json.loads(row["dimensions"]),
             created_at=row["created_at"],
         ) for row in rows]
     finally:
@@ -1602,10 +1622,14 @@ def insert_prior_source(ps: PriorSource, config: Config | None = None) -> int:
         with conn:
             cur = conn.execute(
                 "INSERT INTO prior_source (kind, param_path, source, detail, publication, "
-                " edition, locator, url, transformation, provenance_status) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                " edition, locator, url, transformation, provenance_status, "
+                " target_population, effective_date, data_vintage, "
+                " aleatory_representation, epistemic_status) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (ps.kind, ps.param_path, ps.source, ps.detail, ps.publication,
-                 ps.edition, ps.locator, ps.url, ps.transformation, ps.provenance_status),
+                 ps.edition, ps.locator, ps.url, ps.transformation, ps.provenance_status,
+                 ps.target_population, ps.effective_date, ps.data_vintage,
+                 ps.aleatory_representation, ps.epistemic_status),
             )
         return int(cur.lastrowid)
     finally:
@@ -1630,6 +1654,11 @@ def list_prior_sources(config: Config | None = None) -> list[PriorSource]:
                 url=r["url"],
                 transformation=r["transformation"],
                 provenance_status=r["provenance_status"],
+                target_population=r["target_population"],
+                effective_date=r["effective_date"],
+                data_vintage=r["data_vintage"],
+                aleatory_representation=r["aleatory_representation"],
+                epistemic_status=r["epistemic_status"],
             )
             for r in rows
         ]

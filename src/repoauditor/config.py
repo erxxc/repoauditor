@@ -216,6 +216,11 @@ class MagnitudePrior(BaseModel):
     url: str
     transformation: str
     detail: str | None = None
+    target_population: str | None = None
+    effective_date: str | None = None
+    data_vintage: str | None = None
+    aleatory_representation: str | None = None
+    epistemic_status: str | None = None
 
     @model_validator(mode="after")
     def _p95_exceeds_median(self) -> "MagnitudePrior":
@@ -235,6 +240,11 @@ class FrequencyPrior(BaseModel):
     url: str
     transformation: str
     detail: str | None = None
+    target_population: str | None = None
+    effective_date: str | None = None
+    data_vintage: str | None = None
+    aleatory_representation: str | None = None
+    epistemic_status: str | None = None
 
 
 class BetaPrior(BaseModel):

@@ -972,6 +972,10 @@ def triage_label(
     dimension: list[str] = typer.Option(
         None, "--dimension", help="Repeatable analyst-declared coverage dimension."
     ),
+    material: bool = typer.Option(
+        False, "--material",
+        help="Mark as material; requires matching review by a second analyst before training."
+    ),
 ) -> None:
     """Record a reasoned analyst assessment; uncertain assessments do not train."""
     try:
@@ -992,11 +996,21 @@ def triage_label(
             analyst or getpass.getuser(),
             dimension,
             get_config(),
+            material=material,
         )
     except ValueError as exc:
         typer.secho(str(exc), fg=typer.colors.RED, err=True)
         raise typer.Exit(code=1)
     if label is None:
+        if assessment.material and (
+            assessment.outcome is not TriageAssessmentOutcome.UNCERTAIN
+        ):
+            typer.echo(
+                f"recorded material assessment #{assessment.id}: finding #{finding_id} "
+                "is withheld from classifier training pending a matching review by a "
+                "second analyst."
+            )
+            return
         typer.echo(
             f"recorded assessment #{assessment.id}: finding #{finding_id} remains "
             f"{assessment.disposition.value} and was excluded from classifier training."

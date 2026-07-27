@@ -300,6 +300,7 @@ class TriageAssessment(BaseModel):
     disposition: TriageDisposition | None = None
     rationale: str = Field(min_length=1)
     analyst: str = Field(min_length=1)
+    material: bool = False
     dimensions: list[str] = Field(default_factory=list)
     created_at: str | None = None
 
@@ -456,6 +457,11 @@ class PriorSource(BaseModel):
     url: str | None = None
     transformation: str | None = None
     provenance_status: str = "verified"
+    target_population: str | None = None
+    effective_date: str | None = None
+    data_vintage: str | None = None
+    aleatory_representation: str | None = None
+    epistemic_status: str | None = None
 
     @model_validator(mode="after")
     def _verified_provenance_is_exact(self) -> "PriorSource":

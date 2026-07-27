@@ -211,6 +211,10 @@ def test_build_scenarios_excludes_killed_and_writes_prior_sources(cfg):
         and ps.locator and ps.url and ps.transformation
         for ps in sources
     )
+    assert all(ps.target_population for ps in sources)
+    assert all(ps.aleatory_representation for ps in sources)
+    assert all(ps.epistemic_status for ps in sources)
+    assert all(ps.effective_date is None and ps.data_vintage is None for ps in sources)
     paths = {ps.param_path for ps in sources}
     assert any(p.startswith("magnitude.") for p in paths)
     assert any(p.startswith("frequency.") for p in paths)

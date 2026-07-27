@@ -357,7 +357,10 @@ effective mitigations, duplicates, and technically valid-but-non-actionable issu
 [adjudication taxonomy and evaluation protocol](docs/adjudication-taxonomy.md).
 `insufficient_evidence` (and legacy `uncertain`) assessments are retained in an append-only
 audit history but never enter model training. Decided outcomes update the effective manual
-binary label. Repeat `--dimension` with analyst-verified coverage descriptors such as
+binary label. For a material case, add `--material`: the assessment remains withheld until
+a second distinct analyst records the same detailed disposition. Materiality is explicit,
+never inferred from severity, and disagreement remains visible rather than becoming a
+training label. Repeat `--dimension` with analyst-verified coverage descriptors such as
 `business-logic`, `authorization`, `tenant-isolation`, `multi-service`, `ci-iac`,
 `agent-tool-boundary`, `dependency`, `secret`, `dead-code`, `safe-control`, or `near-miss`.
 These values are declared, not guessed from a scanner rule name. The controlled activation
@@ -542,6 +545,8 @@ claims are documented in
 [docs/security-claim-certificates.md](docs/security-claim-certificates.md).
 The current cross-project sequence and evidence gates are recorded in
 [docs/project-priorities.md](docs/project-priorities.md).
+The current evidence-backed hold/advance decision before any parameter tuning is recorded in
+[docs/pre-tuning-readiness.md](docs/pre-tuning-readiness.md).
 Offline preparation and the exact later paid-calibration sequence are documented in
 [docs/offline-readiness-runbook.md](docs/offline-readiness-runbook.md).
 

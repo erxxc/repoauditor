@@ -23,6 +23,11 @@ magnitude:
     url: "https://www.cyentia.com/wp-content/uploads/IRIS-2022_Cyentia.pdf"
     transformation: "Fit Lognormal(mu,sigma) with published median=exp(mu) and published p95=exp(mu+z_0.95*sigma); model-implied p05=exp(mu-z_0.95*sigma)."
     detail: "All-event, all-sector baseline: 1,893 publicly recorded loss events; amounts inflation-adjusted by the study. It is not category- or organization-specific."
+    target_population: "Publicly recorded loss events across all represented sectors; not a category-, organization-, geography-, or architecture-specific cohort."
+    effective_date:
+    data_vintage:
+    aleatory_representation: "Lognormal event-to-event loss variability fitted to the published median and p95."
+    epistemic_status: "Applicability and parameter uncertainty are not quantified by this configuration; edition is not treated as an effective date or data vintage."
 
 frequency:
   industry_baseline:
@@ -34,3 +39,8 @@ frequency:
     url: "https://www.cyentia.com/wp-content/uploads/IRIS-2022_Cyentia.pdf"
     transformation: "Conditional Poisson rate lambda=-ln(1-p), using published modeled P(N>=1)=0.129 for a one-year horizon."
     detail: "All-event industry baseline for organizations over $10M revenue; upper-bound model. Used because no organization-specific frequency or real CVE EPSS/KEV enrichment exists."
+    target_population: "Organizations over $10M revenue in the all-event industry baseline; not organization-, geography-, sector-, or architecture-specific."
+    effective_date:
+    data_vintage:
+    aleatory_representation: "Poisson trial-to-trial event-count variability using the transformed annual probability."
+    epistemic_status: "Applicability and rate-estimation uncertainty are not quantified by this configuration; edition is not treated as an effective date or data vintage."

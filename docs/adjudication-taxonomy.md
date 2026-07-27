@@ -27,8 +27,16 @@ disproving condition or control where relevant, and any deployment assumption. A
 model must not adjudicate its own output. Ambiguous cases remain `insufficient_evidence`;
 they are not converted to negatives to improve apparent precision.
 
-For disputed or material cases, use a second human reviewer and retain corrections as later
-assessment rows. Never rewrite the earlier assessment.
+For disputed cases, use a second human reviewer and retain corrections as later assessment
+rows. Never rewrite the earlier assessment.
+
+Materiality is analyst-declared with `triage-label --material`; it is never inferred from
+severity or modeled loss. A binary material assessment is withheld from classifier training
+until a second, distinct analyst records the same detailed disposition. Repeated review by
+the same analyst does not satisfy the gate, and cross-analyst disagreement remains withheld.
+The append-only assessments remain the audit record while the effective binary label is only
+projected after agreement. `triage-collection` reports confirmed, pending, and disputed
+material-review counts.
 
 ## Reporting views
 

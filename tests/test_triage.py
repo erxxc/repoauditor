@@ -428,6 +428,76 @@ def test_insufficient_evidence_persists_without_training_label(cfg, tmp_path):
     assert db.list_triage_labels(config=cfg) == []
 
 
+def test_material_assessment_requires_matching_independent_review(cfg, tmp_path):
+    db.init_db(cfg)
+    finding = _triage_three(cfg, tmp_path)["a.py"]
+
+    first, label = assess_finding(
+        finding.id,
+        TriageDisposition.CONFIRMED_ACTIONABLE,
+        "reachable cross-tenant path",
+        "alice",
+        ["tenant-isolation"],
+        cfg,
+        material=True,
+    )
+    assert first.material is True
+    assert label is None
+    assert db.list_triage_labels(config=cfg) == []
+
+    _repeat, label = assess_finding(
+        finding.id,
+        TriageDisposition.CONFIRMED_ACTIONABLE,
+        "same analyst rechecked",
+        "alice",
+        ["tenant-isolation"],
+        cfg,
+        material=True,
+    )
+    assert label is None
+
+    _second, label = assess_finding(
+        finding.id,
+        TriageDisposition.CONFIRMED_ACTIONABLE,
+        "independent reproduction",
+        "bob",
+        ["tenant-isolation"],
+        cfg,
+        material=True,
+    )
+    assert label is not None and label.actionable is True
+
+
+def test_material_disagreement_withholds_existing_projection(cfg, tmp_path):
+    db.init_db(cfg)
+    finding = _triage_three(cfg, tmp_path)["a.py"]
+    label_finding(finding.id, True, "earlier projection", cfg)
+
+    _first, label = assess_finding(
+        finding.id,
+        TriageDisposition.TOOL_INCORRECT,
+        "source is not attacker controlled",
+        "alice",
+        [],
+        cfg,
+        material=True,
+    )
+    assert label is None
+    assert db.list_triage_labels(config=cfg) == []
+
+    _second, label = assess_finding(
+        finding.id,
+        TriageDisposition.CONFIRMED_ACTIONABLE,
+        "independent reviewer found attacker control",
+        "bob",
+        [],
+        cfg,
+        material=True,
+    )
+    assert label is None
+    assert db.list_triage_labels(config=cfg) == []
+
+
 def test_synthetic_share_shrinks_as_real_labels_accumulate(cfg):
     # Documented shrinkage: pseudocount / (pseudocount + n_real), 0 past the cutoff.
     assert synthetic_share(0, cfg) == 1.0
