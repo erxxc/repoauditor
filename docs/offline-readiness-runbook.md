@@ -85,6 +85,27 @@ pytest store is temporary. Use those artifacts for workflow safety and accuracy 
 three foreground runs in one persistent local store when producing the formal
 `usage-calibration` comparison above.
 
+### First lightweight observation and rerun gate
+
+Actions run `30228015245` on 2026-07-27 passed all four manufactured controls, then stopped
+before normalize/scoring because 18 findings remained deferred. That is a successful
+fail-closed safety observation, not a completed accuracy or capacity result. Its failure
+artifact retained JUnit evidence but not partial authoritative usage, so it cannot justify a
+limit change or the protected-pair run.
+
+Before rerunning, the live harness must:
+
+1. emit usage, queue state, batch identity, and failure detail on every terminal path;
+2. continue deferred work through linked, freshly bounded batches without rerunning
+   map/detect/triage;
+3. aggregate the complete batch chain and require zero deferred findings before
+   normalize/scoring; and
+4. retain offline regression coverage for failure artifacts and multi-batch completion.
+
+Keep the 75-call/250,000-token ceilings unchanged while making this correction. After a
+successful lightweight rerun, inspect its usage and accuracy artifact before authorizing
+`bounded-independent`.
+
 ## Analyst decision after collection
 
 Keep the current limits unless the three-run evidence demonstrates a specific operational

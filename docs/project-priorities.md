@@ -30,6 +30,19 @@ order so future sessions do not have to reconstruct it from conversation history
   `usage-calibration` report. Paid evidence still requires one successful lightweight run
   and one protected independent pre/post pair after cache/provider access returns. Treat
   the limits as safety ceilings, not statistically calibrated defaults; never auto-raise.
+  - The first merged `live-lightweight` attempt (Actions run `30228015245`) qualified all
+    four manufactured controls, then safely stopped with 18 deferred findings before
+    normalize/scoring. It is safety evidence only: no accuracy score was produced and the
+    failure artifact omitted partial usage totals.
+  - [ ] Persist usage totals, queue state, batch identity, and failure detail in paid-run
+    artifacts on both success and failure.
+  - [ ] Drive live evaluation through the production run/resume continuation path (or one
+    shared orchestration primitive), preserving linked batches and never repeating completed
+    map/detect/triage work.
+  - [ ] Require a zero deferred backlog before normalize/scoring, aggregate linked-batch
+    usage in the terminal artifact, and cover failure plus multi-batch success offline.
+  - [ ] Rerun `live-lightweight` under the unchanged ceilings and inspect its completed
+    artifact before authorizing the protected pre/post pair.
 - [x] Add a budget-scoped deferred-queue continuation that reuses the immutable ingested
   snapshot and completed map/detect/triage evidence without paying to repeat those stages.
   Continuation batches have fresh ceilings, durable parent links, and aggregate into one
@@ -104,13 +117,14 @@ order so future sessions do not have to reconstruct it from conversation history
 
 ## Execution order
 
-1. Merge the completed P0 provider safeguards, deferred continuation, and authoritative
-   logical-chain usage accounting.
-2. Run the bounded paid lightweight and protected pre/post evidence needed to calibrate
-   operational ceilings; do not raise them automatically.
-3. Collect controlled human adjudications and freeze the protected baseline.
-4. Add the actionability/technical-validity views and adjudication QA, then activate
+1. Correct the paid live harness so failure evidence is retained and deferred work uses the
+   production continuation path.
+2. Rerun the bounded lightweight scan under unchanged limits; review its complete evidence
+   before running the protected pre/post pair.
+3. Produce the formal persistent-store usage comparison; do not raise limits automatically.
+4. Collect controlled human adjudications and freeze the protected baseline.
+5. Add the actionability/technical-validity views and adjudication QA, then activate
    validation gates only when their evidence floors are met.
-5. Characterize repeatability, then improve slicing/checkable claims.
-6. Add real EPSS/KEV enrichment.
-7. Revisit hierarchical priors, cost calculation, and agentic escalation last.
+6. Characterize repeatability, then improve slicing/checkable claims.
+7. Add real EPSS/KEV enrichment.
+8. Revisit hierarchical priors, cost calculation, and agentic escalation last.
