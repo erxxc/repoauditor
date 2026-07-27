@@ -19,6 +19,11 @@ dist/
 .coverage
 htmlcov/
 
+# Generated pinned-acquisition public corpus. Metadata and answer keys remain tracked;
+# upstream source snapshots are cached locally/CI and are never redistributed here.
+/tests/fixtures/independent_*/snapshot/
+/tests/fixtures/anchor_owasp_*/snapshot/
+
 # Editor / OS
 .idea/
 .vscode/

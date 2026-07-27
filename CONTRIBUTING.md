@@ -81,7 +81,9 @@ exploitability, end-to-end reachability, control effectiveness, or risk.
 
 ## Public-corpus cache lane
 
-The `public corpus cache` workflow runs every Sunday and on manual dispatch. It restores an
+The generated `independent_*/snapshot/` and `anchor_owasp_*/snapshot/` directories are
+gitignored acquisition artifacts; never force-add them. The `public corpus cache` workflow
+runs every Sunday and on manual dispatch. It restores an
 immutable cache of the 19 acquisition-only public snapshots, or fetches and archives their
 exact pinned commits on a cache miss. Its key is derived from the materializer plus every
 independent/OWASP corpus metadata file, so a pin or acquisition-code change cannot silently
