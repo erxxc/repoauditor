@@ -467,6 +467,9 @@ uv run repoauditor runs show <run-id>
 # Resume an interrupted run automatically.
 uv run repoauditor run <same-path-or-url>
 
+# Continue a completed, safely bounded falsification batch without rerunning map/detect.
+uv run repoauditor resume <repo-id>
+
 # Ignore an incomplete prior run and start a separate run record.
 uv run repoauditor run <path-or-url> --fresh
 ```
@@ -482,8 +485,8 @@ failure does not expose usage metadata, the attempt is still counted and is expl
 reported as `unknown-usage-calls`; repoauditor never invents a token value. Dollar cost
 remains unavailable because no dated provider/model price table is persisted.
 
-Two `[llm]` circuit breakers prevent an unattended `run` or guided `demo` from issuing
-provider calls indefinitely:
+Two `[llm]` circuit breakers prevent any CLI-triggered provider operation from issuing
+calls indefinitely:
 
 ```toml
 max_calls_per_pipeline_run = 75
@@ -503,8 +506,16 @@ conservative reservation covering every configured iteration and retry. Only the
 fits that reservation is attempted; the rest is recorded as deferred and remains resumable.
 The independent token ceiling still applies before every request—future token consumption is
 not guessed from prior calls. When a deferred backlog remains, `run` pauses before
-normalize/review and points back to the same source for the next bounded batch; `finalize`
-refuses to exclude that unexamined work silently.
+normalize/review and points to `repoauditor resume <repo-id>`. Each resume invocation gets
+a fresh, separately recorded budget while reusing the immutable snapshot and completed
+map/detect/triage evidence. Continuation records are linked as one logical scan, and
+`finalize` refuses to exclude unexamined work silently.
+
+Direct `map`, `detect`, `falsify`, and `normalize` commands also create a durable run record
+and fresh budget, as do `doctor --check-model`, `falsify-convergence`, and
+`qualify-instrument`. Expert and diagnostic entry points therefore cannot bypass the safety
+boundary used by `run`, `resume`, and `demo`; inspect their usage and attributable failures
+with `runs list` and `runs show`.
 
 Dependency advisories also carry a canonical ecosystem/package/version/advisory identity.
 This prevents unrelated CVEs from being merged merely because SCA scanners report them all
@@ -595,10 +606,12 @@ line—so automation receives events as each stage starts, completes, or fails.
   its completion recap warns that coverage was incomplete.
 - **No SQLite database** — no manual action is normally needed. `doctor` and `run`
   initialize it. `uv run repoauditor db init` is available for explicit repair/migration.
-- **A run stopped midway** — run the exact same target again to resume. Use
-  `runs list`/`runs show` to identify the failed stage and error.
-- **`finalize` is blocked** — run `review list <repo-id>`, decide every open request, and
-  retry `finalize`.
+- **A run failed midway** — run the exact same target again to resume the failed stage. Use
+  `runs list`/`runs show` to identify the error.
+- **A run completed with deferred findings** — run `resume <repo-id>`. Repeat until its
+  completion message points to review or finalize; upstream model stages are not repeated.
+- **`finalize` is blocked** — first clear any deferred backlog with `resume <repo-id>`,
+  then run `review list <repo-id>`, decide every open request, and retry `finalize`.
 
 ## Development checks
 

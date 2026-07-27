@@ -11,7 +11,9 @@ The honest-baseline story this module encodes:
   (`REPOAUDITOR_LLM=live`); the SAST/SCA numbers need semgrep/pip-audit/osv. None are present
   in a bare CI env, and *scripting* answers for 25+ cases would make precision/recall circular.
   So the corpus's model-capability baseline is produced by `test_corpus_live_baseline`
-  (marked `live`), which records one `EvalRun` per fixture when a key is present.
+  (marked `live`), which records one `EvalRun` per fixture when a key is present. The paid
+  path also enters a durable pipeline usage scope, fails before scoring deferred work, and
+  publishes authoritative usage totals with its result.
 * **Honest, and runs now.** The deterministic **secrets adapter** (gitleaks, installed) is
   scored against a real secrets ground truth and recorded as an `EvalRun`. And the scripted
   detect->falsify->normalize *pipeline logic* is recorded per stage — deterministic, and
@@ -36,10 +38,11 @@ from repoauditor.detect.retrieval import RetrievalIndex
 from repoauditor.eval import record_and_check
 from repoauditor.falsify import challenge
 from repoauditor.ingest import ingest_repo
+from repoauditor.llm import model_usage_scope
 from repoauditor.map import recover_architecture
 from repoauditor.normalize import adjudicate
 from repoauditor.store import db
-from repoauditor.store.models import FalsificationStatus
+from repoauditor.store.models import FalsificationStatus, RunStatus
 
 # The scorer + pipeline driver are the golden harness's; reuse them rather than fork a
 # second, drifting copy (tests/ is on the path in prepend import mode — no __init__.py).
@@ -53,7 +56,10 @@ from uat_scoring import score_live_uat
 from fixtures.audit_corpus_readiness import build_corpus_readiness
 
 
-def _append_live_uat_result(path: Path, benchmark_repo, score: dict, run, config) -> None:
+def _append_live_uat_result(
+    path: Path, benchmark_repo, score: dict, run, config,
+    *, pipeline_run_id: int | None = None, model_usage: dict | None = None,
+) -> None:
     """Append one paid-run result when the explicit UAT artifact path is configured."""
     if path.is_file():
         document = json.loads(path.read_text())
@@ -79,6 +85,8 @@ def _append_live_uat_result(path: Path, benchmark_repo, score: dict, run, config
         "provider": config.llm.provider,
         "model": config.model.name,
         "prompt_versions": run.prompt_versions,
+        "pipeline_run_id": pipeline_run_id,
+        "model_usage": model_usage,
         "evaluation": score,
     })
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -241,6 +249,8 @@ def test_live_uat_artifact_is_explicitly_fixture_derived(tmp_config, tmp_path, m
         },
         SimpleNamespace(prompt_versions={"detect": "owasp_v1"}),
         tmp_config,
+        pipeline_run_id=17,
+        model_usage={"calls": 4, "input_tokens": 100, "output_tokens": 20},
     )
 
     document = json.loads(artifact.read_text())
@@ -248,6 +258,8 @@ def test_live_uat_artifact_is_explicitly_fixture_derived(tmp_config, tmp_path, m
     assert "not exhaustive" in document["methodology"]
     assert document["scanner_coverage"] == "not-installed-live-model-only"
     assert document["results"][0]["kind"] == "fixture"
+    assert document["results"][0]["pipeline_run_id"] == 17
+    assert document["results"][0]["model_usage"]["calls"] == 4
     final = document["results"][0]["evaluation"]["final_countable_confirmed"]
     assert final["precision"] == 0.75
 
@@ -371,50 +383,81 @@ def test_corpus_live_baseline(tmp_config, benchmark_repo, capsys):
         )
 
     db.init_db(tmp_config)
-    llm = get_llm_client(tmp_config)
-    result = ingest_repo(str(benchmark_repo.snapshot_path), tmp_config,
-                         repo_id=benchmark_repo.repo_id)
-    recover_architecture(result.snapshot_path, result.repo_id, result.commit, tmp_config, llm)
-    run_ensemble(result.repo_id, tmp_config, llm=llm)
-    challenge(result.repo_id, tmp_config, llm=llm)
-    adjudicate(db.list_findings(result.repo_id, tmp_config), tmp_config, llm)
+    pipeline = db.start_pipeline_run(str(benchmark_repo.snapshot_path), tmp_config)
+    assert pipeline.id is not None
+    try:
+        llm = get_llm_client(tmp_config)
+        result = ingest_repo(str(benchmark_repo.snapshot_path), tmp_config,
+                             repo_id=benchmark_repo.repo_id)
+        db.update_pipeline_run_identity(
+            pipeline.id, result.repo_id, result.commit, tmp_config
+        )
+        with model_usage_scope(pipeline.id):
+            recover_architecture(
+                result.snapshot_path, result.repo_id, result.commit, tmp_config, llm
+            )
+            run_ensemble(result.repo_id, tmp_config, llm=llm)
+            challenge(result.repo_id, tmp_config, llm=llm)
+            deferred = [
+                finding for finding in db.list_findings(result.repo_id, tmp_config)
+                if finding.falsification_status is FalsificationStatus.DEFERRED
+            ]
+            if deferred:
+                raise RuntimeError(
+                    f"live corpus run stopped with {len(deferred)} deferred findings; "
+                    "do not normalize or score an incomplete run"
+                )
+            adjudicate(db.list_findings(result.repo_id, tmp_config), tmp_config, llm)
 
-    findings = db.list_findings(result.repo_id, tmp_config)
-    if benchmark_repo.expected.get("planted_cases"):
-        scanner_coverage = os.environ.get(
-            "REPOAUDITOR_UAT_SCANNER_COVERAGE", "environment-dependent"
+        findings = db.list_findings(result.repo_id, tmp_config)
+        if benchmark_repo.expected.get("planted_cases"):
+            scanner_coverage = os.environ.get(
+                "REPOAUDITOR_UAT_SCANNER_COVERAGE", "environment-dependent"
+            )
+            available_source_types = (
+                {"lens"}
+                if scanner_coverage == "not-installed-live-model-only"
+                else {"lens", "tool"}
+            )
+            score = score_live_uat(
+                findings,
+                benchmark_repo.expected,
+                available_source_types=available_source_types,
+            )
+            final = score["final_countable_confirmed"]
+            lineage = f"corpus-v2::{benchmark_repo.repo_id}"
+        else:
+            # Non-UAT corpus fixtures retain their existing legacy scorer. They do not carry
+            # the planted-case source/disposition metadata needed for the v2 UAT method.
+            legacy_survivors = [
+                finding for finding in findings
+                if finding.falsification_status is not FalsificationStatus.KILLED
+            ]
+            final = score_precision_recall(
+                legacy_survivors, benchmark_repo.expected["findings"]
+            )
+            score = {"methodology": "legacy corpus scorer", "final_countable_confirmed": final}
+            lineage = f"corpus::{benchmark_repo.repo_id}"
+        run = record_and_check(
+            lineage=lineage,
+            precision=final["precision"], recall=final["recall"], config=tmp_config)
+    except BaseException as exc:
+        db.finish_pipeline_run(
+            pipeline.id, RunStatus.FAILED,
+            failure_detail=f"{type(exc).__name__}: {exc}"[:4000],
+            config=tmp_config,
         )
-        available_source_types = (
-            {"lens"}
-            if scanner_coverage == "not-installed-live-model-only"
-            else {"lens", "tool"}
-        )
-        score = score_live_uat(
-            findings,
-            benchmark_repo.expected,
-            available_source_types=available_source_types,
-        )
-        final = score["final_countable_confirmed"]
-        lineage = f"corpus-v2::{benchmark_repo.repo_id}"
+        raise
     else:
-        # Non-UAT corpus fixtures retain their existing legacy scorer. They do not carry
-        # the planted-case source/disposition metadata needed for the v2 UAT method.
-        legacy_survivors = [
-            finding for finding in findings
-            if finding.falsification_status is not FalsificationStatus.KILLED
-        ]
-        final = score_precision_recall(
-            legacy_survivors, benchmark_repo.expected["findings"]
-        )
-        score = {"methodology": "legacy corpus scorer", "final_countable_confirmed": final}
-        lineage = f"corpus::{benchmark_repo.repo_id}"
-    run = record_and_check(
-        lineage=lineage,
-        precision=final["precision"], recall=final["recall"], config=tmp_config)
+        db.finish_pipeline_run(pipeline.id, RunStatus.COMPLETED, config=tmp_config)
 
     artifact_path = os.environ.get("REPOAUDITOR_UAT_RESULTS")
     if artifact_path:
-        _append_live_uat_result(Path(artifact_path), benchmark_repo, score, run, tmp_config)
+        _append_live_uat_result(
+            Path(artifact_path), benchmark_repo, score, run, tmp_config,
+            pipeline_run_id=pipeline.id,
+            model_usage=db.summarize_model_usage(pipeline.id, tmp_config),
+        )
 
     with capsys.disabled():
         print(f"\n[live corpus] {benchmark_repo.repo_id}: "

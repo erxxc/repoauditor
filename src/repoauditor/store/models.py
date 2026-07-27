@@ -30,6 +30,7 @@ class PipelineRun(BaseModel):
     """Durable status for one foreground pipeline orchestration."""
 
     id: int | None = None
+    parent_run_id: int | None = None
     source: str
     repo_id: str | None = None
     commit_hash: str | None = None

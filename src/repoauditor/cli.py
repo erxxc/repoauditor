@@ -11,7 +11,6 @@ from __future__ import annotations
 import getpass
 import io
 import json
-import shlex
 import sys
 import threading
 import time
@@ -143,10 +142,6 @@ _verbose_enabled: ContextVar[bool] = ContextVar("repoauditor_verbose", default=F
 
 def _timestamp() -> str:
     return datetime.now().astimezone().isoformat(timespec="seconds")
-
-
-def _rerun_command(source: str) -> str:
-    return f"repoauditor run {shlex.quote(source)}"
 
 
 def _elapsed(seconds: float) -> str:
@@ -281,6 +276,77 @@ def _run_step(stage: str, fn):
             err=True,
         )
         raise typer.Exit(code=1) from exc
+
+
+def _metered_operation(
+    source: str,
+    stage: str,
+    fn,
+    config,
+    *,
+    repo_id: str | None = None,
+    commit_hash: str | None = None,
+    success=lambda value: True,
+    failure_detail=lambda value: None,
+):
+    """Run one standalone paid operation inside a durable, fresh usage budget."""
+    db.init_db(config)
+    pipeline = db.start_pipeline_run(source, config)
+    if repo_id is not None and commit_hash is not None:
+        db.update_pipeline_run_identity(
+            pipeline.id, repo_id, commit_hash, config
+        )
+    db.start_stage_run(pipeline.id, stage, config)
+    try:
+        with model_usage_scope(pipeline.id):
+            value = fn()
+    except BaseException as exc:
+        detail = f"{type(exc).__name__}: {exc}"[:4000]
+        db.finish_stage_run(
+            pipeline.id, stage, RunStatus.FAILED,
+            failure_detail=detail, config=config,
+        )
+        db.finish_pipeline_run(
+            pipeline.id, RunStatus.FAILED, failed_stage=stage,
+            failure_detail=detail, config=config,
+        )
+        raise
+
+    usage = db.summarize_model_usage(pipeline.id, config, stage=stage)
+    summary = {"model_usage": usage if usage["calls"] else "not recorded"}
+    if success(value):
+        db.finish_stage_run(
+            pipeline.id, stage, RunStatus.COMPLETED, summary=summary, config=config
+        )
+        db.finish_pipeline_run(
+            pipeline.id, RunStatus.COMPLETED, config=config
+        )
+    else:
+        detail = str(failure_detail(value) or "operation reported failure")[:4000]
+        db.finish_stage_run(
+            pipeline.id, stage, RunStatus.FAILED, summary=summary,
+            failure_detail=detail, config=config,
+        )
+        db.finish_pipeline_run(
+            pipeline.id, RunStatus.FAILED, failed_stage=stage,
+            failure_detail=detail, config=config,
+        )
+    return value, pipeline
+
+
+def _metered_repo_stage(repo_id: str, stage: str, fn, config):
+    """Resolve immutable repo provenance, then meter one standalone stage."""
+    db.init_db(config)
+    repo = db.get_latest_ingested_repo(repo_id, config)
+    if repo is None:
+        raise FileNotFoundError(f"no ingested repository named {repo_id}")
+    snapshot = config.raw_dir / repo.repo_id / repo.commit_hash
+    if not snapshot.is_dir():
+        raise FileNotFoundError(f"stored snapshot is missing: {snapshot}")
+    return _metered_operation(
+        repo.source, stage, fn, config,
+        repo_id=repo.repo_id, commit_hash=repo.commit_hash,
+    )
 
 
 def _render_preflight(result: PreflightResult) -> None:
@@ -490,20 +556,34 @@ def _root(
         raise typer.Exit()
 
 
-def _menu_repo(config, *, require_reviews: bool = False):
+def _menu_repo(
+    config, *, require_reviews: bool = False, require_deferred: bool = False
+):
     """Prompt for one known repository; return its state or None."""
     state = load_menu_state(config)
-    choices = [repo for repo in state.repositories if not require_reviews or repo.open_reviews]
+    choices = [
+        repo for repo in state.repositories
+        if (not require_reviews or repo.open_reviews)
+        and (not require_deferred or repo.deferred_findings)
+    ]
     if not choices:
         typer.echo(
-            "No repositories have pending review requests."
-            if require_reviews else "No repositories have been ingested yet."
+            (
+                "No repositories have pending review requests."
+                if require_reviews
+                else "No repositories have deferred findings."
+                if require_deferred
+                else "No repositories have been ingested yet."
+            )
         )
         return None
     typer.echo("")
     for index, repo in enumerate(choices, 1):
         review = f"; {repo.open_reviews} review(s) pending" if repo.open_reviews else ""
-        typer.echo(f"  {index}. {repo.repo_id} — {repo.source}{review}")
+        deferred = (
+            f"; {repo.deferred_findings} deferred" if repo.deferred_findings else ""
+        )
+        typer.echo(f"  {index}. {repo.repo_id} — {repo.source}{review}{deferred}")
     while True:
         value = typer.prompt("Select repository", default="1").strip()
         if value.isdigit() and 1 <= int(value) <= len(choices):
@@ -528,6 +608,18 @@ def menu() -> None:
         typer.echo("Equivalent command: repoauditor demo")
         demo(trials=10_000, seed=0, non_interactive=False)
     elif selection == "2":
+        deferred_repos = [
+            repo for repo in state.repositories if repo.deferred_findings
+        ]
+        if deferred_repos and typer.confirm(
+            "Resume a deferred scan instead of starting a new one?", default=True
+        ):
+            repo = _menu_repo(config, require_deferred=True)
+            if repo is None:
+                return
+            typer.echo(f"Equivalent command: repoauditor resume {repo.repo_id}")
+            resume(repo.repo_id, RunFormat.HUMAN)
+            return
         source = typer.prompt("Repository path or Git URL").strip()
         if not source:
             typer.echo("No target entered; returning without starting a scan.")
@@ -706,7 +798,8 @@ def _execute_demo(
     if falsification.deferred_count:
         typer.echo(
             f"Demo paused safely with {falsification.deferred_count} deferred finding(s); "
-            "rerun `repoauditor demo` to continue the bounded queue before reporting."
+            f"run `repoauditor resume {_DEMO_REPO_ID}` to continue the bounded queue "
+            "without repeating map/detect."
         )
         return [str(ingested.snapshot_path)], ingested
     _run_step("normalize", lambda: _normalize_stage(_DEMO_REPO_ID, config))
@@ -781,7 +874,11 @@ def doctor(
         raise typer.Exit(code=1)
     if model:
         typer.echo("Model check: making one live API request; provider charges may apply.")
-        probe = check_model(config)
+        probe, _ = _metered_operation(
+            "diagnostic:model-check", "doctor", lambda: check_model(config), config,
+            success=lambda value: value.ready,
+            failure_detail=lambda value: value.error,
+        )
         if not probe.ready:
             typer.secho(
                 f"model check failed ({probe.provider}/{probe.model}, "
@@ -821,14 +918,20 @@ def repos_list(
 @_clean_errors("map")
 def map(repo_id: str = typer.Argument(..., help="Ingested repo id.")) -> None:
     """Recover the architecture/trust-boundary map (runs before detection)."""
-    _map_stage(repo_id, get_config())
+    config = get_config()
+    _metered_repo_stage(
+        repo_id, "map", lambda: _map_stage(repo_id, config), config
+    )
 
 
 @app.command()
 @_clean_errors("detect")
 def detect(repo_id: str = typer.Argument(..., help="Ingested + mapped repo id.")) -> None:
     """Run the multi-lens detection ensemble + deterministic tools."""
-    _detect_stage(repo_id, get_config())
+    config = get_config()
+    _metered_repo_stage(
+        repo_id, "detect", lambda: _detect_stage(repo_id, config), config
+    )
 
 
 @app.command()
@@ -960,7 +1063,15 @@ def quantify(
 @_clean_errors("falsify")
 def falsify(repo_id: str = typer.Argument(..., help="Repo id with candidate findings.")) -> None:
     """Run the falsification pass over candidate findings."""
-    _falsify_stage(repo_id, get_config())
+    config = get_config()
+    result, _ = _metered_repo_stage(
+        repo_id, "falsify", lambda: _falsify_stage(repo_id, config), config
+    )
+    if result.deferred_count:
+        typer.echo(
+            f"Next: repoauditor resume {repo_id} "
+            f"({result.deferred_count} deferred finding(s) remain)"
+        )
 
 
 @app.command(name="falsify-convergence")
@@ -978,7 +1089,15 @@ def falsify_convergence(
     This evaluation makes multiple model calls and can incur provider cost. It never
     writes a falsification verdict or changes the production pipeline.
     """
-    result = evaluate_finding_convergence(finding_id, get_config())
+    config = get_config()
+    finding = db.get_finding(finding_id, config)
+    if finding is None:
+        typer.secho(f"finding #{finding_id} not found", err=True)
+        raise typer.Exit(code=1)
+    result, _ = _metered_repo_stage(
+        finding.repo_id, "falsify-convergence",
+        lambda: evaluate_finding_convergence(finding_id, config), config,
+    )
     typer.echo(
         result.model_dump_json(indent=2)
         if output_format is ListFormat.JSON
@@ -1000,7 +1119,10 @@ def qualify_instrument(
     """
     config = get_config()
     fixture = config.root / "tests" / "fixtures" / "manufactured_sentinels"
-    result = evaluate_manufactured_sentinels(fixture, config=config)
+    result, _ = _metered_operation(
+        "evaluation:manufactured-sentinels", "qualify-instrument",
+        lambda: evaluate_manufactured_sentinels(fixture, config=config), config,
+    )
     typer.echo(
         result.model_dump_json(indent=2)
         if output_format is ListFormat.JSON
@@ -1050,7 +1172,10 @@ def usage_calibration(
 @_clean_errors("normalize")
 def normalize(repo_id: str = typer.Argument(..., help="Repo id with falsified findings.")) -> None:
     """Adjudicate conflicting severities and route unresolved findings to review."""
-    _normalize_stage(repo_id, get_config())
+    config = get_config()
+    _metered_repo_stage(
+        repo_id, "normalize", lambda: _normalize_stage(repo_id, config), config
+    )
 
 
 @app.command()
@@ -1321,7 +1446,7 @@ def run(
     )
     if machine:
         next_command = (
-            _rerun_command(source)
+            f"repoauditor resume {repo_id}"
             if deferred else (
                 f"repoauditor review list {repo_id}" if requests
                 else f"repoauditor finalize {repo_id}"
@@ -1347,7 +1472,7 @@ def run(
                 f"Review checkpoint also has {len(requests)} open request(s): "
                 f"repoauditor review list {repo_id}"
             )
-        typer.echo(f"Next: {_rerun_command(source)}")
+        typer.echo(f"Next: repoauditor resume {repo_id}")
     elif requests:
         typer.echo(
             f"run complete for {repo_id}; stopped at review checkpoint with "
@@ -1361,6 +1486,176 @@ def run(
         f"run recap: started={run_started_at}; completed={_timestamp()}; "
         f"total={_elapsed(time.monotonic() - run_started)}; " + "; ".join(artifact_items)
     )
+
+
+@app.command()
+@_clean_errors("resume")
+def resume(
+    repo_id: str = typer.Argument(
+        ..., help="Ingested repo id with a deferred falsification backlog."
+    ),
+    output_format: RunFormat = typer.Option(
+        RunFormat.HUMAN, "--format", help="Output format: human or streaming ndjson."
+    ),
+) -> None:
+    """Continue a deferred queue with a fresh budget; never rerun upstream stages."""
+    started = time.monotonic()
+    machine = output_format is RunFormat.NDJSON
+    if machine:
+        _quiet_enabled.set(True)
+
+    def event(stage: str, status: str, **details) -> None:
+        if machine:
+            typer.echo(ndjson_event(stage, status, **details))
+
+    config = get_config()
+    event("preflight", "started")
+    if machine:
+        with redirect_stdout(io.StringIO()):
+            preflight = _preflight(config)
+    else:
+        preflight = _preflight(config)
+    if not preflight.ready:
+        event("preflight", "failed", error="requirements are not satisfied")
+        typer.secho("resume stopped: preflight requirements are not satisfied", err=True)
+        raise typer.Exit(code=1)
+    event("preflight", "completed")
+    db.init_db(config)
+
+    repo = db.get_latest_ingested_repo(repo_id, config)
+    if repo is None:
+        typer.secho(
+            f"resume failed: no ingested repository named {repo_id}", err=True
+        )
+        raise typer.Exit(code=1)
+    snapshot_path = config.raw_dir / repo.repo_id / repo.commit_hash
+    if not snapshot_path.is_dir():
+        typer.secho(
+            f"resume failed: stored snapshot is missing: {snapshot_path}", err=True
+        )
+        raise typer.Exit(code=1)
+
+    parent = db.get_latest_pipeline_run(
+        repo_id, config, commit_hash=repo.commit_hash
+    )
+    pipeline = db.start_pipeline_run(
+        repo.source, config, parent_run_id=parent.id if parent is not None else None
+    )
+    db.update_pipeline_run_identity(
+        pipeline.id, repo.repo_id, repo.commit_hash, config
+    )
+
+    def step(stage: str, fn, metadata=lambda value: ({}, [])):
+        event(stage, "started")
+        db.start_stage_run(pipeline.id, stage, config)
+        try:
+            with model_usage_scope(pipeline.id):
+                value = _run_step(stage, fn)
+        except BaseException as exc:
+            detail = f"{type(exc).__name__}: {exc}"[:4000]
+            db.finish_stage_run(
+                pipeline.id, stage, RunStatus.FAILED,
+                failure_detail=detail, config=config,
+            )
+            db.finish_pipeline_run(
+                pipeline.id, RunStatus.FAILED, failed_stage=stage,
+                failure_detail=detail, artifacts=[str(snapshot_path)], config=config,
+            )
+            event(stage, "failed", error=detail)
+            raise
+        summary, artifacts = metadata(value)
+        usage = db.summarize_model_usage(pipeline.id, config, stage=stage)
+        summary["model_usage"] = usage if usage["calls"] else "not recorded"
+        db.finish_stage_run(
+            pipeline.id, stage, RunStatus.COMPLETED, summary=summary,
+            artifacts=artifacts, config=config,
+        )
+        event(stage, "completed", **summary, artifacts=artifacts)
+        return value
+
+    deferred_before = db.list_deferred_findings(repo_id, config)
+    if deferred_before:
+        step(
+            "falsify", lambda: _falsify_stage(repo_id, config),
+            lambda value: ({
+                **falsification_metrics(value, getattr(value, "deferred_count", 0)),
+                "backlog_before": len(deferred_before),
+                "llm": {
+                    "provider": config.llm.provider,
+                    "model": config.model.name,
+                    "prompt_versions": {
+                        "falsify": FALSIFY_PROMPT_VERSION,
+                        "falsify_critique": CRITIQUE_PROMPT_VERSION,
+                        "falsify_context": FALSIFY_CONTEXT_VERSION,
+                    },
+                },
+            }, []),
+        )
+
+    deferred = db.list_deferred_findings(repo_id, config)
+    requests = open_review_requests(repo_id, config)
+    if not deferred:
+        step(
+            "normalize", lambda: _normalize_stage(repo_id, config),
+            lambda value: ({
+                **normalization_metrics(value),
+                "llm": {
+                    "provider": config.llm.provider,
+                    "model": config.model.name,
+                    "prompt_versions": {"normalize": NORMALIZE_PROMPT_VERSION},
+                },
+            }, []),
+        )
+        step(
+            "review checkpoint",
+            lambda: raise_review_requests(
+                repo_id, config, sampling_run_id=pipeline.id
+            ),
+            lambda value: ({
+                "requests_raised_or_refreshed": len(value),
+                "open_requests": len(open_review_requests(repo_id, config)),
+            }, []),
+        )
+        requests = open_review_requests(repo_id, config)
+
+    usage = db.summarize_model_usage(pipeline.id, config)
+    db.finish_pipeline_run(
+        pipeline.id, RunStatus.COMPLETED, artifacts=[str(snapshot_path)], config=config
+    )
+    next_command = (
+        f"repoauditor resume {repo_id}" if deferred
+        else (
+            f"repoauditor review list {repo_id}" if requests
+            else f"repoauditor finalize {repo_id}"
+        )
+    )
+    if machine:
+        typer.echo(ndjson_event(
+            "resume", "completed", run_id=pipeline.id, repo_id=repo_id,
+            backlog_before=len(deferred_before), deferred_findings=len(deferred),
+            open_review_requests=len(requests), artifacts=[str(snapshot_path)],
+            model_usage=usage if usage["calls"] else "not recorded",
+            elapsed_seconds=round(time.monotonic() - started, 3),
+            next_command=next_command,
+        ))
+        return
+
+    if deferred:
+        typer.echo(
+            f"resume batch complete for {repo_id}: backlog "
+            f"{len(deferred_before)} -> {len(deferred)} deferred finding(s)."
+        )
+    elif requests:
+        typer.echo(
+            f"resume complete for {repo_id}; falsification backlog is clear and "
+            f"{len(requests)} review request(s) are open."
+        )
+    else:
+        typer.echo(
+            f"resume complete for {repo_id}; falsification backlog is clear and "
+            "no findings require review."
+        )
+    typer.echo(f"Next: {next_command}")
 
 
 @runs_app.command("list")
@@ -1392,7 +1687,8 @@ def runs_show(run_id: int = typer.Argument(..., help="Pipeline run id.")) -> Non
         raise typer.Exit(code=1)
     typer.echo(
         f"run #{item.id}: status={item.status.value}; source={item.source}; "
-        f"repo-id={item.repo_id or '-'}; commit={item.commit_hash or '-'}"
+        f"repo-id={item.repo_id or '-'}; commit={item.commit_hash or '-'}; "
+        f"parent-run={item.parent_run_id or '-'}"
     )
     typer.echo(f"started={item.started_at}; completed={item.completed_at or '-'}")
     if item.failure_detail:
@@ -1423,6 +1719,17 @@ def runs_show(run_id: int = typer.Argument(..., help="Pipeline run id.")) -> Non
         )
     else:
         typer.echo("model usage: not recorded")
+    chain, chain_usage, _ = db.summarize_model_usage_chain(run_id, config)
+    if len(chain) > 1:
+        chain_processed = (
+            chain_usage["input_tokens"] + chain_usage["output_tokens"]
+            + chain_usage["cache_read_tokens"] + chain_usage["cache_write_tokens"]
+        )
+        typer.echo(
+            f"logical scan chain: runs={[run.id for run in chain]}; "
+            f"calls={chain_usage['calls']}; processed-tokens={chain_processed}; "
+            f"unknown-usage-calls={chain_usage['unknown_usage_calls']}"
+        )
     if item.artifacts:
         typer.echo("artifacts: " + ", ".join(item.artifacts))
 
@@ -1455,7 +1762,7 @@ def finalize(
             err=True,
         )
         typer.echo(
-            "Continue the bounded queue by rerunning `repoauditor run <same-source>`.",
+            f"Continue the bounded queue with: repoauditor resume {repo_id}",
             err=True,
         )
         raise typer.Exit(code=1)

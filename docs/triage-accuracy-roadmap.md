@@ -20,11 +20,15 @@ Progress:
 - [x] Phase 1.4 — stable engagement identity audit
 - [x] Phase 2 — score and label provenance
 - [~] Phase 3 — collection infrastructure shipped; real UAT gate not yet met
-- [ ] Phases 4–5 — see gates below
+- [~] Phase 4 — threshold/grouped mechanisms shipped; real-data activation, uncertainty,
+  technical-validity reporting, and temporal depth remain open
+- [ ] Phase 5 — see gates below
 
 ## Current baseline
 
-- Real `TriageLabel` rows: 0 true positives, 0 false positives, 0 engagements.
+- At the Phase 0 diagnostic that created this roadmap, real `TriageLabel` volume was
+  0 true positives, 0 false positives, and 0 engagements. That is historical context, not a
+  live counter; use `repoauditor triage-collection` for the current evidence volume.
 - `suppressed` is a persisted annotation only. Falsify does not exclude suppressed findings;
   it orders triaged findings by P(actionable), applies its run budget, and resumes deferred
   findings later.
@@ -93,6 +97,9 @@ At 40 labels, enable descriptive threshold tables. At 40 labels and 8 engagement
 grouped validation and report held-out repositories, class counts, sample size, and metric
 uncertainty. Add train-before/evaluate-after validation only after chronological depth exists.
 Use repository-aware bootstrap ranges once the held-out repository count supports them.
+Keep related vulnerability families, clones, and pre/post-fix pairs in one partition. Report
+both the operational-actionability and technical-validity views defined by the adjudication
+taxonomy; the latter is not yet implemented.
 
 ## Phase 5 — Nonstandard-finding optimization
 

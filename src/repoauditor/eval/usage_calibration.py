@@ -31,6 +31,9 @@ _SOURCE_MARKERS: dict[CalibrationRole, str] = {
 class UsageObservation(BaseModel):
     role: CalibrationRole
     run_id: int
+    run_ids: list[int]
+    batch_count: int
+    batch_statuses: list[str]
     source: str
     status: str
     calls: int
@@ -56,9 +59,11 @@ class UsageCalibrationReport(BaseModel):
     peak_call_utilization: float | None
     peak_token_utilization: float | None
     methodology: str = (
-        "Descriptive comparison of one lightweight run and one independent pre/post pair "
-        "against current operational ceilings. Unknown provider token metadata blocks "
-        "token calibration. No optimal or recommended limit is inferred."
+        "Descriptive comparison of one lightweight logical scan and one independent "
+        "pre/post pair against current per-batch operational ceilings. Linked continuation "
+        "batches are aggregated; utilization is the peak single-batch utilization. Unknown "
+        "provider token metadata blocks token calibration. No optimal or recommended limit "
+        "is inferred."
     )
 
 
@@ -70,9 +75,7 @@ def build_usage_calibration(
     config = config or get_config()
     blockers: list[str] = []
     observations: list[UsageObservation] = []
-    selected_ids = [run_id for run_id in run_ids.values() if run_id is not None]
-    if len(selected_ids) != len(set(selected_ids)):
-        blockers.append("each calibration role must use a distinct pipeline run")
+    selected_roots: list[int] = []
     for role in _REQUIRED_ROLES:
         run_id = run_ids.get(role)
         if run_id is None:
@@ -82,7 +85,8 @@ def build_usage_calibration(
         if run is None:
             blockers.append(f"{role}: pipeline run #{run_id} not found")
             continue
-        totals = db.summarize_model_usage(run_id, config)
+        chain, totals, per_run = db.summarize_model_usage_chain(run_id, config)
+        selected_roots.append(chain[0].id)
         processed = (
             totals["input_tokens"] + totals["output_tokens"]
             + totals["cache_read_tokens"] + totals["cache_write_tokens"]
@@ -92,6 +96,9 @@ def build_usage_calibration(
         observations.append(UsageObservation(
             role=role,
             run_id=run_id,
+            run_ids=[item.id for item in chain],
+            batch_count=len(chain),
+            batch_statuses=[item.status.value for item in chain],
             source=run.source,
             status=run.status.value,
             calls=totals["calls"],
@@ -104,11 +111,25 @@ def build_usage_calibration(
             provider_latency_ms=totals["latency_ms"],
             call_limit=call_limit,
             token_limit=token_limit,
-            call_utilization=(totals["calls"] / call_limit if call_limit else None),
-            token_utilization=(processed / token_limit if token_limit else None),
+            call_utilization=(
+                max(item["calls"] / call_limit for item in per_run)
+                if call_limit else None
+            ),
+            token_utilization=(
+                max(
+                    (
+                        item["input_tokens"] + item["output_tokens"]
+                        + item["cache_read_tokens"] + item["cache_write_tokens"]
+                    ) / token_limit
+                    for item in per_run
+                )
+                if token_limit else None
+            ),
         ))
         if run.status is not RunStatus.COMPLETED:
-            blockers.append(f"{role}: run #{run_id} status is {run.status.value}")
+            blockers.append(
+                f"{role}: terminal run #{run_id} status is {run.status.value}"
+            )
         if _SOURCE_MARKERS[role] not in run.source:
             blockers.append(
                 f"{role}: run #{run_id} source does not identify "
@@ -121,6 +142,22 @@ def build_usage_calibration(
                 f"{role}: run #{run_id} has {totals['unknown_usage_calls']} "
                 "call(s) without token metadata"
             )
+        falsify_stages = [
+            stage
+            for item in chain
+            for stage in db.list_stage_runs(item.id, config)
+            if stage.stage == "falsify"
+        ]
+        if falsify_stages and int(
+            falsify_stages[-1].summary.get("deferred", 0) or 0
+        ):
+            blockers.append(
+                f"{role}: logical scan ending at run #{run_id} still has "
+                f"{falsify_stages[-1].summary['deferred']} deferred finding(s)"
+            )
+
+    if len(selected_roots) != len(set(selected_roots)):
+        blockers.append("each calibration role must use a distinct logical scan chain")
 
     call_values = [
         item.call_utilization for item in observations
@@ -153,7 +190,9 @@ def render_usage_calibration(report: UsageCalibrationReport) -> str:
             f"{item.token_utilization:.1%}" if item.token_utilization is not None else "disabled"
         )
         lines.append(
-            f"{item.role}: run #{item.run_id}; status={item.status}; calls={item.calls} "
+            f"{item.role}: run #{item.run_id}; batches={item.batch_count}; "
+            f"chain={item.run_ids}; batch-statuses={item.batch_statuses}; "
+            f"status={item.status}; calls={item.calls} "
             f"({call_util}); processed-tokens={item.processed_tokens} ({token_util}); "
             f"unknown-usage-calls={item.unknown_usage_calls}; "
             f"provider-latency={item.provider_latency_ms}ms"

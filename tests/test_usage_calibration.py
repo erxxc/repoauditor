@@ -15,8 +15,13 @@ from repoauditor.store.models import ModelUsage, RunStatus
 runner = CliRunner()
 
 
-def _run(tmp_config, source: str, *, unknown: bool = False, completed: bool = True) -> int:
-    pipeline = db.start_pipeline_run(source, tmp_config)
+def _run(
+    tmp_config, source: str, *, unknown: bool = False, completed: bool = True,
+    parent_run_id: int | None = None,
+) -> int:
+    pipeline = db.start_pipeline_run(
+        source, tmp_config, parent_run_id=parent_run_id
+    )
     db.insert_model_usage(
         ModelUsage(
             pipeline_run_id=pipeline.id,
@@ -74,7 +79,7 @@ def test_unknown_usage_and_incomplete_run_block_calibration(tmp_config):
 
     assert report.ready is False
     assert any("without token metadata" in blocker for blocker in report.blockers)
-    assert any("status is running" in blocker for blocker in report.blockers)
+    assert any("terminal run" in blocker and "running" in blocker for blocker in report.blockers)
 
 
 def test_wrong_or_reused_cohort_run_cannot_satisfy_protected_roles(tmp_config):
@@ -89,7 +94,7 @@ def test_wrong_or_reused_cohort_run_cannot_satisfy_protected_roles(tmp_config):
     }, tmp_config)
 
     assert report.ready is False
-    assert "each calibration role must use a distinct pipeline run" in report.blockers
+    assert "each calibration role must use a distinct logical scan chain" in report.blockers
     assert any("independent_serialize_javascript_pre" in item for item in report.blockers)
     assert any("independent_serialize_javascript_post" in item for item in report.blockers)
 
@@ -117,3 +122,50 @@ def test_usage_calibration_cli_json_is_offline_and_structured(tmp_config, monkey
     assert [item["role"] for item in payload["observations"]] == [
         "lightweight", "independent_pre", "independent_post",
     ]
+
+
+def test_continuation_chain_aggregates_usage_and_blocks_deferred_terminal(tmp_config):
+    db.init_db(tmp_config)
+    root = _run(tmp_config, "uat_lightweight_app")
+    db.start_stage_run(root, "falsify", tmp_config)
+    db.finish_stage_run(
+        root, "falsify", RunStatus.COMPLETED,
+        summary={"deferred": 2}, config=tmp_config,
+    )
+    terminal = _run(
+        tmp_config, "uat_lightweight_app", parent_run_id=root
+    )
+    db.start_stage_run(terminal, "falsify", tmp_config)
+    db.finish_stage_run(
+        terminal, "falsify", RunStatus.COMPLETED,
+        summary={"deferred": 0}, config=tmp_config,
+    )
+
+    other_pre = _run(tmp_config, "independent_serialize_javascript_pre")
+    other_post = _run(tmp_config, "independent_serialize_javascript_post")
+    report = build_usage_calibration({
+        "lightweight": terminal,
+        "independent_pre": other_pre,
+        "independent_post": other_post,
+    }, tmp_config)
+
+    assert report.ready is True
+    item = report.observations[0]
+    assert item.run_ids == [root, terminal]
+    assert item.batch_count == 2
+    assert item.calls == 2
+    assert item.processed_tokens == 270
+    # Utilization is peak batch pressure, not aggregate calls divided by one batch limit.
+    assert item.call_utilization == 1 / 75
+
+    db.finish_stage_run(
+        terminal, "falsify", RunStatus.COMPLETED,
+        summary={"deferred": 1}, config=tmp_config,
+    )
+    blocked = build_usage_calibration({
+        "lightweight": terminal,
+        "independent_pre": other_pre,
+        "independent_post": other_post,
+    }, tmp_config)
+    assert blocked.ready is False
+    assert any("still has 1 deferred" in reason for reason in blocked.blockers)

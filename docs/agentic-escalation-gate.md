@@ -10,8 +10,10 @@ evidence exists.
 
 ## Activation prerequisites
 
-1. **Authoritative usage accounting** — **implemented for the current bounded pipeline**:
-   provider-reported input/output/cache tokens and latency per attempt are persisted.
+1. **Authoritative usage accounting** — **implemented for all current model-backed CLI
+   entry points**: provider-reported input/output/cache tokens and latency per attempt are
+   persisted, deferred batches carry durable parent links, and linked batches are aggregated
+   as one logical scan.
    Calls whose failure response omits usage metadata remain counted and explicitly unknown.
    Dollar cost stays unavailable until a dated, provider/model-specific price source exists.
 2. **Protected evaluation cohort** — independently authored, human-adjudicated repositories
