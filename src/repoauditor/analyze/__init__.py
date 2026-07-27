@@ -13,6 +13,13 @@ from .corroboration import (
     corroborate,
 )
 from .deal_risk import DealRiskResult, weigh_deal_risk
+from .integrity import (
+    AuditLevel,
+    QuantAuditIssue,
+    QuantAuditResult,
+    audit_quantitative_inputs,
+    render_quant_audit,
+)
 from .risk_quant import (
     QuantificationArtifacts,
     build_scenarios,
@@ -31,6 +38,11 @@ __all__ = [
     "SEVERITY_UPGRADE_GAP",
     "weigh_deal_risk",
     "DealRiskResult",
+    "AuditLevel",
+    "QuantAuditIssue",
+    "QuantAuditResult",
+    "audit_quantitative_inputs",
+    "render_quant_audit",
     "QuantificationArtifacts",
     "build_scenarios",
     "calibrate_lognormal",

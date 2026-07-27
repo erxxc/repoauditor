@@ -2,6 +2,12 @@
 
 Status: recorded for future expansion; no quantitative-model behavior changes in this phase.
 
+The first applicability inventory is now executable through
+`repoauditor quant-audit <repo-id>` and documented in
+[quantitative-integrity-audit.md](quantitative-integrity-audit.md). It deliberately reports
+unsupported scope rather than changing priors. The confirmed organization-frequency
+repetition issue remains unresolved pending a sourced decomposition.
+
 Repoauditor's current priors are industry baselines with explicit publication provenance,
 plus separately identified engagement inputs and CVE-specific EPSS/KEV signals where those
 signals actually exist. They should not be treated as universally representative of every

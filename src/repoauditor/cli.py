@@ -25,7 +25,7 @@ import typer
 from pathlib import Path
 
 from . import __version__
-from .analyze import quantify_appendix
+from .analyze import audit_quantitative_inputs, quantify_appendix, render_quant_audit
 from .config import get_config
 from .detect import DetectionRun, run_ensemble
 from .detect.ensemble import CITATION_INTEGRITY_VERSION, LENS_PROMPT_VERSIONS
@@ -1057,6 +1057,17 @@ def quantify(
     _quantify_stage(
         repo_id, get_config(), trials=trials, seed=seed, record_audit=record_audit
     )
+
+
+@app.command(name="quant-audit")
+@_clean_errors("quant-audit")
+def quant_audit_command(
+    repo_id: str = typer.Argument(
+        ..., help="Repo id whose current read-only quantitative inputs should be audited."
+    ),
+) -> None:
+    """Check quantitative applicability/double counting without changing the model."""
+    typer.echo(render_quant_audit(audit_quantitative_inputs(repo_id, get_config())))
 
 
 @app.command()
