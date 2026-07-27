@@ -32,17 +32,17 @@ from types import SimpleNamespace
 import pytest
 
 from conftest import FIXTURES_DIR, _load_fixture, benchmark_corpus_ids
+from repoauditor import cli
 from repoauditor.detect import run_ensemble
 from repoauditor.detect.deterministic import SecretsAdapter
 from repoauditor.detect.retrieval import RetrievalIndex
 from repoauditor.eval import record_and_check
 from repoauditor.falsify import challenge
 from repoauditor.ingest import ingest_repo
-from repoauditor.llm import model_usage_scope
 from repoauditor.map import recover_architecture
 from repoauditor.normalize import adjudicate
 from repoauditor.store import db
-from repoauditor.store.models import FalsificationStatus, RunStatus
+from repoauditor.store.models import FalsificationStatus
 
 # The scorer + pipeline driver are the golden harness's; reuse them rather than fork a
 # second, drifting copy (tests/ is on the path in prepend import mode — no __init__.py).
@@ -57,15 +57,16 @@ from fixtures.audit_corpus_readiness import build_corpus_readiness
 
 
 def _append_live_uat_result(
-    path: Path, benchmark_repo, score: dict, run, config,
-    *, pipeline_run_id: int | None = None, model_usage: dict | None = None,
+    path: Path, benchmark_repo, config, *, status: str,
+    score: dict | None = None, run=None, pipeline: dict | None = None,
+    failure_detail: str | None = None,
 ) -> None:
-    """Append one paid-run result when the explicit UAT artifact path is configured."""
+    """Append one terminal paid-run result, including failures and partial usage."""
     if path.is_file():
         document = json.loads(path.read_text())
     else:
         document = {
-            "schema_version": 2,
+            "schema_version": 3,
             "generated_at": datetime.now(timezone.utc).isoformat(),
             "mode": "live-model",
             "methodology": (
@@ -84,13 +85,66 @@ def _append_live_uat_result(
         "kind": benchmark_repo.expected["source"]["kind"],
         "provider": config.llm.provider,
         "model": config.model.name,
-        "prompt_versions": run.prompt_versions,
-        "pipeline_run_id": pipeline_run_id,
-        "model_usage": model_usage,
+        "status": status,
+        "failure_detail": failure_detail,
+        "prompt_versions": run.prompt_versions if run is not None else {},
+        "pipeline": pipeline,
         "evaluation": score,
     })
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(document, indent=2) + "\n")
+
+
+def _pipeline_evidence(config, repo_id: str) -> dict | None:
+    """Return self-contained chain evidence before the temporary pytest store disappears."""
+    terminal = db.get_latest_pipeline_run(repo_id, config)
+    if terminal is None or terminal.id is None:
+        return None
+    chain, totals, per_batch = db.summarize_model_usage_chain(terminal.id, config)
+    return {
+        "terminal_run_id": terminal.id,
+        "batch_ids": [batch.id for batch in chain],
+        "batch_statuses": [batch.status.value for batch in chain],
+        "batch_failure_details": [batch.failure_detail for batch in chain],
+        "batch_usage": per_batch,
+        "aggregate_usage": totals,
+        "batch_stages": {
+            str(batch.id): [stage.stage for stage in db.list_stage_runs(batch.id, config)]
+            for batch in chain
+        },
+        "deferred_findings": len(db.list_deferred_findings(repo_id, config)),
+    }
+
+
+def _run_live_pipeline(
+    benchmark_repo, config, *, max_batches: int,
+) -> str:
+    """Run upstream once, then use only production continuation until the queue closes."""
+    if not 1 <= max_batches <= 4:
+        raise ValueError("REPOAUDITOR_UAT_MAX_BATCHES must be between 1 and 4")
+    source = str(benchmark_repo.snapshot_path)
+    cli.run(source, cli.RunFormat.NDJSON, fresh=True)
+    ingested = [
+        item for item in db.list_ingested_repos(config)
+        if Path(item.source).resolve() == benchmark_repo.snapshot_path.resolve()
+    ]
+    if not ingested:
+        raise RuntimeError("live pipeline did not record its ingested repository")
+    repo_id = ingested[-1].repo_id
+
+    while db.list_deferred_findings(repo_id, config):
+        terminal = db.get_latest_pipeline_run(repo_id, config)
+        if terminal is None or terminal.id is None:
+            raise RuntimeError("deferred live pipeline has no durable run record")
+        chain = db.list_pipeline_run_chain(terminal.id, config)
+        if len(chain) >= max_batches:
+            raise RuntimeError(
+                f"live corpus continuation cap reached ({len(chain)}/{max_batches} "
+                f"batches) with {len(db.list_deferred_findings(repo_id, config))} "
+                "deferred findings"
+            )
+        cli.resume(repo_id, cli.RunFormat.NDJSON)
+    return repo_id
 
 
 # --------------------------------------------------------------------------- #
@@ -241,16 +295,19 @@ def test_live_uat_artifact_is_explicitly_fixture_derived(tmp_config, tmp_path, m
     _append_live_uat_result(
         artifact,
         fixture,
-        {
+        tmp_config,
+        status="completed",
+        score={
             "methodology": "confirmed countable fixture scoring",
             "final_countable_confirmed": {
                 "precision": 0.75, "recall": 0.5, "tp": 3, "fp": 1, "fn": 3,
             },
         },
-        SimpleNamespace(prompt_versions={"detect": "owasp_v1"}),
-        tmp_config,
-        pipeline_run_id=17,
-        model_usage={"calls": 4, "input_tokens": 100, "output_tokens": 20},
+        run=SimpleNamespace(prompt_versions={"detect": "owasp_v1"}),
+        pipeline={
+            "terminal_run_id": 17,
+            "aggregate_usage": {"calls": 4, "input_tokens": 100, "output_tokens": 20},
+        },
     )
 
     document = json.loads(artifact.read_text())
@@ -258,10 +315,110 @@ def test_live_uat_artifact_is_explicitly_fixture_derived(tmp_config, tmp_path, m
     assert "not exhaustive" in document["methodology"]
     assert document["scanner_coverage"] == "not-installed-live-model-only"
     assert document["results"][0]["kind"] == "fixture"
-    assert document["results"][0]["pipeline_run_id"] == 17
-    assert document["results"][0]["model_usage"]["calls"] == 4
+    assert document["results"][0]["status"] == "completed"
+    assert document["results"][0]["pipeline"]["terminal_run_id"] == 17
+    assert document["results"][0]["pipeline"]["aggregate_usage"]["calls"] == 4
     final = document["results"][0]["evaluation"]["final_countable_confirmed"]
     assert final["precision"] == 0.75
+
+
+def test_live_uat_failure_artifact_retains_terminal_evidence(
+    tmp_config, tmp_path,
+):
+    artifact = tmp_path / "live-uat.json"
+    fixture = _load_fixture("uat_lightweight_app")
+
+    _append_live_uat_result(
+        artifact, fixture, tmp_config, status="failed",
+        pipeline={
+            "terminal_run_id": 3,
+            "batch_ids": [1, 2, 3],
+            "aggregate_usage": {"calls": 21, "unknown_usage_calls": 0},
+            "deferred_findings": 4,
+        },
+        failure_detail="RuntimeError: continuation cap reached",
+    )
+
+    result = json.loads(artifact.read_text())["results"][0]
+    assert result["status"] == "failed"
+    assert result["evaluation"] is None
+    assert result["failure_detail"] == "RuntimeError: continuation cap reached"
+    assert result["pipeline"]["batch_ids"] == [1, 2, 3]
+    assert result["pipeline"]["aggregate_usage"]["calls"] == 21
+    assert result["pipeline"]["deferred_findings"] == 4
+
+
+def test_live_pipeline_uses_upstream_once_then_bounded_resume(tmp_config, tmp_path, monkeypatch):
+    fixture = SimpleNamespace(snapshot_path=tmp_path / "snapshot")
+    fixture.snapshot_path.mkdir()
+    calls = {"run": 0, "resume": 0}
+
+    def fake_run(source, output_format, fresh):
+        calls["run"] += 1
+        assert source == str(fixture.snapshot_path)
+        assert output_format is cli.RunFormat.NDJSON
+        assert fresh is True
+
+    def fake_resume(repo_id, output_format):
+        calls["resume"] += 1
+        assert repo_id == "fixture-repo"
+        assert output_format is cli.RunFormat.NDJSON
+
+    monkeypatch.setattr(cli, "run", fake_run)
+    monkeypatch.setattr(cli, "resume", fake_resume)
+    monkeypatch.setattr(
+        db, "list_ingested_repos",
+        lambda config: [SimpleNamespace(source=str(fixture.snapshot_path), repo_id="fixture-repo")],
+    )
+    monkeypatch.setattr(
+        db, "list_deferred_findings",
+        lambda repo_id, config: [object()] if calls["resume"] < 2 else [],
+    )
+    monkeypatch.setattr(
+        db, "get_latest_pipeline_run",
+        lambda repo_id, config: SimpleNamespace(id=calls["resume"] + 1),
+    )
+    monkeypatch.setattr(
+        db, "list_pipeline_run_chain",
+        lambda run_id, config: [object()] * (calls["resume"] + 1),
+    )
+
+    repo_id = _run_live_pipeline(fixture, tmp_config, max_batches=4)
+
+    assert repo_id == "fixture-repo"
+    assert calls == {"run": 1, "resume": 2}
+
+
+def test_live_pipeline_stops_at_total_batch_cap(tmp_config, tmp_path, monkeypatch):
+    fixture = SimpleNamespace(snapshot_path=tmp_path / "snapshot")
+    fixture.snapshot_path.mkdir()
+    calls = {"run": 0, "resume": 0}
+    monkeypatch.setattr(
+        cli, "run",
+        lambda source, output_format, fresh: calls.__setitem__("run", calls["run"] + 1),
+    )
+    monkeypatch.setattr(
+        cli, "resume",
+        lambda repo_id, output_format: calls.__setitem__("resume", calls["resume"] + 1),
+    )
+    monkeypatch.setattr(
+        db, "list_ingested_repos",
+        lambda config: [SimpleNamespace(source=str(fixture.snapshot_path), repo_id="fixture-repo")],
+    )
+    monkeypatch.setattr(db, "list_deferred_findings", lambda repo_id, config: [object()])
+    monkeypatch.setattr(
+        db, "get_latest_pipeline_run",
+        lambda repo_id, config: SimpleNamespace(id=calls["resume"] + 1),
+    )
+    monkeypatch.setattr(
+        db, "list_pipeline_run_chain",
+        lambda run_id, config: [object()] * (calls["resume"] + 1),
+    )
+
+    with pytest.raises(RuntimeError, match="continuation cap reached"):
+        _run_live_pipeline(fixture, tmp_config, max_batches=2)
+
+    assert calls == {"run": 1, "resume": 1}
 
 
 # --------------------------------------------------------------------------- #
@@ -365,7 +522,7 @@ def test_scripted_pipeline_records_per_stage_evalruns(
 # 4. Live end-to-end corpus baseline (DEFERRED) — the honest model-capability number.
 # --------------------------------------------------------------------------- #
 @pytest.mark.live
-def test_corpus_live_baseline(tmp_config, benchmark_repo, capsys):
+def test_corpus_live_baseline(tmp_config, benchmark_repo, capsys, monkeypatch):
     """Run the real pipeline (map->detect->falsify->normalize) over each corpus fixture.
 
     This is the turnkey deferred baseline: it produces the honest, model-driven
@@ -374,42 +531,35 @@ def test_corpus_live_baseline(tmp_config, benchmark_repo, capsys):
     semgrep/pip-audit/osv are installed). The loose gate reports the number rather than
     hard-failing a non-deterministic model.
     """
-    from repoauditor.llm import get_llm_client
-
     if not benchmark_repo.snapshot_path.is_dir():
         pytest.skip(
             "pinned acquisition-only corpus entry is not materialized; run "
             "tests/fixtures/materialize_public_corpus.py first"
         )
 
+    durable_data_dir = os.environ.get("REPOAUDITOR_UAT_DATA_DIR")
+    if durable_data_dir:
+        data_dir = Path(durable_data_dir).resolve()
+        tmp_config = tmp_config.model_copy(update={
+            "paths": tmp_config.paths.model_copy(update={
+                "data_dir": data_dir,
+                "raw_dir": data_dir / "raw",
+                "db_path": data_dir / "repoauditor.db",
+            })
+        })
     db.init_db(tmp_config)
-    pipeline = db.start_pipeline_run(str(benchmark_repo.snapshot_path), tmp_config)
-    assert pipeline.id is not None
+    monkeypatch.setattr(cli, "get_config", lambda: tmp_config)
+    artifact_path = os.environ.get("REPOAUDITOR_UAT_RESULTS")
+    max_batches = int(os.environ.get("REPOAUDITOR_UAT_MAX_BATCHES", "4"))
+    if not 1 <= max_batches <= 4:
+        raise ValueError("REPOAUDITOR_UAT_MAX_BATCHES must be between 1 and 4")
+    repo_id: str | None = None
     try:
-        llm = get_llm_client(tmp_config)
-        result = ingest_repo(str(benchmark_repo.snapshot_path), tmp_config,
-                             repo_id=benchmark_repo.repo_id)
-        db.update_pipeline_run_identity(
-            pipeline.id, result.repo_id, result.commit, tmp_config
+        repo_id = _run_live_pipeline(
+            benchmark_repo, tmp_config, max_batches=max_batches
         )
-        with model_usage_scope(pipeline.id):
-            recover_architecture(
-                result.snapshot_path, result.repo_id, result.commit, tmp_config, llm
-            )
-            run_ensemble(result.repo_id, tmp_config, llm=llm)
-            challenge(result.repo_id, tmp_config, llm=llm)
-            deferred = [
-                finding for finding in db.list_findings(result.repo_id, tmp_config)
-                if finding.falsification_status is FalsificationStatus.DEFERRED
-            ]
-            if deferred:
-                raise RuntimeError(
-                    f"live corpus run stopped with {len(deferred)} deferred findings; "
-                    "do not normalize or score an incomplete run"
-                )
-            adjudicate(db.list_findings(result.repo_id, tmp_config), tmp_config, llm)
 
-        findings = db.list_findings(result.repo_id, tmp_config)
+        findings = db.list_findings(repo_id, tmp_config)
         if benchmark_repo.expected.get("planted_cases"):
             scanner_coverage = os.environ.get(
                 "REPOAUDITOR_UAT_SCANNER_COVERAGE", "environment-dependent"
@@ -442,21 +592,24 @@ def test_corpus_live_baseline(tmp_config, benchmark_repo, capsys):
             lineage=lineage,
             precision=final["precision"], recall=final["recall"], config=tmp_config)
     except BaseException as exc:
-        db.finish_pipeline_run(
-            pipeline.id, RunStatus.FAILED,
-            failure_detail=f"{type(exc).__name__}: {exc}"[:4000],
-            config=tmp_config,
-        )
+        if repo_id is None:
+            matching = [
+                item for item in db.list_ingested_repos(tmp_config)
+                if Path(item.source).resolve() == benchmark_repo.snapshot_path.resolve()
+            ]
+            repo_id = matching[-1].repo_id if matching else benchmark_repo.repo_id
+        if artifact_path:
+            _append_live_uat_result(
+                Path(artifact_path), benchmark_repo, tmp_config,
+                status="failed", pipeline=_pipeline_evidence(tmp_config, repo_id),
+                failure_detail=f"{type(exc).__name__}: {exc}"[:4000],
+            )
         raise
-    else:
-        db.finish_pipeline_run(pipeline.id, RunStatus.COMPLETED, config=tmp_config)
-
-    artifact_path = os.environ.get("REPOAUDITOR_UAT_RESULTS")
     if artifact_path:
         _append_live_uat_result(
-            Path(artifact_path), benchmark_repo, score, run, tmp_config,
-            pipeline_run_id=pipeline.id,
-            model_usage=db.summarize_model_usage(pipeline.id, tmp_config),
+            Path(artifact_path), benchmark_repo, tmp_config,
+            status="completed", score=score, run=run,
+            pipeline=_pipeline_evidence(tmp_config, repo_id),
         )
 
     with capsys.disabled():

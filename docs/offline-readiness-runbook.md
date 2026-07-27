@@ -102,9 +102,13 @@ Before rerunning, the live harness must:
    normalize/scoring; and
 4. retain offline regression coverage for failure artifacts and multi-batch completion.
 
-Keep the 75-call/250,000-token ceilings unchanged while making this correction. After a
-successful lightweight rerun, inspect its usage and accuracy artifact before authorizing
-`bounded-independent`.
+Keep the 75-call/250,000-token per-batch ceilings unchanged while making this correction.
+The live workflow also caps each fixture at four total linked batches and retains its
+20-minute process timeout; therefore its conservative outer bounds are 300 calls and
+1,000,000 provider-reported tokens, with the wall-clock timeout likely stopping earlier.
+Reaching any bound produces a failure artifact rather than a partial score. After a
+successful lightweight rerun, inspect actual usage and accuracy before authorizing
+`bounded-independent`; these are ceilings, not intended consumption.
 
 ## Analyst decision after collection
 

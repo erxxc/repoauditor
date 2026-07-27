@@ -155,9 +155,11 @@ jobs:
             }}
           REPOAUDITOR_UAT_RESULTS: live-corpus-results.json
           REPOAUDITOR_UAT_SCANNER_COVERAGE: not-installed-live-model-only
+          REPOAUDITOR_UAT_MAX_BATCHES: "4"
+          REPOAUDITOR_UAT_DATA_DIR: live-uat-data
         run: |
           echo "Bounded live cohort: $REPOAUDITOR_CORPUS_IDS"
-          echo "Hard evaluation timeout: 20 minutes; pytest stops on first failure."
+          echo "Hard evaluation timeout: 20 minutes; at most $REPOAUDITOR_UAT_MAX_BATCHES linked batches per fixture."
           timeout --signal=TERM --kill-after=30s 20m \
             uv run pytest \
               tests/test_benchmark_corpus.py::test_corpus_live_baseline \
@@ -182,6 +184,7 @@ jobs:
             live-corpus-results.json
             live-corpus-junit.xml
             corpus-readiness.json
+            live-uat-data/repoauditor.db
           retention-days: 30
           if-no-files-found: warn
       - name: Retain manufactured-control evidence
