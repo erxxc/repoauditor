@@ -54,8 +54,11 @@ Only after the provider allowance and protected cache are available:
 
 1. Run the public-corpus cache workflow and confirm both protected snapshots materialize at
    their declared commits.
-2. Run one fresh foreground pipeline over the lightweight snapshot.
-3. Run one fresh foreground pipeline over each protected pre/post snapshot.
+2. Run one fresh foreground pipeline over the lightweight snapshot. Stop and inspect its
+   status and authoritative usage before authorizing the protected pair; do not queue all
+   three paid runs blindly.
+3. Run one fresh foreground pipeline over each protected pre/post snapshot only if the
+   lightweight run completed within the existing ceilings.
 4. If a run stops with a deferred backlog, use `repoauditor resume <repo-id>` until the
    backlog reaches zero. Record the **terminal run id** for each logical scan. Linked
    continuation batches are aggregated automatically; review/finalize is not required.
@@ -75,6 +78,12 @@ calls, and every call returned token metadata. Intermediate recovered-failure st
 remain disclosed in the chain and their usage is retained. The report shows total chain
 usage plus peak single-batch utilization of the current 75-call/250,000-token ceilings, but
 never recommends or applies a new limit.
+
+The scheduled/manual live-test workflow is a separate model-capability lane. It uses the same
+call/token scope and writes authoritative usage totals into its uploaded result, but its
+pytest store is temporary. Use those artifacts for workflow safety and accuracy review; use
+three foreground runs in one persistent local store when producing the formal
+`usage-calibration` comparison above.
 
 ## Analyst decision after collection
 

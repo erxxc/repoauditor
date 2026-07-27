@@ -11,7 +11,9 @@ The honest-baseline story this module encodes:
   (`REPOAUDITOR_LLM=live`); the SAST/SCA numbers need semgrep/pip-audit/osv. None are present
   in a bare CI env, and *scripting* answers for 25+ cases would make precision/recall circular.
   So the corpus's model-capability baseline is produced by `test_corpus_live_baseline`
-  (marked `live`), which records one `EvalRun` per fixture when a key is present.
+  (marked `live`), which records one `EvalRun` per fixture when a key is present. The paid
+  path also enters a durable pipeline usage scope, fails before scoring deferred work, and
+  publishes authoritative usage totals with its result.
 * **Honest, and runs now.** The deterministic **secrets adapter** (gitleaks, installed) is
   scored against a real secrets ground truth and recorded as an `EvalRun`. And the scripted
   detect->falsify->normalize *pipeline logic* is recorded per stage — deterministic, and
