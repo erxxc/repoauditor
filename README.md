@@ -536,6 +536,20 @@ count and persisted attempts. Validation, connection, timeout, HTTP 408, and 5xx
 may retry within that bound. Authentication, permission, invalid-request/model, quota/429,
 and other terminal 4xx failures stop immediately instead of spending the remaining budget.
 
+Live detection is also bounded by `[detect].max_llm_regions_per_run` (six by default).
+Before map/detect spend, `run` prints the all-files × three-lenses base-call projection and
+the bounded plan. Region selection is ground-truth-blind: independently produced scanner
+and architecture-map locations are considered first, with a stable content-derived sample
+reserved outside those signals. The completion summary discloses selected and omitted
+regions; bounded coverage must not be represented as a full-repository LLM review.
+
+Each selected file+lens unit is checkpointed in SQLite. If detection stops, rerun the
+standalone `repoauditor detect <repo-id>` command to receive a fresh usage budget; completed
+units are reused without another provider call. A pipeline run whose total budget was
+already exhausted must not be resumed for downstream paid stages under that same run id;
+continue with the standalone `triage`, `falsify`, and `normalize` commands, each of which
+opens its own bounded operation record.
+
 More autonomous tool-using falsification is intentionally not enabled yet. The
 [agentic escalation gate](docs/agentic-escalation-gate.md) requires authoritative usage
 accounting, a protected real-world baseline, recall-safety evidence, read-only tools, and

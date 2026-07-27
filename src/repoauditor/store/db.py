@@ -21,6 +21,7 @@ from .models import (
     ClaimEvidence,
     DealRisk,
     DebatePosition,
+    DetectionRegionRun,
     Entity,
     EntityKind,
     EvalRun,
@@ -266,6 +267,81 @@ def list_model_usage(
                 (pipeline_run_id,),
             ).fetchall()
         return [ModelUsage(**dict(row)) for row in rows]
+    finally:
+        conn.close()
+
+
+def start_detection_region(
+    region: DetectionRegionRun, config: Config | None = None
+) -> DetectionRegionRun:
+    """Start/restart one region; a completed row is returned unchanged."""
+    conn = get_connection(config)
+    try:
+        with conn:
+            conn.execute(
+                "INSERT INTO detection_region_run "
+                "(repo_id, commit_hash, file, lens, prompt_version, selection_basis, status) "
+                "VALUES (?, ?, ?, ?, ?, ?, 'running') "
+                "ON CONFLICT(repo_id, commit_hash, file, lens, prompt_version) DO UPDATE SET "
+                "selection_basis=excluded.selection_basis, status=CASE "
+                "WHEN detection_region_run.status='completed' THEN 'completed' ELSE 'running' END, "
+                "started_at=CASE WHEN detection_region_run.status='completed' "
+                "THEN detection_region_run.started_at ELSE datetime('now') END, "
+                "completed_at=CASE WHEN detection_region_run.status='completed' "
+                "THEN detection_region_run.completed_at ELSE NULL END, "
+                "failure_detail=CASE WHEN detection_region_run.status='completed' "
+                "THEN detection_region_run.failure_detail ELSE NULL END",
+                (
+                    region.repo_id, region.commit_hash, region.file, region.lens,
+                    region.prompt_version, region.selection_basis,
+                ),
+            )
+            row = conn.execute(
+                "SELECT * FROM detection_region_run WHERE repo_id=? AND commit_hash=? "
+                "AND file=? AND lens=? AND prompt_version=?",
+                (
+                    region.repo_id, region.commit_hash, region.file, region.lens,
+                    region.prompt_version,
+                ),
+            ).fetchone()
+        return DetectionRegionRun(**dict(row))
+    finally:
+        conn.close()
+
+
+def finish_detection_region(
+    region_id: int,
+    status: RunStatus,
+    *,
+    finding_count: int = 0,
+    failure_detail: str | None = None,
+    config: Config | None = None,
+) -> None:
+    conn = get_connection(config)
+    try:
+        with conn:
+            conn.execute(
+                "UPDATE detection_region_run SET status=?, finding_count=?, "
+                "completed_at=datetime('now'), failure_detail=? WHERE id=?",
+                (str(status), finding_count, failure_detail, region_id),
+            )
+    finally:
+        conn.close()
+
+
+def list_detection_regions(
+    repo_id: str,
+    commit_hash: str,
+    config: Config | None = None,
+) -> list[DetectionRegionRun]:
+    conn = get_connection(config)
+    try:
+        rows = conn.execute(
+            "SELECT * FROM detection_region_run WHERE repo_id=? AND commit_hash=? "
+            "ORDER BY id",
+            (repo_id, commit_hash),
+        ).fetchall()
+        return [DetectionRegionRun(**dict(row)) for row in rows]
     finally:
         conn.close()
 

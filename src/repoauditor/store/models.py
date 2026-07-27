@@ -75,6 +75,23 @@ class ModelUsage(BaseModel):
     recorded_at: str | None = None
 
 
+class DetectionRegionRun(BaseModel):
+    """Durable unit of bounded detect work; completed rows are never re-billed."""
+
+    id: int | None = None
+    repo_id: str
+    commit_hash: str
+    file: str
+    lens: str
+    prompt_version: str
+    selection_basis: str
+    status: RunStatus = RunStatus.RUNNING
+    finding_count: int = 0
+    started_at: str | None = None
+    completed_at: str | None = None
+    failure_detail: str | None = None
+
+
 class Severity(StrEnum):
     INFO = "info"
     LOW = "low"

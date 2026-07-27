@@ -6,6 +6,11 @@ under `retrieval/`.
 """
 
 from .ensemble import CandidateFinding, DetectionRun, LensCandidate, LensFindings, run_ensemble
+from .planning import (
+    DetectionProjection,
+    project_detection_work,
+    validate_detection_projection,
+)
 from .retrieval import RetrievalIndex
 
 __all__ = [
@@ -14,5 +19,8 @@ __all__ = [
     "LensCandidate",
     "LensFindings",
     "run_ensemble",
+    "DetectionProjection",
+    "project_detection_work",
+    "validate_detection_projection",
     "RetrievalIndex",
 ]

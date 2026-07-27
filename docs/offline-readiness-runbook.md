@@ -85,6 +85,15 @@ pytest store is temporary. Use those artifacts for workflow safety and accuracy 
 three foreground runs in one persistent local store when producing the formal
 `usage-calibration` comparison above.
 
+For a large repository, inspect `run`'s detection preflight before authorizing provider
+work. The output distinguishes the unbounded call projection from the configured bounded
+region plan. If a bounded detect pass stops, run `repoauditor detect <repo-id>` again under a
+fresh budget; persisted file+lens checkpoints prevent completed units from being re-billed.
+If the original pipeline run already exhausted its total budget, continue through standalone
+`triage`, `falsify`, and `normalize` operations rather than reusing that exhausted run id.
+Never raise a limit merely to approximate all-files × all-lenses coverage, and never
+describe omitted regions as model-reviewed.
+
 ### Lightweight observations and completed harness corrections
 
 Actions run `30228015245` on 2026-07-27 passed all four manufactured controls, then stopped

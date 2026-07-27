@@ -27,7 +27,12 @@ from pathlib import Path
 from . import __version__
 from .analyze import audit_quantitative_inputs, quantify_appendix, render_quant_audit
 from .config import get_config
-from .detect import DetectionRun, run_ensemble
+from .detect import (
+    DetectionRun,
+    project_detection_work,
+    run_ensemble,
+    validate_detection_projection,
+)
 from .detect.ensemble import CITATION_INTEGRITY_VERSION, LENS_PROMPT_VERSIONS
 from .eval import (
     build_usage_calibration,
@@ -427,6 +432,13 @@ def _detect_stage(repo_id: str, config):
         f"gitleaks={counts['gitleaks']}, pip-audit={counts['pip-audit']}, "
         f"osv-scanner={counts['osv-scanner']}, llm-ensemble={counts['llm-ensemble']}", timing
     )
+    if result.projection is not None and not _quiet_enabled.get():
+        typer.echo(
+            "  live-region-coverage="
+            f"{result.projection.planned_regions}/{result.projection.source_files}; "
+            f"completed-calls={result.completed_region_calls}; "
+            f"reused-completed-calls={result.skipped_completed_region_calls}"
+        )
     if result.sarif_path is not None:
         if not _quiet_enabled.get():
             typer.echo(f"  semgrep-status={result.semgrep_status}; SARIF={result.sarif_path}")
@@ -1321,6 +1333,19 @@ def run(
     else:
         repo_id, commit = pipeline.repo_id, pipeline.commit_hash
     snapshot_path, _ = latest_snapshot(config, repo_id)
+    projection = project_detection_work(
+        snapshot_path, config, lens_count=len(LENS_PROMPT_VERSIONS)
+    )
+    validate_detection_projection(projection, config, preceding_map_calls=2)
+    if not machine and not _quiet_enabled.get():
+        typer.echo(
+            "detection preflight: "
+            f"source-files={projection.source_files}; "
+            f"unbounded-base-calls={projection.unbounded_base_calls}; "
+            f"planned-regions={projection.planned_regions}; "
+            f"planned-base-calls={projection.planned_base_calls}; "
+            f"omitted-regions={projection.omitted_regions}"
+        )
 
     if "map" not in completed:
         step(
@@ -1340,6 +1365,16 @@ def run(
             lambda value: (
                 {
                     **detection_metrics(value, value.source_counts),
+                    "region_plan": ({
+                        "source_files": value.projection.source_files,
+                        "unbounded_base_calls": value.projection.unbounded_base_calls,
+                        "planned_regions": value.projection.planned_regions,
+                        "planned_base_calls": value.projection.planned_base_calls,
+                        "omitted_regions": value.projection.omitted_regions,
+                        "selected": value.selected_regions,
+                        "completed_calls": value.completed_region_calls,
+                        "reused_completed_calls": value.skipped_completed_region_calls,
+                    } if getattr(value, "projection", None) is not None else None),
                     "semgrep_status": value.semgrep_status,
                     "scanner_coverage": {
                         "checked": preflight.scanners_checked,

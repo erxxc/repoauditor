@@ -216,3 +216,15 @@ The current evidence-backed decision is recorded in
 store has no usable human-label cohort or completed same-store three-run calibration,
 repeatability is uncharacterized, and the organization-frequency defect remains
 methodology-blocking. This hold is the priority-10 decision, not an incomplete tuning run.
+
+## Large-repository detection safety
+
+- [x] Project unbounded all-files × lens calls before paid map/detect work and fail when
+  the configured bounded minimum cannot fit the pipeline call ceiling.
+- [x] Cap live regions through explicit configuration, prioritize only scanner/map evidence,
+  and reserve a stable ground-truth-blind coverage sample. Persist selected/omitted coverage.
+- [x] Checkpoint every file+lens unit so a fresh standalone detect budget reuses completed
+  units rather than repeating provider calls.
+- [ ] Validate the bounded planner on independent projects without tuning its selection
+  against advisory target locations. Treat missed omitted-region targets as coverage
+  evidence, not false-negative model judgments.
