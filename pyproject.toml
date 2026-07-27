@@ -51,16 +51,6 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["src/repoauditor"]
 
-# Prompt/template/DDL assets live inside the package and must ship with it.
-[tool.hatch.build.targets.wheel.force-include]
-"src/repoauditor/map/prompts" = "repoauditor/map/prompts"
-"src/repoauditor/detect/lenses" = "repoauditor/detect/lenses"
-"src/repoauditor/falsify/prompts" = "repoauditor/falsify/prompts"
-"src/repoauditor/llm/prompts" = "repoauditor/llm/prompts"
-"src/repoauditor/normalize/prompts" = "repoauditor/normalize/prompts"
-"src/repoauditor/report/templates" = "repoauditor/report/templates"
-"src/repoauditor/store/ddl" = "repoauditor/store/ddl"
-
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 norecursedirs = ["tests/fixtures"]
