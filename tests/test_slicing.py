@@ -2,8 +2,14 @@
 
 from pathlib import Path
 
+import pytest
+
 from repoauditor.detect.retrieval import RetrievalIndex
-from repoauditor.falsify.slicing import SLICE_VERSION, build_python_slice
+from repoauditor.falsify.slicing import (
+    SLICE_VERSION,
+    build_python_slice,
+    build_structural_slice,
+)
 from repoauditor.store.models import Finding
 
 UAT = Path(__file__).parent / "fixtures" / "uat_lightweight_app" / "snapshot"
@@ -157,3 +163,55 @@ def test_unsupported_mechanism_does_not_emit_a_slice():
     )
 
     assert evidence is None
+
+
+@pytest.mark.parametrize(
+    ("filename", "declaration", "language"),
+    [
+        ("preview.js", "const target = req.query.url;", "javascript"),
+        ("preview.ts", "const target: string = req.query.url;", "typescript"),
+    ],
+)
+def test_javascript_typescript_ssrf_slice_is_local_and_explicit(
+    tmp_path, filename, declaration, language
+):
+    (tmp_path / filename).write_text(
+        "export async function preview(req) {\n"
+        f"  {declaration}\n"
+        "  return fetch(target);\n"
+        "}\n"
+    )
+    finding = _finding(
+        "Server-side request forgery (SSRF) [CWE-918]",
+        filename,
+        3,
+        "fetch(target)",
+    )
+
+    evidence = build_structural_slice(RetrievalIndex().build(tmp_path), finding)
+
+    assert evidence is not None
+    assert evidence.status == "local"
+    assert evidence.language == language
+    assert evidence.sink and evidence.sink.source == "fetch(target)"
+    assert evidence.source_evidence
+    assert "req.query.url" in evidence.source_evidence[0].source
+    assert "runtime reachability" in evidence.render()
+
+
+def test_javascript_non_ssrf_mechanism_is_explicitly_unsupported(tmp_path):
+    (tmp_path / "run.js").write_text(
+        "function run(command) {\n"
+        "  return exec(command);\n"
+        "}\n"
+    )
+    finding = _finding(
+        "Command injection [CWE-78]", "run.js", 2, "exec(command)"
+    )
+
+    evidence = build_structural_slice(RetrievalIndex().build(tmp_path), finding)
+
+    assert evidence is not None
+    assert evidence.status == "unsupported"
+    assert evidence.language == "javascript"
+    assert "supports SSRF only" in evidence.limitations[0]

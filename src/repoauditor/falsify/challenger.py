@@ -50,7 +50,7 @@ from ..llm.prompt_security import (
 # Re-exported: the model's structured output shape for a falsification verdict.
 from .outcome import FalsificationOutcome, SelfCritique
 from .claims import claim_from_slice, verify_structural_claim
-from .slicing import PythonSliceEvidence, build_python_slice
+from .slicing import StructuralSliceEvidence, build_structural_slice
 
 _PROMPT_ARTIFACT = "falsification_v2"
 PROMPT_VERSION = f"{_PROMPT_ARTIFACT}+{PROMPT_SECURITY_VERSION}"
@@ -115,7 +115,7 @@ def _falsification_context(
     finding: Finding,
     architecture: ArchitectureMap,
     iteration: int,
-    slice_evidence: PythonSliceEvidence | None = None,
+    slice_evidence: StructuralSliceEvidence | None = None,
     resolution: FalsificationResolution | None = None,
 ) -> str:
     """Gather deterministic evidence with a genuinely broader strategy each round."""
@@ -138,7 +138,7 @@ def _falsification_context(
         if excerpt is not None:
             sections.append(_format_context("LOCAL SOURCE", [excerpt]))
     if slice_evidence is None:
-        slice_evidence = build_python_slice(index, finding)
+        slice_evidence = build_structural_slice(index, finding)
     if slice_evidence is not None:
         sections.append(slice_evidence.render())
 
@@ -260,7 +260,7 @@ def challenge_finding(
     max_iterations = max(1, config.falsify.max_iterations)
     minimum_iterations = max(1, min(minimum_iterations, max_iterations))
     boundary = _boundary_name(architecture, finding)
-    slice_evidence = build_python_slice(index, finding) if index is not None else None
+    slice_evidence = build_structural_slice(index, finding) if index is not None else None
     if persist_artifacts and slice_evidence is not None and finding.id is not None:
         claim = claim_from_slice(finding.id, slice_evidence, snapshot_commit)
         claim_id = db.upsert_security_claim(claim, config)

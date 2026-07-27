@@ -2180,14 +2180,15 @@ def upsert_security_claim(
         with conn:
             conn.execute(
                 "INSERT INTO security_claim "
-                "(finding_id, claim_version, snapshot_commit, mechanism, "
+                "(finding_id, claim_version, snapshot_commit, mechanism, language, "
                 " entry_evidence, caller_evidence, authorization_evidence, "
                 " registration_evidence, source_evidence, sink_evidence, "
                 " path_nodes, path_predicates, control_candidate, producer_type, "
                 " producer_name, prompt_version) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
                 "ON CONFLICT (finding_id, claim_version) DO UPDATE SET "
                 "snapshot_commit=excluded.snapshot_commit, mechanism=excluded.mechanism, "
+                "language=excluded.language, "
                 "entry_evidence=excluded.entry_evidence, "
                 "caller_evidence=excluded.caller_evidence, "
                 "authorization_evidence=excluded.authorization_evidence, "
@@ -2203,6 +2204,7 @@ def upsert_security_claim(
                     claim.claim_version,
                     claim.snapshot_commit,
                     claim.mechanism,
+                    claim.language,
                     json.dumps([item.model_dump() for item in claim.entry_evidence]),
                     json.dumps([item.model_dump() for item in claim.caller_evidence]),
                     json.dumps([
@@ -2248,6 +2250,7 @@ def list_security_claims(
                 claim_version=row["claim_version"],
                 snapshot_commit=row["snapshot_commit"],
                 mechanism=row["mechanism"],
+                language=row["language"],
                 entry_evidence=[
                     ClaimEvidence(**item) for item in json.loads(row["entry_evidence"])
                 ],

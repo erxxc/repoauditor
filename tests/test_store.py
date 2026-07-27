@@ -80,6 +80,7 @@ def test_pre_methodology_database_migrates_without_losing_audit_data(
         "0025_claim_caller_evidence.sql",
         "0026_claim_authorization_evidence.sql",
         "0027_claim_registration_evidence.sql",
+        "0028_claim_language.sql",
     ]
 
     assert db.list_findings("r", tmp_config)[0].id == finding_id
@@ -135,6 +136,7 @@ def test_structural_status_migration_preserves_claim_audit_data(
         "0025_claim_caller_evidence.sql",
         "0026_claim_authorization_evidence.sql",
         "0027_claim_registration_evidence.sql",
+        "0028_claim_language.sql",
     ]
 
     claim = db.list_security_claims(finding_id, tmp_config)[0]
@@ -144,6 +146,7 @@ def test_structural_status_migration_preserves_claim_audit_data(
     assert claim.caller_evidence == []
     assert claim.authorization_evidence == []
     assert claim.registration_evidence == []
+    assert claim.language == "python"
     assert verification.status.value == "verification_incomplete"
     assert verification.checks == {"source_present": True}
     assert verification.reason == "legacy structural result"

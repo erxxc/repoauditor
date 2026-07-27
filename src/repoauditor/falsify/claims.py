@@ -2,7 +2,7 @@
 
 The slicer is an untrusted certificate producer. The checker accepts only the persisted
 claim plus a pinned snapshot, reopens the source, reparses its AST, and reconstructs a small
-local def-use closure. It never consumes `PythonSliceEvidence`.
+local def-use closure. It never consumes the producer's `StructuralSliceEvidence`.
 """
 
 from __future__ import annotations
@@ -17,11 +17,11 @@ from ..store.models import (
     ClaimVerificationStatus,
     SecurityClaim,
 )
-from .slicing import PythonSliceEvidence, SLICE_VERSION
+from .slicing import StructuralSliceEvidence, SLICE_VERSION
 
-CLAIM_VERSION = "security_claim_v6"
-VERIFIER_NAME = "python-local-certificate-checker"
-VERIFIER_VERSION = "python_local_certificate_checker_v6"
+CLAIM_VERSION = "security_claim_v7"
+VERIFIER_NAME = "deterministic-structural-certificate-checker"
+VERIFIER_VERSION = "deterministic_structural_certificate_checker_v7"
 
 # Intentionally separate from the slicer's rule table: this is the small checker policy.
 _CHECKER_SINKS = {
@@ -55,7 +55,7 @@ def _evidence(file: str, item) -> ClaimEvidence:
 
 def claim_from_slice(
     finding_id: int,
-    evidence: PythonSliceEvidence,
+    evidence: StructuralSliceEvidence,
     snapshot_commit: str | None,
 ) -> SecurityClaim:
     """Translate slicer output into a certificate; this function does not verify it."""
@@ -68,6 +68,7 @@ def claim_from_slice(
         claim_version=CLAIM_VERSION,
         snapshot_commit=snapshot_commit,
         mechanism=evidence.mechanism,
+        language=evidence.language,
         entry_evidence=[_evidence(evidence.file, item) for item in evidence.entry_evidence],
         caller_evidence=[
             ClaimEvidence(file=item.file, line=item.line, source=item.source)
@@ -306,6 +307,194 @@ def _local_closure(function, sink: ast.Call) -> tuple[set[int], set[str]]:
     return lines, reached_parameters
 
 
+def _verify_javascript_ssrf_claim(
+    claim: SecurityClaim,
+    snapshot_path: Path | None,
+    expected_commit: str | None,
+) -> ClaimVerification:
+    """Independently reparse and check one local JS/TS request-input→fetch certificate."""
+    checks = {
+        "snapshot_bound": bool(claim.snapshot_commit and expected_commit),
+        "snapshot_matches": bool(
+            claim.snapshot_commit and expected_commit
+            and claim.snapshot_commit == expected_commit
+        ),
+        "supported_mechanism": claim.mechanism == "ssrf",
+        "certificate_complete": bool(
+            claim.source_evidence and claim.sink_evidence and claim.path_nodes
+        ),
+        "evidence_matches_snapshot": False,
+        "supported_sink_present": False,
+        "local_def_use_closes": False,
+        "request_input_source_present": False,
+    }
+    status = ClaimVerificationStatus.VERIFICATION_INCOMPLETE
+    reason = "JavaScript/TypeScript certificate verification could not complete."
+    if not checks["supported_mechanism"]:
+        status = ClaimVerificationStatus.UNSUPPORTED
+        reason = "The JS/TS checker currently supports SSRF only."
+    elif not checks["snapshot_bound"]:
+        reason = "Claim or verification request lacks an immutable snapshot commit."
+    elif not checks["snapshot_matches"]:
+        status = ClaimVerificationStatus.STRUCTURALLY_REFUTED
+        reason = "Claim snapshot commit does not match the snapshot being checked."
+    elif not checks["certificate_complete"]:
+        reason = "Certificate lacks required source, sink, or path-node evidence."
+    elif snapshot_path is None:
+        reason = "No pinned snapshot path was available to the independent checker."
+    else:
+        files = {
+            item.file for item in [
+                *claim.source_evidence,
+                *claim.path_nodes,
+                *([claim.sink_evidence] if claim.sink_evidence else []),
+            ]
+        }
+        if len(files) != 1:
+            reason = "The JS/TS checker accepts exactly one source file."
+        else:
+            relative = next(iter(files))
+            path = _safe_file(snapshot_path, relative)
+            suffix = path.suffix.lower() if path is not None else ""
+            if path is None or suffix not in {".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx"}:
+                reason = "Claimed JS/TS source file is absent or escapes the snapshot."
+            else:
+                try:
+                    from tree_sitter_language_pack import get_parser
+
+                    parser = get_parser(
+                        "tsx" if suffix == ".tsx"
+                        else "typescript" if suffix == ".ts"
+                        else "javascript"
+                    )
+                except Exception:
+                    reason = "Required tree-sitter grammar is unavailable."
+                else:
+                    text = path.read_text(errors="replace")
+                    source = text.encode("utf-8", errors="replace")
+                    tree = parser.parse(source)
+                    if tree.root_node.has_error:
+                        reason = "Claimed JS/TS source cannot be parsed without errors."
+                    else:
+                        lines = text.splitlines()
+                        evidence = [
+                            *claim.source_evidence,
+                            *claim.path_nodes,
+                            *([claim.sink_evidence] if claim.sink_evidence else []),
+                        ]
+                        def node_text(node) -> str:
+                            return source[node.start_byte:node.end_byte].decode(
+                                "utf-8", errors="replace"
+                            )
+
+                        stack = [tree.root_node]
+                        nodes = []
+                        while stack:
+                            node = stack.pop()
+                            nodes.append(node)
+                            stack.extend(reversed(node.children))
+                        checks["evidence_matches_snapshot"] = all(
+                            any(
+                                node.start_point.row + 1 == item.line
+                                and node_text(node).strip() == item.source.strip()
+                                for node in nodes
+                            )
+                            for item in evidence
+                        )
+                        sink_calls = []
+                        for node in nodes:
+                            if (
+                                node.type != "call_expression"
+                                or node.start_point.row + 1 != claim.sink_evidence.line
+                            ):
+                                continue
+                            function = node.child_by_field_name("function")
+                            if function is not None and node_text(function) == "fetch":
+                                sink_calls.append(node)
+                        checks["supported_sink_present"] = len(sink_calls) == 1
+                        valid_source = False
+                        if checks["supported_sink_present"]:
+                            arguments = sink_calls[0].child_by_field_name("arguments")
+                            args = (
+                                list(arguments.named_children)
+                                if arguments is not None else []
+                            )
+                            if len(args) == 1:
+                                argument = args[0]
+                                argument_text = node_text(argument)
+                                request_pattern = (
+                                    r"\b(?:req|request)\s*\.\s*"
+                                    r"(?:query|body|params|headers)\b"
+                                )
+                                if re.search(request_pattern, argument_text):
+                                    valid_source = any(
+                                        item.source == argument_text
+                                        for item in claim.source_evidence
+                                    )
+                                elif argument.type == "identifier":
+                                    for node in nodes:
+                                        if (
+                                            node.type != "variable_declarator"
+                                            or node.start_byte >= sink_calls[0].start_byte
+                                        ):
+                                            continue
+                                        name = node.child_by_field_name("name")
+                                        value = node.child_by_field_name("value")
+                                        if (
+                                            name is not None and value is not None
+                                            and node_text(name) == argument_text
+                                            and re.search(
+                                                request_pattern, node_text(value)
+                                            )
+                                            and any(
+                                                item.line == node.start_point.row + 1
+                                                and item.source == node_text(
+                                                    node.parent
+                                                    if node.parent is not None
+                                                    and node.parent.type in {
+                                                        "lexical_declaration",
+                                                        "variable_declaration",
+                                                    }
+                                                    else node
+                                                )
+                                                for item in claim.source_evidence
+                                            )
+                                        ):
+                                            valid_source = True
+                        checks["request_input_source_present"] = valid_source
+                        checks["local_def_use_closes"] = (
+                            checks["evidence_matches_snapshot"]
+                            and checks["supported_sink_present"]
+                            and valid_source
+                        )
+                        if not checks["evidence_matches_snapshot"]:
+                            status = ClaimVerificationStatus.STRUCTURALLY_REFUTED
+                            reason = "Certificate text does not match the pinned snapshot."
+                        elif not checks["supported_sink_present"]:
+                            status = ClaimVerificationStatus.STRUCTURALLY_REFUTED
+                            reason = "Certificate sink is not one exact fetch(...) call."
+                        elif not valid_source:
+                            status = ClaimVerificationStatus.STRUCTURALLY_REFUTED
+                            reason = (
+                                "Fetch URL does not close to the claimed local request input."
+                            )
+                        else:
+                            status = ClaimVerificationStatus.STRUCTURALLY_VERIFIED
+                            reason = (
+                                "Structurally verified local JS/TS request-input-to-fetch "
+                                "syntax. Runtime reachability, deployed request provenance, "
+                                "path feasibility, exploitability, and risk are not validated."
+                            )
+    return ClaimVerification(
+        claim_id=claim.id or 0,
+        status=status,
+        verifier_name=VERIFIER_NAME,
+        verifier_version=VERIFIER_VERSION,
+        checks=checks,
+        reason=reason,
+    )
+
+
 def verify_structural_claim(
     claim: SecurityClaim,
     snapshot_path: Path | None,
@@ -316,6 +505,17 @@ def verify_structural_claim(
     `structurally_verified` means only that exact source, sink, and local def-use facts
     close under this checker. It never validates exploitability or real-world risk.
     """
+    if claim.language in {"javascript", "typescript"}:
+        return _verify_javascript_ssrf_claim(claim, snapshot_path, expected_commit)
+    if claim.language != "python":
+        return ClaimVerification(
+            claim_id=claim.id or 0,
+            status=ClaimVerificationStatus.UNSUPPORTED,
+            verifier_name=VERIFIER_NAME,
+            verifier_version=VERIFIER_VERSION,
+            checks={"supported_language": False},
+            reason=f"Checker does not support language {claim.language!r}.",
+        )
     checks = {
         "snapshot_bound": bool(claim.snapshot_commit and expected_commit),
         "snapshot_matches": bool(

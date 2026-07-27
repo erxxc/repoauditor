@@ -100,9 +100,10 @@ order so future sessions do not have to reconstruct it from conversation history
 
 ## P3 — nonstandard-finding optimization
 
-- [ ] Improve language-specific slicing and authorization/source-to-sink context before
-  changing the classifier.
-- [~] Expand independently checked `SecurityClaim` certificates. Version 6 now persists and
+- [~] Improve language-specific slicing and authorization/source-to-sink context before
+  changing the classifier. Python and bounded JS/TS SSRF paths now exist; broader mechanism,
+  framework, and language coverage remains.
+- [~] Expand independently checked `SecurityClaim` certificates. Version 7 now persists and
   checks local HTTP-entry syntax, request-input identity, control-candidate identity, and
   placement on the intraprocedural def-use chain, plus exact direct Python caller syntax
   and same-function authorization-candidate syntax independently reparsed from the snapshot.
@@ -110,6 +111,8 @@ order so future sessions do not have to reconstruct it from conversation history
   back to their route subject and reparsed independently. Application startup,
   runtime/interprocedural reachability, deployed attacker control, authorization
   scope/effectiveness, and control effectiveness remain explicitly unverified.
+  JavaScript/TypeScript SSRF now has a separate tree-sitter producer/checker for bounded
+  local request-input-to-`fetch` chains; other JS/TS mechanisms remain unsupported.
 - [ ] Evaluate in-family/out-of-family novelty as an investigation-depth trigger. Do not
   train a novelty prioritizer until enough manually reviewed LLM findings exist.
 
@@ -153,9 +156,9 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
    MVP. Exact direct Python caller syntax is now persisted and independently checked without
    being promoted to runtime reachability. A narrow authorization-candidate vocabulary is
    also independently checked and kept separate from authentication, but authorization
-   scope/effectiveness, non-Flask registration/reference evidence, cross-file data flow, and
-   additional trusted checker languages remain. Preserve explicit unsupported/incomplete
-   outcomes.
+   scope/effectiveness, non-Flask registration/reference evidence, cross-file data flow,
+   additional JS/TS mechanisms/clients, and Java/Ruby trusted checkers remain. Preserve
+   explicit unsupported/incomplete outcomes.
 3. Expand manufactured positive/negative controls only for mechanisms with independently
    checkable ground truth. Fixture construction and deterministic checks are offline; live
    provider qualification remains deferred.

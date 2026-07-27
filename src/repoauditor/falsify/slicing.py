@@ -61,11 +61,12 @@ class RegistrationSliceLine:
 
 
 @dataclass
-class PythonSliceEvidence:
+class StructuralSliceEvidence:
     mechanism: str
     status: str
     file: str
     function: str | None = None
+    language: str = "python"
     entry_evidence: list[SliceLine] = field(default_factory=list)
     caller_evidence: list[CallerSliceLine] = field(default_factory=list)
     authorization_candidates: list[SliceLine] = field(default_factory=list)
@@ -78,7 +79,7 @@ class PythonSliceEvidence:
 
     def render(self) -> str:
         lines = [
-            f"# DETERMINISTIC PYTHON SLICE: {SLICE_VERSION}",
+            f"# DETERMINISTIC {self.language.upper()} SLICE: {SLICE_VERSION}",
             f"mechanism={self.mechanism}; status={self.status}; "
             f"file={self.file}; function={self.function or '(none)'}",
         ]
@@ -241,27 +242,27 @@ def _blueprint_registrations(
 
 def build_python_slice(
     index: RetrievalIndex, finding: Finding
-) -> PythonSliceEvidence | None:
+) -> StructuralSliceEvidence | None:
     """Build a conservative local slice for one supported Python finding."""
     mechanism = _mechanism(finding)
     if mechanism is None:
         return None
     source = index.source_text(finding.file)
     if source is None:
-        return PythonSliceEvidence(
+        return StructuralSliceEvidence(
             mechanism, "incomplete", finding.file,
             limitations=["cited file is not present in the retrieval index"],
         )
     rel, text = source
     if not rel.endswith(".py"):
-        return PythonSliceEvidence(
+        return StructuralSliceEvidence(
             mechanism, "incomplete", rel,
             limitations=["language is not supported by the Python slicing MVP"],
         )
     try:
         tree = ast.parse(text)
     except SyntaxError:
-        return PythonSliceEvidence(
+        return StructuralSliceEvidence(
             mechanism, "incomplete", rel,
             limitations=["Python source could not be parsed"],
         )
@@ -273,12 +274,12 @@ def build_python_slice(
         and finding.line_start <= getattr(node, "end_lineno", node.lineno)
     ]
     if not functions:
-        return PythonSliceEvidence(
+        return StructuralSliceEvidence(
             mechanism, "incomplete", rel,
             limitations=["citation is not enclosed by a Python function"],
         )
     function = min(functions, key=lambda node: getattr(node, "end_lineno", 0) - node.lineno)
-    result = PythonSliceEvidence(mechanism, "local", rel, function.name)
+    result = StructuralSliceEvidence(mechanism, "local", rel, function.name)
     result.limitations.append(
         "local def-use slice only; direct caller syntax does not prove runtime reachability"
     )
@@ -397,3 +398,158 @@ def build_python_slice(
     ):
         values[:] = sorted(set(values), key=lambda item: (item.line, item.source))
     return result
+
+
+def _ts_parser(language: str):
+    try:
+        from tree_sitter_language_pack import get_parser
+
+        return get_parser(language)
+    except Exception:
+        return None
+
+
+def _ts_source(node, source: bytes) -> str:
+    return source[node.start_byte:node.end_byte].decode("utf-8", errors="replace")
+
+
+def _ts_walk(node):
+    stack = [node]
+    while stack:
+        current = stack.pop()
+        yield current
+        stack.extend(reversed(current.children))
+
+
+def _js_call_name(node, source: bytes) -> str:
+    function = node.child_by_field_name("function")
+    if function is None:
+        return ""
+    if function.type == "identifier":
+        return _ts_source(function, source)
+    if function.type == "member_expression":
+        prop = function.child_by_field_name("property")
+        return _ts_source(prop, source) if prop is not None else ""
+    return ""
+
+
+def _js_request_source(node, source: bytes) -> bool:
+    text = _ts_source(node, source)
+    return bool(
+        re.search(r"\b(?:req|request)\s*\.\s*(?:query|body|params|headers)\b", text)
+    )
+
+
+def build_javascript_ssrf_slice(
+    index: RetrievalIndex, finding: Finding
+) -> StructuralSliceEvidence | None:
+    """Build a bounded JS/TS SSRF slice with explicit unsupported-mechanism evidence."""
+    mechanism = _mechanism(finding)
+    if mechanism is None:
+        return None
+    source_record = index.source_text(finding.file)
+    if source_record is None:
+        return StructuralSliceEvidence(
+            "ssrf", "incomplete", finding.file, language="javascript",
+            limitations=["cited file is not present in the retrieval index"],
+        )
+    relative, text = source_record
+    suffix = relative.rsplit(".", 1)[-1].lower()
+    language = "typescript" if suffix in {"ts", "tsx"} else "javascript"
+    if suffix not in {"js", "jsx", "mjs", "cjs", "ts", "tsx"}:
+        return None
+    if mechanism != "ssrf":
+        return StructuralSliceEvidence(
+            mechanism, "unsupported", relative, language=language,
+            limitations=["JavaScript/TypeScript certificate checker supports SSRF only"],
+        )
+    parser = _ts_parser("tsx" if suffix == "tsx" else language)
+    if parser is None:
+        return StructuralSliceEvidence(
+            "ssrf", "incomplete", relative, language=language,
+            limitations=[f"tree-sitter grammar unavailable for {language}"],
+        )
+    source = text.encode("utf-8", errors="replace")
+    tree = parser.parse(source)
+    if tree.root_node.has_error:
+        return StructuralSliceEvidence(
+            "ssrf", "incomplete", relative, language=language,
+            limitations=[f"{language} source could not be parsed without errors"],
+        )
+    calls = [
+        node for node in _ts_walk(tree.root_node)
+        if node.type == "call_expression"
+        and _js_call_name(node, source) == "fetch"
+        and node.start_point.row + 1 <= finding.line_end
+        and finding.line_start <= node.end_point.row + 1
+    ]
+    result = StructuralSliceEvidence(
+        "ssrf", "incomplete", relative, language=language,
+        limitations=[
+            "local JavaScript/TypeScript SSRF slice only; runtime reachability and "
+            "request-object provenance are not proven"
+        ],
+    )
+    if len(calls) != 1:
+        result.limitations.append("exactly one cited fetch(...) sink was not found")
+        return result
+    sink = calls[0]
+    result.sink = SliceLine(
+        sink.start_point.row + 1, _ts_source(sink, source)
+    )
+    arguments = sink.child_by_field_name("arguments")
+    argument_nodes = [
+        child for child in (arguments.named_children if arguments is not None else [])
+    ]
+    if len(argument_nodes) != 1:
+        result.limitations.append("fetch sink must have exactly one URL argument")
+        return result
+    argument = argument_nodes[0]
+    if _js_request_source(argument, source):
+        result.source_evidence.append(
+            SliceLine(argument.start_point.row + 1, _ts_source(argument, source))
+        )
+    elif argument.type == "identifier":
+        name = _ts_source(argument, source)
+        declarations = []
+        for node in _ts_walk(tree.root_node):
+            if node.type != "variable_declarator" or node.start_byte >= sink.start_byte:
+                continue
+            declared = node.child_by_field_name("name")
+            value = node.child_by_field_name("value")
+            if (
+                declared is not None and value is not None
+                and _ts_source(declared, source) == name
+                and _js_request_source(value, source)
+            ):
+                declarations.append(node)
+        if declarations:
+            declaration = max(declarations, key=lambda item: item.start_byte)
+            statement = (
+                declaration.parent
+                if declaration.parent is not None
+                and declaration.parent.type in {"lexical_declaration", "variable_declaration"}
+                else declaration
+            )
+            evidence = SliceLine(
+                statement.start_point.row + 1, _ts_source(statement, source)
+            )
+            result.source_evidence.append(evidence)
+            result.assignments.append(evidence)
+    if not result.source_evidence:
+        result.limitations.append("fetch URL was not tied to a local request input")
+        return result
+    result.status = "local"
+    return result
+
+
+def build_structural_slice(
+    index: RetrievalIndex, finding: Finding
+) -> StructuralSliceEvidence | None:
+    """Dispatch to a trusted language/mechanism producer without guessing support."""
+    suffix = finding.file.rsplit(".", 1)[-1].lower()
+    if suffix == "py":
+        return build_python_slice(index, finding)
+    if suffix in {"js", "jsx", "mjs", "cjs", "ts", "tsx"}:
+        return build_javascript_ssrf_slice(index, finding)
+    return None

@@ -4,8 +4,8 @@
 The producer may retrieve and slice broadly; the checker reopens the immutable snapshot,
 parses it independently, and accepts only narrowly defined structural facts.
 
-Current certificate version: `security_claim_v6`
-Current verifier: `python_local_certificate_checker_v6`
+Current certificate version: `security_claim_v7`
+Current verifier: `deterministic_structural_certificate_checker_v7`
 
 ## Checked facts
 
@@ -30,6 +30,10 @@ Current verifier: `python_local_certificate_checker_v6`
 - Flask blueprint-registration syntax tied to the blueprint symbol on the local route
   decorator. The checker independently reparses the registration file and requires an exact
   `register_blueprint(...)` argument match.
+- For JavaScript and TypeScript SSRF only: one local `req`/`request`
+  `query`/`body`/`params`/`headers` expression, optionally assigned to a local variable,
+  flowing into exactly one cited `fetch(...)` URL argument. The checker loads its own
+  tree-sitter grammar and independently reconstructs this local chain.
 
 ## Explicit non-claims
 
@@ -45,6 +49,8 @@ Structural verification does **not** establish:
 - whether an authorization candidate authenticates the right principal, protects the right
   object/action, executes in the deployed framework, or is effective;
 - exploitability, severity, or real-world risk.
+- that a JavaScript/TypeScript `req` or `request` object is actually framework-provided,
+  attacker-controlled, or unsanitized in the deployed application.
 
 A plain function parameter is not treated as attacker-controlled unless the same local
 function has a checked route placeholder for that parameter. A control-like function name
@@ -65,3 +71,8 @@ Blueprint registration is similarly a syntax fact. It does not prove that the ap
 factory runs, that deployment selects that factory, or that a reverse proxy/network path
 exposes the route. Direct `@app.route` endpoints do not receive a separate blueprint-
 registration claim.
+
+JavaScript/TypeScript support is intentionally mechanism-bounded. SSRF through `fetch` is
+supported; other mechanisms and HTTP clients are explicitly unsupported. Missing grammars,
+parse errors, multiple/ambiguous sinks, and unresolved URL assignments remain incomplete
+rather than falling back to lexical guesses.

@@ -704,6 +704,7 @@ class SecurityClaim(BaseModel):
     claim_version: str
     snapshot_commit: str | None = None
     mechanism: str
+    language: str = "python"
     entry_evidence: list[ClaimEvidence] = Field(default_factory=list)
     caller_evidence: list[ClaimEvidence] = Field(default_factory=list)
     authorization_evidence: list[ClaimEvidence] = Field(default_factory=list)

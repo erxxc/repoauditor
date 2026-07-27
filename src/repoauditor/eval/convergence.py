@@ -24,7 +24,7 @@ from ..config import Config, get_config
 from ..detect.retrieval import RetrievalIndex
 from ..falsify import FalsificationResolution, challenge_finding
 from ..falsify.claims import claim_from_slice, verify_structural_claim
-from ..falsify.slicing import build_python_slice
+from ..falsify.slicing import build_structural_slice
 from ..ingest import latest_snapshot
 from ..llm import LLMClient, get_llm_client
 from ..map import ArchitectureMap, load_architecture
@@ -229,7 +229,7 @@ def run_finding_convergence(
     _validate_profiles(profiles)
 
     original_id = finding.id
-    slice_evidence = build_python_slice(index, finding)
+    slice_evidence = build_structural_slice(index, finding)
     if slice_evidence is None:
         structural_status = "absent_or_unsupported"
     else:

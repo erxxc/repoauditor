@@ -4,7 +4,7 @@ from pathlib import Path
 
 from repoauditor.detect.retrieval import RetrievalIndex
 from repoauditor.falsify.claims import claim_from_slice, verify_structural_claim
-from repoauditor.falsify.slicing import build_python_slice
+from repoauditor.falsify.slicing import build_python_slice, build_structural_slice
 from repoauditor.store import db
 from repoauditor.store.models import ClaimVerificationStatus, Finding
 
@@ -289,6 +289,112 @@ def test_direct_app_route_makes_no_separate_blueprint_registration_claim(tmp_pat
     assert verification.status is ClaimVerificationStatus.STRUCTURALLY_VERIFIED
     assert verification.checks["registration_evidence_present"] is False
     assert verification.checks["blueprint_registration_verified"] is False
+
+
+def test_javascript_ssrf_claim_round_trip_and_independent_verification(
+    tmp_path, tmp_config
+):
+    db.init_db(tmp_config)
+    (tmp_path / "preview.js").write_text(
+        "export async function preview(req) {\n"
+        "  const target = req.query.url;\n"
+        "  return fetch(target);\n"
+        "}\n"
+    )
+    finding = Finding(
+        repo_id="r", title="SSRF [CWE-918]", file="preview.js",
+        line_start=3, line_end=3, citation_snippet="fetch(target)",
+        source_tool="semgrep", confidence=0.8, severity="high",
+    )
+    finding_id = db.insert_finding(finding, tmp_config)
+    evidence = build_structural_slice(RetrievalIndex().build(tmp_path), finding)
+    assert evidence is not None and evidence.status == "local"
+    claim_id = db.upsert_security_claim(
+        claim_from_slice(finding_id, evidence, "commit-js"), tmp_config
+    )
+    claim = db.list_security_claims(finding_id, tmp_config)[0]
+
+    verification = verify_structural_claim(claim, tmp_path, "commit-js")
+
+    assert claim.id == claim_id
+    assert claim.language == "javascript"
+    assert verification.status is ClaimVerificationStatus.STRUCTURALLY_VERIFIED
+    assert verification.checks["supported_sink_present"] is True
+    assert verification.checks["request_input_source_present"] is True
+    assert verification.checks["local_def_use_closes"] is True
+    assert "Runtime reachability" in verification.reason
+
+
+def test_javascript_checker_refutes_forged_source_chain(tmp_path):
+    (tmp_path / "preview.js").write_text(
+        "function preview(req) {\n"
+        "  const target = req.query.url;\n"
+        "  return fetch(target);\n"
+        "}\n"
+    )
+    finding = Finding(
+        repo_id="r", title="SSRF [CWE-918]", file="preview.js",
+        line_start=3, line_end=3, citation_snippet="fetch(target)",
+        source_tool="semgrep", confidence=0.8, severity="high",
+    )
+    evidence = build_structural_slice(RetrievalIndex().build(tmp_path), finding)
+    assert evidence is not None
+    claim = claim_from_slice(1, evidence, "commit-js").model_copy(update={"id": 1})
+    forged_source = claim.source_evidence[0].model_copy(
+        update={"source": "const target = safeUrl;"}
+    )
+    forged = claim.model_copy(update={
+        "source_evidence": [forged_source],
+        "path_nodes": [
+            forged_source if item == claim.source_evidence[0] else item
+            for item in claim.path_nodes
+        ],
+    })
+
+    verification = verify_structural_claim(forged, tmp_path, "commit-js")
+
+    assert verification.status is ClaimVerificationStatus.STRUCTURALLY_REFUTED
+    assert verification.checks["evidence_matches_snapshot"] is False
+
+
+def test_typescript_checker_verifies_direct_request_expression(tmp_path):
+    (tmp_path / "preview.ts").write_text(
+        "export async function preview(req: any) {\n"
+        "  return fetch(req.query.url);\n"
+        "}\n"
+    )
+    finding = Finding(
+        repo_id="r", title="SSRF [CWE-918]", file="preview.ts",
+        line_start=2, line_end=2, citation_snippet="fetch(req.query.url)",
+        source_tool="semgrep", confidence=0.8, severity="high",
+    )
+    evidence = build_structural_slice(RetrievalIndex().build(tmp_path), finding)
+    assert evidence is not None and evidence.language == "typescript"
+    claim = claim_from_slice(1, evidence, "commit-ts").model_copy(update={"id": 1})
+
+    verification = verify_structural_claim(claim, tmp_path, "commit-ts")
+
+    assert verification.status is ClaimVerificationStatus.STRUCTURALLY_VERIFIED
+    assert verification.checks["request_input_source_present"] is True
+
+
+def test_javascript_checker_reports_non_ssrf_mechanism_unsupported(tmp_path):
+    (tmp_path / "run.js").write_text(
+        "function run(command) {\n  return exec(command);\n}\n"
+    )
+    finding = Finding(
+        repo_id="r", title="Command injection [CWE-78]", file="run.js",
+        line_start=2, line_end=2, citation_snippet="exec(command)",
+        source_tool="semgrep", confidence=0.8, severity="high",
+    )
+    evidence = build_structural_slice(RetrievalIndex().build(tmp_path), finding)
+    assert evidence is not None and evidence.status == "unsupported"
+    claim = claim_from_slice(1, evidence, "commit-js").model_copy(update={"id": 1})
+
+    verification = verify_structural_claim(claim, tmp_path, "commit-js")
+
+    assert verification.status is ClaimVerificationStatus.UNSUPPORTED
+    assert "supports SSRF only" in verification.reason
 
 
 def test_checker_refutes_forged_entrypoint_evidence():
