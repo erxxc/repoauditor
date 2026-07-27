@@ -19,9 +19,11 @@ attributions (SHAP contributions where available, impurity importance as a fallb
 Triage ranks and may suppress (demote below `action_threshold`); it never deletes a
 finding — suppressed findings are persisted with their rank + attribution.
 
-Real-label validation becomes engagement-grouped only after both the existing 40-label
-gate and an eight-engagement gate are met. Eight is the minimum because a 25% grouped
-holdout then contains at least two whole engagements and leaves six for training; a
+Real-label validation becomes evaluation-family-grouped only after both the existing
+40-label gate and an eight-family gate are met. A family defaults to one engagement, but
+explicit configuration can bind clones, renamed repositories, and separate pre/post ids
+together. Eight is the minimum because a 25% grouped holdout then contains at least two
+whole families and leaves six for training; a
 one-repository test set would be an anecdote presented as a generalization estimate. Until
 then, the prior row-random real holdout remains available but is explicitly labelled with
 the group-count shortfall. No grouped statistic is fabricated from insufficient breadth.
@@ -124,14 +126,14 @@ def _holdout_split(
                     tr_idx = np.setdiff1d(all_idx, te_idx)
                     return (
                         tr_idx, te_idx, "real", "engagement_grouped",
-                        f"grouped holdout active ({distinct_groups} engagements)",
+                        f"grouped holdout active ({distinct_groups} evaluation families)",
                     )
         _, te_idx = train_test_split(
             real_idx, test_size=0.25, stratify=y[real_idx], random_state=seed
         )
         tr_idx = np.setdiff1d(all_idx, te_idx)
         reason = (
-            f"grouped validation not yet available ({distinct_groups} engagements, "
+            f"grouped validation not yet available ({distinct_groups} evaluation families, "
             f"need {MIN_GROUPED_ENGAGEMENTS})"
             if distinct_groups < MIN_GROUPED_ENGAGEMENTS
             else "grouped split could not preserve both classes in train and evaluation"

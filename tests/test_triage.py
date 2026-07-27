@@ -33,7 +33,12 @@ from repoauditor.triage.features import (
     extract_feature_vector,
     load_sarif,
 )
-from repoauditor.triage.training import assemble_training_data, synthetic_share
+from repoauditor.triage.training import (
+    assemble_training_data,
+    evaluation_family,
+    load_real_examples,
+    synthetic_share,
+)
 
 
 @pytest.fixture
@@ -455,6 +460,53 @@ def test_grouped_holdout_activates_only_with_enough_distinct_engagements():
     assert "active" in detail
 
 
+def test_evaluation_family_override_binds_related_engagements(cfg):
+    grouped = cfg.model_copy(update={
+        "triage": cfg.triage.model_copy(update={
+            "evaluation_family_overrides": {
+                "project-pre": "project",
+                "project-post": "project",
+                "project-clone": "project",
+            }
+        })
+    })
+
+    assert evaluation_family("project-pre", grouped) == "project"
+    assert evaluation_family("project-post", grouped) == "project"
+    assert evaluation_family("project-clone", grouped) == "project"
+    assert evaluation_family("unrelated", grouped) == "unrelated"
+
+
+def test_real_training_rows_use_evaluation_family_only_for_split_groups(
+    cfg, monkeypatch
+):
+    grouped = cfg.model_copy(update={
+        "triage": cfg.triage.model_copy(update={
+            "evaluation_family_overrides": {
+                "project-pre": "project",
+                "project-post": "project",
+            }
+        })
+    })
+    rows = [
+        ([0.0] * len(FEATURE_NAMES), list(FEATURE_NAMES), True, "project-pre",
+         TriageLabelSource.MANUAL),
+        ([1.0] * len(FEATURE_NAMES), list(FEATURE_NAMES), False, "project-post",
+         TriageLabelSource.MANUAL),
+    ]
+    monkeypatch.setattr(
+        "repoauditor.triage.training.db.list_real_training_examples",
+        lambda config=None: rows,
+    )
+
+    X, y, groups, eligible, _sources = load_real_examples(grouped)
+
+    assert X.shape == (2, len(FEATURE_NAMES))
+    assert y.tolist() == [1, 0]
+    assert groups.tolist() == ["project", "project"]
+    assert eligible.tolist() == [True, True]
+
+
 def test_grouped_holdout_reports_clear_fallback_when_repo_breadth_is_insufficient():
     y = np.tile([0, 1], 20)
     mask = np.ones(40, dtype=bool)
@@ -465,4 +517,4 @@ def test_grouped_holdout_reports_clear_fallback_when_repo_breadth_is_insufficien
     )
 
     assert eval_on == "real" and strategy == "real_row_random"
-    assert "2 engagements, need 8" in detail
+    assert "2 evaluation families, need 8" in detail

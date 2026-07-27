@@ -168,12 +168,29 @@ class TriageConfig(BaseModel):
     # stratified 25% test set of ~10 rows with ~3 positives at the ~0.30 base rate — the
     # floor for a non-degenerate estimate; below it the eval is synthetic (and flagged).
     min_real_labels_for_holdout_eval: int = 40
+    # Explicit evaluation-only grouping for related engagements that must never straddle
+    # train/evaluation (clones, renamed repositories, or deliberately separate pre/post
+    # fixture IDs). Keys are persisted engagement/repo ids; values are analyst-defined
+    # family ids. This does not enter classifier features or alter predictions.
+    evaluation_family_overrides: dict[str, str] = Field(default_factory=dict)
     basis: str = (
         "Synthetic-vs-real weighting = Beta-Binomial shrinkage (triage/priors.py) applied "
         "to the training corpus: synthetic is a fixed pseudo-observation pool whose share "
         "decays as 1/(1+n_real/pseudocount), retired entirely past a real-corpus-sized "
         "cutoff. SME-calibrated, editable in config.toml [triage]; not a magic number."
     )
+
+    @field_validator("evaluation_family_overrides")
+    @classmethod
+    def _nonempty_evaluation_families(cls, values: dict[str, str]) -> dict[str, str]:
+        normalized: dict[str, str] = {}
+        for engagement, family in values.items():
+            engagement = engagement.strip()
+            family = family.strip()
+            if not engagement or not family:
+                raise ValueError("evaluation family engagement and family ids must be non-empty")
+            normalized[engagement] = family
+        return normalized
 
 
 class RateLimitConfig(BaseModel):

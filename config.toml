@@ -74,6 +74,11 @@ synthetic_cutoff_labels = 2000
 # Min real labels before held-out PR/Brier is computed on a real split (else synthetic,
 # flagged as such). 40 -> ~10-row stratified test set, the floor for a usable estimate.
 min_real_labels_for_holdout_eval = 40
+# Evaluation-only leakage control. Add explicit mappings for related repo ids that must
+# remain on one side of grouped validation (clones, renamed repos, or pre/post fixtures):
+# [triage.evaluation_family_overrides]
+# independent_project_pre = "independent_project"
+# independent_project_post = "independent_project"
 
 [review]
 # Human-review checkpoint (src/repoauditor/review/checkpoint.py).
