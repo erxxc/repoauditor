@@ -56,6 +56,8 @@ class CollectionStatus:
     reassessed_findings: int = 0
     independently_reviewed_findings: int = 0
     cross_analyst_disagreements: int = 0
+    dimension_cohorts: dict[str, dict[str, int | bool]] = field(default_factory=dict)
+    disposition_counts: dict[str, int] = field(default_factory=dict)
     source_counts: dict[str, int] = field(default_factory=dict)
     dimension_counts: dict[str, int] = field(default_factory=dict)
     missing_dimensions: tuple[str, ...] = ()
@@ -137,6 +139,36 @@ def _review_audit(assessments: list[TriageAssessment]) -> tuple[int, int, int]:
     return reassessed, independently_reviewed, disagreements
 
 
+def _cohort_sufficiency(
+    assessments: list[TriageAssessment],
+) -> tuple[dict[str, dict[str, int | bool]], dict[str, int]]:
+    """Describe persisted cohorts; do not infer missing language or detector metadata."""
+    cohorts: dict[str, list[TriageAssessment]] = {}
+    dispositions: Counter[str] = Counter()
+    for assessment in assessments:
+        disposition = (
+            assessment.disposition.value
+            if assessment.disposition is not None
+            else assessment.outcome.value
+        )
+        dispositions[disposition] += 1
+        for dimension in assessment.dimensions:
+            cohorts.setdefault(dimension, []).append(assessment)
+    result: dict[str, dict[str, int | bool]] = {}
+    for dimension, members in sorted(cohorts.items()):
+        positive, negative, _tp, _tn, _duplicates = _adjudication_views(members)
+        decided = positive + negative
+        result[dimension] = {
+            "decided": decided,
+            "positive": positive,
+            "negative": negative,
+            "sufficient": (
+                decided >= MIN_LABELS and positive > 0 and negative > 0
+            ),
+        }
+    return result, dict(sorted(dispositions.items()))
+
+
 def collection_status(
     repo_id: str | None = None, config: Config | None = None
 ) -> CollectionStatus:
@@ -163,6 +195,9 @@ def collection_status(
         duplicates,
     ) = _adjudication_views(list(latest_by_finding.values()))
     reassessed, independently_reviewed, disagreements = _review_audit(assessments)
+    dimension_cohorts, disposition_counts = _cohort_sufficiency(
+        list(latest_by_finding.values())
+    )
     uncertain = sum(
         assessment.outcome is TriageAssessmentOutcome.UNCERTAIN
         for assessment in latest_by_finding.values()
@@ -191,6 +226,8 @@ def collection_status(
         reassessed_findings=reassessed,
         independently_reviewed_findings=independently_reviewed,
         cross_analyst_disagreements=disagreements,
+        dimension_cohorts=dimension_cohorts,
+        disposition_counts=disposition_counts,
         source_counts=dict(sorted(sources.items())),
         dimension_counts=dict(sorted(dimensions.items())),
         missing_dimensions=tuple(sorted(TARGET_DIMENSIONS - dimensions.keys())),
@@ -226,6 +263,23 @@ def render_collection_status(status: CollectionStatus) -> str:
         "unrepresented target dimensions: " + (
             ", ".join(status.missing_dimensions) or "none"
         ),
+        "dimension cohort sufficiency: " + (
+            ", ".join(
+                f"{name}={'sufficient' if values['sufficient'] else 'insufficient'}"
+                f"(decided={values['decided']}, positive={values['positive']}, "
+                f"negative={values['negative']})"
+                for name, values in status.dimension_cohorts.items()
+            )
+            or "none"
+        ),
+        "detailed dispositions: " + (
+            ", ".join(
+                f"{name}={count}" for name, count in status.disposition_counts.items()
+            )
+            or "none"
+        ),
+        "language/detector cohort metrics unavailable: those fields are not persisted "
+        "with triage labels; no cohort is inferred from rule names.",
     ]
     if not status.activation_ready:
         lines.append(

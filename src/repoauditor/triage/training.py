@@ -48,6 +48,11 @@ class TrainingCorpus:
     synthetic_dropped: bool        # True once n_real >= cutoff (synthetic retired)
 
 
+def evaluation_family(engagement: str, config: Config) -> str:
+    """Return the evaluation-only family id for one persisted engagement."""
+    return config.triage.evaluation_family_overrides.get(engagement, engagement)
+
+
 def load_real_examples(
     config: Config | None = None,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, dict[str, int]]:
@@ -69,7 +74,7 @@ def load_real_examples(
             continue
         xs.append([float(v) for v in features])
         ys.append(int(actionable))
-        groups.append(engagement)
+        groups.append(evaluation_family(engagement, config))
         evaluation_eligible.append(
             source in (TriageLabelSource.MANUAL, TriageLabelSource.DERIVED_REVIEW)
         )

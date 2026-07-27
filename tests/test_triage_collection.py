@@ -72,18 +72,21 @@ def test_collection_reports_actionability_and_technical_validity_separately(
             outcome=TriageAssessmentOutcome.TRUE_POSITIVE,
             disposition=TriageDisposition.CONFIRMED_ACTIONABLE,
             rationale="reachable attacker-controlled sink", analyst="alice",
+            dimensions=["authorization"],
         ),
         TriageAssessment(
             finding_id=2, engagement="repo",
             outcome=TriageAssessmentOutcome.FALSE_POSITIVE,
             disposition=TriageDisposition.VALID_NOT_ACTIONABLE,
             rationale="valid but accepted low-impact behavior", analyst="alice",
+            dimensions=["authorization"],
         ),
         TriageAssessment(
             finding_id=3, engagement="repo",
             outcome=TriageAssessmentOutcome.FALSE_POSITIVE,
             disposition=TriageDisposition.MITIGATED,
             rationale="effective authorization guard", analyst="alice",
+            dimensions=["authorization"],
         ),
         TriageAssessment(
             finding_id=4, engagement="repo",
@@ -121,6 +124,13 @@ def test_collection_reports_actionability_and_technical_validity_separately(
     assert "operational actionability (decided, unique): positive=1, negative=2" in rendered
     assert "technical validity (decided, unique): positive=2, negative=1" in rendered
     assert "duplicates excluded=1" in rendered
+    assert status.dimension_cohorts == {
+        "authorization": {
+            "decided": 3, "positive": 1, "negative": 2, "sufficient": False,
+        }
+    }
+    assert "authorization=insufficient(decided=3, positive=1, negative=2)" in rendered
+    assert "language/detector cohort metrics unavailable" in rendered
 
 
 def test_collection_audits_independent_review_and_disagreement(

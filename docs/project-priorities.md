@@ -76,16 +76,20 @@ order so future sessions do not have to reconstruct it from conversation history
 - [x] Ship repository-grouped validation that activates at 40 labels across eight
   engagements, with an explicit row-random fallback below the gate. Real held-out evidence
   still awaits the data gate; metric uncertainty remains open below.
-- [ ] Keep vulnerability families, clones, and pre/post-fix pairs in one evaluation
-  partition. Once the held-out repository count supports it, add repository-aware bootstrap
+- [x] Keep vulnerability families, clones, and pre/post-fix pairs in one evaluation
+  partition through explicit `[triage.evaluation_family_overrides]`; the default remains
+  the stable engagement id and the mapping affects validation grouping only.
+- [ ] Once the held-out evaluation-family count supports it, add family-aware bootstrap
   ranges rather than presenting bare point metrics.
 - [ ] Add temporal validation only after adequate chronological depth exists.
 - [x] Add an adjudication audit for reassessment, independent-review coverage, and
   cross-analyst disagreement while retaining append-only evidence. Materiality is not
   inferred because it is not currently persisted; an enforced material-case second-review
   workflow remains a possible later schema change.
-- [ ] Break evaluation out by language, mechanism, detector, and detailed disposition only
-  when each cohort has enough observations; otherwise label it insufficient.
+- [~] Gate cohort views on adequate decided observations and both classes. Analyst-declared
+  mechanism dimensions and detailed dispositions are now reported; language and detector
+  cohorts remain explicitly unavailable because those fields are not persisted with labels.
+  Do not infer them from rule names.
 - [ ] Characterize repeatability on identical inputs, separating sampling variance from
   retrieval-resolution sensitivity. Report verdict/citation/confidence/token/latency spread.
 - [ ] Expand manufactured controls only where positive and negative mechanisms have

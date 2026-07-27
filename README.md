@@ -328,7 +328,11 @@ uv run repoauditor triage-collection        # label gate, dual verdict views, re
 ```
 
 Below 40 real scored labels, this command deliberately withholds the curve. Engagement-
-grouped validation additionally requires at least eight distinct repositories. A small,
+grouped validation additionally requires at least eight distinct evaluation families.
+An evaluation family defaults to one stable repository identity. Configure
+`[triage.evaluation_family_overrides]` when clones, renamed repositories, or separate
+pre/post ids must remain on the same side of the holdout; this mapping affects evaluation
+only, never classifier features or predictions. A small,
 deterministic sample of suppressed-but-falsification-confirmed findings is routed to review
 on orchestrated runs so labels are not collected exclusively from high-ranked findings.
 The default statistics cohort uses manual and human-review labels; falsification-derived
