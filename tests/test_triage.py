@@ -86,6 +86,31 @@ def test_load_sarif_reads_rule_metadata_cwe_and_dataflow():
     assert f.fingerprint  # stable, non-empty
 
 
+def test_load_sarif_uses_only_explicit_artifact_language_metadata():
+    document = json.loads(_sarif(
+        rules=[{"id": "py.sqli"}],
+        results=[
+            _result("py.sqli", "app/db.py", 10),
+            _result("py.sqli", "app/unknown.py", 20),
+        ],
+    ))
+    document["runs"][0]["artifacts"] = [{
+        "location": {"uri": "app/db.py"},
+        "sourceLanguage": "Python",
+    }]
+
+    explicit, unavailable = load_sarif(json.dumps(document))
+
+    assert explicit.tool_name == "semgrep"
+    assert explicit.detector_source == "sarif:run.tool.driver.name"
+    assert explicit.language == "python"
+    assert explicit.language_source == "sarif:artifact.sourceLanguage"
+    # A suggestive extension is deliberately not treated as cohort evidence.
+    assert unavailable.file.endswith(".py")
+    assert unavailable.language == "unknown"
+    assert unavailable.language_source == "unavailable"
+
+
 def test_feature_vector_matches_schema_width_and_flags_paths():
     doc = _sarif(
         rules=[{"id": "r1", "name": "x", "properties": {"tags": ["CWE-78"], "security-severity": "9.0"}}],

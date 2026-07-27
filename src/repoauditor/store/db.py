@@ -1175,12 +1175,15 @@ def upsert_triage_features(
         with conn:
             cur = conn.execute(
                 "INSERT INTO triage_features "
-                "(finding_id, engagement, rule_id, fingerprint, features, feature_names) "
-                "VALUES (?, ?, ?, ?, ?, ?) "
+                "(finding_id, engagement, rule_id, fingerprint, features, feature_names, "
+                " detector, detector_source, language, language_source) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
                 "ON CONFLICT (finding_id) DO UPDATE SET "
                 "  engagement = excluded.engagement, rule_id = excluded.rule_id, "
                 "  fingerprint = excluded.fingerprint, features = excluded.features, "
-                "  feature_names = excluded.feature_names",
+                "  feature_names = excluded.feature_names, detector = excluded.detector, "
+                "  detector_source = excluded.detector_source, language = excluded.language, "
+                "  language_source = excluded.language_source",
                 (
                     record.finding_id,
                     record.engagement,
@@ -1188,6 +1191,10 @@ def upsert_triage_features(
                     record.fingerprint,
                     json.dumps(record.features),
                     json.dumps(record.feature_names),
+                    record.detector,
+                    record.detector_source,
+                    record.language,
+                    record.language_source,
                 ),
             )
         return int(cur.lastrowid)
@@ -1203,6 +1210,10 @@ def _triage_feature_record_from_row(row: sqlite3.Row) -> TriageFeatureRecord:
         fingerprint=row["fingerprint"],
         features=json.loads(row["features"]),
         feature_names=json.loads(row["feature_names"]),
+        detector=row["detector"],
+        detector_source=row["detector_source"],
+        language=row["language"],
+        language_source=row["language_source"],
     )
 
 

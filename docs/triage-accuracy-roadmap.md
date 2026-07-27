@@ -87,7 +87,10 @@ Collection mechanism now available:
 - Repeatable `--dimension` values record analyst-verified coverage without inferring a
   vulnerability taxonomy from noisy rule names.
 - `triage-collection [repo-id]` reports effective class/source counts, latest abstentions,
-  unlabelled triaged findings, declared dimensions, and progress against both activation gates.
+  unlabelled triaged findings, declared dimensions, explicit SARIF language/detector
+  cohorts, and progress against both activation gates. Language is accepted only from
+  artifact `sourceLanguage`; missing metadata remains visibly unavailable rather than being
+  inferred from rule names or file extensions.
 
 This phase remains open until actual UAT data reaches the activation floor. The lightweight
 fixture is one controlled engagement and cannot by itself satisfy repository diversity.
@@ -106,8 +109,9 @@ becomes a classifier feature.
 excluding duplicates and abstentions from their decided denominators, plus observable
 reassessment, independent-review, and cross-analyst-disagreement counts. It also withholds
 analyst-declared dimension cohorts below 40 decided observations or without both classes.
-Language and detector cohorts remain unavailable until those fields are persisted with labels;
-rule-name inference is prohibited.
+Language and detector cohorts use the persisted triage-feature/label join and apply the same
+40-decided-label/both-class descriptive sufficiency rule. Labels lacking explicit metadata
+are reported as unavailable and never assigned by rule-name or file-extension inference.
 
 ## Phase 5 — Nonstandard-finding optimization
 

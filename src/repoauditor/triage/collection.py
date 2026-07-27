@@ -57,6 +57,10 @@ class CollectionStatus:
     independently_reviewed_findings: int = 0
     cross_analyst_disagreements: int = 0
     dimension_cohorts: dict[str, dict[str, int | bool]] = field(default_factory=dict)
+    language_cohorts: dict[str, dict[str, int | bool]] = field(default_factory=dict)
+    detector_cohorts: dict[str, dict[str, int | bool]] = field(default_factory=dict)
+    labels_without_language: int = 0
+    labels_without_detector: int = 0
     disposition_counts: dict[str, int] = field(default_factory=dict)
     source_counts: dict[str, int] = field(default_factory=dict)
     dimension_counts: dict[str, int] = field(default_factory=dict)
@@ -169,6 +173,39 @@ def _cohort_sufficiency(
     return result, dict(sorted(dispositions.items()))
 
 
+def _metadata_cohort_sufficiency(
+    labels: list,
+    features: list,
+    attribute: str,
+) -> tuple[dict[str, dict[str, int | bool]], int]:
+    """Count human-label cohorts only where explicitly persisted metadata is available."""
+    feature_by_key = {
+        (feature.engagement, feature.fingerprint): feature for feature in features
+    }
+    counts: dict[str, Counter[str]] = {}
+    unavailable = 0
+    for label in labels:
+        feature = feature_by_key.get((label.engagement, label.finding_fingerprint))
+        value = getattr(feature, attribute, "unknown") if feature is not None else "unknown"
+        if not value or value == "unknown":
+            unavailable += 1
+            continue
+        cohort = counts.setdefault(value, Counter())
+        cohort["positive" if label.actionable else "negative"] += 1
+    result: dict[str, dict[str, int | bool]] = {}
+    for name, cohort in sorted(counts.items()):
+        positive = cohort["positive"]
+        negative = cohort["negative"]
+        decided = positive + negative
+        result[name] = {
+            "decided": decided,
+            "positive": positive,
+            "negative": negative,
+            "sufficient": decided >= MIN_LABELS and positive > 0 and negative > 0,
+        }
+    return result, unavailable
+
+
 def collection_status(
     repo_id: str | None = None, config: Config | None = None
 ) -> CollectionStatus:
@@ -197,6 +234,12 @@ def collection_status(
     reassessed, independently_reviewed, disagreements = _review_audit(assessments)
     dimension_cohorts, disposition_counts = _cohort_sufficiency(
         list(latest_by_finding.values())
+    )
+    language_cohorts, labels_without_language = _metadata_cohort_sufficiency(
+        labels, features, "language"
+    )
+    detector_cohorts, labels_without_detector = _metadata_cohort_sufficiency(
+        labels, features, "detector"
     )
     uncertain = sum(
         assessment.outcome is TriageAssessmentOutcome.UNCERTAIN
@@ -227,6 +270,10 @@ def collection_status(
         independently_reviewed_findings=independently_reviewed,
         cross_analyst_disagreements=disagreements,
         dimension_cohorts=dimension_cohorts,
+        language_cohorts=language_cohorts,
+        detector_cohorts=detector_cohorts,
+        labels_without_language=labels_without_language,
+        labels_without_detector=labels_without_detector,
         disposition_counts=disposition_counts,
         source_counts=dict(sorted(sources.items())),
         dimension_counts=dict(sorted(dimensions.items())),
@@ -272,14 +319,30 @@ def render_collection_status(status: CollectionStatus) -> str:
             )
             or "none"
         ),
+        "language cohort sufficiency: " + (
+            ", ".join(
+                f"{name}={'sufficient' if values['sufficient'] else 'insufficient'}"
+                f"(decided={values['decided']}, positive={values['positive']}, "
+                f"negative={values['negative']})"
+                for name, values in status.language_cohorts.items()
+            )
+            or "none"
+        ) + f"; unavailable labels={status.labels_without_language}",
+        "detector cohort sufficiency: " + (
+            ", ".join(
+                f"{name}={'sufficient' if values['sufficient'] else 'insufficient'}"
+                f"(decided={values['decided']}, positive={values['positive']}, "
+                f"negative={values['negative']})"
+                for name, values in status.detector_cohorts.items()
+            )
+            or "none"
+        ) + f"; unavailable labels={status.labels_without_detector}",
         "detailed dispositions: " + (
             ", ".join(
                 f"{name}={count}" for name, count in status.disposition_counts.items()
             )
             or "none"
         ),
-        "language/detector cohort metrics unavailable: those fields are not persisted "
-        "with triage labels; no cohort is inferred from rule names.",
     ]
     if not status.activation_ready:
         lines.append(

@@ -23,9 +23,10 @@ evidence exists.
    latency, token use, and cost per uniquely validated issue.
 4. **Recall safety — open/evidence-gated.** Aggressive false-positive reduction must not
    silently suppress true vulnerabilities. Any unresolved case remains reviewable.
-5. **Cohort breakdown — partial/evidence-gated.** Family and analyst-declared mechanism
-   gates exist; trustworthy language/detector label metadata and adequate cohort sizes do
-   not yet exist. Pooled gains cannot hide a weak subgroup.
+5. **Cohort breakdown — partial/evidence-gated.** Family, analyst-declared mechanism, and
+   explicitly sourced SARIF language/detector gates exist; adequate real cohort sizes do
+   not yet exist. Missing metadata stays unavailable rather than inferred. Pooled gains
+   cannot hide a weak subgroup.
 6. **Read-only tools — design only.** The agent may request indexed source, slices, callers,
    references, and stored architecture evidence. It may not execute repository code, invoke
    repository tools, access arbitrary networks, or mutate the checkout.

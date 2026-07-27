@@ -89,10 +89,10 @@ order so future sessions do not have to reconstruct it from conversation history
   cross-analyst disagreement while retaining append-only evidence. Materiality is not
   inferred because it is not currently persisted; an enforced material-case second-review
   workflow remains a possible later schema change.
-- [~] Gate cohort views on adequate decided observations and both classes. Analyst-declared
-  mechanism dimensions and detailed dispositions are now reported; language and detector
-  cohorts remain explicitly unavailable because those fields are not persisted with labels.
-  Do not infer them from rule names.
+- [x] Gate cohort views on adequate decided observations and both classes. Analyst-declared
+  mechanism dimensions, detailed dispositions, and explicitly persisted SARIF
+  language/detector cohorts are reported. Unavailable metadata remains visible and is never
+  inferred from rule names or file extensions.
 - [ ] Characterize repeatability on identical inputs, separating sampling variance from
   retrieval-resolution sensitivity. Report verdict/citation/confidence/token/latency spread.
 - [ ] Expand manufactured controls only where positive and negative mechanisms have
@@ -140,8 +140,11 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
 
 ### A — offline engineering available now
 
-1. Persist trustworthy language and detector cohort metadata with triage labels/features;
-   then extend the existing sufficiency gate without inferring either field from rule names.
+1. [x] Persist trustworthy language and detector cohort metadata with triage
+   labels/features. SARIF detector identity and explicit artifact `sourceLanguage` now
+   travel with the triaged feature/label join, and `triage-collection` reports their
+   sufficiency. Missing metadata remains `unknown`; rule names and file extensions are
+   never used as substitutes.
 2. Continue deterministic context/certificate work beyond the Python intraprocedural MVP:
    authorization semantics, callers/references, and additional languages. Preserve explicit
    unsupported/incomplete outcomes.

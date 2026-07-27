@@ -343,6 +343,10 @@ class TriageFeatureRecord(BaseModel):
     fingerprint: str
     features: list[float]
     feature_names: list[str]
+    detector: str = "unknown"
+    detector_source: str = "unavailable"
+    language: str = "unknown"
+    language_source: str = "unavailable"
 
 
 class RulePrior(BaseModel):
