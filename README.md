@@ -537,6 +537,9 @@ More autonomous tool-using falsification is intentionally not enabled yet. The
 [agentic escalation gate](docs/agentic-escalation-gate.md) requires authoritative usage
 accounting, a protected real-world baseline, recall-safety evidence, read-only tools, and
 independent claim verification before such a mode can become available.
+The current deterministic certificate checker and its deliberately narrow structural
+claims are documented in
+[docs/security-claim-certificates.md](docs/security-claim-certificates.md).
 The current cross-project sequence and evidence gates are recorded in
 [docs/project-priorities.md](docs/project-priorities.md).
 Offline preparation and the exact later paid-calibration sequence are documented in

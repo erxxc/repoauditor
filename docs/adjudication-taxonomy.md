@@ -45,7 +45,9 @@ recall denominators. Report selective performance against decided coverage.
 
 ## Split and contamination discipline
 
-- Split by repository/engagement once the existing volume/diversity gate is met.
+- Split by configured evaluation family once the existing volume/diversity gate is met;
+  family defaults to stable repository identity and explicit overrides bind clones,
+  renamed repositories, and pre/post pairs.
 - Prefer temporal evaluation for model/prompt revisions when timestamps support it.
 - Keep vulnerability families, clones, and pre/post-fix pairs in one split.
 - Keep purpose-built fixtures separate from independently authored real-world evidence.

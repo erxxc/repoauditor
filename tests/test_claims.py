@@ -37,6 +37,8 @@ def test_structural_claim_round_trip_is_idempotent_and_scoped(tmp_config):
     second = db.upsert_security_claim(claim, tmp_config)
     assert first == second
     stored = db.list_security_claims(finding_id, tmp_config)[0]
+    assert stored.entry_evidence
+    assert '@catalog_bp.route("/products/search")' in stored.entry_evidence[0].source
     assert stored.sink_evidence and "db.query(sql)" in stored.sink_evidence.source
     assert any("request.args.get" in item.source for item in stored.source_evidence)
 
@@ -47,6 +49,78 @@ def test_structural_claim_round_trip_is_idempotent_and_scoped(tmp_config):
     saved = db.list_claim_verifications(stored.id, tmp_config)[0]
     assert saved.status is ClaimVerificationStatus.STRUCTURALLY_VERIFIED
     assert "real-world risk are not validated" in saved.reason
+    assert saved.checks["http_entrypoint_present"] is True
+    assert saved.checks["attacker_input_source_present"] is True
+    assert saved.checks["control_candidate_present"] is False
+
+
+def test_checker_identifies_control_syntax_on_local_def_use_without_proving_effectiveness(
+    tmp_path,
+):
+    (tmp_path / "svc.py").write_text(
+        "import os\n"
+        "from flask import request\n\n"
+        "@app.route('/run')\n"
+        "def run():\n"
+        "    command = request.args.get('cmd', '')\n"
+        "    safe = sanitize_command(command)\n"
+        "    os.system(safe)\n"
+    )
+    finding = Finding(
+        repo_id="r", title="Command injection [CWE-78]", file="svc.py",
+        line_start=8, line_end=8, citation_snippet="os.system(safe)",
+        source_tool="semgrep", confidence=0.8, severity="high",
+    )
+    evidence = build_python_slice(RetrievalIndex().build(tmp_path), finding)
+    assert evidence is not None and evidence.sanitizer_candidates
+    claim = claim_from_slice(1, evidence, "commit-abc").model_copy(update={"id": 1})
+
+    verification = verify_structural_claim(claim, tmp_path, "commit-abc")
+
+    assert verification.status is ClaimVerificationStatus.STRUCTURALLY_VERIFIED
+    assert verification.checks["http_entrypoint_present"] is True
+    assert verification.checks["attacker_input_source_present"] is True
+    assert verification.checks["control_candidate_present"] is True
+    assert verification.checks["control_on_local_def_use"] is True
+    assert "control effectiveness" in verification.reason
+
+
+def test_checker_refutes_forged_entrypoint_evidence():
+    finding = _finding()
+    evidence = build_python_slice(RetrievalIndex().build(UAT), finding)
+    assert evidence is not None
+    claim = claim_from_slice(1, evidence, "commit-abc").model_copy(update={"id": 1})
+    forged_entry = claim.entry_evidence[0].model_copy(
+        update={"source": '@catalog_bp.route("/admin-only")'}
+    )
+    forged = claim.model_copy(update={"entry_evidence": [forged_entry]})
+
+    verification = verify_structural_claim(forged, UAT, "commit-abc")
+
+    assert verification.status is ClaimVerificationStatus.STRUCTURALLY_REFUTED
+    assert verification.checks["evidence_matches_snapshot"] is False
+
+
+def test_plain_function_parameter_is_not_claimed_as_attacker_controlled(tmp_path):
+    (tmp_path / "svc.py").write_text(
+        "import os\n\n"
+        "def run(command):\n"
+        "    os.system(command)\n"
+    )
+    finding = Finding(
+        repo_id="r", title="Command injection [CWE-78]", file="svc.py",
+        line_start=4, line_end=4, citation_snippet="os.system(command)",
+        source_tool="semgrep", confidence=0.8, severity="high",
+    )
+    evidence = build_python_slice(RetrievalIndex().build(tmp_path), finding)
+    assert evidence is not None
+    claim = claim_from_slice(1, evidence, "commit-abc").model_copy(update={"id": 1})
+
+    verification = verify_structural_claim(claim, tmp_path, "commit-abc")
+
+    assert verification.status is ClaimVerificationStatus.STRUCTURALLY_VERIFIED
+    assert verification.checks["http_entrypoint_present"] is False
+    assert verification.checks["attacker_input_source_present"] is False
 
 
 def test_unresolved_dependency_produces_incomplete_verification(tmp_config, tmp_path):

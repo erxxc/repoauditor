@@ -44,9 +44,9 @@ The dimension view is descriptive. Merely declaring a dimension does not advance
 - Every finding label remains human-reviewed advisory/patch evidence; repoauditor output
   never becomes its own ground truth.
 
-Changing a checked-in expectation manifest changes the trusted corpus-cache key. After this
-offline-readiness change merges, the public-corpus cache workflow must rebuild the exact
-pinned cache before a bounded independent live run. Never weaken the cache-miss failure.
+Changing a checked-in expectation manifest changes the trusted corpus-cache key. Any such
+change requires the public-corpus cache workflow to rebuild the exact pinned cache before a
+bounded independent live run. Never weaken the cache-miss failure.
 
 ## Later online sequence
 
@@ -85,7 +85,7 @@ pytest store is temporary. Use those artifacts for workflow safety and accuracy 
 three foreground runs in one persistent local store when producing the formal
 `usage-calibration` comparison above.
 
-### First lightweight observation and rerun gate
+### Lightweight observations and completed harness corrections
 
 Actions run `30228015245` on 2026-07-27 passed all four manufactured controls, then stopped
 before normalize/scoring because 18 findings remained deferred. That is a successful
@@ -93,14 +93,14 @@ fail-closed safety observation, not a completed accuracy or capacity result. Its
 artifact retained JUnit evidence but not partial authoritative usage, so it cannot justify a
 limit change or the protected-pair run.
 
-Before rerunning, the live harness must:
+The following harness corrections were completed before the later successful runs:
 
-1. emit usage, queue state, batch identity, and failure detail on every terminal path;
-2. continue deferred work through linked, freshly bounded batches without rerunning
+1. usage, queue state, batch identity, and failure detail are emitted on terminal paths;
+2. deferred work continues through linked, freshly bounded batches without rerunning
    map/detect/triage;
-3. aggregate the complete batch chain and require zero deferred findings before
+3. the complete batch chain is aggregated and zero deferred findings are required before
    normalize/scoring; and
-4. retain offline regression coverage for failure artifacts and multi-batch completion.
+4. failure artifacts and multi-batch completion retain offline regression coverage.
 
 Keep the 75-call/250,000-token per-batch ceilings unchanged while making this correction.
 The first continuation run drained four findings per continuation batch and stopped at the
@@ -110,9 +110,11 @@ retains its 20-minute process timeout. Its conservative outer bounds are therefo
 and 1,500,000 provider-reported tokens, although the measured projection is roughly 90 calls
 plus normalization and about 280,000 tokens plus normalization; the wall-clock timeout
 remains an independent stop.
-Reaching any bound produces a failure artifact rather than a partial score. After a
-successful lightweight rerun, inspect actual usage and accuracy before authorizing
-`bounded-independent`; these are ceilings, not intended consumption.
+Reaching any bound produces a failure artifact rather than a partial score. The completed
+lightweight run (`30229939662`) used 108 calls and 357,170 known input/output tokens across
+six linked batches with zero deferred findings. These are observations, not justification
+for changing the ceilings. The protected pair was authorized only after that artifact was
+reviewed.
 
 ### Protected-pair observation
 
