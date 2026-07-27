@@ -102,10 +102,12 @@ order so future sessions do not have to reconstruct it from conversation history
 
 - [ ] Improve language-specific slicing and authorization/source-to-sink context before
   changing the classifier.
-- [~] Expand independently checked `SecurityClaim` certificates. Version 3 now persists and
+- [~] Expand independently checked `SecurityClaim` certificates. Version 4 now persists and
   checks local HTTP-entry syntax, request-input identity, control-candidate identity, and
-  placement on the intraprocedural def-use chain. Runtime/interprocedural reachability,
-  deployed attacker control, and control effectiveness remain explicitly unverified.
+  placement on the intraprocedural def-use chain, plus exact direct Python caller syntax
+  independently reparsed from the snapshot. Runtime/interprocedural reachability, deployed
+  attacker control, authorization effectiveness, and control effectiveness remain explicitly
+  unverified.
 - [ ] Evaluate in-family/out-of-family novelty as an investigation-depth trigger. Do not
   train a novelty prioritizer until enough manually reviewed LLM findings exist.
 
@@ -145,9 +147,11 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
    travel with the triaged feature/label join, and `triage-collection` reports their
    sufficiency. Missing metadata remains `unknown`; rule names and file extensions are
    never used as substitutes.
-2. Continue deterministic context/certificate work beyond the Python intraprocedural MVP:
-   authorization semantics, callers/references, and additional languages. Preserve explicit
-   unsupported/incomplete outcomes.
+2. [~] Continue deterministic context/certificate work beyond the Python intraprocedural
+   MVP. Exact direct Python caller syntax is now persisted and independently checked without
+   being promoted to runtime reachability. Authorization semantics, broader registration/
+   reference evidence, cross-file data flow, and additional trusted checker languages remain.
+   Preserve explicit unsupported/incomplete outcomes.
 3. Expand manufactured positive/negative controls only for mechanisms with independently
    checkable ground truth. Fixture construction and deterministic checks are offline; live
    provider qualification remains deferred.

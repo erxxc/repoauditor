@@ -16,7 +16,7 @@ from dataclasses import dataclass, field
 from ..detect.retrieval import RetrievalIndex
 from ..store.models import Finding
 
-SLICE_VERSION = "python_local_slice_v1"
+SLICE_VERSION = "python_local_slice_v2"
 
 _MECHANISM_TERMS = {
     "sql_injection": ("sql injection", "sqli", "cwe-89"),
@@ -40,6 +40,13 @@ class SliceLine:
     source: str
 
 
+@dataclass(frozen=True)
+class CallerSliceLine:
+    file: str
+    line: int
+    source: str
+
+
 @dataclass
 class PythonSliceEvidence:
     mechanism: str
@@ -47,6 +54,7 @@ class PythonSliceEvidence:
     file: str
     function: str | None = None
     entry_evidence: list[SliceLine] = field(default_factory=list)
+    caller_evidence: list[CallerSliceLine] = field(default_factory=list)
     source_evidence: list[SliceLine] = field(default_factory=list)
     assignments: list[SliceLine] = field(default_factory=list)
     sink: SliceLine | None = None
@@ -66,6 +74,10 @@ class PythonSliceEvidence:
             ("sanitizer-candidate", self.sanitizer_candidates),
         ):
             lines.extend(f"{label} L{item.line}: {item.source}" for item in evidence)
+        lines.extend(
+            f"caller {item.file}:L{item.line}: {item.source}"
+            for item in self.caller_evidence
+        )
         if self.sink:
             lines.append(f"sink L{self.sink.line}: {self.sink.source}")
         lines.extend(f"limitation: {item}" for item in self.limitations)
@@ -115,6 +127,35 @@ def _is_request_source(node: ast.AST) -> bool:
     )
 
 
+def _direct_python_callers(
+    index: RetrievalIndex, symbol: str
+) -> list[tuple[str, SliceLine]]:
+    """Return exact direct-call syntax from AST-indexed Python files only."""
+    evidence: list[tuple[str, SliceLine]] = []
+    seen: set[tuple[str, int, str]] = set()
+    for caller in index.find_callers(symbol):
+        if caller.language != "python":
+            continue
+        source = index.source_text(caller.file)
+        if source is None:
+            continue
+        relative, text = source
+        try:
+            tree = ast.parse(text)
+        except SyntaxError:
+            continue
+        lines = text.splitlines()
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call) or _call_name(node) != symbol:
+                continue
+            item = _line(lines, node)
+            key = (relative, item.line, item.source)
+            if key not in seen:
+                seen.add(key)
+                evidence.append((relative, item))
+    return sorted(evidence, key=lambda pair: (pair[0], pair[1].line, pair[1].source))
+
+
 def build_python_slice(
     index: RetrievalIndex, finding: Finding
 ) -> PythonSliceEvidence | None:
@@ -155,10 +196,18 @@ def build_python_slice(
         )
     function = min(functions, key=lambda node: getattr(node, "end_lineno", 0) - node.lineno)
     result = PythonSliceEvidence(mechanism, "local", rel, function.name)
-    result.limitations.append("intraprocedural slice only; callers and runtime registration are not proven")
+    result.limitations.append(
+        "local def-use slice only; direct caller syntax does not prove runtime reachability"
+    )
 
     for decorator in function.decorator_list:
         result.entry_evidence.append(_line(lines, decorator))
+    # SliceLine has no file field because most evidence is local. Caller file identity is
+    # carried separately when the certificate is constructed.
+    result.caller_evidence = [
+        CallerSliceLine(relative, item.line, item.source)
+        for relative, item in _direct_python_callers(index, function.name)
+    ]
 
     calls = [
         node for node in ast.walk(function)

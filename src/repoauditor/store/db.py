@@ -2181,13 +2181,14 @@ def upsert_security_claim(
             conn.execute(
                 "INSERT INTO security_claim "
                 "(finding_id, claim_version, snapshot_commit, mechanism, "
-                " entry_evidence, source_evidence, sink_evidence, "
+                " entry_evidence, caller_evidence, source_evidence, sink_evidence, "
                 " path_nodes, path_predicates, control_candidate, producer_type, "
                 " producer_name, prompt_version) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
                 "ON CONFLICT (finding_id, claim_version) DO UPDATE SET "
                 "snapshot_commit=excluded.snapshot_commit, mechanism=excluded.mechanism, "
                 "entry_evidence=excluded.entry_evidence, "
+                "caller_evidence=excluded.caller_evidence, "
                 "source_evidence=excluded.source_evidence, "
                 "sink_evidence=excluded.sink_evidence, path_nodes=excluded.path_nodes, "
                 "path_predicates=excluded.path_predicates, "
@@ -2200,6 +2201,7 @@ def upsert_security_claim(
                     claim.snapshot_commit,
                     claim.mechanism,
                     json.dumps([item.model_dump() for item in claim.entry_evidence]),
+                    json.dumps([item.model_dump() for item in claim.caller_evidence]),
                     json.dumps([item.model_dump() for item in claim.source_evidence]),
                     json.dumps(claim.sink_evidence.model_dump())
                     if claim.sink_evidence else None,
@@ -2239,6 +2241,9 @@ def list_security_claims(
                 mechanism=row["mechanism"],
                 entry_evidence=[
                     ClaimEvidence(**item) for item in json.loads(row["entry_evidence"])
+                ],
+                caller_evidence=[
+                    ClaimEvidence(**item) for item in json.loads(row["caller_evidence"])
                 ],
                 source_evidence=[
                     ClaimEvidence(**item) for item in json.loads(row["source_evidence"])

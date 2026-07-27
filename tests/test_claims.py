@@ -85,6 +85,72 @@ def test_checker_identifies_control_syntax_on_local_def_use_without_proving_effe
     assert "control effectiveness" in verification.reason
 
 
+def test_checker_independently_verifies_direct_python_caller_evidence(
+    tmp_path, tmp_config
+):
+    db.init_db(tmp_config)
+    (tmp_path / "svc.py").write_text(
+        "import os\n\n"
+        "def run(command):\n"
+        "    os.system(command)\n"
+    )
+    (tmp_path / "handler.py").write_text(
+        "from svc import run\n\n"
+        "def handle(value):\n"
+        "    return run(value)\n"
+    )
+    finding = Finding(
+        repo_id="r", title="Command injection [CWE-78]", file="svc.py",
+        line_start=4, line_end=4, citation_snippet="os.system(command)",
+        source_tool="semgrep", confidence=0.8, severity="high",
+    )
+    evidence = build_python_slice(RetrievalIndex().build(tmp_path), finding)
+    assert evidence is not None
+    assert len(evidence.caller_evidence) == 1
+    assert evidence.caller_evidence[0].file == "handler.py"
+    finding_id = db.insert_finding(finding, tmp_config)
+    claim = claim_from_slice(finding_id, evidence, "commit-abc")
+    claim_id = db.upsert_security_claim(claim, tmp_config)
+    claim = db.list_security_claims(finding_id, tmp_config)[0]
+    assert claim.id == claim_id
+    assert claim.caller_evidence[0].file == "handler.py"
+
+    verification = verify_structural_claim(claim, tmp_path, "commit-abc")
+
+    assert verification.status is ClaimVerificationStatus.STRUCTURALLY_VERIFIED
+    assert verification.checks["caller_evidence_present"] is True
+    assert verification.checks["direct_callers_verified"] is True
+    assert "not runtime reachability" in verification.reason
+
+
+def test_checker_refutes_forged_direct_caller_evidence(tmp_path):
+    (tmp_path / "svc.py").write_text(
+        "import os\n\ndef run(command):\n    os.system(command)\n"
+    )
+    (tmp_path / "handler.py").write_text(
+        "from svc import run\n\ndef handle(value):\n    return run(value)\n"
+    )
+    finding = Finding(
+        repo_id="r", title="Command injection [CWE-78]", file="svc.py",
+        line_start=4, line_end=4, citation_snippet="os.system(command)",
+        source_tool="semgrep", confidence=0.8, severity="high",
+    )
+    evidence = build_python_slice(RetrievalIndex().build(tmp_path), finding)
+    assert evidence is not None
+    claim = claim_from_slice(1, evidence, "commit-abc").model_copy(update={"id": 1})
+    forged = claim.model_copy(update={
+        "caller_evidence": [
+            claim.caller_evidence[0].model_copy(update={"source": "return safe(value)"})
+        ]
+    })
+
+    verification = verify_structural_claim(forged, tmp_path, "commit-abc")
+
+    assert verification.status is ClaimVerificationStatus.STRUCTURALLY_REFUTED
+    assert verification.checks["direct_callers_verified"] is False
+    assert "direct-caller evidence" in verification.reason
+
+
 def test_checker_refutes_forged_entrypoint_evidence():
     finding = _finding()
     evidence = build_python_slice(RetrievalIndex().build(UAT), finding)

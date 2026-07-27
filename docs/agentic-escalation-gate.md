@@ -33,10 +33,11 @@ evidence exists.
 7. **Independent verification — partial.** Agent-produced claims use the persisted
    `SecurityClaim` contract, bind to an immutable snapshot commit, and are checked by a
    separately versioned deterministic verifier that reopens the snapshot and reconstructs
-   supported facts without consuming the producer's evidence object. Version 3 additionally
+   supported facts without consuming the producer's evidence object. Version 4 additionally
    checks persisted local HTTP-entry evidence, request-input identity, and control-candidate
-   identity/def-use placement. These remain syntax facts—not runtime reachability, attacker
-   control, or control effectiveness. The agent never verifies its own claim.
+   identity/def-use placement, plus exact direct Python call-site syntax. These remain syntax
+   facts—not runtime reachability, attacker control, authorization effectiveness, or control
+   effectiveness. The agent never verifies its own claim.
 
 ## Proposed eligibility
 

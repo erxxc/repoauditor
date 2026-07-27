@@ -19,9 +19,9 @@ from ..store.models import (
 )
 from .slicing import PythonSliceEvidence, SLICE_VERSION
 
-CLAIM_VERSION = "security_claim_v3"
+CLAIM_VERSION = "security_claim_v4"
 VERIFIER_NAME = "python-local-certificate-checker"
-VERIFIER_VERSION = "python_local_certificate_checker_v3"
+VERIFIER_VERSION = "python_local_certificate_checker_v4"
 
 # Intentionally separate from the slicer's rule table: this is the small checker policy.
 _CHECKER_SINKS = {
@@ -63,6 +63,10 @@ def claim_from_slice(
         snapshot_commit=snapshot_commit,
         mechanism=evidence.mechanism,
         entry_evidence=[_evidence(evidence.file, item) for item in evidence.entry_evidence],
+        caller_evidence=[
+            ClaimEvidence(file=item.file, line=item.line, source=item.source)
+            for item in evidence.caller_evidence
+        ],
         source_evidence=sources,
         sink_evidence=sink,
         path_nodes=[*sources, *assignments, *([sink] if sink else [])],
@@ -259,6 +263,8 @@ def verify_structural_claim(
         "supported_sink_present": False,
         "local_def_use_closes": False,
         "http_entrypoint_present": False,
+        "caller_evidence_present": bool(claim.caller_evidence),
+        "direct_callers_verified": False,
         "attacker_input_source_present": False,
         "control_candidate_present": False,
         "control_on_local_def_use": False,
@@ -337,6 +343,45 @@ def verify_structural_claim(
                         if function is None:
                             reason = "Supported sink is not enclosed by a Python function."
                         else:
+                            caller_checks: list[bool] = []
+                            for caller in claim.caller_evidence:
+                                caller_path = _safe_file(snapshot_path, caller.file)
+                                if caller_path is None or caller_path.suffix != ".py":
+                                    caller_checks.append(False)
+                                    continue
+                                caller_text = caller_path.read_text(errors="replace")
+                                caller_lines = caller_text.splitlines()
+                                try:
+                                    caller_tree = ast.parse(caller_text)
+                                except SyntaxError:
+                                    caller_checks.append(False)
+                                    continue
+                                caller_checks.append(
+                                    _matches_line(caller_lines, caller)
+                                    and any(
+                                        isinstance(node, ast.Call)
+                                        and node.lineno == caller.line
+                                        and _call_name(node) == function.name
+                                        for node in ast.walk(caller_tree)
+                                    )
+                                )
+                            checks["direct_callers_verified"] = bool(
+                                caller_checks and all(caller_checks)
+                            )
+                            if caller_checks and not checks["direct_callers_verified"]:
+                                status = ClaimVerificationStatus.STRUCTURALLY_REFUTED
+                                reason = (
+                                    "Claimed direct-caller evidence does not match an "
+                                    "independently parsed Python call site."
+                                )
+                                return ClaimVerification(
+                                    claim_id=claim.id or 0,
+                                    status=status,
+                                    verifier_name=VERIFIER_NAME,
+                                    verifier_version=VERIFIER_VERSION,
+                                    checks=checks,
+                                    reason=reason,
+                                )
                             closure_lines, parameters = _local_closure(function, sink)
                             entry_decorators = _http_entry_decorators(function)
                             entry_lines = {item.line for item in claim.entry_evidence}
@@ -397,7 +442,8 @@ def verify_structural_claim(
                                     "closure match. Exploitability, end-to-end reachability, "
                                     "attacker control, control effectiveness, and real-world "
                                     "risk are not validated. Entry-point, request-input, and "
-                                    "control checks identify local syntax only."
+                                    "control checks identify local syntax only. Any direct "
+                                    "caller evidence proves call syntax, not runtime reachability."
                                 )
     return ClaimVerification(
         claim_id=claim.id or 0,

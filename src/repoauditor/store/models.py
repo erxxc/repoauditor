@@ -705,6 +705,7 @@ class SecurityClaim(BaseModel):
     snapshot_commit: str | None = None
     mechanism: str
     entry_evidence: list[ClaimEvidence] = Field(default_factory=list)
+    caller_evidence: list[ClaimEvidence] = Field(default_factory=list)
     source_evidence: list[ClaimEvidence] = Field(default_factory=list)
     sink_evidence: ClaimEvidence | None = None
     path_nodes: list[ClaimEvidence] = Field(default_factory=list)
