@@ -1,0 +1,79 @@
+{
+  "schema_version": "untouched-production-selection-plan-v1",
+  "frozen_at": "2026-07-28",
+  "status": "instrument_ready_new_acquisition_required",
+  "question": "Does the unchanged bounded production planner select a reviewed vulnerability target when no advisory, answer key, target path, severity, or patch location is available to the planner?",
+  "current_corpus_eligibility": {
+    "eligible_pairs": 0,
+    "reason": "Every checked-in public CVE pair has an in-tree answer key or has already been inspected in a live or source-selection evaluation. Reuse would be development evidence, not untouched selection evidence.",
+    "excluded_classes": [
+      "purpose-built and benchmark fixtures",
+      "the serialize-javascript protected holdout already run in Actions 30230644266",
+      "PyJWT, simple-git, Reposilite, ruby-saml, and aiohttp acquisition pairs already evaluated",
+      "older independent fixtures whose advisory target paths are checked into the repository",
+      "training-acquisition projects and any project carrying human triage labels"
+    ]
+  },
+  "new_pair_eligibility": {
+    "independently_authored_public_project": true,
+    "real_verified_advisory": true,
+    "exact_vulnerable_and_fixed_commits": true,
+    "license_verified_before_acquisition": true,
+    "minimum_source_files": 20,
+    "not_deliberately_vulnerable": true,
+    "not_previously_present_in_repoauditor_corpus_or_docs": true,
+    "not_used_for_training_prompting_thresholds_or_planner_development": true,
+    "prefer_single_localized_security_patch": true,
+    "reason_for_localized_preference": "A narrow reviewed target makes selection adjudication unambiguous without claiming the advisory is representative of all vulnerabilities."
+  },
+  "frozen_sequence": [
+    "Select and pin one project using repository/advisory metadata without opening the advisory patch or recording a target path.",
+    "Materialize exact pre-fix and post-fix snapshots and verify provenance, license, commit, and snapshot digests.",
+    "Run the unchanged deterministic adapters and architecture map for each snapshot.",
+    "Call capture_production_selection before any target metadata is loaded; retain the signed selected/omitted region receipt.",
+    "Only after both captures are immutable, have a human reviewer inspect the advisory and patch and record the exact target file.",
+    "Call adjudicate_target_selection against each frozen capture and publish selected/omitted status with its selection basis.",
+    "Do not modify the planner or repeat the pair after seeing the result."
+  ],
+  "instrument": {
+    "implementation": "tests/selection_evidence.py",
+    "capture_schema": "production-selection-capture-v1",
+    "adjudication_schema": "production-selection-adjudication-v1",
+    "capture_inputs": [
+      "snapshot source paths and bytes",
+      "commit identifier",
+      "unchanged detect configuration",
+      "architecture map",
+      "deterministic adapter candidates"
+    ],
+    "prohibited_capture_inputs": [
+      "CVE or GHSA identifier",
+      "advisory or patch",
+      "expected finding",
+      "target path or lines",
+      "severity",
+      "prior model output about the vulnerability"
+    ],
+    "fail_closed_on": [
+      "capture hash mismatch",
+      "snapshot digest mismatch",
+      "target absent from frozen snapshot",
+      "selected plus omitted counts not closing to the source-file count",
+      "pre-fix/post-fix configuration mismatch",
+      "target disclosure before both captures are written"
+    ]
+  },
+  "resource_boundary": {
+    "offline_work": "Instrument, schemas, integrity checks, manufactured regression tests, corpus exclusion audit, and documentation.",
+    "later_network_work": "Pinned public acquisition and exact cache materialization.",
+    "later_provider_work": "Architecture mapping only. LLM detection and falsification are not required to answer the selection question.",
+    "limits": "Use the current map and detect configuration unchanged; do not raise a ceiling after observing selection."
+  },
+  "interpretation": {
+    "selected": "The bounded planner included the reviewed target file. This is selection coverage only, not vulnerability recovery.",
+    "omitted": "The target was outside the bounded plan. This is planner coverage evidence, not a semantic detector false negative.",
+    "precision_recall": "One target cannot establish planner precision or population recall.",
+    "training": "The pair becomes development-exposed immediately after target disclosure and is never an untouched target again."
+  },
+  "next_action": "Merge the zero-token instrument first. Then acquire one new eligible pair without target-path inspection, create both blind captures, and only afterward reveal and adjudicate the advisory target."
+}
