@@ -1,0 +1,119 @@
+{
+  "schema_version": "target-conditioned-baseline-receipt-v1",
+  "recorded_at": "2026-07-28",
+  "workflow_run": {
+    "id": 30387051690,
+    "url": "https://github.com/erxxc/repoauditor/actions/runs/30387051690",
+    "head_sha": "052040636babbb4882a40f65101d91e487c7d38d",
+    "conclusion": "success",
+    "results_sha256": "5b7c6e0e87560e730ec3772438cf124a3c439a036c81697e1f65348ef315f3ef",
+    "database_sha256": "7d70260fd686686c27ecb6eb0e525f617789c9c14c1e7736b3210a9138c18153"
+  },
+  "scope": {
+    "project": "aiohttp",
+    "project_id": "aiohttp_cve_2024_23334",
+    "cve": "CVE-2024-23334",
+    "advisory": "GHSA-5h86-8mv2-jq9f",
+    "vulnerable_commit": "33ccdfb0a12690af5bb49bda2319ec0907fa7827",
+    "fixed_commit": "1c335944d6a8b1298baf179b7c0b3069f10c514b",
+    "target_file": "aiohttp/web_urldispatcher.py",
+    "target_conditioned": true,
+    "production_selection_holdout": false,
+    "scanner_coverage": "not-installed-live-model-only",
+    "context_version": "detection_context_v2"
+  },
+  "instrument_qualification": {
+    "manufactured_falsification_controls_passed": 4,
+    "manufactured_falsification_controls_total": 4,
+    "manufactured_archive_controls_passed": 2,
+    "manufactured_archive_controls_total": 2,
+    "qualified": true,
+    "evidence_scope": "manufactured controls only; not real-world precision or recall"
+  },
+  "provider": {
+    "name": "anthropic",
+    "model": "claude-opus-4-8",
+    "unknown_usage_calls": 0
+  },
+  "results": {
+    "pre_fix": {
+      "status": "completed",
+      "production_target_selected": false,
+      "location_matches": 1,
+      "human_semantic_adjudication": {
+        "finding_id": 1,
+        "status": "target_match",
+        "observed_claim": "Request-controlled static filenames reach path resolution; follow_symlinks=true skips the relative_to containment check and can serve a resolved file outside the configured static directory.",
+        "target_mechanism": "Directory traversal through lexical parent segments when static-resource symlink following is enabled.",
+        "reason": "The confirmed rationale establishes request-derived attacker control, the follow_symlinks conditional containment gap, and external file access. It therefore satisfies all three obligations frozen before execution."
+      },
+      "falsification_status": "confirmed",
+      "detector_confidence": 0.4,
+      "detector_severity": "medium",
+      "semantic_target_candidates_after_adjudication": 1,
+      "target_confirmed_count_after_adjudication": 1,
+      "pre_fix_confirmed_recovery_after_adjudication": true,
+      "unadjudicated_confirmed_group_count_after_adjudication": 0,
+      "phases": {
+        "retained_failed_baseline": {
+          "workflow_run_id": 30383181253,
+          "calls": 22,
+          "input_tokens": 246639,
+          "output_tokens": 4500,
+          "latency_ms": 95666
+        },
+        "target_falsify_continuation": {
+          "pipeline_run_id": 2,
+          "calls": 2,
+          "input_tokens": 5657,
+          "output_tokens": 777,
+          "latency_ms": 13069
+        }
+      }
+    },
+    "post_fix": {
+      "status": "completed",
+      "production_target_selected": false,
+      "location_matches": 0,
+      "semantic_target_candidates": 0,
+      "target_confirmed_count": 0,
+      "post_fix_confirmed_persistence": false,
+      "post_fix_any_semantic_signal_persistence": false,
+      "unadjudicated_confirmed_group_count": 0,
+      "phases": {
+        "production_screen": {
+          "pipeline_run_id": 3,
+          "calls": 20,
+          "input_tokens": 203488,
+          "output_tokens": 3695,
+          "latency_ms": 78393
+        },
+        "target_owasp_falsify": {
+          "pipeline_run_id": 4,
+          "calls": 1,
+          "input_tokens": 22381,
+          "output_tokens": 666,
+          "latency_ms": 8851
+        }
+      }
+    }
+  },
+  "aggregate_pair_usage": {
+    "calls": 45,
+    "input_tokens": 478165,
+    "output_tokens": 9638,
+    "known_tokens": 487803,
+    "unknown_usage_calls": 0,
+    "latency_ms": 195979
+  },
+  "interpretation": {
+    "validation_gate": "passed_target_conditioned_semantic_recovery",
+    "semantic_result": "After explicit human target_match adjudication, the pre-fix OWASP candidate is a falsification-confirmed recovery of the frozen CVE mechanism.",
+    "negative_control": "The post-fix target phase raised no location or semantic signal.",
+    "production_selection": "The unchanged six-region production planner omitted the target in both variants. This receipt provides no production-selection recall credit.",
+    "confidence_context": "The valid pre-fix candidate carried detector confidence 0.40. This is calibration evidence for a later tuning session, not grounds for a post-result threshold change.",
+    "precision_scope": "The answer key covers one historical CVE and is not exhaustive. No project-wide precision or recall is claimed.",
+    "training_status": "aiohttp is now development evidence and must not be reused as an untouched validation target for changes informed by this result.",
+    "rerun_status": "No additional paid rerun is warranted for this frozen target."
+  }
+}

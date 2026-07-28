@@ -394,7 +394,7 @@ rescore passes both cases, so no paid rerun is warranted. The diagnosis and immu
 original result are in
 [`xml-detection-qualification-2026-07-28.json`](xml-detection-qualification-2026-07-28.json).
 
-### Frozen next validation: aiohttp CVE-2024-23334
+### Completed validation: aiohttp CVE-2024-23334
 
 The next manual semantic validation is the pre/post aiohttp pair frozen in
 [`aiohttp-owasp-v3-validation-plan-2026-07-28.json`](aiohttp-owasp-v3-validation-plan-2026-07-28.json).
@@ -449,6 +449,22 @@ The forced target uses only the OWASP lens; supply-chain and agentic-surface pro
 semantically applicable to this frozen CWE-22 question. All production lenses remain
 unchanged. Failure artifacts unwrap the underlying exception and include every available
 phase run and usage receipt instead of collapsing the cause to `Exit:`.
+
+The corrective continuation completed successfully in Actions run `30387051690`.
+Both same-run manufactured gates passed. Human review assigned the pre-fix finding
+`target_match`: its confirmed rationale establishes request-derived attacker control,
+the `follow_symlinks=true` containment gap, and access outside the configured static
+directory. Applying that pre-registered adjudication offline produces one confirmed
+target recovery and zero unadjudicated confirmed groups. The post-fix target phase raised
+no location or semantic signal.
+
+The unchanged production planner omitted the target in both variants. This is therefore
+accepted only as development-exposed, target-conditioned semantic evidence; it receives
+no production-selection recall credit and supports no project-wide precision claim. The
+detector's 0.40 confidence is retained as later calibration evidence, not used to alter a
+threshold after observing the result. The immutable receipt and artifact hashes are in
+[`aiohttp-target-conditioned-baseline-2026-07-28.json`](aiohttp-target-conditioned-baseline-2026-07-28.json).
+No additional paid aiohttp run is warranted.
 
 ## Analyst decision after collection
 

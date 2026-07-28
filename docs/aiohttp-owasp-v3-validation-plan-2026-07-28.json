@@ -1,7 +1,7 @@
 {
   "schema_version": "split-phase-validation-plan-v1",
   "frozen_at": "2026-07-28",
-  "status": "partial_failed_budget_isolation",
+  "status": "completed_target_conditioned_semantic_recovery",
   "partial_result": {
     "workflow_run_id": 30383181253,
     "failure_stage": "pre_fix.detect",
@@ -131,5 +131,15 @@
       "missing or multiple retained target findings"
     ]
   },
-  "next_action": "Merge the phase-isolation correction, then run the exact aiohttp continuation scope once. Do not rerun the completed pre-fix production screen."
+  "completion": {
+    "workflow_run_id": 30387051690,
+    "baseline_receipt": "docs/aiohttp-target-conditioned-baseline-2026-07-28.json",
+    "human_semantic_adjudication": "target_match",
+    "pre_fix_confirmed_recovery": true,
+    "post_fix_any_semantic_signal_persistence": false,
+    "production_target_selected_pre_fix": false,
+    "production_target_selected_post_fix": false,
+    "claim_boundary": "Passed target-conditioned semantic recovery with a clean post-fix control; no production-selection recall credit."
+  },
+  "next_action": "Do not rerun this frozen pair. Use the result as development-exposed semantic evidence and continue offline work on ground-truth-blind production planning."
 }
