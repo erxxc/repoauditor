@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "cohort_id": "cve-positive-training-acquisition-2026-07-27",
+  "purpose": "Mechanism-diverse, CVE-backed positive acquisition for human adjudication and future classifier training",
+  "evaluation_eligible": false,
+  "selection_policy": "Frozen before scanner execution. Entries were selected for independently reviewed CVE provenance, isolated pre-fix/post-fix commits, language and mechanism diversity, permissive licensing, and bounded acquisition size. Scanner outcomes must not be used to add, remove, or replace entries.",
+  "ground_truth_policy": "The cited advisory and isolated security patch define the targeted known-positive mechanism in the pre-fix snapshot and its removal in the post-fix snapshot. Detector output remains untrusted and requires human adjudication; unrelated findings are not ground truth.",
+  "hosted_model_policy": "All entries are public upstream source. This manifest does not authorize transmitting proprietary source to a hosted model.",
+  "projects": [
+    {
+      "slug": "ruby_saml_cve_2025_25291_25292",
+      "project": "ruby-saml",
+      "language": "Ruby",
+      "repository": "https://github.com/SAML-Toolkits/ruby-saml.git",
+      "vulnerable_commit": "acac9e9cc0b9a507882c614f25d41f8b47be349a",
+      "fixed_commit": "e9c1cdbd0f9afa467b585de279db0cbd0fb8ae97",
+      "license": "MIT",
+      "license_file": "LICENSE",
+      "cve_ids": ["CVE-2025-25291", "CVE-2025-25292"],
+      "mechanism": "SAML authentication bypass through XML parser differential and signature wrapping",
+      "advisory": "https://securitylab.github.com/advisories/GHSL-2024-329_GHSL-2024-330_ruby-saml/",
+      "patch_scope": "Seven files; security commit explicitly names both CVEs",
+      "target": {
+        "title": "SAML authentication bypass through signature wrapping and parser differential",
+        "file": "lib/xml_security.rb",
+        "line_start": 307,
+        "line_end": 366,
+        "citation_contains": "reference_nodes = document.xpath"
+      }
+    },
+    {
+      "slug": "simple_git_cve_2026_28292",
+      "project": "simple-git",
+      "language": "TypeScript",
+      "repository": "https://github.com/steveukx/git-js.git",
+      "vulnerable_commit": "f8cb7df3feb3c135d2e10803586d64dfe6a2bfe9",
+      "fixed_commit": "f7042088aa2dac59e3c49a84d7a2f4b26048a257",
+      "license": "MIT",
+      "license_file": "LICENSE",
+      "cve_ids": ["CVE-2026-28292"],
+      "ghsa_ids": ["GHSA-r275-fr43-pm7q"],
+      "cwe_ids": ["CWE-78"],
+      "mechanism": "Command execution through a case-insensitive protocol.allow control bypass",
+      "advisory": "https://github.com/advisories/GHSA-r275-fr43-pm7q",
+      "patch_scope": "One production-line change plus regression test and changeset",
+      "target": {
+        "title": "Command execution through case-insensitive protocol.allow bypass",
+        "file": "simple-git/src/lib/plugins/block-unsafe-operations-plugin.ts",
+        "line_start": 24,
+        "line_end": 24,
+        "citation_contains": "protocol(.[a-z]+)?.allow"
+      }
+    },
+    {
+      "slug": "pyjwt_cve_2022_29217",
+      "project": "PyJWT",
+      "language": "Python",
+      "repository": "https://github.com/jpadilla/pyjwt.git",
+      "vulnerable_commit": "24b29adfebcb4f057a3cef5aaf35653bc0c1c8cc",
+      "fixed_commit": "9c528670c455b8d948aff95ed50e22940d1ad3fc",
+      "license": "MIT",
+      "license_file": "LICENSE",
+      "cve_ids": ["CVE-2022-29217"],
+      "ghsa_ids": ["GHSA-ffqj-6fqr-9h24"],
+      "cwe_ids": ["CWE-327"],
+      "mechanism": "JWT algorithm/key confusion through non-blocklisted asymmetric public-key formats",
+      "advisory": "https://github.com/advisories/GHSA-ffqj-6fqr-9h24",
+      "patch_scope": "Security merge changes key-format validation and adds advisory regression tests",
+      "target": {
+        "title": "JWT algorithm/key confusion through incomplete asymmetric-key rejection",
+        "file": "jwt/algorithms.py",
+        "line_start": 183,
+        "line_end": 199,
+        "citation_contains": "invalid_strings"
+      }
+    },
+    {
+      "slug": "reposilite_cve_2024_36116",
+      "project": "Reposilite",
+      "language": "Kotlin",
+      "repository": "https://github.com/dzikoysk/reposilite.git",
+      "vulnerable_commit": "e172ae4b539c822d0d6e04cf090713c7202a79d6",
+      "fixed_commit": "848173738e4375482c70365db5cebae29f125eaa",
+      "license": "Apache-2.0",
+      "license_file": "LICENSE",
+      "cve_ids": ["CVE-2024-36116"],
+      "ghsa_ids": ["GHSA-frvj-cfq4-3228"],
+      "cwe_ids": ["CWE-22"],
+      "mechanism": "Arbitrary file creation or overwrite through path traversal in Javadoc archive entries",
+      "advisory": "https://securitylab.github.com/advisories/GHSL-2024-072_GHSL-2024-074_Reposilite/",
+      "patch_scope": "One Kotlin service file; adjacent advisory issues are not part of this target",
+      "target": {
+        "title": "Javadoc archive path traversal permits arbitrary file creation or overwrite",
+        "file": "reposilite-backend/src/main/kotlin/com/reposilite/javadocs/JavadocContainerService.kt",
+        "line_start": 127,
+        "line_end": 135,
+        "citation_contains": "javadocUnpackPath.toString()"
+      }
+    }
+  ]
+}

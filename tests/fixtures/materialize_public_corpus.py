@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import io
+import json
 import subprocess
 import tarfile
 from pathlib import Path
@@ -115,33 +116,102 @@ def main() -> None:
     parser.add_argument("clone_root", type=Path)
     parser.add_argument("--output", type=Path, default=Path(__file__).parent)
     parser.add_argument(
+        "--include-training-acquisition",
+        action="store_true",
+        help=(
+            "Also materialize the separately declared classifier-training acquisition "
+            "cohort. These snapshots are never evaluation fixtures."
+        ),
+    )
+    parser.add_argument(
+        "--training-acquisition-only",
+        action="store_true",
+        help="Materialize only the non-evaluation classifier-training acquisition cohort.",
+    )
+    parser.add_argument(
+        "--include-cve-positive-acquisition",
+        action="store_true",
+        help="Also materialize the frozen CVE-backed positive training cohort.",
+    )
+    parser.add_argument(
+        "--cve-positive-acquisition-only",
+        action="store_true",
+        help="Materialize only the non-evaluation CVE-backed positive training cohort.",
+    )
+    parser.add_argument(
         "--fetch", action="store_true",
         help="Explicitly allow network clones/fetches for missing pinned commits.",
     )
     args = parser.parse_args()
-    for project in PROJECTS:
-        clone = ensure_clone(
-            args.clone_root, project.get("clone", project["slug"]),
-            project["repo"], project["post"], args.fetch,
-        )
-        for variant, commit in (("pre", project["pre"]), ("post", project["post"])):
-            repo_id = f"independent_{project['slug']}_{variant}"
-            fixture = args.output / repo_id
+    if not args.training_acquisition_only and not args.cve_positive_acquisition_only:
+        for project in PROJECTS:
+            clone = ensure_clone(
+                args.clone_root, project.get("clone", project["slug"]),
+                project["repo"], project["post"], args.fetch,
+            )
+            for variant, commit in (("pre", project["pre"]), ("post", project["post"])):
+                repo_id = f"independent_{project['slug']}_{variant}"
+                fixture = args.output / repo_id
+                if (fixture / "snapshot").exists():
+                    raise SystemExit(f"refusing to overwrite {fixture / 'snapshot'}")
+                ensure_clone(
+                    args.clone_root, project.get("clone", project["slug"]),
+                    project["repo"], commit, args.fetch,
+                )
+                archive(clone, commit, fixture / "snapshot")
+        for anchor in ANCHORS:
+            fixture = args.output / anchor["fixture"]
             if (fixture / "snapshot").exists():
                 raise SystemExit(f"refusing to overwrite {fixture / 'snapshot'}")
-            ensure_clone(
-                args.clone_root, project.get("clone", project["slug"]),
-                project["repo"], commit, args.fetch,
+            clone = ensure_clone(
+                args.clone_root, anchor["clone"], anchor["repo"], anchor["commit"], args.fetch
             )
-            archive(clone, commit, fixture / "snapshot")
-    for anchor in ANCHORS:
-        fixture = args.output / anchor["fixture"]
-        if (fixture / "snapshot").exists():
-            raise SystemExit(f"refusing to overwrite {fixture / 'snapshot'}")
-        clone = ensure_clone(
-            args.clone_root, anchor["clone"], anchor["repo"], anchor["commit"], args.fetch
-        )
-        archive(clone, anchor["commit"], fixture / "snapshot")
+            archive(clone, anchor["commit"], fixture / "snapshot")
+    if args.include_training_acquisition or args.training_acquisition_only:
+        manifest_path = Path(__file__).with_name("training_acquisition_cohort.json")
+        manifest = json.loads(manifest_path.read_text())
+        if manifest.get("evaluation_eligible") is not False:
+            raise SystemExit("training acquisition manifest must be evaluation_eligible=false")
+        for project in manifest["projects"]:
+            fixture = args.output / f"acquisition_{project['slug']}"
+            if (fixture / "snapshot").exists():
+                raise SystemExit(f"refusing to overwrite {fixture / 'snapshot'}")
+            clone = ensure_clone(
+                args.clone_root,
+                project["slug"],
+                project["repository"],
+                project["pinned_commit"],
+                args.fetch,
+            )
+            archive(clone, project["pinned_commit"], fixture / "snapshot")
+    if args.include_cve_positive_acquisition or args.cve_positive_acquisition_only:
+        manifest_path = Path(__file__).with_name("cve_positive_acquisition_cohort.json")
+        manifest = json.loads(manifest_path.read_text())
+        if manifest.get("evaluation_eligible") is not False:
+            raise SystemExit("CVE-positive acquisition manifest must be evaluation_eligible=false")
+        for project in manifest["projects"]:
+            clone = ensure_clone(
+                args.clone_root,
+                project["slug"],
+                project["repository"],
+                project["fixed_commit"],
+                args.fetch,
+            )
+            for variant, commit in (
+                ("pre", project["vulnerable_commit"]),
+                ("post", project["fixed_commit"]),
+            ):
+                fixture = args.output / f"acquisition_cve_{project['slug']}_{variant}"
+                if (fixture / "snapshot").exists():
+                    raise SystemExit(f"refusing to overwrite {fixture / 'snapshot'}")
+                ensure_clone(
+                    args.clone_root,
+                    project["slug"],
+                    project["repository"],
+                    commit,
+                    args.fetch,
+                )
+                archive(clone, commit, fixture / "snapshot")
 
 
 if __name__ == "__main__":

@@ -63,6 +63,48 @@ verified local clones without network access by default; `--fetch` is an explici
 clone/fetch the public upstreams. Source and license files exist only in the generated local
 snapshot and are not redistributed by this repository.
 
+## Classifier-training acquisition cohort
+
+Eight additional independently authored projects are pinned in
+`training_acquisition_cohort.json`: Flask and Starlette (Python), Express and Koa
+(JavaScript), Spark and Javalin (Java), and Sinatra and Hanami (Ruby). They were selected
+before scanner execution for breadth, maturity, manageable acquisition size, and permissive
+licenses. Their exact upstream license files were checked at the pinned commits.
+
+This cohort is deliberately separate from the corpus above:
+
+- it is `evaluation_eligible=false` and cannot satisfy or alter the protected holdout;
+- it has no expected-finding answer keys;
+- a scanner result is an acquisition candidate requiring human assessment, not ground truth;
+- source is materialized with `materialize_public_corpus.py
+  --training-acquisition-only` (or included alongside evaluation sources with
+  `--include-training-acquisition`); and
+- generated snapshots are ignored and never redistributed by this repository.
+
+The current Semgrep Community ruleset access check uses `semgrep scan --config auto` against
+an empty temporary directory before any cohort scan. Semgrep 1.170.0 resolved 1,074 Code
+rules on 2026-07-27. This is an access observation, not a stable rule-count contract:
+`auto` is registry-backed and Semgrep refuses that resolver when metrics are disabled.
+
+The first acquisition scan completed on 2026-07-27 with 127 raw SARIF candidates across all
+eight projects (16/3/45/7/7/22/15/12 in manifest order). The scan ran from the pinned
+temporary upstream checkouts, not from the generated `tests/fixtures/acquisition_*`
+directories: Semgrep inherits repoauditor's ignore boundary for those intentionally ignored
+snapshot paths and otherwise reports a misleading zero-target success. Run from each
+checkout's own Git root and retain `--config auto`, scanner version, pinned commit, SARIF,
+and target/rule counts together. These counts are acquisition observations, not accuracy
+metrics, and no candidate is a label until a human records an evidence-based disposition.
+
+The separately frozen `cve_positive_acquisition_cohort.json` addresses the first cohort's
+positive-family concentration without reusing evaluation evidence. It pins isolated
+vulnerable/fixed commits for PyJWT (Python key confusion), simple-git (TypeScript command
+execution/control bypass), Reposilite (Kotlin archive traversal), and ruby-saml (Ruby SAML
+signature wrapping). Selection was frozen before scanning; each entry has a reviewed
+advisory, exact commit pair, retained permissive license, and narrowly stated target
+mechanism. Both variants remain `evaluation_eligible=false`. Materialize them with
+`--cve-positive-acquisition-only`; detector output still requires human adjudication and
+unrelated candidates are not ground truth.
+
 CI materializes these snapshots in the scheduled/manual `public corpus cache` workflow. The
 cache key hashes this materializer and all acquisition metadata; an exact hit is reused and a
 miss reacquires every pinned commit. No fallback key is used, acquired code is never executed,

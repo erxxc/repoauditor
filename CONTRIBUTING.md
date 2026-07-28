@@ -103,6 +103,43 @@ python tests/fixtures/materialize_public_corpus.py /tmp/repoauditor-corpus-clone
 uv run pytest tests/test_benchmark_corpus.py -m "not integration and not live"
 ```
 
+The human-label acquisition cohort is separate from that evaluation cache. Materialize its
+eight pinned, permissively licensed projects without touching the evaluation snapshots:
+
+```sh
+python tests/fixtures/materialize_public_corpus.py \
+  /tmp/repoauditor-training-clones \
+  --training-acquisition-only \
+  --fetch
+```
+
+The generated `acquisition_*/snapshot/` directories are ignored and must not be committed.
+They contain no expected-finding keys and are never evaluation evidence. Verify Community
+ruleset access separately, before scanning any cohort member:
+
+```sh
+mkdir -p /tmp/repoauditor-semgrep-ruleset-probe
+semgrep scan --config auto --json --metrics auto --disable-version-check \
+  /tmp/repoauditor-semgrep-ruleset-probe
+```
+
+The probe is intentionally empty: it verifies registry/ruleset resolution without letting
+scanner yield influence cohort selection. Semgrep's `auto` resolver currently refuses
+`--metrics off`; operators who cannot permit that behavior must use a separately reviewed,
+explicitly pinned ruleset instead of silently claiming `auto` coverage.
+
+The mechanism-diverse CVE-positive training cohort is also acquisition-only:
+
+```sh
+python tests/fixtures/materialize_public_corpus.py \
+  /tmp/repoauditor-cve-positive-clones \
+  --cve-positive-acquisition-only \
+  --fetch
+```
+
+This produces exact pre-fix/post-fix pairs but does not make them evaluation fixtures or
+automatically label scanner output. Do not execute acquired source.
+
 ## Bounded corpus UAT
 
 The manual `bounded corpus UAT` workflow has two deliberately separate modes:
