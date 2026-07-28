@@ -209,11 +209,11 @@ jobs:
           REPOAUDITOR_CVE_POSITIVE_PAIR: pyjwt_cve_2022_29217
           REPOAUDITOR_UAT_RESULTS: live-cve-positive-results.json
           REPOAUDITOR_UAT_SCANNER_COVERAGE: not-installed-live-model-only
-          REPOAUDITOR_UAT_MAX_BATCHES: "1"
+          REPOAUDITOR_UAT_MAX_BATCHES: "2"
           REPOAUDITOR_UAT_DATA_DIR: live-cve-positive-data
         run: |
           echo "CVE-positive pilot: PyJWT pre-fix then post-fix."
-          echo "Hard timeout: 20 minutes; exactly one bounded batch per snapshot."
+          echo "Hard timeout: 20 minutes; at most 2 linked batches per snapshot."
           timeout --signal=TERM --kill-after=30s 20m \
             uv run pytest tests/test_cve_positive_live.py::test_cve_positive_live_pair \
               -s -vv --junitxml=live-cve-positive-junit.xml
