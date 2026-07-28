@@ -115,6 +115,9 @@ def test_live_workflow_defaults_manual_runs_to_sentinels_and_keeps_monthly_full_
     assert "default: sentinels-only" in workflow
     assert "live-lightweight" in workflow
     assert "bounded-independent" in workflow
+    assert "cve-positive-simple-git" in workflow
+    assert "simple_git_cve_2026_28292" in workflow
+    assert "Run target-conditioned CVE-positive pair" in workflow
     assert "full-live" not in workflow
     assert 'cron: "17 6 * * 2"' in workflow
     assert 'cron: "47 6 1 * *"' in workflow

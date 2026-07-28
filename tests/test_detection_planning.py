@@ -6,7 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from repoauditor.detect.ensemble import CandidateFinding
+from repoauditor.detect.ensemble import CandidateFinding, _retrieval_context
+from repoauditor.detect.retrieval import RetrievalIndex
 from repoauditor.detect.planning import (
     plan_detection_regions,
     project_detection_work,
@@ -19,6 +20,31 @@ from repoauditor.store.models import Severity
 def _sources(root: Path, count: int) -> None:
     for index in range(count):
         (root / f"module_{index}.py").write_text(f"value_{index} = {index}\n")
+
+
+def test_detection_context_prioritizes_external_callers_over_same_file_similarity(
+    tmp_path,
+):
+    (tmp_path / "library.py").write_text(
+        "def prepare(value):\n"
+        "    return normalize(value)\n\n"
+        "def helper(value):\n"
+        "    return normalize(value)\n"
+    )
+    (tmp_path / "runtime.py").write_text(
+        "from library import prepare\n\n"
+        "def verify(untrusted):\n"
+        "    return prepare(untrusted)\n"
+    )
+    index = RetrievalIndex().build(tmp_path)
+    primary = (tmp_path / "library.py").read_text()
+
+    context = _retrieval_context(index, "library.py", primary)
+
+    assert "# RELATED CALL-NAME MATCH: verify (runtime.py:3)" in context
+    assert "return prepare(untrusted)" in context
+    assert "RELATED CALL-NAME MATCH: helper" not in context
+    assert "RELATED SIMILAR PATTERN: helper" not in context
 
 
 def test_projection_reports_unbounded_and_bounded_work(tmp_config, tmp_path):
