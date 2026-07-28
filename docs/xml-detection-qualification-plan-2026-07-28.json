@@ -1,7 +1,16 @@
 {
   "schema_version": "manufactured-detection-qualification-plan-v1",
   "frozen_at": "2026-07-28",
-  "status": "ready_for_live_execution",
+  "status": "completed_model_pass_evaluator_corrected",
+  "result": {
+    "workflow_run_id": 30372285245,
+    "receipt": "docs/xml-detection-qualification-2026-07-28.json",
+    "original_workflow_conclusion": "failure",
+    "original_qualification": false,
+    "root_cause": "The evaluator rejected hyphenated mechanism phrases despite the retained candidate satisfying the frozen semantic acceptance rule.",
+    "offline_rescore_qualification": true,
+    "paid_rerun_required": false
+  },
   "workflow_scope": "xml-detection-sentinels",
   "instrument": {
     "provider": "anthropic",

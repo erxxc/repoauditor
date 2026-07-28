@@ -354,6 +354,20 @@ Do not rerun Ruby-SAML as independent validation for the resulting change. The o
 frozen contract remains in
 [`ruby-saml-validation-plan-2026-07-28.json`](ruby-saml-validation-plan-2026-07-28.json).
 
+Actions run `30372285245` produced exactly one intended vulnerable candidate and no
+candidate on the control. The workflow nevertheless exited 1 because the evaluator matched
+space-separated `parser differential`/`signature wrapping`, while the model emitted the
+semantically identical hyphenated forms. File, line overlap, citation integrity, and
+security-decision checks all passed. Usage was retained correctly: two calls, 5,331 input
+tokens, and 293 output tokens.
+
+The correction normalizes punctuation into token boundaries before applying the unchanged
+mechanism vocabulary and regression-tests the exact retained candidate. The fixture,
+answer key, OWASP v3 prompt, provider/model, and budgets remain unchanged. The offline
+rescore passes both cases, so no paid rerun is warranted. The diagnosis and immutable
+original result are in
+[`xml-detection-qualification-2026-07-28.json`](xml-detection-qualification-2026-07-28.json).
+
 ## Analyst decision after collection
 
 Keep the current limits unless the three-run evidence demonstrates a specific operational
