@@ -366,8 +366,14 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
   `xml-detection-sentinels` scope. It makes two logical OWASP calls and skips the corpus and
   four-case falsification cohort. Acceptance and prohibited post-result changes are frozen
   in `docs/xml-detection-qualification-plan-2026-07-28.json`.
-- [ ] Run `xml-detection-sentinels` once after merge. Do not rerun Ruby-SAML as untouched
-  evidence; select a different independent target only after this instrument gate passes.
+- [x] Run `xml-detection-sentinels` once. Actions run `30372285245` produced the intended
+  positive parser-differential candidate and a clean negative control in two calls, but a
+  lexical scorer bug rejected hyphenated `parser-differential/signature-wrapping` wording.
+  Normalize punctuation as token boundaries, regression-test the exact retained candidate,
+  and accept the offline rescore without another paid run. The immutable original result
+  and correction are in `docs/xml-detection-qualification-2026-07-28.json`.
+- [ ] Select a different independent target for OWASP v3 validation. Do not rerun
+  Ruby-SAML as untouched evidence.
 - [ ] Improve ground-truth-blind production planning for security-critical library code.
   The Ruby-SAML target was omitted in both variants; target-forced inclusion receives no
   production coverage credit.

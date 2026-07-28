@@ -1,0 +1,73 @@
+{
+  "schema_version": "manufactured-detection-qualification-receipt-v1",
+  "recorded_at": "2026-07-28",
+  "workflow": {
+    "run_id": 30372285245,
+    "url": "https://github.com/erxxc/repoauditor/actions/runs/30372285245",
+    "head_sha": "1fe06878d3f783acbcb299ff70b279f0f33657a6",
+    "scope": "xml-detection-sentinels",
+    "workflow_conclusion": "failure"
+  },
+  "instrument": {
+    "provider": "anthropic",
+    "model": "claude-opus-4-8",
+    "prompt_version": "owasp_v3+untrusted_repository_content_v1+detection_context_v2",
+    "sampling_seed": null,
+    "snapshot_digest": "472be5396375d7f3b693f795d532d41a3d2b4748af5e7972637087cc64cbdf78"
+  },
+  "original_artifact_result": {
+    "qualified": false,
+    "positive_recovery": 0.0,
+    "negative_recovery": 1.0,
+    "positive_candidate_count": 1,
+    "positive_semantic_match_count": 0,
+    "negative_candidate_count": 0,
+    "artifact": "manufactured-xml-detection-sentinels-30372285245"
+  },
+  "model_usage": {
+    "calls": 2,
+    "input_tokens": 5331,
+    "output_tokens": 293,
+    "cache_read_tokens": 0,
+    "cache_write_tokens": 0,
+    "unknown_usage_calls": 0,
+    "latency_ms": 10083
+  },
+  "retained_positive_evidence": {
+    "title": "XML signature verified on Nokogiri tree, identity read from separate REXML tree",
+    "file": "VulnerableSaml.rb",
+    "line_start": 5,
+    "line_end": 9,
+    "confidence": 0.88,
+    "rationale": "Signature is validated against nokogiri_document while the authenticated NameID is selected from a separately parsed rexml_document of the same untrusted XML, enabling a parser-differential/signature-wrapping representation mismatch."
+  },
+  "diagnosis": {
+    "classification": "evaluation_scorer_false_negative",
+    "file_match": true,
+    "line_overlap": true,
+    "citation_integrity": true,
+    "security_decision_match": true,
+    "mechanism_match_intended": true,
+    "implementation_error": "The matcher recognized space-separated 'parser differential' and 'signature wrapping' but not the semantically identical hyphenated forms emitted by the model.",
+    "workflow_exit": "qualify-xml-detection correctly exited 1 after the scorer incorrectly marked the positive absent.",
+    "unrelated_warnings": "GitHub Actions Node.js deprecation warnings did not affect execution."
+  },
+  "correction": {
+    "scope": "evaluation matcher only",
+    "method": "Normalize punctuation and repeated whitespace into token boundaries before applying the unchanged mechanism vocabulary.",
+    "fixture_changed": false,
+    "prompt_changed": false,
+    "model_or_provider_changed": false,
+    "budgets_changed": false,
+    "regression_basis": "Exact retained candidate wording from run 30372285245."
+  },
+  "offline_rescore": {
+    "positive_observed": "raised",
+    "positive_semantic_match_count": 1,
+    "negative_observed": "absent",
+    "positive_recovery": 1.0,
+    "negative_recovery": 1.0,
+    "qualified": true
+  },
+  "decision": "Accept the retained model evidence after correcting and regression-testing the scorer. Do not spend on a paid rerun."
+}

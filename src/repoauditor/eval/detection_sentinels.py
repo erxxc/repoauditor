@@ -7,6 +7,7 @@ pair; it does not estimate real-world precision or recall and does not persist f
 from __future__ import annotations
 
 import hashlib
+import re
 from pathlib import Path
 from typing import Literal
 
@@ -275,7 +276,9 @@ def _matches_xml_case(
         candidate.line_start <= case.line_end
         and candidate.line_end >= case.line_start
     )
-    text = f"{candidate.title}\n{candidate.rationale or ''}".lower()
+    text = _normalize_semantic_text(
+        f"{candidate.title}\n{candidate.rationale or ''}"
+    )
     representation = any(
         term in text
         for term in (
@@ -296,6 +299,11 @@ def _matches_xml_case(
         and representation
         and security_decision
     )
+
+
+def _normalize_semantic_text(value: str) -> str:
+    """Normalize punctuation as token boundaries without changing mechanism words."""
+    return " ".join(re.sub(r"[^a-z0-9]+", " ", value.lower()).split())
 
 
 def render_detection_qualification(result: DetectionSentinelQualification) -> str:

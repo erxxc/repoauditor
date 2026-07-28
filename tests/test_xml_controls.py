@@ -113,6 +113,49 @@ def test_xml_detection_requires_semantic_location_match(tmp_config):
     assert result.observations[0].semantic_match_count == 1
 
 
+def test_live_hyphenated_candidate_satisfies_frozen_semantic_rule(tmp_config):
+    """Regression for Actions run 30372285245's retained positive candidate."""
+    def handler(system, user, schema, context):
+        if context["sentinel_id"] == "positive-distinct-xml-representations":
+            return LensFindings(findings=[LensCandidate(
+                title=(
+                    "XML signature verified on Nokogiri tree, identity read from "
+                    "separate REXML tree"
+                ),
+                file="VulnerableSaml.rb",
+                line_start=5,
+                line_end=9,
+                citation_snippet=(
+                    "  nokogiri_document = Nokogiri::XML(raw_xml)\n"
+                    "  rexml_document = REXML::Document.new(raw_xml)\n"
+                    "  return unless verify_signature(nokogiri_document, certificate)\n"
+                    "\n"
+                    "  REXML::XPath.first(rexml_document, "
+                    "\"//Assertion/Subject/NameID\").text"
+                ),
+                severity="high",
+                confidence=0.88,
+                rationale=(
+                    "Signature is validated against nokogiri_document while the "
+                    "authenticated NameID is selected from a separately parsed "
+                    "rexml_document of the same untrusted XML, enabling a "
+                    "parser-differential/signature-wrapping representation mismatch."
+                ),
+            )])
+        return LensFindings()
+
+    result = evaluate_xml_detection_sentinels(
+        FIXTURE,
+        config=tmp_config,
+        llm=LLMClient(ScriptedBackend(handler), tmp_config),
+    )
+
+    assert result.qualified
+    assert result.observations[0].observed == "raised"
+    assert result.observations[0].semantic_match_count == 1
+    assert result.observations[1].observed == "absent"
+
+
 def test_same_location_different_xml_mechanism_does_not_pass(tmp_config):
     def handler(system, user, schema, context):
         if context["sentinel_id"] == "positive-distinct-xml-representations":
