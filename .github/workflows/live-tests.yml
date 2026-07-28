@@ -21,6 +21,7 @@ on:
           - cve-positive-simple-git
           - cve-positive-reposilite
           - cve-positive-ruby-saml
+          - cve-positive-aiohttp
           - detection-sentinels
           - xml-detection-sentinels
           - retrieval-diagnostic
@@ -52,6 +53,7 @@ jobs:
               inputs.scope == 'cve-positive-simple-git' ||
               inputs.scope == 'cve-positive-reposilite' ||
               inputs.scope == 'cve-positive-ruby-saml' ||
+              inputs.scope == 'cve-positive-aiohttp' ||
               inputs.scope == 'retrieval-diagnostic'
             )
           ) ||
@@ -74,6 +76,7 @@ jobs:
                 inputs.scope == 'cve-positive-simple-git' ||
                 inputs.scope == 'cve-positive-reposilite' ||
                 inputs.scope == 'cve-positive-ruby-saml' ||
+                inputs.scope == 'cve-positive-aiohttp' ||
                 inputs.scope == 'retrieval-diagnostic'
               )
             ) ||
@@ -102,7 +105,8 @@ jobs:
             inputs.scope == 'cve-positive-pyjwt' ||
             inputs.scope == 'cve-positive-simple-git' ||
             inputs.scope == 'cve-positive-reposilite' ||
-            inputs.scope == 'cve-positive-ruby-saml'
+            inputs.scope == 'cve-positive-ruby-saml' ||
+            inputs.scope == 'cve-positive-aiohttp'
           )
         run: >-
           python tests/fixtures/audit_corpus_readiness.py
@@ -172,13 +176,19 @@ jobs:
         if: >-
           success() &&
           github.event_name == 'workflow_dispatch' &&
-          inputs.scope == 'detection-sentinels'
+          (
+            inputs.scope == 'detection-sentinels' ||
+            inputs.scope == 'cve-positive-aiohttp'
+          )
         run: uv run repoauditor qualify-detection --format json > manufactured-detection-sentinels.json
       - name: Retain manufactured detection evidence
         if: >-
           always() &&
           github.event_name == 'workflow_dispatch' &&
-          inputs.scope == 'detection-sentinels'
+          (
+            inputs.scope == 'detection-sentinels' ||
+            inputs.scope == 'cve-positive-aiohttp'
+          )
         uses: actions/upload-artifact@v4
         with:
           name: manufactured-detection-sentinels-${{ github.run_id }}
@@ -267,7 +277,8 @@ jobs:
             inputs.scope == 'cve-positive-pyjwt' ||
             inputs.scope == 'cve-positive-simple-git' ||
             inputs.scope == 'cve-positive-reposilite' ||
-            inputs.scope == 'cve-positive-ruby-saml'
+            inputs.scope == 'cve-positive-ruby-saml' ||
+            inputs.scope == 'cve-positive-aiohttp'
           )
         timeout-minutes: 22
         env:
@@ -275,6 +286,8 @@ jobs:
             ${{
               inputs.scope == 'cve-positive-reposilite' &&
               'reposilite_cve_2024_36116' ||
+              inputs.scope == 'cve-positive-aiohttp' &&
+              'aiohttp_cve_2024_23334' ||
               inputs.scope == 'cve-positive-ruby-saml' &&
               'ruby_saml_cve_2025_25291_25292' ||
               inputs.scope == 'cve-positive-simple-git' &&
@@ -302,7 +315,8 @@ jobs:
             inputs.scope == 'cve-positive-pyjwt' ||
             inputs.scope == 'cve-positive-simple-git' ||
             inputs.scope == 'cve-positive-reposilite' ||
-            inputs.scope == 'cve-positive-ruby-saml'
+            inputs.scope == 'cve-positive-ruby-saml' ||
+            inputs.scope == 'cve-positive-aiohttp'
           )
         uses: actions/upload-artifact@v4
         with:

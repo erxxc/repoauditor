@@ -122,6 +122,12 @@ def test_live_workflow_defaults_manual_runs_to_sentinels_and_keeps_monthly_full_
     assert "cve-positive-reposilite" in workflow
     assert "reposilite_cve_2024_36116" in workflow
     assert "cve-positive-ruby-saml" in workflow
+    assert "cve-positive-aiohttp" in workflow
+    assert "'aiohttp_cve_2024_23334'" in workflow
+    assert (
+        "inputs.scope == 'detection-sentinels' ||\n"
+        "            inputs.scope == 'cve-positive-aiohttp'"
+    ) in workflow
     assert "ruby_saml_cve_2025_25291_25292" in workflow
     assert "detection-sentinels" in workflow
     assert "xml-detection-sentinels" in workflow

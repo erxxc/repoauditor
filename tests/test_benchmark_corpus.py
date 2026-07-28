@@ -288,7 +288,7 @@ def test_offline_corpus_readiness_is_metadata_complete_and_network_free():
     assert report["summary"]["protected_holdout_count"] == 2
     assert report["summary"]["calibration_fixture_count"] == 1
     assert report["summary"]["training_acquisition_count"] == 8
-    assert report["summary"]["cve_positive_acquisition_count"] == 4
+    assert report["summary"]["cve_positive_acquisition_count"] == 5
     assert all(
         record["evaluation_eligible"] is False
         for record in report["training_acquisition"]

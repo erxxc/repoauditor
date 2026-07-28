@@ -196,6 +196,15 @@ collapsing to a final traceback. Scanner-dependent fixtures are absent from thes
 model-only cohorts. Large OWASP anchors remain available to the free retrieval/scanner
 lanes, but are not submitted to the hosted model by this workflow.
 
+Manual `cve-positive-*` scopes use the stricter split-phase contract: execute the normal
+bounded production region plan, add at most one separately attributed frozen target region,
+and expose only exact-target-file candidates to falsification. Unrelated findings remain
+unadjudicated in the retained JSON/database. The `cve-positive-aiohttp` scope additionally
+gates the pair on same-run OWASP archive-detection controls. Its frozen semantic obligations
+and evidence limitations are in
+`docs/aiohttp-owasp-v3-validation-plan-2026-07-28.json`. Refresh the public-corpus cache
+after any acquisition-manifest change; the live job intentionally rejects fallback keys.
+
 The cache workflow and paid independent lane also run the zero-network corpus-readiness
 audit. Metadata must identify exactly one protected independent pre/post holdout, and the
 paid lane additionally requires both pinned snapshots to be materialized before it
