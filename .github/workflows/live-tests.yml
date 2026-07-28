@@ -22,6 +22,7 @@ on:
           - cve-positive-reposilite
           - cve-positive-ruby-saml
           - detection-sentinels
+          - xml-detection-sentinels
           - retrieval-diagnostic
 
 permissions:
@@ -141,7 +142,8 @@ jobs:
           github.event_name != 'workflow_dispatch' ||
           (
             inputs.scope != 'retrieval-diagnostic' &&
-            inputs.scope != 'detection-sentinels'
+            inputs.scope != 'detection-sentinels' &&
+            inputs.scope != 'xml-detection-sentinels'
           )
         run: uv run repoauditor qualify-instrument --format json > manufactured-sentinels.json
       - name: Publish manufactured-control result
@@ -151,7 +153,8 @@ jobs:
             github.event_name != 'workflow_dispatch' ||
             (
               inputs.scope != 'retrieval-diagnostic' &&
-              inputs.scope != 'detection-sentinels'
+              inputs.scope != 'detection-sentinels' &&
+              inputs.scope != 'xml-detection-sentinels'
             )
           )
         run: |
@@ -180,6 +183,25 @@ jobs:
         with:
           name: manufactured-detection-sentinels-${{ github.run_id }}
           path: manufactured-detection-sentinels.json
+          retention-days: 30
+          if-no-files-found: error
+      - name: Qualify OWASP XML parser-differential detection
+        if: >-
+          success() &&
+          github.event_name == 'workflow_dispatch' &&
+          inputs.scope == 'xml-detection-sentinels'
+        run: >-
+          uv run repoauditor qualify-xml-detection --format json
+          > manufactured-xml-detection-sentinels.json
+      - name: Retain manufactured XML detection evidence
+        if: >-
+          always() &&
+          github.event_name == 'workflow_dispatch' &&
+          inputs.scope == 'xml-detection-sentinels'
+        uses: actions/upload-artifact@v4
+        with:
+          name: manufactured-xml-detection-sentinels-${{ github.run_id }}
+          path: manufactured-xml-detection-sentinels.json
           retention-days: 30
           if-no-files-found: error
       - name: Run bounded live cohort

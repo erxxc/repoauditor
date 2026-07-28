@@ -1,0 +1,46 @@
+{
+  "schema_version": "manufactured-detection-qualification-plan-v1",
+  "frozen_at": "2026-07-28",
+  "status": "ready_for_live_execution",
+  "workflow_scope": "xml-detection-sentinels",
+  "instrument": {
+    "provider": "anthropic",
+    "model": "claude-opus-4-8",
+    "prompt_version": "owasp_v3+untrusted_repository_content_v1+detection_context_v2",
+    "sampling_seed": null
+  },
+  "fixture": {
+    "schema_version": "manufactured-xml-controls-v1",
+    "snapshot_digest": "472be5396375d7f3b693f795d532d41a3d2b4748af5e7972637087cc64cbdf78",
+    "answer_key_location": "tests/fixtures/manufactured_xml_controls/manifest.json",
+    "answer_key_outside_snapshot": true
+  },
+  "execution": {
+    "logical_calls": 2,
+    "lens": "owasp",
+    "public_corpus_restored": false,
+    "falsification_qualification_ran": false,
+    "provider_retry_and_pipeline_call_token_limits_unchanged": true,
+    "retained_artifact": "manufactured-xml-detection-sentinels-<run-id>"
+  },
+  "acceptance": {
+    "positive": "At least one candidate must use the declared file, overlap lines 6-10, contain a citation present in the file, describe distinct/separate parsed representations or parser differential/signature wrapping, and connect the mismatch to signature validation, verification, or authentication.",
+    "negative": "No candidate may be emitted for the same-verified-representation control.",
+    "same_location_different_mechanism": "Does not satisfy the positive control.",
+    "usage": "The artifact must report provider usage for every logical call; unknown usage is disclosed.",
+    "qualification": "Both cases must pass."
+  },
+  "evidence_limits": [
+    "Does not estimate real-world precision or recall.",
+    "Does not prove that Nokogiri and REXML disagree for a concrete document.",
+    "Does not establish attacker control, reachability, signature forgery, or authentication bypass.",
+    "Does not restore Ruby-SAML as an untouched validation target."
+  ],
+  "prohibited_changes_after_run": [
+    "fixture source or answer key",
+    "semantic matcher",
+    "prompt version",
+    "model/provider",
+    "retry, call, or token limits"
+  ]
+}

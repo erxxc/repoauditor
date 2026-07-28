@@ -1,0 +1,83 @@
+{
+  "schema_version": "target-conditioned-baseline-receipt-v1",
+  "recorded_at": "2026-07-28",
+  "status": "completed_validation_failed",
+  "workflow": {
+    "run_id": 30366181804,
+    "url": "https://github.com/erxxc/repoauditor/actions/runs/30366181804",
+    "head_sha": "884ef5e282ea3a5bf797a4e73eb3391ab1f55d32",
+    "scope": "cve-positive-ruby-saml"
+  },
+  "project": {
+    "slug": "ruby_saml_cve_2025_25291_25292",
+    "target": "One compound SAML XML parser-differential target",
+    "target_file": "lib/xml_security.rb",
+    "vulnerable_commit": "acac9e9cc0b9a507882c614f25d41f8b47be349a",
+    "fixed_commit": "e9c1cdbd0f9afa467b585de279db0cbd0fb8ae97"
+  },
+  "result": {
+    "pre_fix_confirmed_recovery": false,
+    "pre_fix_location_candidate": false,
+    "post_fix_confirmed_persistence": false,
+    "post_fix_semantic_signal_persistence": false,
+    "production_target_selected_pre": false,
+    "production_target_selected_post": false,
+    "interpretation": "The post-fix absence is not specificity evidence because the pre-fix target was not detected."
+  },
+  "pair_usage": {
+    "calls": 25,
+    "input_tokens": 194269,
+    "output_tokens": 8599,
+    "cache_read_tokens": 0,
+    "cache_write_tokens": 0,
+    "unknown_usage_calls": 0,
+    "latency_ms": 159635
+  },
+  "per_variant_usage": {
+    "pre_fix": {
+      "calls": 21,
+      "input_tokens": 132880,
+      "output_tokens": 7287,
+      "latency_ms": 136551
+    },
+    "post_fix": {
+      "calls": 4,
+      "input_tokens": 61389,
+      "output_tokens": 1312,
+      "latency_ms": 23084
+    }
+  },
+  "unadjudicated_findings": [
+    {
+      "title": "SHA-1 default digest and signature algorithm for XML signature verification",
+      "pre_fix_disposition": "confirmed",
+      "post_fix_detection": "absent",
+      "ground_truth_status": "unadjudicated"
+    },
+    {
+      "title": "SHA-1 hardcoded as default fingerprint algorithm",
+      "pre_fix_disposition": "confirmed",
+      "post_fix_detection": "absent",
+      "ground_truth_status": "unadjudicated"
+    },
+    {
+      "title": "Non-constant-time digest comparison",
+      "pre_fix_disposition": "killed",
+      "post_fix_detection": "absent",
+      "ground_truth_status": "unadjudicated"
+    }
+  ],
+  "diagnosis": {
+    "detection_taxonomy": "OWASP v2 does not explicitly assign XML parser differentials, signature wrapping, or validation/consumption representation mismatch.",
+    "stability": "Both cited SHA-1 defaults remain in the post-fix source but were not raised there; the pre/post difference therefore demonstrates context or sampling sensitivity rather than patch specificity.",
+    "falsification_accuracy": "The SHA-1 rationales establish a weak default but do not establish signature forgery or authentication bypass. They must not become positive training labels without human adjudication.",
+    "qualification_usage": "The manufactured falsification artifact reported zero usage because qualify-instrument filtered a dedicated run by wrapper stage instead of including calls attributed to falsify. Exact qualification usage is unavailable and is not fabricated."
+  },
+  "training_status": "Ruby-SAML is development evidence after this result and is not an untouched validation target for resulting corrections.",
+  "prohibited_interpretations": [
+    "Do not claim recovery of either CVE.",
+    "Do not claim post-fix specificity.",
+    "Do not label unrelated SHA-1 findings from detector output.",
+    "Do not fabricate manufactured-qualification usage."
+  ]
+}

@@ -39,10 +39,12 @@ from .eval import (
     evaluate_archive_detection_sentinels,
     evaluate_finding_convergence,
     evaluate_manufactured_sentinels,
+    evaluate_xml_detection_sentinels,
     render_convergence,
     render_detection_qualification,
     render_sentinel_qualification,
     render_usage_calibration,
+    render_xml_detection_qualification,
 )
 from .falsify import challenge
 from .falsify.challenger import (
@@ -1187,7 +1189,7 @@ def qualify_instrument(
         lambda: evaluate_manufactured_sentinels(fixture, config=config), config,
     )
     result.model_usage = db.summarize_model_usage(
-        pipeline.id, config, stage="qualify-instrument"
+        pipeline.id, config
     )
     typer.echo(
         result.model_dump_json(indent=2)
@@ -1221,6 +1223,34 @@ def qualify_detection(
         result.model_dump_json(indent=2)
         if output_format is ListFormat.JSON
         else render_detection_qualification(result)
+    )
+    if not result.qualified:
+        raise typer.Exit(code=1)
+
+
+@app.command(name="qualify-xml-detection")
+@_clean_errors("qualify-xml-detection")
+def qualify_xml_detection(
+    output_format: ListFormat = typer.Option(
+        ListFormat.HUMAN, "--format", help="Output format: human or json."
+    ),
+) -> None:
+    """Run the paid manufactured XML parser-differential pair against OWASP."""
+    config = get_config()
+    fixture = config.root / "tests" / "fixtures" / "manufactured_xml_controls"
+    result, pipeline = _metered_operation(
+        "evaluation:manufactured-xml-detection",
+        "qualify-xml-detection",
+        lambda: evaluate_xml_detection_sentinels(fixture, config=config),
+        config,
+    )
+    result.model_usage = db.summarize_model_usage(
+        pipeline.id, config
+    )
+    typer.echo(
+        result.model_dump_json(indent=2)
+        if output_format is ListFormat.JSON
+        else render_xml_detection_qualification(result)
     )
     if not result.qualified:
         raise typer.Exit(code=1)

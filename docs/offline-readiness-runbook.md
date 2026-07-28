@@ -309,7 +309,7 @@ a trust-boundary reference without a mapped boundary. Those are evidence-provena
 not reasons to retroactively change the frozen pass; attacker control and reachability
 remain falsification obligations. A sampling seed was unavailable.
 
-### Next untouched validation: ruby-saml
+### Completed validation: ruby-saml
 
 The GitHub Security Lab advisory assigns CVE-2025-25291 to a DOCTYPE parser differential
 and CVE-2025-25292 to a namespace parser differential. Both share the same root cause:
@@ -324,10 +324,34 @@ not evidence of two independently recovered CVEs. Changes in
 to subsequent human falsification, but are not silently promoted into a second answer-key
 target. Production planner selection remains a separate ground-truth-blind measurement.
 
-Run the manual `cve-positive-ruby-saml` scope only after its branch is merged and the exact
-public-corpus cache exists. It retains the two-batch-per-snapshot ceiling, provider
-call/token limits, and 20-minute timeout. Do not alter prompts, target metadata, context
-ranking, thresholds, or budgets after seeing the result. The frozen contract is
+Actions run `30366181804` completed both snapshots but failed the frozen semantic gate.
+The pre-fix target was not detected even with `lib/xml_security.rb` forced into evaluation,
+and the unchanged production planner omitted that file from both snapshots. The pair used
+25 calls, 194,269 input tokens, and 8,599 output tokens. Two SHA-1 findings were confirmed
+pre-fix, but the same cited defaults remain post-fix and were not raised there; this is
+context/sampling sensitivity, not patch specificity, and the findings remain unadjudicated.
+The receipt is
+[`ruby-saml-target-conditioned-baseline-2026-07-28.json`](ruby-saml-target-conditioned-baseline-2026-07-28.json).
+
+The manufactured falsification qualification passed, but its JSON incorrectly reported
+zero usage because calls were correctly attributed to `falsify` while the CLI filtered the
+dedicated run by wrapper stage `qualify-instrument`. The offline correction summarizes the
+whole dedicated run without relabeling calls. Exact usage for the historical qualification
+is unavailable and is not reconstructed.
+
+Ruby-SAML is development evidence after this diagnosis. OWASP v3 adds a bounded obligation
+for validation on one parsed XML representation followed by protected-data consumption
+from another. The paired zero-token control consumes data from the exact verified node.
+Neither control claims that real parsers disagree or that an authentication bypass is
+reachable.
+
+After merge, run only the manual `xml-detection-sentinels` scope. It skips the public corpus
+and four-case falsification cohort, makes two logical OWASP calls under existing provider
+limits, and retains authoritative usage. Its digest, semantic acceptance rule, and
+prohibited changes are frozen in
+[`xml-detection-qualification-plan-2026-07-28.json`](xml-detection-qualification-plan-2026-07-28.json).
+Do not rerun Ruby-SAML as independent validation for the resulting change. The original
+frozen contract remains in
 [`ruby-saml-validation-plan-2026-07-28.json`](ruby-saml-validation-plan-2026-07-28.json).
 
 ## Analyst decision after collection

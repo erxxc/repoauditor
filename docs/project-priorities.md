@@ -349,8 +349,31 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
   one compound parser-differential target in `lib/xml_security.rb`; this tests the shared
   root cause and must not be reported as two independent CVE recoveries. The exact scope
   and unchanged ceilings are in `docs/ruby-saml-validation-plan-2026-07-28.json`.
-- [ ] Run the manual `cve-positive-ruby-saml` scope once, then retain and semantically
-  adjudicate the artifact before any prompt, retrieval, or budget change.
+- [x] Run the manual `cve-positive-ruby-saml` scope once. Actions run `30366181804`
+  completed operationally but failed semantic validation: neither forced target context nor
+  the production planner recovered the parser-differential target. Two unrelated SHA-1
+  defaults were confirmed pre-fix but not raised from byte-equivalent code post-fix, so they
+  remain unadjudicated stability evidence rather than training labels. Exact results and
+  pair usage are in `docs/ruby-saml-target-conditioned-baseline-2026-07-28.json`.
+- [x] Correct `qualify-instrument` usage accounting to summarize its entire dedicated
+  pipeline run. Calls remain attributed to the real `falsify` stage; the wrapper no longer
+  emits a false zero-call receipt.
+- [x] Add external-answer-key, zero-token XML representation controls and version OWASP to
+  `owasp_v3`. The positive shows security validation and identity consumption using
+  distinct parsed representations; the negative consumes the exact verified node. The
+  checker makes no claim about a real parser differential, attacker control, or auth bypass.
+- [x] Add the isolated `qualify-xml-detection` command and manual
+  `xml-detection-sentinels` scope. It makes two logical OWASP calls and skips the corpus and
+  four-case falsification cohort. Acceptance and prohibited post-result changes are frozen
+  in `docs/xml-detection-qualification-plan-2026-07-28.json`.
+- [ ] Run `xml-detection-sentinels` once after merge. Do not rerun Ruby-SAML as untouched
+  evidence; select a different independent target only after this instrument gate passes.
+- [ ] Improve ground-truth-blind production planning for security-critical library code.
+  The Ruby-SAML target was omitted in both variants; target-forced inclusion receives no
+  production coverage credit.
+- [ ] Split future CVE acquisition evaluation into a bounded detection screen and
+  target-relevant falsification decision so unrelated candidates do not automatically
+  consume the majority of the pair budget. Preserve all unrelated output as unadjudicated.
 
 ### C — methodology blocked
 

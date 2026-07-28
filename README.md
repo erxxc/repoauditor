@@ -629,6 +629,18 @@ retries may add recorded attempts), exits nonzero unless the vulnerable Kotlin c
 raised and the normalized-containment control stays clean, and does not claim real-world
 precision or recall.
 
+To qualify OWASP v3 against a manufactured XML validation/consumption representation
+mismatch and its same-verified-node control:
+
+```sh
+uv run repoauditor qualify-xml-detection
+uv run repoauditor qualify-xml-detection --format json
+```
+
+This is also a two-logical-call, opt-in paid check. It does not execute XML or claim that
+real parsers disagree, and it does not prove attacker control, signature failure, or
+authentication bypass. In Actions, select the isolated `xml-detection-sentinels` scope.
+
 ## Output controls and automation
 
 Global output flags must appear before the command:

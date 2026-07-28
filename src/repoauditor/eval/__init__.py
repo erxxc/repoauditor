@@ -24,7 +24,9 @@ from .usage_calibration import (
 from .detection_sentinels import (
     DetectionSentinelQualification,
     evaluate_archive_detection_sentinels,
+    evaluate_xml_detection_sentinels,
     render_detection_qualification,
+    render_xml_detection_qualification,
 )
 
 __all__ = [
@@ -43,5 +45,7 @@ __all__ = [
     "render_usage_calibration",
     "DetectionSentinelQualification",
     "evaluate_archive_detection_sentinels",
+    "evaluate_xml_detection_sentinels",
     "render_detection_qualification",
+    "render_xml_detection_qualification",
 ]
