@@ -131,7 +131,7 @@ def test_live_workflow_defaults_manual_runs_to_sentinels_and_keeps_monthly_full_
     assert "manufactured-xml-detection-sentinels.json" in workflow
     assert "inputs.scope != 'detection-sentinels'" in workflow
     assert "inputs.scope != 'xml-detection-sentinels'" in workflow
-    assert "Run target-conditioned CVE-positive pair" in workflow
+    assert "Run split-phase CVE-positive pair" in workflow
     assert "full-live" not in workflow
     assert 'cron: "17 6 * * 2"' in workflow
     assert 'cron: "47 6 1 * *"' in workflow

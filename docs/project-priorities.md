@@ -377,9 +377,12 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
 - [ ] Improve ground-truth-blind production planning for security-critical library code.
   The Ruby-SAML target was omitted in both variants; target-forced inclusion receives no
   production coverage credit.
-- [ ] Split future CVE acquisition evaluation into a bounded detection screen and
-  target-relevant falsification decision so unrelated candidates do not automatically
-  consume the majority of the pair budget. Preserve all unrelated output as unadjudicated.
+- [x] Split future CVE acquisition evaluation into a bounded production detection screen
+  plus one separately attributed advisory-target region, followed by target-file-scoped
+  falsification. Forced target inclusion receives no production-selection credit; every
+  unrelated detector row remains in the retained store and is reported as unadjudicated.
+  Completed artifacts fail closed unless production selected/omitted counts close, the
+  semantic target was present, and falsification-scope evidence was recorded.
 
 ### C — methodology blocked
 
