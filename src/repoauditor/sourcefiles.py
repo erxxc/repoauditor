@@ -7,6 +7,8 @@ deterministic — no LLM, no config.
 
 from __future__ import annotations
 
+import hashlib
+from collections import defaultdict
 from pathlib import Path
 
 # Source extensions worth feeding to the model / indexing. Intentionally narrow;
@@ -17,6 +19,7 @@ SOURCE_EXTENSIONS: set[str] = {
 }
 
 _SKIP_DIRS = {".git", "node_modules", "__pycache__", ".venv", "venv", "dist", "build"}
+_TEST_DIRS = {"test", "tests", "spec", "specs", "__tests__"}
 
 
 def iter_source_files(root: Path) -> list[Path]:
@@ -29,6 +32,95 @@ def iter_source_files(root: Path) -> list[Path]:
             continue
         files.append(path)
     return files
+
+
+def is_test_source(path: Path, root: Path) -> bool:
+    """Return whether a source path is conventionally test-only.
+
+    This is deliberately a narrow path/name classification, not a security or
+    ground-truth heuristic. False negatives stay eligible as production source;
+    false positives merely share the bounded test allocation.
+    """
+    rel = path.relative_to(root)
+    lowered_parts = {part.lower() for part in rel.parts[:-1]}
+    stem = rel.stem.lower()
+    return (
+        bool(lowered_parts & _TEST_DIRS)
+        or stem.startswith(("test_", "spec_"))
+        or stem.endswith(("_test", "_spec"))
+    )
+
+
+def _directory_bucket(path: Path, root: Path) -> str:
+    """Group nearby files while retaining diversity across nested source trees."""
+    parent_parts = path.relative_to(root).parts[:-1]
+    return "/".join(parent_parts[:2]) if parent_parts else "."
+
+
+def _path_digest(path: Path, root: Path) -> str:
+    rel = path.relative_to(root).as_posix()
+    return hashlib.sha256(f"source-coverage-v1\0{rel}".encode()).hexdigest()
+
+
+def _directory_diverse_order(paths: list[Path], root: Path) -> list[Path]:
+    buckets: dict[str, list[Path]] = defaultdict(list)
+    for path in paths:
+        buckets[_directory_bucket(path, root)].append(path)
+    for bucket_paths in buckets.values():
+        bucket_paths.sort(key=lambda path: _path_digest(path, root))
+
+    bucket_names = sorted(
+        buckets,
+        key=lambda name: hashlib.sha256(
+            f"source-directory-v1\0{name}".encode()
+        ).hexdigest(),
+    )
+    ordered: list[Path] = []
+    depth = 0
+    while len(ordered) < len(paths):
+        for name in bucket_names:
+            if depth < len(buckets[name]):
+                ordered.append(buckets[name][depth])
+        depth += 1
+    return ordered
+
+
+def select_diverse_source_files(
+    root: Path,
+    limit: int,
+    *,
+    max_test_fraction: float = 0.25,
+) -> list[Path]:
+    """Select deterministic, directory-diverse source coverage within a file cap.
+
+    Production paths receive at least 75% of a bounded selection when enough are
+    available. Test paths may fill otherwise unused capacity. Ordering depends only
+    on relative paths, so a pre-fix/post-fix pair with the same tree receives a
+    comparable instrument rather than a commit-dependent sample.
+    """
+    if limit <= 0:
+        return []
+    files = iter_source_files(root)
+    limit = min(limit, len(files))
+
+    production = [path for path in files if not is_test_source(path, root)]
+    tests = [path for path in files if is_test_source(path, root)]
+    production = _directory_diverse_order(production, root)
+    tests = _directory_diverse_order(tests, root)
+
+    test_slots = min(len(tests), int(limit * max_test_fraction))
+    production_slots = min(len(production), limit - test_slots)
+    selected = production[:production_slots] + tests[:test_slots]
+
+    if len(selected) < limit:
+        selected_set = set(selected)
+        remainder = [
+            path
+            for path in (*production[production_slots:], *tests[test_slots:])
+            if path not in selected_set
+        ]
+        selected.extend(remainder[: limit - len(selected)])
+    return selected
 
 
 def read_numbered(path: Path) -> str:

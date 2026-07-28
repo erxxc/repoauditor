@@ -17,7 +17,7 @@ from pathlib import Path
 
 from ..config import Config, get_config
 from ..llm import LLMClient, get_llm_client
-from ..sourcefiles import iter_source_files, read_numbered
+from ..sourcefiles import read_numbered, select_diverse_source_files
 from ..store import db
 from ..store.models import Entity, EntityKind, TrustBoundary as StoreTrustBoundary
 from .schema import (
@@ -39,19 +39,23 @@ _FULL_CHARS = 240_000
 
 
 def _build_context(snapshot_path: Path, max_chars: int) -> str:
-    """Concatenate the repo's source files (line-numbered) into one prompt body."""
+    """Build bounded, directory-diverse context with a fair share per source file."""
     chunks: list[str] = []
     budget = max_chars
-    for path in iter_source_files(snapshot_path)[:_MAX_FILES]:
+    selected = select_diverse_source_files(snapshot_path, _MAX_FILES)
+    for index, path in enumerate(selected):
+        separator_cost = 1 if chunks else 0
+        budget -= separator_cost
+        if budget <= 0:
+            break
         rel = path.relative_to(snapshot_path).as_posix()
         body = read_numbered(path)
         block = f"# FILE: {rel}\n{body}\n"
-        if len(block) > budget:
-            block = block[:budget]
+        remaining_files = len(selected) - index
+        allowance = budget // remaining_files
+        block = block[:allowance]
         chunks.append(block)
         budget -= len(block)
-        if budget <= 0:
-            break
     return "\n".join(chunks)
 
 

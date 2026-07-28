@@ -14,13 +14,35 @@ from repoauditor.detect.planning import (
     validate_detection_projection,
 )
 from repoauditor.map import ArchitectureMap, EntryPoint
-from repoauditor.sourcefiles import iter_source_files
+from repoauditor.map.domain_map import _build_context
+from repoauditor.sourcefiles import (
+    is_test_source,
+    iter_source_files,
+    select_diverse_source_files,
+)
 from repoauditor.store.models import Severity
 
 
 def _sources(root: Path, count: int) -> None:
     for index in range(count):
         (root / f"module_{index}.py").write_text(f"value_{index} = {index}\n")
+
+
+def _deep_sources(root: Path) -> None:
+    for directory in ("api/routes", "core/auth", "storage/sql", "workers/jobs"):
+        target = root / directory
+        target.mkdir(parents=True)
+        for index in range(8):
+            (target / f"module_{index}.py").write_text(
+                f"value_{directory.replace('/', '_')}_{index} = {index}\n"
+            )
+    for directory in ("tests/api", "spec/integration"):
+        target = root / directory
+        target.mkdir(parents=True)
+        for index in range(8):
+            (target / f"test_module_{index}.py").write_text(
+                f"def test_{index}():\n    assert True\n"
+            )
 
 
 def test_detection_context_prioritizes_external_callers_over_same_file_similarity(
@@ -180,3 +202,71 @@ def test_region_plan_prefers_independent_signals_and_reserves_stable_sample(
         item.selection_basis == "stable-coverage-sample" for item in first
     ) >= 2
     assert len(first) == tmp_config.detect.max_llm_regions_per_run
+
+
+def test_source_selection_is_directory_diverse_and_bounds_test_share(tmp_path):
+    _deep_sources(tmp_path)
+
+    selected = select_diverse_source_files(tmp_path, 12)
+    directories = {
+        path.relative_to(tmp_path).parent.as_posix() for path in selected
+    }
+    test_count = sum(is_test_source(path, tmp_path) for path in selected)
+
+    assert len(selected) == 12
+    assert {"api/routes", "core/auth", "storage/sql", "workers/jobs"} <= directories
+    assert test_count == 3
+
+
+def test_source_selection_depends_on_paths_not_file_content(tmp_path):
+    _deep_sources(tmp_path)
+    first = [
+        path.relative_to(tmp_path).as_posix()
+        for path in select_diverse_source_files(tmp_path, 12)
+    ]
+    for path in iter_source_files(tmp_path):
+        path.write_text("changed contents\n")
+
+    second = [
+        path.relative_to(tmp_path).as_posix()
+        for path in select_diverse_source_files(tmp_path, 12)
+    ]
+
+    assert second == first
+
+
+def test_map_context_allocates_bounded_space_across_selected_files(tmp_path):
+    _deep_sources(tmp_path)
+    selected = select_diverse_source_files(tmp_path, 40)
+
+    context = _build_context(tmp_path, 8_000)
+
+    assert len(context) <= 8_000
+    assert len(selected) == 40
+    for path in selected:
+        rel = path.relative_to(tmp_path).as_posix()
+        assert f"# FILE: {rel}\n" in context
+
+
+def test_stable_coverage_plan_is_comparable_across_commits(tmp_config, tmp_path):
+    _deep_sources(tmp_path)
+    architecture = ArchitectureMap(repo_id="repo", commit="pre")
+
+    before = plan_detection_regions(
+        tmp_path,
+        tmp_config,
+        commit="pre-fix-commit",
+        architecture=architecture,
+        tool_candidates=[],
+    )
+    after = plan_detection_regions(
+        tmp_path,
+        tmp_config,
+        commit="post-fix-commit",
+        architecture=architecture,
+        tool_candidates=[],
+    )
+
+    assert [item.relative_path for item in after] == [
+        item.relative_path for item in before
+    ]

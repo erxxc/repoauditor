@@ -110,7 +110,7 @@ class DetectConfig(BaseModel):
     # repositories are selected deterministically; zero disables LLM lens detection.
     max_llm_regions_per_run: int = Field(default=6, ge=0)
     # Preserve generic coverage outside deterministic/map-indicated files. Selection is
-    # stable by repo content identity and never consults a fixture answer key.
+    # stable by relative path across pre/post snapshots and never consults an answer key.
     reserved_sample_regions: int = Field(default=2, ge=0)
 
     @model_validator(mode="after")
