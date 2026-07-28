@@ -20,6 +20,7 @@ on:
           - cve-positive-pyjwt
           - cve-positive-simple-git
           - cve-positive-reposilite
+          - detection-sentinels
           - retrieval-diagnostic
 
 permissions:
@@ -134,14 +135,20 @@ jobs:
       - name: Qualify falsification instrument with manufactured controls
         if: >-
           github.event_name != 'workflow_dispatch' ||
-          inputs.scope != 'retrieval-diagnostic'
+          (
+            inputs.scope != 'retrieval-diagnostic' &&
+            inputs.scope != 'detection-sentinels'
+          )
         run: uv run repoauditor qualify-instrument --format json > manufactured-sentinels.json
       - name: Publish manufactured-control result
         if: >-
           always() &&
           (
             github.event_name != 'workflow_dispatch' ||
-            inputs.scope != 'retrieval-diagnostic'
+            (
+              inputs.scope != 'retrieval-diagnostic' &&
+              inputs.scope != 'detection-sentinels'
+            )
           )
         run: |
           echo "## Manufactured falsification controls" >> "$GITHUB_STEP_SUMMARY"
@@ -154,6 +161,23 @@ jobs:
           else
             echo "No structured result was produced; the instrument run is disqualified." >> "$GITHUB_STEP_SUMMARY"
           fi
+      - name: Qualify OWASP archive detection with manufactured controls
+        if: >-
+          success() &&
+          github.event_name == 'workflow_dispatch' &&
+          inputs.scope == 'detection-sentinels'
+        run: uv run repoauditor qualify-detection --format json > manufactured-detection-sentinels.json
+      - name: Retain manufactured detection evidence
+        if: >-
+          always() &&
+          github.event_name == 'workflow_dispatch' &&
+          inputs.scope == 'detection-sentinels'
+        uses: actions/upload-artifact@v4
+        with:
+          name: manufactured-detection-sentinels-${{ github.run_id }}
+          path: manufactured-detection-sentinels.json
+          retention-days: 30
+          if-no-files-found: error
       - name: Run bounded live cohort
         if: >-
           success() &&

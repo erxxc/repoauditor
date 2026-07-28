@@ -21,6 +21,11 @@ from .usage_calibration import (
     build_usage_calibration,
     render_usage_calibration,
 )
+from .detection_sentinels import (
+    DetectionSentinelQualification,
+    evaluate_archive_detection_sentinels,
+    render_detection_qualification,
+)
 
 __all__ = [
     "record_and_check",
@@ -36,4 +41,7 @@ __all__ = [
     "UsageCalibrationReport",
     "build_usage_calibration",
     "render_usage_calibration",
+    "DetectionSentinelQualification",
+    "evaluate_archive_detection_sentinels",
+    "render_detection_qualification",
 ]

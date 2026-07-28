@@ -550,6 +550,8 @@ and fresh budget, as do `doctor --check-model`, `falsify-convergence`, and
 `qualify-instrument`. Expert and diagnostic entry points therefore cannot bypass the safety
 boundary used by `run`, `resume`, and `demo`; inspect their usage and attributable failures
 with `runs list` and `runs show`.
+The opt-in `qualify-detection` command uses the same durable budget and reports its usage
+inside structured output.
 
 Dependency advisories also carry a canonical ecosystem/package/version/advisory identity.
 This prevents unrelated CVEs from being merged merely because SCA scanners report them all
@@ -613,6 +615,19 @@ This paid, fail-closed control is also run automatically in the weekly live lane
 applies only to the four sentinels and is not real-world accuracy evidence; the cases are
 never injected into a user scan. See the
 [manufactured-sentinel methodology](docs/manufactured-sentinels.md).
+
+To qualify the versioned OWASP lens specifically against the manufactured vulnerable and
+patched archive-extraction pair:
+
+```sh
+uv run repoauditor qualify-detection
+uv run repoauditor qualify-detection --format json
+```
+
+This is a separate, opt-in paid check. It makes two logical model calls (bounded reliability
+retries may add recorded attempts), exits nonzero unless the vulnerable Kotlin case is
+raised and the normalized-containment control stays clean, and does not claim real-world
+precision or recall.
 
 ## Output controls and automation
 

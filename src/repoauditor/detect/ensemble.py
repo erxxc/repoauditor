@@ -53,7 +53,7 @@ logger = logging.getLogger(__name__)
 
 # Lens name -> versioned prompt file. Order is stable so runs are reproducible.
 LENSES: dict[str, str] = {
-    "owasp": "owasp_v1.md",
+    "owasp": "owasp_v2.md",
     "supply_chain": "supply_chain_v1.md",
     "agentic_surface": "agentic_surface_v1.md",
 }
@@ -254,7 +254,7 @@ def run_ensemble(
             f"{_retrieval_context(index, rel, path.read_text(errors='replace'))}"
         )
 
-        for lens, prompt in _LENS_PROMPTS.items():
+        for lens in _LENS_PROMPTS:
             region_run = db.start_detection_region(
                 DetectionRegionRun(
                     repo_id=repo_id,
@@ -270,13 +270,14 @@ def run_ensemble(
                 skipped_completed_region_calls += 1
                 continue
             try:
-                completion = llm.call(
-                    module="detect",
-                    prompt_version=LENS_PROMPT_VERSIONS[lens],
-                    system=secure_system_prompt(prompt),
-                    user=delimit_repository_evidence(region),
-                    schema=LensFindings,
-                    context={"stage": "detect", "repo_id": repo_id, "lens": lens, "file": rel},
+                completion = _call_lens(
+                    llm,
+                    lens,
+                    region,
+                    context={
+                        "stage": "detect", "repo_id": repo_id,
+                        "lens": lens, "file": rel,
+                    },
                 )
                 finding_count = 0
                 for cand in completion.value.findings:
@@ -286,7 +287,8 @@ def run_ensemble(
                     if cand is None:
                         continue
                     cand, low = _resolve_confidence(
-                        cand, lens, prompt, index, repo_id, llm, threshold
+                        cand, lens, _LENS_PROMPTS[lens],
+                        index, repo_id, llm, threshold
                     )
                     cand = _canonicalize_citation(
                         cand, index, rel, lens, config
@@ -333,6 +335,29 @@ def run_ensemble(
         ],
         completed_region_calls=completed_region_calls,
         skipped_completed_region_calls=skipped_completed_region_calls,
+    )
+
+
+def _call_lens(
+    llm: LLMClient,
+    lens: str,
+    region: str,
+    *,
+    context: dict,
+):
+    """Shared structured lens call used by production and manufactured qualification."""
+    try:
+        prompt = _LENS_PROMPTS[lens]
+        prompt_version = LENS_PROMPT_VERSIONS[lens]
+    except KeyError as exc:
+        raise ValueError(f"unknown detection lens: {lens}") from exc
+    return llm.call(
+        module="detect",
+        prompt_version=prompt_version,
+        system=secure_system_prompt(prompt),
+        user=delimit_repository_evidence(region),
+        schema=LensFindings,
+        context=context,
     )
 
 

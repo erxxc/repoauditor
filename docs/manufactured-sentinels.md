@@ -61,3 +61,31 @@ The answer key remains outside the scanned snapshot. These controls qualify only
 structural producer/checker contracts and do not estimate real-world accuracy or prove
 control effectiveness. Keeping them separate also prevents this offline expansion from
 silently increasing the four-case weekly paid sentinel cohort.
+
+## Archive-detection qualification
+
+`manufactured_archive_controls` is a separate two-case mechanism pair:
+
+- a Kotlin extraction shape resolving `entry.name` beneath a destination without a
+  containment rejection; and
+- the patched shape normalizing the destination and output, then rejecting an output that
+  does not start within the destination.
+
+The zero-token checker evaluates a concrete `../../outside.txt` witness. It proves lexical
+destination escape and the declared containment decision only—not attacker control,
+reachability, or filesystem execution.
+
+After a detection prompt change, run the paid OWASP-lens qualification explicitly:
+
+```sh
+uv run repoauditor qualify-detection
+uv run repoauditor qualify-detection --format json
+```
+
+The command makes one logical OWASP-lens call per case under the normal durable call/token
+limits; bounded reliability retries remain possible and are recorded. The positive case
+requires a same-location, citation-valid archive-traversal mechanism match; same-file
+output about another mechanism receives no credit. Any output on the deliberately clean
+patched control fails the negative control. Passing remains manufactured evidence only.
+In Actions, use the manual `detection-sentinels` scope; it does not also run the four-case
+falsification cohort and is not added to that cohort's weekly cadence.

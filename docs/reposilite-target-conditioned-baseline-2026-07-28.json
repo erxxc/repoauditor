@@ -1,0 +1,79 @@
+{
+  "schema_version": "target-conditioned-baseline-v1",
+  "recorded_at": "2026-07-28",
+  "workflow_run": {
+    "id": 30327552345,
+    "url": "https://github.com/erxxc/repoauditor/actions/runs/30327552345",
+    "head_sha": "471bac94baf50fe3f52deb9ee1a9622877193907",
+    "conclusion": "success",
+    "validation_gate": "failed"
+  },
+  "scope": {
+    "project": "Reposilite",
+    "project_id": "reposilite_cve_2024_36116",
+    "cve": "CVE-2024-36116",
+    "advisory": "GHSA-frvj-cfq4-3228",
+    "vulnerable_commit": "e172ae4b539c822d0d6e04cf090713c7202a79d6",
+    "fixed_commit": "848173738e4375482c70365db5cebae29f125eaa",
+    "target_file": "reposilite-backend/src/main/kotlin/com/reposilite/javadocs/JavadocContainerService.kt",
+    "target_conditioned": true,
+    "scanner_coverage": "not-installed-live-model-only"
+  },
+  "instrument_qualification": {
+    "manufactured_controls_passed": 4,
+    "manufactured_controls_total": 4,
+    "qualified": true,
+    "usage": null,
+    "usage_note": "The qualification JSON did not retain its durable model-usage totals in this run."
+  },
+  "results": {
+    "pre_fix": {
+      "status": "completed",
+      "production_target_selected": false,
+      "evaluation_target_selected": true,
+      "location_candidates": 0,
+      "semantic_target_candidates": 0,
+      "pre_fix_confirmed_recovery": false,
+      "findings": 0,
+      "deferred_findings": 0,
+      "usage": {
+        "calls": 5,
+        "input_tokens": 88500,
+        "output_tokens": 4535,
+        "latency_ms": 53646
+      }
+    },
+    "post_fix": {
+      "status": "completed",
+      "production_target_selected": false,
+      "evaluation_target_selected": true,
+      "location_candidates": 0,
+      "semantic_target_candidates": 0,
+      "post_fix_confirmed_persistence": false,
+      "post_fix_any_semantic_signal_persistence": false,
+      "findings": 0,
+      "deferred_findings": 0,
+      "usage": {
+        "calls": 5,
+        "input_tokens": 89289,
+        "output_tokens": 4447,
+        "latency_ms": 53234
+      }
+    }
+  },
+  "aggregate_pair_usage": {
+    "calls": 10,
+    "input_tokens": 177789,
+    "output_tokens": 8982,
+    "known_tokens": 186771,
+    "latency_ms": 106880,
+    "junit_elapsed_seconds": 111.579
+  },
+  "diagnosis": {
+    "semantic_detection": "The target-conditioned detector received the complete advisory file but raised no pre-fix candidate. Falsification therefore had nothing to challenge.",
+    "lens_assignment": "OWASP v1 did not explicitly assign path traversal or unsafe archive extraction to a lens; supply-chain v1 excludes ordinary application logic and agentic-surface v1 is inapplicable.",
+    "production_coverage": "The shared source-file inventory omitted .kt and .kts. The production map, retrieval index, and region planner therefore could not select the Kotlin advisory target.",
+    "negative_control": "No target signal appeared post-fix, but this does not rescue the failed pre-fix recovery gate.",
+    "training_status": "Reposilite becomes development evidence after this diagnosis and is not an untouched validation target for the resulting corrections."
+  }
+}

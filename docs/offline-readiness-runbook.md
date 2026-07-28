@@ -245,15 +245,38 @@ Review the JSON artifact, JUnit result, and retained SQLite usage evidence befor
 another CVE-positive pair. Do not change prompts, thresholds, target locations, or budgets
 from the pilot result; that would turn this acquisition check into tuning on its answer key.
 
-### Next untouched validation: Reposilite
+### Completed validation: Reposilite
 
 Reposilite CVE-2024-36116 is the next pair. It was selected before ruby-saml because it
 has one localized Kotlin archive-traversal target, while ruby-saml combines two CVEs, an
 XML parser differential, signature wrapping, and a seven-file patch. The previous Semgrep
 partial-parse warning came from a Gradle wrapper script, not the target Kotlin file.
 
-The manual Actions scope is `cve-positive-reposilite`. It requires the exact validated
-public-corpus cache and a passing manufactured-instrument qualification, then runs the
+Actions run `30327552345` passed all four falsification sentinels and completed both
+snapshots, but the validation gate failed. The target-conditioned detector raised zero
+findings pre-fix and post-fix, so no finding reached falsification or human semantic
+adjudication. The unchanged production planner also omitted the target in both variants.
+The pair itself used 10 calls, 177,789 input tokens, and 8,982 output tokens; qualification
+usage was not retained in its JSON and is therefore not fabricated. The structured receipt
+is
+[`reposilite-target-conditioned-baseline-2026-07-28.json`](reposilite-target-conditioned-baseline-2026-07-28.json).
+
+The production omission was structural rather than merely a ranking miss: `.kt` and `.kts`
+were absent from the shared source inventory, so map/retrieval/planning could not select the
+Kotlin target. The forced semantic miss exposed a separate lens gap: OWASP v1 did not
+explicitly cover path traversal or unsafe archive extraction, while the other two lenses
+exclude or do not apply to this application mechanism.
+
+The offline correction adds bounded Kotlin visibility without changing the existing map
+file/character budgets or detection region cap. Kotlin retrieval initially uses the
+explicit logged lexical fallback rather than an untested AST inference. `owasp_v2` assigns
+path traversal and unsafe archive extraction to the OWASP lens, and a zero-token
+manufactured pair checks a concrete escaping archive entry against vulnerable and
+normalized-containment shapes. Qualification usage is now included in the structured
+`qualify-instrument --format json` output.
+
+The manual Actions scope was `cve-positive-reposilite`. It required the exact validated
+public-corpus cache and a passing manufactured-instrument qualification, then ran the
 pre-fix commit before the post-fix control. It retains the existing two-batch maximum per
 snapshot, provider call/token ceilings, and 20-minute outer timeout. Target-conditioned
 semantic evaluation and unchanged production-planner selection remain separate.
@@ -267,7 +290,9 @@ the answer key is intentionally not exhaustive.
 The exact commits, target, acceptance criteria, ceilings, and prohibited post-result changes
 are frozen in
 [`reposilite-validation-plan-2026-07-28.json`](reposilite-validation-plan-2026-07-28.json).
-Run the scope once and retain its JSON, JUnit, and SQLite artifacts before any tuning.
+Reposilite is development evidence after this diagnosis. Do not use a rerun as an untouched
+gate. Qualify the new archive-detection prompt on manufactured controls first; preserve
+ruby-saml as the next independent validation target.
 
 ## Analyst decision after collection
 

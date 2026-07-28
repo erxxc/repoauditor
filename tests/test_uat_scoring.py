@@ -245,7 +245,7 @@ def test_independent_post_fix_unrelated_confirmation_is_unadjudicated():
     )
 
     assert result["post_fix_confirmed_persistence"] is False
-    assert result["post_fix_any_signal_persistence"] is False
+    assert result["post_fix_any_semantic_signal_persistence"] is False
     assert result["unadjudicated_confirmed_group_count"] == 1
     assert "precision" not in result
 
@@ -268,7 +268,7 @@ def test_independent_post_fix_confirmed_target_is_persistent():
     )
 
     assert result["post_fix_confirmed_persistence"] is True
-    assert result["post_fix_any_signal_persistence"] is True
+    assert result["post_fix_any_semantic_signal_persistence"] is True
     assert result["unadjudicated_confirmed_group_count"] == 0
 
 
@@ -312,7 +312,7 @@ def test_independent_unadjudicated_location_match_stays_pending():
     signal = result["target_signals"][0]
     assert result["location_candidate_count"] == 1
     assert result["target_candidate_count"] == 0
-    assert result["post_fix_any_signal_persistence"] is False
+    assert result["post_fix_any_semantic_signal_persistence"] is False
     assert signal["disposition"] == "location_match_pending_human_adjudication"
     assert signal["location_matches"][0]["semantic_adjudication"] == (
         "pending_human_adjudication"

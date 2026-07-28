@@ -119,6 +119,10 @@ def test_live_workflow_defaults_manual_runs_to_sentinels_and_keeps_monthly_full_
     assert "simple_git_cve_2026_28292" in workflow
     assert "cve-positive-reposilite" in workflow
     assert "reposilite_cve_2024_36116" in workflow
+    assert "detection-sentinels" in workflow
+    assert "qualify-detection --format json" in workflow
+    assert "manufactured-detection-sentinels.json" in workflow
+    assert "inputs.scope != 'detection-sentinels'" in workflow
     assert "Run target-conditioned CVE-positive pair" in workflow
     assert "full-live" not in workflow
     assert 'cron: "17 6 * * 2"' in workflow
@@ -171,7 +175,9 @@ def test_qualification_cli_exits_nonzero_on_miss(tmp_config, monkeypatch):
     result = CliRunner().invoke(cli.app, ["qualify-instrument", "--format", "json"])
 
     assert result.exit_code == 1
-    assert json.loads(result.stdout)["qualified"] is False
+    payload = json.loads(result.stdout)
+    assert payload["qualified"] is False
+    assert payload["model_usage"]["calls"] == 0
 
 
 @pytest.mark.live

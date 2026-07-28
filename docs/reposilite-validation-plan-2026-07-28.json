@@ -1,7 +1,14 @@
 {
   "schema_version": "target-conditioned-validation-plan-v1",
   "frozen_at": "2026-07-28",
-  "status": "ready_not_run",
+  "status": "completed_validation_failed",
+  "result": {
+    "workflow_run_id": 30327552345,
+    "baseline_receipt": "docs/reposilite-target-conditioned-baseline-2026-07-28.json",
+    "pre_fix_confirmed_recovery": false,
+    "production_target_selected_pre": false,
+    "production_target_selected_post": false
+  },
   "project": {
     "slug": "reposilite_cve_2024_36116",
     "name": "Reposilite",
