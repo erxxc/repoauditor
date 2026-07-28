@@ -157,9 +157,12 @@ cache` workflow first; the live workflow fails before provider use unless the ex
 
 The pilot always runs PyJWT pre-fix before post-fix, stops on the first failure, allows at
 most two linked batches per snapshot, and retains the existing 75-call/250,000-token
-per-batch circuit breakers plus a 20-minute outer timeout. Thus its conservative ceiling is
-300 calls and 1,000,000 provider-reported tokens across both snapshots, although a timeout
-or earlier pipeline stop should end it first. These are safety limits, not spending targets.
+per-batch circuit breakers plus a 20-minute outer timeout. Its paid semantic evaluation is
+now restricted to the frozen advisory target file. Before substituting that file, the
+harness records the unchanged production planner's ground-truth-blind region selection.
+The artifact labels these as `target-conditioned` semantic evidence and production
+retrieval coverage respectively; forced target inclusion never receives coverage credit.
+This is evaluation-harness behavior only and does not alter production detection planning.
 
 The first one-batch pilot (Actions run `30320579789`) qualified all four manufactured
 controls, then stopped after the PyJWT pre-fix snapshot with five deferred findings. Its
@@ -167,6 +170,14 @@ single batch used 33 calls, 149,952 input tokens, and 6,848 output tokens with n
 usage. No post-fix work or target score ran. The two-batch cap is therefore an
 evidence-based continuation allowance for this same pair, not permission to expand the
 cohort or raise the underlying per-batch circuit breakers.
+
+The two-batch follow-up (Actions run `30322316600`) again qualified all four controls. It
+used 82 calls, 403,365 input tokens, and 16,311 output tokens across the pair. The pre-fix
+target was not detected, but `jwt/algorithms.py` was absent from the production region plan,
+so this is a retrieval-coverage miss rather than a valid semantic-detector measurement.
+The post-fix snapshot stopped with two deferred non-target findings. That result motivated
+the target-conditioned harness above; rerunning the unchanged whole-repository pilot would
+spend more without resolving the confound.
 
 Acceptance is target-scoped and was frozen before execution:
 

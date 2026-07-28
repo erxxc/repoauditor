@@ -260,9 +260,14 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
   semantic key confusion. It requires the exact `public-corpus-v2` cache, runs pre-fix
   before post-fix and has a 20-minute outer timeout. The first one-batch run
   (`30320579789`) used 33 calls and 156,800 known input/output tokens on pre-fix, then
-  stopped with five deferred findings; post-fix did not start. Allow at most two existing
-  75-call/250,000-token batches per snapshot for the same pilot, then review its usage and
-  target-scoped artifact before enabling ruby-saml, simple-git, or Reposilite.
+  stopped with five deferred findings; post-fix did not start. The two-batch follow-up
+  (`30322316600`) used 82 calls and 419,676 known input/output tokens, missed the pre-fix
+  target because its file was not selected, and stopped post-fix with two deferred
+  non-target findings. The next run is therefore evaluation-only and target-conditioned:
+  it scans the frozen advisory file while separately recording whether the unchanged
+  production planner selected it. Forced inclusion receives no production-coverage credit.
+  Review that cheaper target-scoped artifact before enabling ruby-saml, simple-git, or
+  Reposilite.
 - Evidence receipt: `docs/offline-detector-round-2026-07-27.json`. It reports target
   recovery and unmatched candidates, never project-wide precision from a partial answer key.
 - CVE-positive acquisition receipt:

@@ -3,8 +3,18 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
+from repoauditor.map import (
+    ArchitectureMap,
+    DataStore,
+    EntryPoint,
+    Integration,
+    TrustBoundary,
+)
 from repoauditor.presentation import (
+    architecture_artifact_path,
+    architecture_ascii,
     ndjson_event,
     repos_json,
     repos_table,
@@ -54,6 +64,55 @@ def test_ndjson_event_is_one_timestamped_json_object():
     assert event["status"] == "completed"
     assert event["findings"] == 7
     assert event["timestamp"].endswith("Z")
+
+
+def test_architecture_ascii_renders_only_recovered_relationships_in_stable_order():
+    architecture = ArchitectureMap(
+        repo_id="shop",
+        commit="abcdef1234567890",
+        trust_boundaries=[
+            TrustBoundary(name="Worker edge", description="queue consumers"),
+            TrustBoundary(name="Public HTTP", description="customer traffic"),
+        ],
+        entry_points=[
+            EntryPoint(
+                name="POST /orders", location="orders.py:20",
+                trust_boundary="Public HTTP",
+            ),
+            EntryPoint(name="nightly job", location="jobs.py:4"),
+        ],
+        data_stores=[
+            DataStore(name="customers", kind="postgres", location="db.py:8"),
+        ],
+        integrations=[
+            Integration(name="Stripe", direction="outbound", location="payments.py:9"),
+            Integration(name="Webhook", direction="inbound", location="hooks.py:3"),
+        ],
+    )
+
+    rendered = architecture_ascii(architecture)
+
+    assert (
+        "[POST /orders @ orders.py:20] --crosses--> "
+        "{trust boundary: Public HTTP} --> [repository: shop]"
+    ) in rendered
+    assert "[nightly job @ jobs.py:4] --boundary not recovered--> [repository: shop]" in rendered
+    assert "[repository: shop] --outbound--> [Stripe @ payments.py:9]" in rendered
+    assert "[Webhook @ hooks.py:3] --inbound--> [repository: shop]" in rendered
+    assert "Inventory only: the current map schema does not assert" in rendered
+    assert "[data store: customers] --" not in rendered
+    assert rendered.index("Public HTTP") < rendered.index("Worker edge")
+    assert architecture_artifact_path(
+        Path("data"), "shop", architecture.commit
+    ) == Path("data/artifacts/shop/architecture-abcdef123456.txt")
+
+
+def test_empty_architecture_ascii_discloses_missing_recovery():
+    rendered = architecture_ascii(ArchitectureMap(repo_id="empty", commit="abc"))
+
+    assert rendered.count("(none recovered)") == 3
+    assert "(no entry points recovered)" in rendered
+    assert "Missing nodes or edges mean 'not recovered'" in rendered
 
 
 def test_latest_ingested_snapshot_is_selected_per_source(tmp_config):

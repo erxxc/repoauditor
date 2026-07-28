@@ -258,7 +258,8 @@ terminal open, or run it under `tmux`, `screen`, or another process supervisor. 
 prints start/end times, elapsed time, counts, and important artifact paths. The stages are:
 
 1. **ingest** — creates an immutable snapshot and assigns a repository ID;
-2. **map** — identifies entry points, data stores, integrations, and trust boundaries;
+2. **map** — identifies entry points, data stores, integrations, and trust boundaries,
+   then writes a plain-text architecture schematic;
 3. **detect** — runs model lenses and available deterministic scanners;
 4. **triage** — ranks likely actionable findings and suppresses weak signals;
 5. **falsify** — tries to disprove each candidate;
@@ -266,6 +267,28 @@ prints start/end times, elapsed time, counts, and important artifact paths. The 
 
 The run intentionally stops after normalization. It never silently skips the review
 checkpoint and proceeds to final reports.
+
+### Read the architecture map
+
+The map stage writes a terminal-friendly artifact at:
+
+```text
+data/artifacts/<repo-id>/architecture-<commit>.txt
+```
+
+Its path appears in the map completion line and the final run recap. You can regenerate it
+for an ingested repository with:
+
+```sh
+uv run repoauditor map <repo-id>
+```
+
+The schematic draws only relationships carried by the recovered map: entry points crossing
+named trust boundaries and the recorded direction of external integrations. Data stores are
+listed as an inventory because the current schema does not establish component-to-store
+flow edges. A missing node or edge means “not recovered,” not proof that it does not exist.
+This makes the file useful as an initial architecture-review aid without presenting inferred
+data flows as observed facts.
 
 ## How the decision engine works
 

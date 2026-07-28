@@ -17,6 +17,12 @@ from repoauditor import cli
 from repoauditor.config import load_deal_risk, load_priors
 from repoauditor.falsify.outcome import FalsificationOutcome
 from repoauditor.llm import remaining_pipeline_call_capacity
+from repoauditor.map import (
+    ArchitectureMap,
+    DataStore,
+    EntryPoint,
+    TrustBoundary as MapTrustBoundary,
+)
 from repoauditor.review import raise_review_requests
 from repoauditor.store import db
 from repoauditor.store.models import (
@@ -29,6 +35,38 @@ from repoauditor.store.models import (
 )
 
 runner = CliRunner()
+
+
+def test_map_stage_writes_ascii_architecture_artifact(tmp_config, monkeypatch, capsys):
+    architecture = ArchitectureMap(
+        repo_id="shop",
+        commit="abcdef1234567890",
+        trust_boundaries=[MapTrustBoundary(name="Public HTTP")],
+        entry_points=[
+            EntryPoint(name="GET /products", trust_boundary="Public HTTP")
+        ],
+        data_stores=[DataStore(name="catalog", kind="sqlite")],
+    )
+    monkeypatch.setattr(
+        cli, "latest_snapshot", lambda config, repo_id: (Path("snapshot"), architecture.commit)
+    )
+    monkeypatch.setattr(
+        cli, "recover_architecture",
+        lambda snapshot, repo_id, commit, config: architecture,
+    )
+
+    result = cli._map_stage("shop", tmp_config)
+    artifact = (
+        tmp_config.paths.data_dir
+        / "artifacts"
+        / "shop"
+        / "architecture-abcdef123456.txt"
+    )
+
+    assert result is architecture
+    assert artifact.is_file()
+    assert "{trust boundary: Public HTTP}" in artifact.read_text()
+    assert f"artifact={artifact}" in capsys.readouterr().out
 
 
 def test_falsify_convergence_cli_is_thin_and_supports_json(tmp_config, monkeypatch):
@@ -301,7 +339,10 @@ def _wire_run_stages(monkeypatch, requests):
         )
     )
     monkeypatch.setattr(cli, "latest_snapshot", lambda config, repo_id: (Path("snapshot"), "abc"))
-    monkeypatch.setattr(cli, "_map_stage", stage("map"))
+    monkeypatch.setattr(
+        cli, "_map_stage",
+        stage("map", SimpleNamespace(repo_id="acme", commit="abc")),
+    )
     monkeypatch.setattr(
         cli, "_detect_stage", stage(
             "detect", SimpleNamespace(
