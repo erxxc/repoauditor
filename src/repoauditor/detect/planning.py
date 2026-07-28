@@ -3,20 +3,21 @@
 The planner qualifies the instrument before spending provider budget. It reports the
 unbounded all-files × all-lenses workload, caps live regions through explicit operational
 configuration, prioritizes independently produced scanner evidence and architecture-map
-locations, and reserves stable content-derived coverage outside those signals. Fixture
+locations, and reserves stable path-derived, directory-stratified coverage outside those
+signals. Path-only sampling keeps pre-fix/post-fix instruments comparable; it is not a
+claim that a small blind sample covers every source file. Fixture
 answer keys, advisories, severities, and expected findings are never inputs.
 """
 
 from __future__ import annotations
 
-import hashlib
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Iterable
 
 from ..config import Config
 from ..map import ArchitectureMap
-from ..sourcefiles import iter_source_files
+from ..sourcefiles import iter_source_files, select_diverse_source_files
 if TYPE_CHECKING:
     from .ensemble import CandidateFinding
 
@@ -123,16 +124,17 @@ def plan_detection_regions(
         for rel, basis in ordered_indicated[:indicated_slots]
     ]
     selected_names = {item.relative_path for item in selected}
+    # Path-only ordering keeps the instrument comparable across pre/post commits.
+    # Directory stratification and a bounded test share avoid alphabetical/root and
+    # test-suite dominance without consulting advisories or expected findings.
     remaining = [
-        (rel, path) for rel, path in by_rel.items() if rel not in selected_names
+        path
+        for path in select_diverse_source_files(snapshot_path, len(files))
+        if path.relative_to(snapshot_path).as_posix() not in selected_names
     ]
-    remaining.sort(
-        key=lambda item: hashlib.sha256(
-            f"{commit}\0{item[0]}".encode()
-        ).hexdigest()
-    )
-    for rel, path in remaining:
+    for path in remaining:
         if len(selected) >= cap:
             break
+        rel = path.relative_to(snapshot_path).as_posix()
         selected.append(PlannedRegion(path, rel, "stable-coverage-sample"))
     return selected

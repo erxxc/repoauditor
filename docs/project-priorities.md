@@ -413,6 +413,14 @@ methodology-blocking. This hold is the priority-10 decision, not an incomplete t
   the configured bounded minimum cannot fit the pipeline call ceiling.
 - [x] Cap live regions through explicit configuration, prioritize only scanner/map evidence,
   and reserve a stable ground-truth-blind coverage sample. Persist selected/omitted coverage.
+- [x] Remove commit-seeded and alphabetical selection drift. Shared source selection is now
+  path-stable across pre/post trees, round-robins across directories, limits conventional
+  test paths to 25% when production paths are available, and gives each selected map file a
+  fair share of the unchanged character ceiling. Manufactured tests lock these properties.
+  The frozen aiohttp/Rack diagnostic is recorded in
+  `source-selection-diagnostic-2026-07-28.json`: comparability and directory representation
+  improved, but neither known target entered the six-region blind plan. That is an explicit
+  bounded-coverage limitation, not a semantic detector failure or a reason to tune filenames.
 - [x] Checkpoint every file+lens unit so a fresh standalone detect budget reuses completed
   units rather than repeating provider calls.
 - [ ] Validate the bounded planner on independent projects without tuning its selection

@@ -1,0 +1,46 @@
+{
+  "date": "2026-07-28",
+  "purpose": "Offline development diagnostic for ground-truth-blind source selection after the Ruby-SAML production-planning miss.",
+  "policy_frozen_before_public_fixture_measurement": true,
+  "policy": {
+    "ordering_identity": "relative source path only; file contents, commit, advisory, severity, and expected findings are excluded",
+    "directory_strategy": "round-robin across buckets formed from the first two parent-directory components",
+    "test_path_policy": "at most 25% of a bounded selection when enough conventionally named production paths exist; unused capacity may be filled",
+    "map_budget": "existing 40-file, 60000-character initial, and 240000-character repass ceilings unchanged; selected files receive a fair share",
+    "detection_budget": "existing configured region, lens, call, and token ceilings unchanged"
+  },
+  "manufactured_checks": [
+    "directory representation",
+    "bounded conventional-test share",
+    "selection invariant under file-content changes",
+    "map context includes every selected file without exceeding its character ceiling",
+    "production region paths remain identical when only the commit identifier changes"
+  ],
+  "development_fixtures": [
+    {
+      "pair": "independent_aiohttp_pre/post",
+      "source_files": 135,
+      "map_selected_directories": 11,
+      "map_selected_test_paths": 10,
+      "production_plan_equal_pre_post": true,
+      "known_target_in_six_region_plan": false,
+      "known_target_in_initial_map_context": false
+    },
+    {
+      "pair": "independent_rack_pre/post",
+      "source_files": 129,
+      "map_selected_directories": 14,
+      "map_selected_test_paths": 10,
+      "production_plan_equal_pre_post": true,
+      "known_target_in_six_region_plan": false,
+      "known_target_in_initial_map_context": false
+    }
+  ],
+  "interpretation": "The correction removes commit-dependent instrumentation and alphabetical/root-directory starvation while preserving all budgets. A six-region blind sample still omits both known targets, so this is not evidence of full-repository coverage. The known targets are reported only after the generic policy and manufactured tests were frozen; they did not influence selection.",
+  "prohibited_claims": [
+    "that directory diversity guarantees vulnerability-target coverage",
+    "that an omitted target is a semantic model false negative",
+    "that these two development fixtures are untouched validation evidence",
+    "that the bounded LLM pass reviewed every source file"
+  ]
+}
