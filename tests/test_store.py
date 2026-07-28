@@ -83,8 +83,9 @@ def test_pre_methodology_database_migrates_without_losing_audit_data(
         "0028_claim_language.sql",
         "0029_triage_materiality.sql",
         "0030_prior_scope_metadata.sql",
-        "0031_detection_region_runs.sql",
-        "0032_assessment_classifier_eligibility.sql",
+            "0031_detection_region_runs.sql",
+            "0032_assessment_classifier_eligibility.sql",
+            "0033_falsification_counterexample_witness.sql",
     ]
 
     assert db.list_findings("r", tmp_config)[0].id == finding_id
@@ -143,8 +144,9 @@ def test_structural_status_migration_preserves_claim_audit_data(
         "0028_claim_language.sql",
         "0029_triage_materiality.sql",
         "0030_prior_scope_metadata.sql",
-        "0031_detection_region_runs.sql",
-        "0032_assessment_classifier_eligibility.sql",
+            "0031_detection_region_runs.sql",
+            "0032_assessment_classifier_eligibility.sql",
+            "0033_falsification_counterexample_witness.sql",
     ]
 
     claim = db.list_security_claims(finding_id, tmp_config)[0]

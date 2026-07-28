@@ -1,0 +1,58 @@
+{
+  "schema_version": "target-conditioned-validation-plan-v1",
+  "frozen_at": "2026-07-28",
+  "status": "ready_not_run",
+  "project": {
+    "slug": "reposilite_cve_2024_36116",
+    "name": "Reposilite",
+    "language": "Kotlin",
+    "cve": "CVE-2024-36116",
+    "ghsa": "GHSA-frvj-cfq4-3228",
+    "mechanism": "Arbitrary file creation or overwrite through path traversal in Javadoc archive entries",
+    "vulnerable_commit": "e172ae4b539c822d0d6e04cf090713c7202a79d6",
+    "fixed_commit": "848173738e4375482c70365db5cebae29f125eaa",
+    "license": "Apache-2.0",
+    "target_file": "reposilite-backend/src/main/kotlin/com/reposilite/javadocs/JavadocContainerService.kt",
+    "target_lines": [127, 135],
+    "citation_contains": "javadocUnpackPath.toString()"
+  },
+  "selection_reason": {
+    "untouched": true,
+    "bounded_target": "One 153-line pre-fix Kotlin target file and one localized security patch.",
+    "comparison": "Selected before ruby-saml because ruby-saml combines two CVEs, an XML parser differential, signature wrapping, and a seven-file patch.",
+    "known_scanner_warning": "The prior Gradle wrapper partial-parse warning is outside the target Kotlin file and does not alter target ground truth."
+  },
+  "execution": {
+    "workflow_scope": "cve-positive-reposilite",
+    "order": ["pre_fix", "post_fix"],
+    "target_conditioned": true,
+    "record_production_selection_separately": true,
+    "max_batches_per_snapshot": 2,
+    "outer_timeout_minutes": 20,
+    "existing_call_and_token_ceilings_unchanged": true,
+    "requires_exact_public_corpus_cache": true,
+    "requires_manufactured_instrument_qualification": true
+  },
+  "acceptance": {
+    "pre_fix": {
+      "confirmed_recovery": "Requires human semantic adjudication target_match plus falsification status confirmed.",
+      "unresolved": "Abstention; not a recovered target.",
+      "location_only": "Pending human adjudication; not a target match.",
+      "different_mechanism": "Not a target match."
+    },
+    "post_fix": {
+      "semantic_signal": "Disclose any human-adjudicated target_match.",
+      "confirmed_persistence": "Fails the negative control.",
+      "location_only": "Pending human adjudication; not automatic persistence."
+    },
+    "non_target_findings": "Remain unadjudicated because the project answer key is not exhaustive.",
+    "production_planner": "Forced target inclusion receives no production coverage credit. Target omission is planner coverage evidence, not a semantic model false negative."
+  },
+  "prohibited_changes_after_run": [
+    "target metadata",
+    "prompt versions",
+    "context ranking",
+    "thresholds",
+    "batch, call, token, or timeout limits"
+  ]
+}

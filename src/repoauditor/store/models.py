@@ -700,6 +700,8 @@ class FalsificationIteration(BaseModel):
     verdict_confidence: float
     critique_upholds: bool  # did the self-critique step uphold the verdict?
     critique_note: str
+    counterexample_witness: dict | None = None
+    counterexample_verification: dict | None = None
     committed: bool = False  # True on the round whose verdict was accepted (if any)
 
 

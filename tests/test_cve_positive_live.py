@@ -161,6 +161,29 @@ def test_simple_git_validation_pair_is_frozen_before_live_execution():
     assert pair[1].expected["expected_absent"] == [target]
 
 
+def test_reposilite_validation_pair_is_frozen_before_live_execution():
+    pair = _pair("reposilite_cve_2024_36116", Path("/nonexistent"))
+
+    assert [item.expected["source"]["variant"] for item in pair] == [
+        "pre_fix", "post_fix",
+    ]
+    target = pair[0].expected["findings"][0]
+    assert target["cve"] == "CVE-2024-36116"
+    assert target["file"] == (
+        "reposilite-backend/src/main/kotlin/com/reposilite/javadocs/"
+        "JavadocContainerService.kt"
+    )
+    assert target["citation_contains"] == "javadocUnpackPath.toString()"
+    assert pair[0].expected["source"]["pinned_commit"] == (
+        "e172ae4b539c822d0d6e04cf090713c7202a79d6"
+    )
+    assert pair[1].expected["source"]["pinned_commit"] == (
+        "848173738e4375482c70365db5cebae29f125eaa"
+    )
+    assert pair[1].expected["findings"] == []
+    assert pair[1].expected["expected_absent"] == [target]
+
+
 def test_target_conditioned_planner_separates_semantic_eval_from_production_selection(
     tmp_config, tmp_path,
 ):
