@@ -1,0 +1,33 @@
+{
+  "schema_version": "manufactured-xml-controls-v1",
+  "kind": "manufactured_solution",
+  "purpose": "Zero-token XML security-decision representation controls; not real-world performance evidence.",
+  "cases": [
+    {
+      "id": "positive-distinct-xml-representations",
+      "file": "VulnerableSaml.rb",
+      "line_start": 6,
+      "line_end": 10,
+      "citation_snippet": "return unless verify_signature(nokogiri_document, certificate)",
+      "validated_representation": "nokogiri_document",
+      "consumed_representation": "rexml_document",
+      "consumed_from_verified_node": false,
+      "expected": "distinct_validated_and_consumed",
+      "expected_detection": "raised",
+      "ground_truth_basis": "Signature validation uses the Nokogiri representation while the identity value is read from a separately parsed REXML representation."
+    },
+    {
+      "id": "negative-consume-verified-representation",
+      "file": "PatchedSaml.rb",
+      "line_start": 5,
+      "line_end": 8,
+      "citation_snippet": "verified_assertion = verify_and_return_signed_node(document, certificate)",
+      "validated_representation": "verified_assertion",
+      "consumed_representation": "verified_assertion",
+      "consumed_from_verified_node": true,
+      "expected": "verified_representation_consumed",
+      "expected_detection": "absent",
+      "ground_truth_basis": "The identity value is read from the exact signed node returned by verification rather than a separately parsed document."
+    }
+  ]
+}

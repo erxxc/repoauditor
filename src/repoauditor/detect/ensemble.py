@@ -53,7 +53,7 @@ logger = logging.getLogger(__name__)
 
 # Lens name -> versioned prompt file. Order is stable so runs are reproducible.
 LENSES: dict[str, str] = {
-    "owasp": "owasp_v2.md",
+    "owasp": "owasp_v3.md",
     "supply_chain": "supply_chain_v1.md",
     "agentic_surface": "agentic_surface_v1.md",
 }

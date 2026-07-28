@@ -174,6 +174,75 @@ def evaluate_archive_detection_sentinels(
     )
 
 
+def evaluate_xml_detection_sentinels(
+    fixture_root: Path,
+    *,
+    config: Config | None = None,
+    llm: LLMClient | None = None,
+) -> DetectionSentinelQualification:
+    """Run only OWASP v3 over the fixed positive/negative XML representation pair."""
+    config = config or get_config()
+    llm = llm or get_llm_client(config)
+    manifest, snapshot, digest = load_detection_sentinels(fixture_root)
+    observations: list[DetectionSentinelObservation] = []
+    for case in manifest.cases:
+        source = snapshot / case.file
+        region = f"# FILE: {case.file}\n{read_numbered(source)}"
+        completion = _call_lens(
+            llm,
+            "owasp",
+            region,
+            context={
+                "stage": "qualify-xml-detection",
+                "repo_id": "manufactured_xml_controls",
+                "lens": "owasp",
+                "file": case.file,
+                "sentinel_id": case.id,
+            },
+        )
+        candidates = [
+            candidate for candidate in completion.value.findings
+            if candidate.file.replace("\\", "/").lstrip("./") == case.file
+        ]
+        semantic_matches = [
+            candidate for candidate in candidates
+            if _matches_xml_case(candidate, case, source.read_text())
+        ]
+        if case.expected_detection == "raised":
+            observed: Literal["raised", "absent"] = (
+                "raised" if semantic_matches else "absent"
+            )
+        else:
+            observed = "raised" if candidates else "absent"
+        observations.append(DetectionSentinelObservation(
+            sentinel_id=case.id,
+            expected=case.expected_detection,
+            observed=observed,
+            passed=observed == case.expected_detection,
+            candidates=candidates,
+            semantic_match_count=len(semantic_matches),
+        ))
+
+    positives = [item for item in observations if item.expected == "raised"]
+    negatives = [item for item in observations if item.expected == "absent"]
+    return DetectionSentinelQualification(
+        schema_version=manifest.schema_version,
+        snapshot_digest=digest,
+        provider=config.llm.provider,
+        model=config.model.name,
+        prompt_version=LENS_PROMPT_VERSIONS["owasp"],
+        sampling_seed=llm.sampling_seed,
+        observations=observations,
+        positive_recovery=sum(item.passed for item in positives) / len(positives),
+        negative_recovery=sum(item.passed for item in negatives) / len(negatives),
+        qualified=all(item.passed for item in observations),
+        evidence_scope=(
+            "manufactured XML representation controls only; "
+            "not real-world precision or recall"
+        ),
+    )
+
+
 def _matches_archive_case(
     candidate: LensCandidate,
     case: DetectionSentinelCase,
@@ -196,6 +265,39 @@ def _matches_archive_case(
     return overlaps and candidate.citation_snippet in source and mechanism
 
 
+def _matches_xml_case(
+    candidate: LensCandidate,
+    case: DetectionSentinelCase,
+    source: str,
+) -> bool:
+    """Require location, citation integrity, and representation-mismatch mechanism."""
+    overlaps = (
+        candidate.line_start <= case.line_end
+        and candidate.line_end >= case.line_start
+    )
+    text = f"{candidate.title}\n{candidate.rationale or ''}".lower()
+    representation = any(
+        term in text
+        for term in (
+            "parser differential",
+            "signature wrapping",
+            "different parse",
+            "distinct representation",
+            "separate representation",
+            "validated representation",
+        )
+    )
+    security_decision = any(
+        term in text for term in ("signature", "authentication", "verified", "validation")
+    )
+    return (
+        overlaps
+        and candidate.citation_snippet in source
+        and representation
+        and security_decision
+    )
+
+
 def render_detection_qualification(result: DetectionSentinelQualification) -> str:
     rows = [
         (
@@ -215,3 +317,13 @@ def render_detection_qualification(result: DetectionSentinelQualification) -> st
         ),
         f"instrument={result.provider}/{result.model}; scope={result.evidence_scope}",
     ])
+
+
+def render_xml_detection_qualification(
+    result: DetectionSentinelQualification,
+) -> str:
+    return render_detection_qualification(result).replace(
+        "Manufactured archive-detection qualification",
+        "Manufactured XML parser-differential detection qualification",
+        1,
+    )

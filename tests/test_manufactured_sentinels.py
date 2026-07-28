@@ -10,12 +10,14 @@ import pytest
 from typer.testing import CliRunner
 
 from repoauditor import cli
+from repoauditor.eval import sentinels as sentinel_module
 from repoauditor.eval.sentinels import (
     evaluate_manufactured_sentinels,
     load_sentinel_fixture,
 )
 from repoauditor.falsify.outcome import FalsificationOutcome, SelfCritique
 from repoauditor.llm import LLMClient, ScriptedBackend
+from repoauditor.llm.backends import BackendUsage
 from repoauditor.store import db
 from repoauditor.store.models import FalsificationStatus
 
@@ -122,9 +124,13 @@ def test_live_workflow_defaults_manual_runs_to_sentinels_and_keeps_monthly_full_
     assert "cve-positive-ruby-saml" in workflow
     assert "ruby_saml_cve_2025_25291_25292" in workflow
     assert "detection-sentinels" in workflow
+    assert "xml-detection-sentinels" in workflow
     assert "qualify-detection --format json" in workflow
+    assert "qualify-xml-detection --format json" in workflow
     assert "manufactured-detection-sentinels.json" in workflow
+    assert "manufactured-xml-detection-sentinels.json" in workflow
     assert "inputs.scope != 'detection-sentinels'" in workflow
+    assert "inputs.scope != 'xml-detection-sentinels'" in workflow
     assert "Run target-conditioned CVE-positive pair" in workflow
     assert "full-live" not in workflow
     assert 'cron: "17 6 * * 2"' in workflow
@@ -180,6 +186,51 @@ def test_qualification_cli_exits_nonzero_on_miss(tmp_config, monkeypatch):
     payload = json.loads(result.stdout)
     assert payload["qualified"] is False
     assert payload["model_usage"]["calls"] == 0
+
+
+def test_qualification_cli_includes_falsify_attributed_usage(
+    tmp_config, monkeypatch,
+):
+    class MeteredScriptedBackend(ScriptedBackend):
+        tracks_usage = True
+
+        def complete(self, **kwargs):
+            raw = super().complete(**kwargs)
+            self.last_usage = BackendUsage(input_tokens=10, output_tokens=2)
+            return raw
+
+    backend = MeteredScriptedBackend(_instrument_handler)
+    backend.tracks_usage = True
+    client = LLMClient(backend, tmp_config)
+    monkeypatch.setattr(cli, "get_config", lambda: tmp_config)
+    monkeypatch.setattr(
+        sentinel_module, "get_llm_client", lambda _config: client
+    )
+    monkeypatch.setattr(
+        cli,
+        "evaluate_manufactured_sentinels",
+        lambda _fixture, config: sentinel_module.evaluate_manufactured_sentinels(
+            FIXTURE, config=config
+        ),
+    )
+
+    result = CliRunner().invoke(
+        cli.app, ["qualify-instrument", "--format", "json"]
+    )
+
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.stdout)
+    assert payload["qualified"] is True
+    assert payload["model_usage"] == {
+        "calls": 8,
+        "input_tokens": 80,
+        "output_tokens": 16,
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 0,
+        "unknown_usage_calls": 0,
+        "latency_ms": payload["model_usage"]["latency_ms"],
+    }
+    assert db.list_model_usage(tmp_config)[0].stage == "falsify"
 
 
 @pytest.mark.live

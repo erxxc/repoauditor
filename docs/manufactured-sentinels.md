@@ -89,3 +89,30 @@ output about another mechanism receives no credit. Any output on the deliberatel
 patched control fails the negative control. Passing remains manufactured evidence only.
 In Actions, use the manual `detection-sentinels` scope; it does not also run the four-case
 falsification cohort and is not added to that cohort's weekly cadence.
+
+## XML parser-differential detection qualification
+
+`manufactured_xml_controls` is a separate two-case representation-consistency pair:
+
+- signature validation uses a Nokogiri parse tree while identity data is consumed from a
+  separately parsed REXML tree; and
+- the controlled shape consumes identity data from the exact signed node returned by
+  verification.
+
+The zero-token checker closes only over representation identifiers and the externally
+declared “consumed from verified node” decision. It does not parse Ruby, execute XML,
+demonstrate that two real parsers disagree, validate a signature, establish attacker
+control, or prove an authentication bypass.
+
+After the OWASP v3 prompt change, run the paid qualification explicitly:
+
+```sh
+uv run repoauditor qualify-xml-detection
+uv run repoauditor qualify-xml-detection --format json
+```
+
+The positive case requires a same-location, citation-valid parser-differential or
+validation/consumption representation-mismatch finding. Output about another XML mechanism
+receives no credit. Any candidate on the clean same-verified-representation control fails
+closed. In Actions, use `xml-detection-sentinels`; it makes only the two logical OWASP calls,
+does not restore the public corpus, and does not repeat the falsification qualification.

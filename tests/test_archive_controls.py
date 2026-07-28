@@ -23,7 +23,7 @@ from repoauditor.llm import LLMClient, ScriptedBackend
 FIXTURE = Path(__file__).parent / "fixtures" / "manufactured_archive_controls"
 OWASP_PROMPT = (
     Path(__file__).parents[1]
-    / "src" / "repoauditor" / "detect" / "lenses" / "owasp_v2.md"
+    / "src" / "repoauditor" / "detect" / "lenses" / "owasp_v3.md"
 )
 
 
@@ -64,7 +64,7 @@ def test_archive_checker_does_not_mislabel_an_in_destination_entry():
     assert verification.escapes_destination is False
 
 
-def test_owasp_v2_assigns_archive_traversal_to_a_detection_lens():
+def test_owasp_v3_preserves_archive_traversal_detection():
     prompt = OWASP_PROMPT.read_text()
 
     assert "Path traversal and unsafe archive extraction" in prompt
