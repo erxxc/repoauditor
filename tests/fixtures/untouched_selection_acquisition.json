@@ -1,0 +1,65 @@
+{
+  "schema_version": "untouched-selection-acquisition-v1",
+  "frozen_at": "2026-07-28",
+  "status": "captured_and_adjudicated",
+  "selection_policy": {
+    "source": "OpenSSF CVE Benchmark identifier list",
+    "ordering": "ascending CVE identifier",
+    "candidate_fields_permitted_before_capture": [
+      "CVE identifier",
+      "publication state",
+      "repository URL",
+      "pre-patch commit",
+      "post-patch commit",
+      "repository fork status",
+      "repository license",
+      "repository size"
+    ],
+    "candidate_fields_prohibited_before_capture": [
+      "weakness locations",
+      "advisory description",
+      "patch diff",
+      "target path or lines",
+      "CWE",
+      "severity"
+    ]
+  },
+  "rejections": [
+    {
+      "cve": "CVE-2016-1000229",
+      "repository": "https://github.com/linxiaowu66/swagger-ui.git",
+      "reason": "The declared upstream repository is no longer resolvable; exact provenance cannot be materialized."
+    },
+    {
+      "cve": "CVE-2016-10735",
+      "repository": "https://github.com/twbs/bootstrap.git",
+      "reason": "The benchmark-declared pre/post commits are no longer resolvable from the declared upstream."
+    },
+    {
+      "cve": "CVE-2017-0931",
+      "repository": "https://github.com/guardian/html-janitor.git",
+      "reason": "The pinned pre-fix tree has only two files in RepoAuditor's source inventory, below the frozen minimum of 20."
+    }
+  ],
+  "selected": {
+    "cve": "CVE-2017-1000006",
+    "state": "PUBLISHED",
+    "project": "Plotly.js",
+    "repository": "https://github.com/plotly/plotly.js.git",
+    "vulnerable_commit": "16e0fc29690c82282db91f99e651190afa0a9f87",
+    "fixed_commit": "0a1526de6ee872993cabac966ed6fdc67cd052f0",
+    "license": "MIT",
+    "license_verification": "GitHub repository metadata; retain the pinned snapshot LICENSE file",
+    "is_fork": false,
+    "pre_fix_source_file_count": 818,
+    "source_dataset": "OpenSSF CVE Benchmark",
+    "target_metadata_loaded": false,
+    "evaluation_eligible": true
+  },
+  "completion": {
+    "captures_written_before_target_disclosure": true,
+    "receipt": "docs/plotly-untouched-production-selection-2026-07-28.json",
+    "target_metadata_loaded_during_selection": false
+  },
+  "next_action": "Preserve as development-exposed evidence; never reuse this pair as untouched or tune the planner to its revealed target."
+}

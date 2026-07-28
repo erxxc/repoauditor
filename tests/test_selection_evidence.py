@@ -15,6 +15,16 @@ PLAN = (
     / "docs"
     / "untouched-production-selection-plan-2026-07-28.json"
 )
+RECEIPT = (
+    Path(__file__).parents[1]
+    / "docs"
+    / "plotly-untouched-production-selection-2026-07-28.json"
+)
+ACQUISITION = (
+    Path(__file__).parent
+    / "fixtures"
+    / "untouched_selection_acquisition.json"
+)
 
 
 def _sources(root: Path) -> None:
@@ -183,7 +193,7 @@ def test_pair_adjudication_requires_matching_frozen_config(
 def test_untouched_selection_plan_requires_new_blind_acquisition():
     plan = json.loads(PLAN.read_text())
 
-    assert plan["status"] == "instrument_ready_new_acquisition_required"
+    assert plan["status"] == "completed"
     assert plan["current_corpus_eligibility"]["eligible_pairs"] == 0
     assert "target path or lines" in plan["instrument"]["prohibited_capture_inputs"]
     assert plan["resource_boundary"]["later_provider_work"].startswith(
@@ -192,3 +202,27 @@ def test_untouched_selection_plan_requires_new_blind_acquisition():
     assert plan["interpretation"]["omitted"].endswith(
         "not a semantic detector false negative."
     )
+    assert plan["completion"]["target_disclosed_after_both_captures"] is True
+    assert plan["completion"]["result_class"] == "bounded_plan_omission"
+
+
+def test_plotly_receipt_closes_and_preserves_blind_ordering():
+    receipt = json.loads(RECEIPT.read_text())
+    acquisition = json.loads(ACQUISITION.read_text())
+
+    assert acquisition["status"] == "captured_and_adjudicated"
+    assert acquisition["selected"]["target_metadata_loaded"] is False
+    assert acquisition["completion"]["captures_written_before_target_disclosure"] is True
+    assert receipt["methodology"]["target_blind_capture"] is True
+    assert receipt["methodology"]["target_disclosed_after_both_captures"] is True
+    for variant in ("pre_fix", "post_fix"):
+        capture = receipt["captures"][variant]
+        assert capture["selected_count"] + capture["omitted_count"] == (
+            capture["source_file_count"]
+        )
+        assert len(capture["selected_regions"]) == capture["selected_count"]
+        assert receipt["target_adjudication"][variant]["target_selected"] is False
+        assert receipt["target_adjudication"][variant]["omission_basis"] == (
+            "bounded_plan_omission"
+        )
+    assert receipt["interpretation"]["poc_gate"] == "completed"

@@ -35,11 +35,14 @@ II. Operations and cost
 
 III. Detection and falsification depth
 
-   A. OPT-007 — Improve production-region selection — deferred pending the MVP measurement
-      — owner: detection engineering — source:
-      `../untouched-production-selection-plan-2026-07-28.json` — activate only from a
-      generalizable measured miss; never tune to the revealed target path — DoD impact:
-      none because the current DoD requires measurement, not a passing selection outcome.
+   A. OPT-007 — Improve production-region selection — evidence-ready, held until remaining
+      MVP closure — owner: detection engineering — source:
+      `../untouched-production-selection-plan-2026-07-28.json` and
+      `../plotly-untouched-production-selection-2026-07-28.json` — the untouched Plotly.js
+      measurement omitted the reviewed target in both variants, consistent with prior
+      development-only aiohttp/Rack omissions. Activate only through a general path-blind
+      design; never tune to any revealed target path — DoD impact: none because the current
+      DoD requires measurement, not a passing selection outcome.
 
    B. OPT-008 — Expand slicing and deterministic certificates across additional clients,
       frameworks, languages, and cross-file flows — deferred/evidence-gated — owner: AppSec
@@ -60,8 +63,8 @@ IV. Quantitative enrichment
    A. OPT-011 — Sourced correction of organization-frequency allocation — methodology-gated
       — owner: quantitative-methodology — source: `../quantitative-integrity-audit.md` —
       long-term activation requires a defensible allocation/decomposition. The MVP separately
-      requires affected output to be corrected or visibly gated — DoD impact: MVP
-      presentation decision already recorded; richer model remains optimization.
+      gates affected output as experimental and not decision-grade — DoD impact: MVP
+      presentation gate completed; richer model remains optimization.
 
    B. OPT-012 — Dated cached EPSS/KEV enrichment — deferred/network- and source-gated —
       owner: threat-data engineering — source: `../prior-scope-roadmap.md` — activate only
@@ -78,5 +81,20 @@ IV. Quantitative enrichment
 
 V. Intake
 
-   A. Add the next proposed improvement as `OPT-015`; do not place it directly into the MVP
+   A. OPT-015 — Preserve deterministic scanner failure detail — newly surfaced/deferred —
+      owner: reliability engineering — source: the Plotly.js blind capture initially
+      produced `semgrep_status=failed` when `--config auto` could not resolve through the
+      restricted network sandbox, but the adapter artifact retained no root cause. Improve
+      diagnostics without changing graceful degradation or scanner results — activation:
+      after remaining MVP closure — DoD impact: none; the successful measurement reran the
+      exact scanner with approved ruleset access and retained its SARIF digest.
+
+   B. OPT-016 — Remove SHAP/Matplotlib pending-deprecation noise — newly surfaced/deferred
+      — owner: test infrastructure — source: the 2026-07-28 fast-lane run completed with
+      three warnings from SHAP's use of deprecated Matplotlib colormap mutation methods.
+      Track the upstream dependency upgrade rather than patching third-party code; no
+      correctness impact was observed — activation: routine dependency maintenance after
+      MVP closure — DoD impact: none.
+
+   C. Add the next proposed improvement as `OPT-017`; do not place it directly into the MVP
       recovery plan unless the project owner explicitly changes the DoD.

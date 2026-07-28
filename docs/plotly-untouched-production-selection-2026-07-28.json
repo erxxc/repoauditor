@@ -1,0 +1,112 @@
+{
+  "schema_version": "untouched-production-selection-receipt-v1",
+  "recorded_at": "2026-07-28",
+  "methodology": {
+    "plan": "docs/untouched-production-selection-plan-2026-07-28.json",
+    "target_blind_capture": true,
+    "target_disclosed_after_both_captures": true,
+    "production_planner_unchanged": true,
+    "detection_or_falsification_run": false
+  },
+  "acquisition": {
+    "manifest": "tests/fixtures/untouched_selection_acquisition.json",
+    "source_dataset": "OpenSSF CVE Benchmark",
+    "project": "Plotly.js",
+    "repository": "https://github.com/plotly/plotly.js.git",
+    "cve": "CVE-2017-1000006",
+    "vulnerable_commit": "16e0fc29690c82282db91f99e651190afa0a9f87",
+    "fixed_commit": "0a1526de6ee872993cabac966ed6fdc67cd052f0",
+    "license": "MIT",
+    "license_retained": true,
+    "advisory_verification": [
+      "OpenSSF CVE Benchmark CVE-2017-1000006 record",
+      "https://nvd.nist.gov/vuln/detail/CVE-2017-1000006",
+      "https://advisories.gitlab.com/pkg/npm/plotly.js/CVE-2017-1000006/"
+    ]
+  },
+  "instrument": {
+    "model_provider": "anthropic",
+    "model": "claude-opus-4-8",
+    "map_prompt_version": "architecture_recovery_v2",
+    "semgrep_configuration": "auto",
+    "deterministic_candidates_pre_fix": 6,
+    "deterministic_candidates_post_fix": 6,
+    "max_llm_regions_per_run": 6,
+    "reserved_sample_regions": 2,
+    "capture_artifact_sha256": "28ef6a7d217e1b6548fa4035cfb8db3421d5e602f1e6b47a1813980fa3a1b2bc",
+    "adjudication_artifact_sha256": "749e0d4581f680a7b582ef310b1db02a7eb39674e47b68a1fd74fc11c1fb6741",
+    "semgrep_pre_fix_sarif_sha256": "3e811789d79ef1c0f66cdeeb313065533d610a760df3d3bc9eb99aa43ccdf62d",
+    "semgrep_post_fix_sarif_sha256": "380f627a26f610796d3b65ff13e1f1b2988feb3fc043f7401b6952d679884490"
+  },
+  "captures": {
+    "pre_fix": {
+      "pipeline_run_id": 1,
+      "snapshot_sha256": "cf4555735ea769cdab4447835245c8f2a2d88f08fefcaa7720ae6e8a3a685003",
+      "capture_sha256": "995513c75aaae8b42c5d8a5053622013bc43c40a0c3a2b71f7e8c50de7160571",
+      "source_file_count": 416,
+      "selected_count": 6,
+      "omitted_count": 410,
+      "selected_regions": [
+        {"path": "devtools/image_viewer/server.js", "basis": "deterministic:sast"},
+        {"path": "devtools/test_dashboard/server.js", "basis": "deterministic:sast"},
+        {"path": "src/lib/nested_property.js", "basis": "deterministic:sast"},
+        {"path": "src/plots/cartesian/axes.js", "basis": "deterministic:sast"},
+        {"path": "src/plots/cartesian/layout_defaults.js", "basis": "stable-coverage-sample"},
+        {"path": "src/traces/bar/layout_defaults.js", "basis": "stable-coverage-sample"}
+      ],
+      "map_usage": {
+        "calls": 2,
+        "input_tokens": 78264,
+        "output_tokens": 2352,
+        "unknown_usage_calls": 0,
+        "latency_ms": 32958
+      }
+    },
+    "post_fix": {
+      "pipeline_run_id": 2,
+      "snapshot_sha256": "b6cc522b0386659cebcdafb4f0957faa1a28700150b77b0af3eb3206606e167a",
+      "capture_sha256": "0d35b4e2096ea5429df41a52987a8cd6bcf5ae825bbdb7772a1be0beb6d92045",
+      "source_file_count": 416,
+      "selected_count": 6,
+      "omitted_count": 410,
+      "selected_regions": [
+        {"path": "devtools/image_viewer/server.js", "basis": "deterministic:sast"},
+        {"path": "devtools/test_dashboard/server.js", "basis": "deterministic:sast"},
+        {"path": "src/lib/nested_property.js", "basis": "deterministic:sast"},
+        {"path": "src/plots/cartesian/axes.js", "basis": "deterministic:sast"},
+        {"path": "src/plots/cartesian/layout_defaults.js", "basis": "stable-coverage-sample"},
+        {"path": "src/traces/bar/layout_defaults.js", "basis": "stable-coverage-sample"}
+      ],
+      "map_usage": {
+        "calls": 2,
+        "input_tokens": 78264,
+        "output_tokens": 2502,
+        "unknown_usage_calls": 0,
+        "latency_ms": 33276
+      }
+    }
+  },
+  "target_adjudication": {
+    "target_source": "OpenSSF weakness metadata revealed only after both capture files were written",
+    "target_file": "src/lib/svg_text_utils.js",
+    "target_line": 270,
+    "reviewed_mechanism": "Incomplete HTML attribute sanitization",
+    "pre_fix": {
+      "target_in_source_inventory": true,
+      "target_selected": false,
+      "omission_basis": "bounded_plan_omission"
+    },
+    "post_fix": {
+      "target_in_source_inventory": true,
+      "target_selected": false,
+      "omission_basis": "bounded_plan_omission"
+    }
+  },
+  "interpretation": {
+    "poc_gate": "completed",
+    "result": "The unchanged bounded production planner omitted the reviewed target in both variants.",
+    "claim_boundary": "This is planner coverage evidence, not a semantic detector false negative and not project-wide recall.",
+    "pre_post_comparability": "Both variants had 416 source files and the same six selected paths under identical limits.",
+    "next_action": "Do not rerun or tune to this target. Planner improvement is OPT-007 and begins only after the remaining POC MVP items close."
+  }
+}

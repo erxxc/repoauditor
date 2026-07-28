@@ -180,9 +180,12 @@ def test_tornado_ranks_by_swing_and_carries_sources():
 # --------------------------------------------------------------------------- #
 # Scenario building + appendix export (end-to-end, sourced priors)
 # --------------------------------------------------------------------------- #
-def _persist_finding(cfg, title, sev, desc, status=FalsificationStatus.CONFIRMED):
+def _persist_finding(
+    cfg, title, sev, desc, status=FalsificationStatus.CONFIRMED, *,
+    file="a.py", line=1,
+):
     return db.insert_finding(Finding(
-        repo_id="r", title=title, file="a.py", line_start=1, line_end=1,
+        repo_id="r", title=title, file=file, line_start=line, line_end=line,
         citation_snippet="code", source_tool="semgrep", confidence=0.6,
         severity=sev, falsification_status=status, description=desc,
     ), cfg)
@@ -407,6 +410,31 @@ def test_generate_appendix_handles_no_findings(cfg, tmp_path):
     path = risk_quant.generate_appendix("empty", cfg, out_dir=tmp_path / "a")
     assert path.exists()
     assert "No surviving" in path.read_text()
+
+
+def test_appendix_gates_repeated_organization_frequency(cfg, tmp_path, monkeypatch):
+    db.init_db(cfg)
+    _persist_finding(
+        cfg, "SQL Injection A", "critical", "sqli [CWE-89]", file="a.py", line=1
+    )
+    _persist_finding(
+        cfg, "SQL Injection B", "critical", "sqli [CWE-89]", file="b.py", line=2
+    )
+
+    def fake_charts(_result, _tornado, out_dir):
+        for name in ("loss_exceedance.png", "tornado.png"):
+            (out_dir / name).write_bytes(b"chart")
+        return {"exceedance": "loss_exceedance.png", "tornado": "tornado.png"}
+
+    monkeypatch.setattr(risk_quant, "_render_charts", fake_charts)
+    path = risk_quant.generate_appendix(
+        "r", cfg, trials=100, seed=0, out_dir=tmp_path / "gated", persist=False
+    )
+
+    text = path.read_text()
+    assert "EXPERIMENTAL QUANTITATIVE OUTPUT" in text
+    assert "NOT DECISION-GRADE" in text
+    assert text.index("NOT DECISION-GRADE") < text.index("## Headline")
 
 
 def test_quantify_appendix_returns_reusable_artifact_metadata(cfg):

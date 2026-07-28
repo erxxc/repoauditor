@@ -10,6 +10,7 @@ from repoauditor import cli
 from repoauditor.analyze.integrity import (
     AuditLevel,
     audit_resolved_inputs,
+    quantitative_disclosure,
     render_quant_audit,
 )
 from repoauditor.analyze.risk_quant import ScenarioParams
@@ -76,6 +77,10 @@ def test_audit_blocks_repeated_organization_frequency_per_finding(tmp_config):
         issue.code == "prior_uncertainty_scope" for issue in result.issues
     ) == 2
     assert "decision-grade" in render_quant_audit(result)
+    disclosure = quantitative_disclosure(result)
+    assert disclosure is not None
+    assert "EXPERIMENTAL QUANTITATIVE OUTPUT" in disclosure
+    assert "NOT DECISION-GRADE" in disclosure
 
 
 def test_audit_does_not_flag_frequency_repetition_for_one_finding(tmp_config):
@@ -88,6 +93,7 @@ def test_audit_does_not_flag_frequency_repetition_for_one_finding(tmp_config):
     assert "organization_frequency_repeated_per_finding" not in codes
     assert "frequency_population_unverified" not in codes
     assert "frequency_population_mismatch" not in codes
+    assert quantitative_disclosure(result) is None
 
 
 def test_audit_discloses_out_of_population_band_and_analyst_overrides(tmp_config):
@@ -119,3 +125,24 @@ def test_quant_audit_cli_is_a_thin_read_only_projection(tmp_config, monkeypatch)
     assert response.exit_code == 0, response.output
     assert "Quantitative input integrity — repo" in response.stdout
     assert "fair_factor_separation" in response.stdout
+
+
+def test_quantify_cli_surfaces_blocking_disclosure(tmp_config, monkeypatch, tmp_path):
+    result = audit_resolved_inputs(
+        [_scenario(members=2)], _config(tmp_config), repo_id="repo"
+    )
+    appendix = tmp_path / "risk_appendix.md"
+    appendix.write_text("# fixture\n")
+    monkeypatch.setattr(cli, "get_config", lambda: tmp_config)
+    monkeypatch.setattr(
+        cli, "quantify_appendix", lambda *args, **kwargs: (appendix, 1)
+    )
+    monkeypatch.setattr(
+        cli, "audit_quantitative_inputs", lambda repo_id, config: result
+    )
+
+    response = CliRunner().invoke(cli.app, ["quantify", "repo", "--trials", "10"])
+
+    assert response.exit_code == 0, response.output
+    assert "EXPERIMENTAL QUANTITATIVE OUTPUT" in response.output
+    assert "NOT DECISION-GRADE" in response.output

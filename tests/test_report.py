@@ -105,6 +105,33 @@ def test_memo_ranks_by_deal_weight_and_attaches_appendix(cfg):
     assert "deal-risk" in memo.lower()
 
 
+def test_memo_gates_blocking_quantitative_output_before_summary(cfg, monkeypatch):
+    db.init_db(cfg)
+    tb = _tb(cfg)
+    _finding(
+        cfg, title="SQL injection A", sev="critical", desc="sqli [CWE-89]",
+        tb=tb, start=1,
+    )
+    _finding(
+        cfg, title="SQL injection B", sev="critical", desc="sqli [CWE-89]",
+        tb=tb, file="other.py", start=2,
+    )
+
+    def fake_appendix(repo_id, config, *, out_dir, **_kwargs):
+        del repo_id, config
+        out_dir.mkdir(parents=True, exist_ok=True)
+        path = out_dir / "risk_appendix.md"
+        path.write_text("# Appendix\n")
+        return path
+
+    monkeypatch.setattr("repoauditor.report.memo.generate_appendix", fake_appendix)
+    memo = build_memo("r", cfg)
+
+    assert "EXPERIMENTAL QUANTITATIVE OUTPUT" in memo
+    assert "NOT DECISION-GRADE" in memo
+    assert memo.index("NOT DECISION-GRADE") < memo.index("## Executive summary")
+
+
 def test_memo_excludes_findings_blocked_at_review(cfg):
     db.init_db(cfg)
     tb = _tb(cfg)

@@ -33,6 +33,7 @@ import shutil
 from pathlib import Path
 
 from ..analyze.deal_risk import weigh_deal_risk
+from ..analyze.integrity import audit_quantitative_inputs, quantitative_disclosure
 from ..analyze.risk_quant import QuantificationArtifacts, generate_appendix
 from ..config import Config, get_config
 from ..matching import SourceRef, has_independent_corroboration, source_of
@@ -265,7 +266,11 @@ def build_memo(
     )
     top = ranked[:_TOP_N]
 
-    lines = [f"# Security Risk Memo — {repo_id}", "", "## Executive summary", ""]
+    lines = [f"# Security Risk Memo — {repo_id}", ""]
+    disclosure = quantitative_disclosure(audit_quantitative_inputs(repo_id, config))
+    if disclosure:
+        lines += [f"> **{disclosure}**", ""]
+    lines += ["## Executive summary", ""]
     if not top:
         lines += ["_No material deal-relevant findings surfaced after review._", ""]
     else:

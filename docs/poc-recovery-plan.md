@@ -26,11 +26,13 @@ II. Outstanding Items (consolidated)
 
       1. Final clean-environment, non-security-user walkthrough — not started — RepoAuditor
          engineering plus independent non-security reviewer.
-      2. Untouched public-pair production-selection measurement — instrument complete;
-         acquisition/capture pending — evaluation engineering plus AppSec reviewer.
-      3. Known organization-frequency defect in quantitative output — blocked on sourced
-         allocation or an explicit output gate — quantitative-methodology owner plus product
-         owner.
+      2. Untouched public-pair production-selection measurement — completed on Plotly.js
+         CVE-2017-1000006 under the frozen target-blind protocol — evaluation engineering
+         plus AppSec reviewer.
+      3. Known organization-frequency defect in quantitative output — POC gate completed:
+         affected CLI, memo, and appendix output is conditionally labelled experimental and
+         not decision-grade; sourced correction remains OPT-011 — quantitative-methodology
+         owner plus product owner.
 
    B. Classifier and validation maturity
 
@@ -52,7 +54,7 @@ II. Outstanding Items (consolidated)
    D. Detection and falsification expansion
 
       1. Improve the planner after independent measurement identifies a generalizable miss —
-         awaiting evidence — detection owner.
+         evidence-ready and held until MVP closure as OPT-007 — detection owner.
       2. Expand slicing/certificates to additional clients, frameworks, languages, and
          cross-file flows — deferred pending specific corpus misses — AppSec engineering.
       3. Evaluate novelty as an investigation-depth trigger — blocked on reviewed LLM
@@ -73,23 +75,12 @@ II. Outstanding Items (consolidated)
 
 III. MVP — Required to Reach Done
 
-   A. Untouched production-selection measurement — blocker: no eligible current pair;
-      fastest path: after the frozen instrument merges, choose one new permissively licensed
-      public pre/post pair without target-path inspection, materialize it, run bounded map
-      and deterministic inputs, capture both plans, then reveal and adjudicate the target —
-      owner: evaluation engineering plus AppSec reviewer.
-
-   B. Defensible quantitative presentation — blocker: the IRIS organization-level frequency
-      is repeated per finding without a sourced allocation; fastest path: make an explicit
-      product/methodology choice between a sourced correction and visibly gating affected
-      quantitative output as experimental/non-decision-grade for the POC — owner:
-      quantitative-methodology owner plus product owner.
-
-   C. Final non-security-user acceptance walkthrough — blocker: must occur after the two
-      preceding decisions are reflected in main; fastest path: use a clean checkout and the
-      README’s guided demo, record dependency/model preflight, scan/review/finalize behavior,
-      produced artifacts, runtime, and any user confusion — owner: RepoAuditor engineering
-      plus independent non-security reviewer.
+   A. Final non-security-user acceptance walkthrough — blocker: must occur after the
+      quantitative presentation gate is reflected in main; fastest path: use a clean
+      checkout and [`poc-acceptance-walkthrough.md`](poc-acceptance-walkthrough.md) with the
+      README’s guided demo, recording dependency/model preflight, scan/review/finalize
+      behavior, produced artifacts, runtime, and any user confusion — owner: RepoAuditor
+      engineering plus independent non-security reviewer.
 
 IV. Deferred / Tuning (post-MVP)
 
@@ -104,11 +95,11 @@ IV. Deferred / Tuning (post-MVP)
    E. Broader certificates, slicing, novelty, and agentic behavior — extend coverage beyond
       the POC and remain evidence-gated.
    F. EPSS/KEV, prior segmentation, hierarchy, backtesting, and portfolio optimization —
-      quantitative enrichment beyond the POC; the known defect still requires an MVP-safe
-      presentation decision.
+      quantitative enrichment beyond the POC; the POC-safe presentation gate is complete,
+      while sourced correction remains deferred.
 
 V. Recommended Next Step
 
-   A. Merge the frozen selection instrument, then acquire one new eligible public pair under
-      the target-blind protocol. Do not start planner tuning, classifier tuning, or another
-      target-conditioned live run first.
+   A. Merge the quantitative presentation gate and untouched-selection receipt, then perform
+      the final clean-environment guided walkthrough. Do not begin planner or classifier
+      tuning before that acceptance item closes.

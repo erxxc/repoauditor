@@ -18,6 +18,7 @@ from .integrity import (
     QuantAuditIssue,
     QuantAuditResult,
     audit_quantitative_inputs,
+    quantitative_disclosure,
     render_quant_audit,
 )
 from .risk_quant import (
@@ -42,6 +43,7 @@ __all__ = [
     "QuantAuditIssue",
     "QuantAuditResult",
     "audit_quantitative_inputs",
+    "quantitative_disclosure",
     "render_quant_audit",
     "QuantificationArtifacts",
     "build_scenarios",
