@@ -259,7 +259,7 @@ jobs:
             live-uat-data/repoauditor.db
           retention-days: 30
           if-no-files-found: warn
-      - name: Run target-conditioned CVE-positive pair
+      - name: Run split-phase CVE-positive pair
         if: >-
           success() &&
           github.event_name == 'workflow_dispatch' &&
@@ -287,8 +287,9 @@ jobs:
           REPOAUDITOR_UAT_DATA_DIR: live-cve-positive-data
         run: |
           echo "CVE-positive pair: $REPOAUDITOR_CVE_POSITIVE_PAIR, pre-fix then post-fix."
-          echo "Paid semantic evaluation is restricted to the frozen advisory target file."
-          echo "Normal production region selection is recorded separately; forced inclusion does not receive coverage credit."
+          echo "Phase 1 executes the normal bounded production detection screen."
+          echo "Phase 2 adds the frozen advisory target only when omitted; forced inclusion receives no production coverage credit."
+          echo "Paid falsification is target-file-scoped; unrelated detector output remains unadjudicated in the retained database/artifact."
           echo "Hard timeout: 20 minutes; at most 2 linked batches per snapshot."
           timeout --signal=TERM --kill-after=30s 20m \
             uv run pytest tests/test_cve_positive_live.py::test_cve_positive_live_pair \

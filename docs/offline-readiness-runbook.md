@@ -345,6 +345,32 @@ from another. The paired zero-token control consumes data from the exact verifie
 Neither control claims that real parsers disagree or that an authentication bypass is
 reachable.
 
+### Current split-phase CVE evaluation contract
+
+Future manual CVE-positive runs no longer substitute the frozen target for the production
+plan or let unrelated findings consume the falsification budget. Each pre/post snapshot
+uses the following evaluation-only sequence:
+
+1. execute the unchanged, configured production region plan as a bounded detection screen;
+2. add the pre-registered advisory target as one separately attributed region only if the
+   production plan omitted it;
+3. retain all candidates, but expose only exact-target-file candidates to the unchanged
+   production falsification entry point; and
+4. score only the pre-registered target while reporting unrelated rows as unadjudicated.
+
+The artifact records all production selected and omitted paths, whether the target was
+selected blindly or forced, target-relevant findings, and unrelated unadjudicated findings.
+Each finding entry also retains its location, source, and disposition at scoping time so
+the JSON remains reviewable without treating an id as evidence. A completed result fails
+closed unless these three phase records exist and the production
+selected/omitted counts reconcile to the source-file inventory. This is evaluation-harness
+behavior only: production planning, detection, falsification, budgets, prompts, and scoring
+rules are unchanged. The Actions job retains its 20-minute outer timeout, at most two
+linked batches per snapshot, and the existing per-run call/token breakers. Because the
+production screen now actually executes, it can cost more than the historical target-only
+baselines; run it manually only after freezing a new independent target and acceptance
+criteria.
+
 After merge, run only the manual `xml-detection-sentinels` scope. It skips the public corpus
 and four-case falsification cohort, makes two logical OWASP calls under existing provider
 limits, and retains authoritative usage. Its digest, semantic acceptance rule, and
