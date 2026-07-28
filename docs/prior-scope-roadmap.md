@@ -3,6 +3,12 @@
 Status: applicability inventory and persisted scope/uncertainty metadata implemented;
 empirical validation and any quantitative-model changes remain gated.
 
+Open enrichment work is post-MVP and tracked in
+[`optimizations/optimization-register.md`](optimizations/optimization-register.md). The
+current POC has one narrower requirement: affected quantitative output must be corrected or
+visibly gated as experimental/non-decision-grade while the organization-frequency defect
+remains unresolved.
+
 The first applicability inventory is now executable through
 `repoauditor quant-audit <repo-id>` and documented in
 [quantitative-integrity-audit.md](quantitative-integrity-audit.md). It deliberately reports

@@ -84,3 +84,17 @@ never a deletion layer — see below.
   against the prior version on the benchmark corpus must be flagged before that
   version is used in `map/`, `detect/`, `falsify/`, or `normalize/` — this is a
   gate, not an FYI.
+
+## Project scope governance
+
+- The owner-confirmed POC commitment is
+  [`docs/poc-definition-of-done.md`](docs/poc-definition-of-done.md).
+- The only active MVP backlog is
+  [`docs/poc-recovery-plan.md`](docs/poc-recovery-plan.md). Historical priority
+  ledgers and methodology roadmaps do not silently expand it.
+- Every new improvement, tuning idea, research direction, or polish request that
+  is not required by the current DoD must first be recorded in
+  [`docs/optimizations/optimization-register.md`](docs/optimizations/optimization-register.md).
+- An optimization becomes MVP-required only after explicit project-owner approval
+  updates both the DoD and recovery plan. Completed beyond-MVP work remains valid
+  evidence; it is not retroactively treated as wasted or required.

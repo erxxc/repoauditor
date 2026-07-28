@@ -2,6 +2,9 @@
 
 Status: deferred pending measurement prerequisites.
 
+This is a post-MVP optimization gate (OPT-010), not part of the current POC Definition of
+Done. See [`optimizations/optimization-register.md`](optimizations/optimization-register.md).
+
 Repoauditor already runs a bounded observe → retrieve → verdict → self-critique loop. A
 tool-using agent that autonomously requests more context is not automatically a correctness
 improvement: it adds correlated model judgments, wider exposure to untrusted repository
