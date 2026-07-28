@@ -184,6 +184,26 @@ def test_reposilite_validation_pair_is_frozen_before_live_execution():
     assert pair[1].expected["expected_absent"] == [target]
 
 
+def test_ruby_saml_validation_pair_is_frozen_as_one_compound_target():
+    pair = _pair("ruby_saml_cve_2025_25291_25292", Path("/nonexistent"))
+
+    assert [item.expected["source"]["variant"] for item in pair] == [
+        "pre_fix", "post_fix",
+    ]
+    target = pair[0].expected["findings"][0]
+    assert target["cve"] == "CVE-2025-25291/CVE-2025-25292"
+    assert target["file"] == "lib/xml_security.rb"
+    assert target["citation_contains"] == "reference_nodes = document.xpath"
+    assert pair[0].expected["source"]["pinned_commit"] == (
+        "acac9e9cc0b9a507882c614f25d41f8b47be349a"
+    )
+    assert pair[1].expected["source"]["pinned_commit"] == (
+        "e9c1cdbd0f9afa467b585de279db0cbd0fb8ae97"
+    )
+    assert pair[1].expected["findings"] == []
+    assert pair[1].expected["expected_absent"] == [target]
+
+
 def test_target_conditioned_planner_separates_semantic_eval_from_production_selection(
     tmp_config, tmp_path,
 ):

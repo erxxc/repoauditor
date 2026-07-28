@@ -119,6 +119,8 @@ def test_live_workflow_defaults_manual_runs_to_sentinels_and_keeps_monthly_full_
     assert "simple_git_cve_2026_28292" in workflow
     assert "cve-positive-reposilite" in workflow
     assert "reposilite_cve_2024_36116" in workflow
+    assert "cve-positive-ruby-saml" in workflow
+    assert "ruby_saml_cve_2025_25291_25292" in workflow
     assert "detection-sentinels" in workflow
     assert "qualify-detection --format json" in workflow
     assert "manufactured-detection-sentinels.json" in workflow

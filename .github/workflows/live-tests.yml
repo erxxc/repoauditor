@@ -20,6 +20,7 @@ on:
           - cve-positive-pyjwt
           - cve-positive-simple-git
           - cve-positive-reposilite
+          - cve-positive-ruby-saml
           - detection-sentinels
           - retrieval-diagnostic
 
@@ -49,6 +50,7 @@ jobs:
               inputs.scope == 'cve-positive-pyjwt' ||
               inputs.scope == 'cve-positive-simple-git' ||
               inputs.scope == 'cve-positive-reposilite' ||
+              inputs.scope == 'cve-positive-ruby-saml' ||
               inputs.scope == 'retrieval-diagnostic'
             )
           ) ||
@@ -70,6 +72,7 @@ jobs:
                 inputs.scope == 'cve-positive-pyjwt' ||
                 inputs.scope == 'cve-positive-simple-git' ||
                 inputs.scope == 'cve-positive-reposilite' ||
+                inputs.scope == 'cve-positive-ruby-saml' ||
                 inputs.scope == 'retrieval-diagnostic'
               )
             ) ||
@@ -97,7 +100,8 @@ jobs:
           (
             inputs.scope == 'cve-positive-pyjwt' ||
             inputs.scope == 'cve-positive-simple-git' ||
-            inputs.scope == 'cve-positive-reposilite'
+            inputs.scope == 'cve-positive-reposilite' ||
+            inputs.scope == 'cve-positive-ruby-saml'
           )
         run: >-
           python tests/fixtures/audit_corpus_readiness.py
@@ -240,7 +244,8 @@ jobs:
           (
             inputs.scope == 'cve-positive-pyjwt' ||
             inputs.scope == 'cve-positive-simple-git' ||
-            inputs.scope == 'cve-positive-reposilite'
+            inputs.scope == 'cve-positive-reposilite' ||
+            inputs.scope == 'cve-positive-ruby-saml'
           )
         timeout-minutes: 22
         env:
@@ -248,6 +253,8 @@ jobs:
             ${{
               inputs.scope == 'cve-positive-reposilite' &&
               'reposilite_cve_2024_36116' ||
+              inputs.scope == 'cve-positive-ruby-saml' &&
+              'ruby_saml_cve_2025_25291_25292' ||
               inputs.scope == 'cve-positive-simple-git' &&
               'simple_git_cve_2026_28292' ||
               'pyjwt_cve_2022_29217'
@@ -271,7 +278,8 @@ jobs:
           (
             inputs.scope == 'cve-positive-pyjwt' ||
             inputs.scope == 'cve-positive-simple-git' ||
-            inputs.scope == 'cve-positive-reposilite'
+            inputs.scope == 'cve-positive-reposilite' ||
+            inputs.scope == 'cve-positive-ruby-saml'
           )
         uses: actions/upload-artifact@v4
         with:
