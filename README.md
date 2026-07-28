@@ -12,6 +12,12 @@ You do not need a security background to run it. Findings are leads to review, n
 that a system has been compromised. See [`repoauditor-scaffold.md`](repoauditor-scaffold.md)
 for the design and [`CLAUDE.md`](CLAUDE.md) for the project’s architectural rules.
 
+The owner-confirmed POC acceptance boundary is
+[`docs/poc-definition-of-done.md`](docs/poc-definition-of-done.md). Current MVP work is
+limited to [`docs/poc-recovery-plan.md`](docs/poc-recovery-plan.md); tuning and future
+extensions are governed separately in
+[`docs/optimizations/optimization-register.md`](docs/optimizations/optimization-register.md).
+
 ## Choose the menu or commands
 
 For a guided, numbered interface, run this in an interactive terminal:
@@ -588,10 +594,11 @@ independent claim verification before such a mode can become available.
 The current deterministic certificate checker and its deliberately narrow structural
 claims are documented in
 [docs/security-claim-certificates.md](docs/security-claim-certificates.md).
-The current cross-project sequence and evidence gates are recorded in
-[docs/project-priorities.md](docs/project-priorities.md).
-The current evidence-backed hold/advance decision before any parameter tuning is recorded in
-[docs/pre-tuning-readiness.md](docs/pre-tuning-readiness.md).
+The documentation authority map is [`docs/README.md`](docs/README.md). The detailed
+historical execution ledger remains in
+[`docs/project-priorities.md`](docs/project-priorities.md), while the evidence-backed hold
+before parameter tuning is preserved in
+[`docs/pre-tuning-readiness.md`](docs/pre-tuning-readiness.md).
 Offline preparation and the exact later paid-calibration sequence are documented in
 [docs/offline-readiness-runbook.md](docs/offline-readiness-runbook.md).
 

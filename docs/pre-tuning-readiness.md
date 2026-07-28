@@ -1,6 +1,12 @@
 # Pre-tuning readiness decision
 
-Status as of 2026-07-27: **not authorized to tune**.
+Status as of 2026-07-27: **historical checkpoint; not authorized to tune**.
+
+This file preserves the evidence available at that checkpoint. Its zero-label counters were
+later superseded by the reviewed acquisition cohort and must not be read as current state.
+Use [`poc-recovery-plan.md`](poc-recovery-plan.md) for current MVP work and
+[`optimizations/optimization-register.md`](optimizations/optimization-register.md) for the
+still-deferred tuning prerequisites. The decision to hold tuning remains in force.
 
 This checkpoint separates implementation verification from empirical validation. Passing
 tests and manufactured controls show that bounded code paths execute as specified; they do

@@ -1,13 +1,18 @@
-# Project priorities
+# Historical project priorities and evidence ledger
 
-Status: active execution backlog. Update this document when a gate is completed or when
-new evidence changes the order; do not silently promote work past its prerequisite.
+Status: **superseded as the active backlog on 2026-07-28**. This document preserves the
+detailed implementation history, completed gates, and source evidence. The authoritative
+POC commitment is now [`poc-definition-of-done.md`](poc-definition-of-done.md); the single
+current outstanding-item list and execution order are in
+[`poc-recovery-plan.md`](poc-recovery-plan.md). Non-MVP work belongs in
+[`optimizations/optimization-register.md`](optimizations/optimization-register.md).
 
 The methodology-specific detail remains authoritative in
 [triage-accuracy-roadmap.md](triage-accuracy-roadmap.md),
 [prior-scope-roadmap.md](prior-scope-roadmap.md), and
-[agentic-escalation-gate.md](agentic-escalation-gate.md). This page records the cross-project
-order so future sessions do not have to reconstruct it from conversation history.
+[agentic-escalation-gate.md](agentic-escalation-gate.md). Those documents define evidence
+and safety boundaries; they do not expand the current POC DoD. Do not add new active
+priorities here.
 
 ## P0 — operational safety and test trust
 

@@ -7,10 +7,10 @@ tool-use remains deferred until usage accounting and recall-safe evaluation exis
 The [prior-scope roadmap](prior-scope-roadmap.md) separately records future quantitative
 prior expansion; it does not change the current risk model.
 
-Status: active. This document is the durable execution plan for improving triage accuracy
-without presenting synthetic performance as real-world evidence.
-The cross-project implementation order is tracked in
-[project-priorities.md](project-priorities.md).
+Status: **post-MVP optimization roadmap**. The implemented safeguards remain authoritative,
+but open maturity work is deferred in
+[`optimizations/optimization-register.md`](optimizations/optimization-register.md). Current
+MVP execution is tracked only in [`poc-recovery-plan.md`](poc-recovery-plan.md).
 
 Progress:
 
@@ -19,10 +19,12 @@ Progress:
 - [x] Phase 1.3 — provisional-model disclosure audit
 - [x] Phase 1.4 — stable engagement identity audit
 - [x] Phase 2 — score and label provenance
-- [~] Phase 3 — collection infrastructure shipped; real UAT gate not yet met
+- [~] Phase 3 — collection infrastructure and the 40-label/eight-engagement activation
+  floor are met; the preferred 100–200-label, broader-positive-family maturity target
+  remains open
 - [~] Phase 4 — threshold/grouped mechanisms and dual adjudication reporting shipped;
   real-data activation, uncertainty, and temporal depth remain open
-- [ ] Phase 5 — see gates below
+- [ ] Phase 5 — deferred optimization; see gates below
 
 ## Current baseline
 
@@ -92,8 +94,9 @@ Collection mechanism now available:
   artifact `sourceLanguage`; missing metadata remains visibly unavailable rather than being
   inferred from rule names or file extensions.
 
-This phase remains open until actual UAT data reaches the activation floor. The lightweight
-fixture is one controlled engagement and cannot by itself satisfy repository diversity.
+The activation floor was later met through 58 usable manual labels across eight genuine
+engagements. Positive breadth remains narrow and does not establish broad classifier
+generalization. The preferred 100–200-label maturity target is OPT-001, not a POC blocker.
 
 ## Phase 4 — Validation maturity
 
