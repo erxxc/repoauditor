@@ -123,7 +123,7 @@ def test_cve_positive_live_pair(tmp_config, monkeypatch):
     artifact = Path(os.environ.get(
         "REPOAUDITOR_UAT_RESULTS", "live-cve-positive-results.json"
     ))
-    max_batches = int(os.environ.get("REPOAUDITOR_UAT_MAX_BATCHES", "1"))
+    max_batches = int(os.environ.get("REPOAUDITOR_UAT_MAX_BATCHES", "2"))
     if not 1 <= max_batches <= 6:
         raise ValueError("REPOAUDITOR_UAT_MAX_BATCHES must be between 1 and 6")
 

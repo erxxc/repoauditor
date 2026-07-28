@@ -258,9 +258,11 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
 - [~] Initialize bounded, human-reviewed LLM/falsification evaluation without tuning.
   The manual-only first pilot is PyJWT because it is the smallest pair and exercises
   semantic key confusion. It requires the exact `public-corpus-v2` cache, runs pre-fix
-  before post-fix, caps each snapshot at one existing 75-call/250,000-token batch, and
-  has a 20-minute outer timeout. Review its usage and target-scoped artifact before enabling
-  ruby-saml, simple-git, or Reposilite.
+  before post-fix and has a 20-minute outer timeout. The first one-batch run
+  (`30320579789`) used 33 calls and 156,800 known input/output tokens on pre-fix, then
+  stopped with five deferred findings; post-fix did not start. Allow at most two existing
+  75-call/250,000-token batches per snapshot for the same pilot, then review its usage and
+  target-scoped artifact before enabling ruby-saml, simple-git, or Reposilite.
 - Evidence receipt: `docs/offline-detector-round-2026-07-27.json`. It reports target
   recovery and unmatched candidates, never project-wide precision from a partial answer key.
 - CVE-positive acquisition receipt:

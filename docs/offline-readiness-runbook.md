@@ -155,11 +155,18 @@ scheduled and cannot expand to the other three pairs automatically. Run the `pub
 cache` workflow first; the live workflow fails before provider use unless the exact
 `public-corpus-v2` cache contains every frozen pre/post snapshot.
 
-The pilot always runs PyJWT pre-fix before post-fix, stops on the first failure, allows
-exactly one bounded batch per snapshot, and retains the existing 75-call/250,000-token
+The pilot always runs PyJWT pre-fix before post-fix, stops on the first failure, allows at
+most two linked batches per snapshot, and retains the existing 75-call/250,000-token
 per-batch circuit breakers plus a 20-minute outer timeout. Thus its conservative ceiling is
-150 calls and 500,000 provider-reported tokens across both snapshots, although a timeout
+300 calls and 1,000,000 provider-reported tokens across both snapshots, although a timeout
 or earlier pipeline stop should end it first. These are safety limits, not spending targets.
+
+The first one-batch pilot (Actions run `30320579789`) qualified all four manufactured
+controls, then stopped after the PyJWT pre-fix snapshot with five deferred findings. Its
+single batch used 33 calls, 149,952 input tokens, and 6,848 output tokens with no unknown
+usage. No post-fix work or target score ran. The two-batch cap is therefore an
+evidence-based continuation allowance for this same pair, not permission to expand the
+cohort or raise the underlying per-batch circuit breakers.
 
 Acceptance is target-scoped and was frozen before execution:
 
