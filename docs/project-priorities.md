@@ -340,8 +340,17 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
   `detection-sentinels` Actions scope. It calls only the OWASP lens once per manufactured
   archive case, requires semantic/location agreement for the vulnerable case, fails on any
   patched-control candidate, and retains authoritative usage in its JSON.
-- [ ] Run that manufactured archive-detection qualification before spending on another
-  independent project. Keep ruby-saml untouched until the instrument check passes.
+- [x] Run that manufactured archive-detection qualification before spending on another
+  independent project. Actions run `30361917285` recovered the vulnerable mechanism and
+  emitted no patched-control candidate in two calls (4,708 input and 221 output tokens).
+  The frozen result and its unsupported attacker-control/trust-boundary caveats are in
+  `docs/archive-detection-qualification-2026-07-28.json`.
+- [x] Audit ruby-saml's advisory and seven-file security patch before enabling it. Freeze
+  one compound parser-differential target in `lib/xml_security.rb`; this tests the shared
+  root cause and must not be reported as two independent CVE recoveries. The exact scope
+  and unchanged ceilings are in `docs/ruby-saml-validation-plan-2026-07-28.json`.
+- [ ] Run the manual `cve-positive-ruby-saml` scope once, then retain and semantically
+  adjudicate the artifact before any prompt, retrieval, or budget change.
 
 ### C — methodology blocked
 

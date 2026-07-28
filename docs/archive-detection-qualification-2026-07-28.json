@@ -1,0 +1,47 @@
+{
+  "schema_version": "manufactured-detection-qualification-receipt-v1",
+  "recorded_at": "2026-07-28",
+  "workflow": {
+    "run_id": 30361917285,
+    "url": "https://github.com/erxxc/repoauditor/actions/runs/30361917285",
+    "head_sha": "21f7706081b9f4bdd793732f8726216bea08fce6",
+    "scope": "detection-sentinels"
+  },
+  "instrument": {
+    "provider": "anthropic",
+    "model": "claude-opus-4-8",
+    "prompt_version": "owasp_v2+untrusted_repository_content_v1+detection_context_v2",
+    "sampling_seed": null,
+    "snapshot_digest": "de5da9d0b7297460a324e11641ebfe98a6730379d8a51efc9dd38a91f3caeac5"
+  },
+  "result": {
+    "qualified": true,
+    "positive_recovery": 1.0,
+    "negative_recovery": 1.0,
+    "vulnerable_observation": "raised",
+    "patched_observation": "absent",
+    "semantic_match_count": 1
+  },
+  "model_usage": {
+    "calls": 2,
+    "input_tokens": 4708,
+    "output_tokens": 221,
+    "cache_read_tokens": 0,
+    "cache_write_tokens": 0,
+    "unknown_usage_calls": 0,
+    "latency_ms": 9906
+  },
+  "workflow_isolation": {
+    "falsification_qualification_ran": false,
+    "public_corpus_cache_restored": false,
+    "cve_pair_ran": false,
+    "retained_artifact": "manufactured-detection-sentinels-30361917285"
+  },
+  "evidence_scope": "Two manufactured archive controls qualify this prompt/model for the frozen mechanism check only; they are not real-world precision or recall evidence.",
+  "caveats": [
+    "The model described JarEntry.name as attacker-controlled although the supplied function established only that it was an archive-entry name; archive provenance and reachability remain falsification obligations.",
+    "The model supplied a trust_boundary_ref even though no mapped trust boundary was provided in the manufactured prompt.",
+    "The provider did not expose a sampling seed, so repeatability remains unisolated."
+  ],
+  "decision": "Accept the pre-registered manufactured qualification. Do not retune or rerun this sentinel based on its answer. Track unsupported attacker-control and trust-boundary assertions as evidence-provenance work."
+}

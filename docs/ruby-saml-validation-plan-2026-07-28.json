@@ -1,0 +1,83 @@
+{
+  "schema_version": "target-conditioned-validation-plan-v1",
+  "frozen_at": "2026-07-28",
+  "status": "ready_for_live_execution",
+  "prerequisite": {
+    "archive_detection_qualification_passed": true,
+    "receipt": "docs/archive-detection-qualification-2026-07-28.json",
+    "workflow_run_id": 30361917285
+  },
+  "project": {
+    "slug": "ruby_saml_cve_2025_25291_25292",
+    "name": "ruby-saml",
+    "language": "Ruby",
+    "cves": ["CVE-2025-25291", "CVE-2025-25292"],
+    "ghsl_ids": ["GHSL-2024-329", "GHSL-2024-330"],
+    "mechanism": "SAML authentication bypass through XML parser differentials",
+    "exploit_forms": {
+      "CVE-2025-25291": "DOCTYPE handling differential",
+      "CVE-2025-25292": "namespace handling differential"
+    },
+    "advisory": "https://securitylab.github.com/advisories/GHSL-2024-329_GHSL-2024-330_ruby-saml/",
+    "vulnerable_commit": "acac9e9cc0b9a507882c614f25d41f8b47be349a",
+    "fixed_commit": "e9c1cdbd0f9afa467b585de279db0cbd0fb8ae97",
+    "license": "MIT",
+    "target_file": "lib/xml_security.rb",
+    "target_lines": [307, 366],
+    "citation_contains": "reference_nodes = document.xpath"
+  },
+  "scope_decision": {
+    "target_meaning": "The target is the shared parser-differential detection locus, not the complete seven-file patch.",
+    "compound_target": "One semantically adjudicated parser-differential target covers the shared root cause. The result must not be reported as two independent CVE recoveries.",
+    "downstream_context": "Changes in lib/onelogin/ruby-saml/response.rb bind application use to cached, signature-referenced XML and are relevant human falsification context.",
+    "patch_scope": [
+      "lib/xml_security.rb",
+      "lib/onelogin/ruby-saml/response.rb",
+      "lib/onelogin/ruby-saml/logoutresponse.rb",
+      "lib/onelogin/ruby-saml/saml_message.rb",
+      "lib/onelogin/ruby-saml/settings.rb",
+      "lib/onelogin/ruby-saml/slo_logoutrequest.rb",
+      "test/xml_security_test.rb"
+    ]
+  },
+  "execution": {
+    "workflow_scope": "cve-positive-ruby-saml",
+    "order": ["pre_fix", "post_fix"],
+    "target_conditioned": true,
+    "record_production_selection_separately": true,
+    "prompt_versions": {
+      "map": "architecture_recovery_v2",
+      "detect": "owasp_v2+untrusted_repository_content_v1+detection_context_v2+supply_chain_v1+untrusted_repository_content_v1+detection_context_v2+agentic_surface_v1+untrusted_repository_content_v1+detection_context_v2+citation_integrity_v1",
+      "falsify": "falsification_v3+untrusted_repository_content_v1+falsification_selfcritique_v2+untrusted_repository_content_v1+falsification_context_v3",
+      "normalize": "severity_adjudication_v3"
+    },
+    "max_batches_per_snapshot": 2,
+    "outer_timeout_minutes": 20,
+    "existing_call_and_token_ceilings_unchanged": true,
+    "requires_exact_public_corpus_cache": true,
+    "requires_manufactured_falsification_qualification": true
+  },
+  "acceptance": {
+    "pre_fix": {
+      "confirmed_recovery": "Requires human semantic adjudication target_match plus falsification status confirmed for the shared parser-differential mechanism.",
+      "unresolved": "Abstention; not a recovered target.",
+      "location_only": "Pending human adjudication; not a target match.",
+      "different_mechanism": "Not a target match."
+    },
+    "post_fix": {
+      "semantic_signal": "Disclose any human-adjudicated target_match.",
+      "confirmed_persistence": "Fails the negative control.",
+      "location_only": "Pending human adjudication; not automatic persistence."
+    },
+    "non_target_findings": "Remain unadjudicated because the project answer key is not exhaustive.",
+    "production_planner": "Forced target inclusion receives no production coverage credit. Target omission is planner coverage evidence, not a semantic model false negative.",
+    "prohibited_claim": "Do not report separate recovery counts for CVE-2025-25291 and CVE-2025-25292 from this compound target."
+  },
+  "prohibited_changes_after_run": [
+    "target metadata",
+    "prompt versions",
+    "context ranking",
+    "thresholds",
+    "batch, call, token, or timeout limits"
+  ]
+}

@@ -294,6 +294,42 @@ Reposilite is development evidence after this diagnosis. Do not use a rerun as a
 gate. Qualify the new archive-detection prompt on manufactured controls first; preserve
 ruby-saml as the next independent validation target.
 
+### Passed instrument gate: manufactured archive detection
+
+Actions run `30361917285` passed the pre-registered two-case archive-detection gate:
+the OWASP v2 lens recovered the vulnerable unchecked extraction and emitted no candidate
+for the normalized-containment control. The isolated scope made two provider calls
+(4,708 input tokens, 221 output tokens, 9,906 ms recorded latency) and did not restore the
+public corpus or execute falsification or a CVE pair. The exact receipt is
+[`archive-detection-qualification-2026-07-28.json`](archive-detection-qualification-2026-07-28.json).
+
+This qualifies only the manufactured mechanism check. The positive rationale called the
+archive-entry name attacker-controlled without evidence of archive provenance, and supplied
+a trust-boundary reference without a mapped boundary. Those are evidence-provenance gaps,
+not reasons to retroactively change the frozen pass; attacker control and reachability
+remain falsification obligations. A sampling seed was unavailable.
+
+### Next untouched validation: ruby-saml
+
+The GitHub Security Lab advisory assigns CVE-2025-25291 to a DOCTYPE parser differential
+and CVE-2025-25292 to a namespace parser differential. Both share the same root cause:
+Ruby-SAML used Nokogiri and REXML for different tasks and could obtain different document
+structures from the same input. The security patch spans six production files and one test
+file.
+
+The paid evaluation remains bounded to the frozen `lib/xml_security.rb` locus where the
+two-parser reference handling is visible. This is one compound parser-differential target,
+not evidence of two independently recovered CVEs. Changes in
+`lib/onelogin/ruby-saml/response.rb` that consume the cached signed assertion are relevant
+to subsequent human falsification, but are not silently promoted into a second answer-key
+target. Production planner selection remains a separate ground-truth-blind measurement.
+
+Run the manual `cve-positive-ruby-saml` scope only after its branch is merged and the exact
+public-corpus cache exists. It retains the two-batch-per-snapshot ceiling, provider
+call/token limits, and 20-minute timeout. Do not alter prompts, target metadata, context
+ranking, thresholds, or budgets after seeing the result. The frozen contract is
+[`ruby-saml-validation-plan-2026-07-28.json`](ruby-saml-validation-plan-2026-07-28.json).
+
 ## Analyst decision after collection
 
 Keep the current limits unless the three-run evidence demonstrates a specific operational
