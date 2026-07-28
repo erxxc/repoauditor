@@ -11,25 +11,28 @@ the advisory-derived target declared before execution.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
+import shutil
+from contextlib import contextmanager
 from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
 
-from repoauditor import cli
 from repoauditor.detect import ensemble
 from repoauditor.detect.planning import PlannedRegion
 from repoauditor.falsify import challenge as production_challenge
-from repoauditor.map import ArchitectureMap, EntryPoint
+from repoauditor.ingest import ingest_repo
+from repoauditor.llm import model_usage_scope
+from repoauditor.map import ArchitectureMap, EntryPoint, recover_architecture
 from repoauditor.sourcefiles import iter_source_files
 from repoauditor.store import db
+from repoauditor.store.models import RunStatus
 from test_benchmark_corpus import (
     _append_live_uat_result,
     _live_prompt_versions,
-    _pipeline_evidence,
-    _run_live_pipeline,
 )
 from uat_scoring import score_independent_target
 
@@ -267,6 +270,356 @@ def _validated_evaluation_design(observation: dict | None) -> dict:
     return observation
 
 
+def _root_failure_detail(exc: BaseException) -> str:
+    """Retain the attributable exception hidden behind a Click/Typer exit."""
+    cause = exc
+    seen: set[int] = set()
+    while cause.__cause__ is not None and id(cause) not in seen:
+        seen.add(id(cause))
+        cause = cause.__cause__
+    return f"{type(cause).__name__}: {cause}"[:4000]
+
+
+def _phase_evidence(run_id: int, config) -> dict:
+    run = db.get_pipeline_run(run_id, config)
+    if run is None:
+        raise RuntimeError(f"evaluation phase run #{run_id} disappeared")
+    return {
+        "run_id": run_id,
+        "status": run.status.value,
+        "failed_stage": run.failed_stage,
+        "failure_detail": run.failure_detail,
+        "usage": db.summarize_model_usage(run_id, config),
+        "stages": [
+            {
+                "stage": stage.stage,
+                "status": stage.status.value,
+                "failure_detail": stage.failure_detail,
+            }
+            for stage in db.list_stage_runs(run_id, config)
+        ],
+    }
+
+
+def _metered_phase(
+    source: str,
+    repo_id: str,
+    commit: str,
+    stage: str,
+    fn,
+    config,
+    *,
+    parent_run_id: int | None = None,
+):
+    """Run one evaluation phase with its own unchanged production budget."""
+    pipeline = db.start_pipeline_run(
+        source, config, parent_run_id=parent_run_id
+    )
+    db.update_pipeline_run_identity(pipeline.id, repo_id, commit, config)
+    db.start_stage_run(pipeline.id, stage, config)
+    try:
+        with model_usage_scope(pipeline.id):
+            value = fn()
+    except BaseException as exc:
+        detail = _root_failure_detail(exc)
+        db.finish_stage_run(
+            pipeline.id, stage, RunStatus.FAILED,
+            failure_detail=detail, config=config,
+        )
+        db.finish_pipeline_run(
+            pipeline.id, RunStatus.FAILED, failed_stage=stage,
+            failure_detail=detail, config=config,
+        )
+        raise
+    usage = db.summarize_model_usage(pipeline.id, config)
+    db.finish_stage_run(
+        pipeline.id, stage, RunStatus.COMPLETED,
+        summary={"model_usage": usage}, config=config,
+    )
+    db.finish_pipeline_run(pipeline.id, RunStatus.COMPLETED, config=config)
+    return value, pipeline
+
+
+def _production_observation(
+    snapshot_path: Path,
+    target_file: str,
+    detection,
+) -> dict:
+    selected = [item["file"] for item in detection.selected_regions]
+    all_sources = [
+        path.relative_to(snapshot_path).as_posix()
+        for path in iter_source_files(snapshot_path)
+    ]
+    selected_set = set(selected)
+    omitted = [path for path in all_sources if path not in selected_set]
+    return {
+        "mode": "separately-metered-production-screen+target-conditioned",
+        "production_screen": {
+            "selected_regions": selected,
+            "selected_count": len(selected),
+            "source_file_count": len(all_sources),
+            "omitted_regions": omitted,
+            "omitted_count": len(omitted),
+            "target_selected": target_file in selected_set,
+            "target_omitted": target_file not in selected_set,
+        },
+        "semantic_phase": {
+            "target_file": target_file,
+            "selected_regions": [target_file],
+            "forced_inclusion": target_file not in selected_set,
+            "selection_basis": (
+                next(
+                    item["basis"] for item in detection.selected_regions
+                    if item["file"] == target_file
+                )
+                if target_file in selected_set else TARGET_CONDITIONING_BASIS
+            ),
+        },
+        "interpretation": (
+            "Production screening and OWASP target adjudication use separate metered "
+            "pipeline runs. Forced inclusion receives no production-coverage credit."
+        ),
+    }
+
+
+def _target_only_planner(target_file: str):
+    def plan(
+        snapshot_path: Path,
+        _config,
+        *,
+        commit: str,
+        architecture: ArchitectureMap,
+        tool_candidates,
+    ) -> list[PlannedRegion]:
+        del commit, architecture, tool_candidates
+        target = snapshot_path / target_file
+        if not target.is_file():
+            raise RuntimeError(
+                f"pre-registered CVE target is absent from snapshot: {target_file}"
+            )
+        return [PlannedRegion(target, target_file, TARGET_CONDITIONING_BASIS)]
+
+    return plan
+
+
+@contextmanager
+def _owasp_target_scope(target_file: str):
+    """Evaluation-only one-region/one-lens scope; production globals are restored."""
+    original_plan = ensemble.plan_detection_regions
+    original_lenses = ensemble.LENSES
+    original_prompts = ensemble._LENS_PROMPTS
+    original_versions = ensemble.LENS_PROMPT_VERSIONS
+    ensemble.plan_detection_regions = _target_only_planner(target_file)
+    ensemble.LENSES = {"owasp": original_lenses["owasp"]}
+    ensemble._LENS_PROMPTS = {"owasp": original_prompts["owasp"]}
+    ensemble.LENS_PROMPT_VERSIONS = {"owasp": original_versions["owasp"]}
+    try:
+        yield
+    finally:
+        ensemble.plan_detection_regions = original_plan
+        ensemble.LENSES = original_lenses
+        ensemble._LENS_PROMPTS = original_prompts
+        ensemble.LENS_PROMPT_VERSIONS = original_versions
+
+
+def _run_fresh_split_fixture(
+    fixture,
+    config,
+    target_file: str,
+) -> tuple[str, dict, dict]:
+    """Run map+production screen, then OWASP target detect+falsify under a fresh budget."""
+    identity = ingest_repo(
+        str(fixture.snapshot_path), config, repo_id=fixture.repo_id
+    )
+
+    def production():
+        recover_architecture(
+            identity.snapshot_path, identity.repo_id, identity.commit, config
+        )
+        return ensemble.run_ensemble(identity.repo_id, config)
+
+    detection, production_run = _metered_phase(
+        identity.source, identity.repo_id, identity.commit,
+        "evaluation-production-screen", production, config,
+    )
+    observation = _production_observation(
+        identity.snapshot_path, target_file, detection
+    )
+    semantic_config = config.model_copy(update={
+        "detect": config.detect.model_copy(update={
+            "run_deterministic_tools": False,
+            "max_llm_regions_per_run": 1,
+            "reserved_sample_regions": 1,
+        })
+    })
+
+    def semantic():
+        with _owasp_target_scope(target_file):
+            ensemble.run_ensemble(identity.repo_id, semantic_config)
+        scoped = _target_scoped_challenge(target_file, {
+            identity.commit: observation
+        })
+        return scoped(identity.repo_id, semantic_config)
+
+    _outcomes, semantic_run = _metered_phase(
+        identity.source, identity.repo_id, identity.commit,
+        "evaluation-target-owasp-falsify", semantic, semantic_config,
+        parent_run_id=production_run.id,
+    )
+    design = _validated_evaluation_design(observation)
+    phases = {
+        "production_screen": _phase_evidence(production_run.id, config),
+        "target_owasp_falsify": _phase_evidence(semantic_run.id, config),
+    }
+    return identity.repo_id, design, phases
+
+
+def _sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for block in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def _snapshot_content_digest(root: Path) -> str:
+    digest = hashlib.sha256()
+    for path in sorted(item for item in root.rglob("*") if item.is_file()):
+        if ".git" in path.relative_to(root).parts:
+            continue
+        digest.update(path.relative_to(root).as_posix().encode())
+        digest.update(b"\0")
+        digest.update(path.read_bytes())
+        digest.update(b"\0")
+    return digest.hexdigest()[:12]
+
+
+def _available_phase_evidence(repo_id: str, config) -> dict:
+    latest = db.get_latest_pipeline_run(repo_id, config)
+    if latest is None or latest.id is None:
+        return {}
+    return {
+        str(run.id): _phase_evidence(run.id, config)
+        for run in db.list_pipeline_run_chain(latest.id, config)
+        if run.id is not None
+    }
+
+
+def _validate_continuation(
+    fixture,
+    config,
+    receipt_path: Path,
+) -> tuple[str, str, dict]:
+    """Validate the exact retained failed-run evidence before reusing any checkpoint."""
+    plan = json.loads(AIOHTTP_PLAN.read_text())["continuation"]
+    if _sha256(receipt_path) != plan["results_sha256"]:
+        raise RuntimeError("continuation results digest does not match the frozen receipt")
+    if _sha256(config.db_path) != plan["database_sha256"]:
+        raise RuntimeError("continuation database digest does not match the frozen receipt")
+    receipt = json.loads(receipt_path.read_text())
+    results = receipt.get("results", [])
+    if len(results) != 1 or results[0]["status"] != "failed":
+        raise RuntimeError("continuation receipt is not the one-record failed baseline")
+    result = results[0]
+    if result["evaluation_design"]["semantic_phase"]["target_file"] != (
+        fixture.expected["findings"][0]["file"]
+    ):
+        raise RuntimeError("continuation target differs from the frozen fixture")
+    pipeline = result["pipeline"]
+    if pipeline["terminal_run_id"] != plan["pipeline_run_id"]:
+        raise RuntimeError("continuation pipeline id differs from the frozen receipt")
+    if pipeline["aggregate_usage"] != plan["aggregate_usage"]:
+        raise RuntimeError("continuation usage differs from the frozen receipt")
+
+    run = db.get_pipeline_run(plan["pipeline_run_id"], config)
+    if (
+        run is None
+        or run.status is not RunStatus.FAILED
+        or run.failed_stage != "detect"
+    ):
+        raise RuntimeError("continuation database lacks the expected failed detect run")
+    repo_id = run.repo_id
+    commit = run.commit_hash
+    if not repo_id or not commit:
+        raise RuntimeError("continuation run lacks repository identity")
+    regions = db.list_detection_regions(repo_id, commit, config)
+    production_complete = [
+        item for item in regions
+        if item.selection_basis != TARGET_CONDITIONING_BASIS
+        and item.status is RunStatus.COMPLETED
+    ]
+    target_complete = [
+        item for item in regions
+        if item.selection_basis == TARGET_CONDITIONING_BASIS
+        and item.lens == "owasp"
+        and item.status is RunStatus.COMPLETED
+    ]
+    if len(production_complete) != plan["completed_production_region_calls"]:
+        raise RuntimeError("continuation production-screen checkpoint count differs")
+    if len(target_complete) != 1:
+        raise RuntimeError("continuation lacks one completed target OWASP checkpoint")
+    findings = db.list_findings(repo_id, config)
+    target_findings = [
+        finding for finding in findings
+        if finding.file == fixture.expected["findings"][0]["file"]
+    ]
+    if len(target_findings) != 1:
+        raise RuntimeError("continuation lacks exactly one retained target finding")
+    return repo_id, commit, result["evaluation_design"]
+
+
+def _continue_retained_prefix(
+    fixture,
+    config,
+    receipt_path: Path,
+    target_file: str,
+) -> tuple[str, dict, dict]:
+    """Continue only target falsification from the frozen failed pre-fix baseline."""
+    repo_id, commit, observation = _validate_continuation(
+        fixture, config, receipt_path
+    )
+    snapshot = config.raw_dir / repo_id / commit
+    if snapshot.exists():
+        raise RuntimeError(f"continuation raw snapshot already exists: {snapshot}")
+    if _snapshot_content_digest(fixture.snapshot_path) != commit:
+        raise RuntimeError("materialized continuation snapshot differs from retained commit")
+    snapshot.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copytree(fixture.snapshot_path, snapshot)
+
+    scoped = _target_scoped_challenge(target_file, {commit: observation})
+    _outcomes, semantic_run = _metered_phase(
+        str(fixture.snapshot_path), repo_id, commit,
+        "evaluation-target-falsify-continuation",
+        lambda: scoped(repo_id, config),
+        config,
+        parent_run_id=json.loads(AIOHTTP_PLAN.read_text())[
+            "continuation"
+        ]["pipeline_run_id"],
+    )
+    design = _validated_evaluation_design(observation)
+    phases = {
+        "retained_failed_baseline": {
+            "workflow_run_id": json.loads(AIOHTTP_PLAN.read_text())[
+                "continuation"
+            ]["workflow_run_id"],
+            "pipeline_run_id": json.loads(AIOHTTP_PLAN.read_text())[
+                "continuation"
+            ]["pipeline_run_id"],
+            "usage": json.loads(AIOHTTP_PLAN.read_text())[
+                "continuation"
+            ]["aggregate_usage"],
+            "reused_checkpoints": {
+                "production_region_calls": 18,
+                "target_owasp_calls": 1,
+            },
+        },
+        "target_falsify_continuation": _phase_evidence(
+            semantic_run.id, config
+        ),
+    }
+    return repo_id, design, phases
+
+
 def test_cve_positive_pair_builder_preserves_pre_post_order_and_target():
     pair = _pair("pyjwt_cve_2022_29217", Path("/nonexistent"))
 
@@ -368,7 +721,7 @@ def test_aiohttp_validation_pair_is_frozen_before_live_execution():
 def test_aiohttp_validation_plan_is_frozen_to_current_instrument():
     plan = json.loads(AIOHTTP_PLAN.read_text())
 
-    assert plan["status"] == "ready_not_run"
+    assert plan["status"] == "partial_failed_budget_isolation"
     assert plan["project"]["slug"] == "aiohttp_cve_2024_23334"
     assert plan["evidence_classification"]["selection_holdout"] is False
     assert plan["execution"]["prompt_versions"] == _live_prompt_versions()
@@ -382,6 +735,9 @@ def test_aiohttp_validation_plan_is_frozen_to_current_instrument():
     ] is True
     assert len(plan["frozen_semantic_obligations"]["positive"]) == 3
     assert "follow_symlinks" in plan["frozen_semantic_obligations"]["positive"][1]
+    assert plan["continuation"]["workflow_run_id"] == 30383181253
+    assert plan["continuation"]["completed_production_region_calls"] == 18
+    assert plan["continuation"]["aggregate_usage"]["calls"] == 22
 
 
 def test_split_phase_planner_executes_production_screen_and_semantic_target(
@@ -518,8 +874,72 @@ def test_completed_evaluation_design_fails_closed_without_phase_evidence():
         })
 
 
+def test_root_failure_detail_unwraps_cli_style_cause():
+    try:
+        try:
+            raise RuntimeError("provider token ceiling reached")
+        except RuntimeError as cause:
+            raise ValueError("Exit: ") from cause
+    except ValueError as exc:
+        assert _root_failure_detail(exc) == (
+            "RuntimeError: provider token ceiling reached"
+        )
+
+
+def test_owasp_target_scope_restores_ensemble_globals():
+    original_plan = ensemble.plan_detection_regions
+    original_lenses = ensemble.LENSES
+    original_prompts = ensemble._LENS_PROMPTS
+    original_versions = ensemble.LENS_PROMPT_VERSIONS
+
+    with _owasp_target_scope("target.py"):
+        assert set(ensemble.LENSES) == {"owasp"}
+        assert set(ensemble._LENS_PROMPTS) == {"owasp"}
+        assert set(ensemble.LENS_PROMPT_VERSIONS) == {"owasp"}
+        assert ensemble.plan_detection_regions is not original_plan
+
+    assert ensemble.plan_detection_regions is original_plan
+    assert ensemble.LENSES is original_lenses
+    assert ensemble._LENS_PROMPTS is original_prompts
+    assert ensemble.LENS_PROMPT_VERSIONS is original_versions
+
+
+def test_metered_phases_receive_independent_pipeline_runs(tmp_config):
+    db.init_db(tmp_config)
+
+    first_value, first = _metered_phase(
+        "source", "repo", "commit", "production-screen",
+        lambda: "first", tmp_config,
+    )
+    second_value, second = _metered_phase(
+        "source", "repo", "commit", "target-owasp",
+        lambda: "second", tmp_config, parent_run_id=first.id,
+    )
+
+    assert (first_value, second_value) == ("first", "second")
+    assert first.id != second.id
+    assert db.get_pipeline_run(second.id, tmp_config).parent_run_id == first.id
+    assert _phase_evidence(first.id, tmp_config)["status"] == "completed"
+    assert _phase_evidence(second.id, tmp_config)["status"] == "completed"
+
+
+def test_continuation_rejects_results_digest_before_reuse(
+    tmp_config, tmp_path,
+):
+    tmp_config.paths.db_path.parent.mkdir(parents=True, exist_ok=True)
+    tmp_config.paths.db_path.write_bytes(b"wrong database")
+    receipt = tmp_path / "results.json"
+    receipt.write_text("{}")
+    fixture = SimpleNamespace(expected={"findings": [{
+        "file": "aiohttp/web_urldispatcher.py"
+    }]})
+
+    with pytest.raises(RuntimeError, match="results digest"):
+        _validate_continuation(fixture, tmp_config, receipt)
+
+
 @pytest.mark.live
-def test_cve_positive_live_pair(tmp_config, monkeypatch):
+def test_cve_positive_live_pair(tmp_config):
     """Evaluate one explicitly selected pre/post pair and retain terminal evidence."""
     slug = os.environ.get("REPOAUDITOR_CVE_POSITIVE_PAIR", "").strip()
     if not slug:
@@ -537,71 +957,80 @@ def test_cve_positive_live_pair(tmp_config, monkeypatch):
     data_dir = Path(os.environ.get(
         "REPOAUDITOR_UAT_DATA_DIR", "live-cve-positive-data"
     )).resolve()
-    production_config = tmp_config
-    evaluation_region_cap = production_config.detect.max_llm_regions_per_run + 1
     tmp_config = tmp_config.model_copy(update={
         "paths": tmp_config.paths.model_copy(update={
             "data_dir": data_dir,
             "raw_dir": data_dir / "raw",
             "db_path": data_dir / "repoauditor.db",
         }),
-        "detect": tmp_config.detect.model_copy(update={
-            # Evaluation-only allowance: normal bounded production screen plus at most
-            # one pre-registered target region. Production configuration is unchanged.
-            "max_llm_regions_per_run": evaluation_region_cap,
-            "reserved_sample_regions": min(
-                tmp_config.detect.reserved_sample_regions,
-                evaluation_region_cap,
-            ),
-        }),
     })
     target_file = pair[0].expected["findings"][0]["file"]
-    target_plan, selection_observations = _split_phase_planner(
-        target_file, production_config
-    )
-    monkeypatch.setattr(ensemble, "plan_detection_regions", target_plan)
-    monkeypatch.setattr(
-        cli, "challenge",
-        _target_scoped_challenge(target_file, selection_observations),
-    )
-    db.init_db(tmp_config)
-    monkeypatch.setattr(cli, "get_config", lambda: tmp_config)
     artifact = Path(os.environ.get(
         "REPOAUDITOR_UAT_RESULTS", "live-cve-positive-results.json"
     ))
-    max_batches = int(os.environ.get("REPOAUDITOR_UAT_MAX_BATCHES", "2"))
-    if not 1 <= max_batches <= 6:
-        raise ValueError("REPOAUDITOR_UAT_MAX_BATCHES must be between 1 and 6")
+    continuation_receipt_raw = os.environ.get(
+        "REPOAUDITOR_CVE_CONTINUATION_RESULTS", ""
+    ).strip()
+    continuation_receipt = (
+        Path(continuation_receipt_raw).resolve()
+        if continuation_receipt_raw else None
+    )
+    if continuation_receipt is not None:
+        if slug != "aiohttp_cve_2024_23334":
+            raise RuntimeError("continuation is frozen to aiohttp_cve_2024_23334")
+        if not continuation_receipt.is_file() or not tmp_config.db_path.is_file():
+            raise RuntimeError("continuation requires the retained results JSON and database")
+    else:
+        db.init_db(tmp_config)
 
-    for fixture in pair:
+    for index, fixture in enumerate(pair):
         repo_id: str | None = None
         selection_evidence: dict | None = None
+        phase_evidence: dict | None = None
         try:
-            repo_id = _run_live_pipeline(
-                fixture, tmp_config, max_batches=max_batches
-            )
-            _, commit = cli.latest_snapshot(tmp_config, repo_id)
-            selection_evidence = selection_observations.get(commit)
-            selection_evidence = _validated_evaluation_design(selection_evidence)
+            if index == 0 and continuation_receipt is not None:
+                repo_id, selection_evidence, phase_evidence = (
+                    _continue_retained_prefix(
+                        fixture, tmp_config, continuation_receipt, target_file
+                    )
+                )
+            else:
+                repo_id, selection_evidence, phase_evidence = (
+                    _run_fresh_split_fixture(fixture, tmp_config, target_file)
+                )
             score = score_independent_target(
                 db.list_findings(repo_id, tmp_config), fixture.expected
             )
         except BaseException as exc:
             if repo_id is None:
-                matches = [
-                    item for item in db.list_ingested_repos(tmp_config)
-                    if Path(item.source).resolve() == fixture.snapshot_path.resolve()
-                ]
-                repo_id = matches[-1].repo_id if matches else fixture.repo_id
-            if selection_evidence is None and selection_observations:
-                selection_evidence = list(selection_observations.values())[-1]
+                if index == 0 and continuation_receipt is not None:
+                    retained = db.get_pipeline_run(
+                        json.loads(AIOHTTP_PLAN.read_text())[
+                            "continuation"
+                        ]["pipeline_run_id"],
+                        tmp_config,
+                    )
+                    repo_id = (
+                        retained.repo_id
+                        if retained is not None and retained.repo_id
+                        else fixture.repo_id
+                    )
+                else:
+                    matches = [
+                        item for item in db.list_ingested_repos(tmp_config)
+                        if Path(item.source).resolve()
+                        == fixture.snapshot_path.resolve()
+                    ]
+                    repo_id = matches[-1].repo_id if matches else fixture.repo_id
+            if phase_evidence is None:
+                phase_evidence = _available_phase_evidence(repo_id, tmp_config)
             _append_live_uat_result(
                 artifact,
                 fixture,
                 tmp_config,
                 status="failed",
-                pipeline=_pipeline_evidence(tmp_config, repo_id),
-                failure_detail=f"{type(exc).__name__}: {exc}"[:4000],
+                pipeline={"phases": phase_evidence} if phase_evidence else None,
+                failure_detail=_root_failure_detail(exc),
                 evaluation_design=selection_evidence,
             )
             raise
@@ -612,6 +1041,6 @@ def test_cve_positive_live_pair(tmp_config, monkeypatch):
             status="completed",
             score=score,
             run=SimpleNamespace(prompt_versions=_live_prompt_versions()),
-            pipeline=_pipeline_evidence(tmp_config, repo_id),
+            pipeline={"phases": phase_evidence},
             evaluation_design=selection_evidence,
         )

@@ -378,6 +378,14 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
   The source and semantic prompt are independent, but the target was already inspected in
   the planner diagnostic; report it as development-exposed for selection and never as an
   untouched production-planning holdout. Do not rerun Ruby-SAML as untouched evidence.
+- [x] Preserve the partial aiohttp run and correct its evaluation orchestration offline.
+  Run `30383181253` passed both manufactured gates, completed all 18 production-screen
+  lens calls, and raised one low-confidence target-location candidate before the shared
+  pipeline reached 251,139/250,000 tokens. It did not falsify the target or start post-fix.
+  The correction gives production screening and OWASP target/falsification separate
+  unchanged budgets, runs only OWASP on the forced target, unwraps root failures, and
+  permits only an exact digest-pinned continuation that reuses the 18 production calls and
+  completed target OWASP checkpoint. Do not raise the token ceiling or rerun that work.
 - [ ] Improve ground-truth-blind production planning for security-critical library code.
   The Ruby-SAML target was omitted in both variants; target-forced inclusion receives no
   production coverage credit.

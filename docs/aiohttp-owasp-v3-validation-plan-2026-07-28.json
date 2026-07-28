@@ -1,7 +1,19 @@
 {
   "schema_version": "split-phase-validation-plan-v1",
   "frozen_at": "2026-07-28",
-  "status": "ready_not_run",
+  "status": "partial_failed_budget_isolation",
+  "partial_result": {
+    "workflow_run_id": 30383181253,
+    "failure_stage": "pre_fix.detect",
+    "failure": "LLMBudgetExceeded at 251139/250000 provider-reported tokens",
+    "manufactured_falsification_qualified": true,
+    "manufactured_archive_detection_qualified": true,
+    "production_screen_completed_calls": 18,
+    "production_screen_findings": 0,
+    "target_owasp_candidate_count": 1,
+    "target_candidate_status": "unresolved",
+    "post_fix_started": false
+  },
   "project": {
     "slug": "aiohttp_cve_2024_23334",
     "name": "aiohttp",
@@ -44,10 +56,10 @@
     "workflow_scope": "cve-positive-aiohttp",
     "order": ["pre_fix", "post_fix"],
     "split_phases": [
-      "unchanged bounded production detection screen",
-      "separately attributed target-conditioned semantic region",
-      "exact-target-file-scoped falsification"
+      "unchanged bounded production detection screen under one pipeline budget",
+      "separately attributed target-conditioned OWASP region plus exact-target-file-scoped falsification under a fresh pipeline budget"
     ],
+    "semantic_target_lenses": ["owasp"],
     "record_production_selected_and_omitted_regions": true,
     "forced_target_inclusion_receives_production_credit": false,
     "unrelated_findings_retained_as_unadjudicated": true,
@@ -92,5 +104,32 @@
     "thresholds",
     "region, batch, call, token, request-timeout, or outer-timeout limits"
   ],
-  "next_action": "After merge, refresh the exact public-corpus cache, then manually run only cve-positive-aiohttp once."
+  "continuation": {
+    "workflow_run_id": 30383181253,
+    "artifact_name": "live-cve-positive-30383181253",
+    "pipeline_run_id": 1,
+    "database_sha256": "8674f760043085fa412627d3b09429661f70494790db7dce8626e90b5c8efa6f",
+    "results_sha256": "4d97c4739f76b6b008e7f533b2a050ef4ec995372dc48be3e1d664b295dca5bb",
+    "completed_production_region_calls": 18,
+    "completed_target_owasp_calls": 1,
+    "aggregate_usage": {
+      "calls": 22,
+      "input_tokens": 246639,
+      "output_tokens": 4500,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0,
+      "unknown_usage_calls": 0,
+      "latency_ms": 95666
+    },
+    "reuse_boundary": "Reuse only the completed pre-fix production screen and retained OWASP target candidate. Start target falsification under a new pipeline budget; run post-fix through the corrected separately metered phases.",
+    "fail_closed_on": [
+      "database or results digest mismatch",
+      "repository commit or target mismatch",
+      "usage receipt mismatch",
+      "missing 18 completed production calls",
+      "missing completed target OWASP checkpoint",
+      "missing or multiple retained target findings"
+    ]
+  },
+  "next_action": "Merge the phase-isolation correction, then run the exact aiohttp continuation scope once. Do not rerun the completed pre-fix production screen."
 }

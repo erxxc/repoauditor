@@ -422,6 +422,34 @@ The split-phase pair retains the 20-minute outer timeout, two linked batches per
 75-call/250,000-token pipeline breakers, six production regions, and at most one separately
 attributed target region. No limit should be raised after observing the result.
 
+The first execution, Actions run `30383181253`, stopped safely during pre-fix detection.
+Both manufactured gates passed. Map used 116,142 processed tokens; the complete six-region,
+three-lens production screen used 107,541; and target OWASP detection/rescore used 27,456.
+The next target lens was blocked at 251,139/250,000. This is an evaluation-orchestration
+defect—independent phases shared one budget—not a provider, cache, or qualification failure.
+The production screen raised no findings. Target OWASP raised one unresolved, confidence
+0.40 candidate at `aiohttp/web_urldispatcher.py:643-645`; it identified the skipped
+containment check under `follow_symlinks`, but did not clearly establish every frozen
+lexical-parent-segment obligation. It is partial location/mechanism evidence, not confirmed
+recovery. Falsification and post-fix never ran.
+
+The corrective continuation is manual scope `cve-positive-aiohttp-continuation`. It
+downloads only artifact `live-cve-positive-30383181253`, verifies the frozen SHA-256 of
+both JSON and SQLite, requires the original failed run/usage, 18 completed production
+region calls, one completed target OWASP checkpoint, the exact target, and exactly one
+retained target finding. Any mismatch stops before model use. It then:
+
+1. starts pre-fix target falsification under a fresh unchanged pipeline budget;
+2. runs post-fix map plus the normal six-region/three-lens production screen under its own
+   unchanged budget; and
+3. runs post-fix target OWASP detection plus target-file-scoped falsification under another
+   fresh unchanged budget.
+
+The forced target uses only the OWASP lens; supply-chain and agentic-surface prompts are not
+semantically applicable to this frozen CWE-22 question. All production lenses remain
+unchanged. Failure artifacts unwrap the underlying exception and include every available
+phase run and usage receipt instead of collapsing the cause to `Exit:`.
+
 ## Analyst decision after collection
 
 Keep the current limits unless the three-run evidence demonstrates a specific operational

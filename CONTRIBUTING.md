@@ -204,6 +204,10 @@ gates the pair on same-run OWASP archive-detection controls. Its frozen semantic
 and evidence limitations are in
 `docs/aiohttp-owasp-v3-validation-plan-2026-07-28.json`. Refresh the public-corpus cache
 after any acquisition-manifest change; the live job intentionally rejects fallback keys.
+The one-time `cve-positive-aiohttp-continuation` scope is pinned to failed run
+`30383181253`; it restores that exact artifact by run id and verifies frozen database/result
+digests before reuse. It must not be generalized into an arbitrary artifact importer or
+used after changing the target, prompts, commits, or limits.
 
 The cache workflow and paid independent lane also run the zero-network corpus-readiness
 audit. Metadata must identify exactly one protected independent pre/post holdout, and the

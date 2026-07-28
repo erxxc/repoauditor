@@ -123,7 +123,15 @@ def test_live_workflow_defaults_manual_runs_to_sentinels_and_keeps_monthly_full_
     assert "reposilite_cve_2024_36116" in workflow
     assert "cve-positive-ruby-saml" in workflow
     assert "cve-positive-aiohttp" in workflow
+    assert "cve-positive-aiohttp-continuation" in workflow
     assert "'aiohttp_cve_2024_23334'" in workflow
+    assert "run-id: 30383181253" in workflow
+    assert "Validate frozen continuation before model use" in workflow
+    assert workflow.index(
+        "Validate frozen continuation before model use"
+    ) < workflow.index(
+        "Qualify falsification instrument with manufactured controls"
+    )
     assert (
         "inputs.scope == 'detection-sentinels' ||\n"
         "            inputs.scope == 'cve-positive-aiohttp'"

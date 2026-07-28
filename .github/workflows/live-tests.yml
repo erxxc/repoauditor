@@ -22,12 +22,14 @@ on:
           - cve-positive-reposilite
           - cve-positive-ruby-saml
           - cve-positive-aiohttp
+          - cve-positive-aiohttp-continuation
           - detection-sentinels
           - xml-detection-sentinels
           - retrieval-diagnostic
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
   live:
@@ -54,6 +56,7 @@ jobs:
               inputs.scope == 'cve-positive-reposilite' ||
               inputs.scope == 'cve-positive-ruby-saml' ||
               inputs.scope == 'cve-positive-aiohttp' ||
+              inputs.scope == 'cve-positive-aiohttp-continuation' ||
               inputs.scope == 'retrieval-diagnostic'
             )
           ) ||
@@ -77,6 +80,7 @@ jobs:
                 inputs.scope == 'cve-positive-reposilite' ||
                 inputs.scope == 'cve-positive-ruby-saml' ||
                 inputs.scope == 'cve-positive-aiohttp' ||
+                inputs.scope == 'cve-positive-aiohttp-continuation' ||
                 inputs.scope == 'retrieval-diagnostic'
               )
             ) ||
@@ -106,7 +110,8 @@ jobs:
             inputs.scope == 'cve-positive-simple-git' ||
             inputs.scope == 'cve-positive-reposilite' ||
             inputs.scope == 'cve-positive-ruby-saml' ||
-            inputs.scope == 'cve-positive-aiohttp'
+            inputs.scope == 'cve-positive-aiohttp' ||
+            inputs.scope == 'cve-positive-aiohttp-continuation'
           )
         run: >-
           python tests/fixtures/audit_corpus_readiness.py
@@ -119,6 +124,37 @@ jobs:
         with:
           python-version: "3.12"
       - run: uv sync --frozen --dev
+      - name: Restore frozen aiohttp partial baseline
+        if: >-
+          github.event_name == 'workflow_dispatch' &&
+          inputs.scope == 'cve-positive-aiohttp-continuation'
+        uses: actions/download-artifact@v4
+        with:
+          name: live-cve-positive-30383181253
+          path: retained-aiohttp-baseline
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: 30383181253
+      - name: Install frozen continuation database
+        if: >-
+          github.event_name == 'workflow_dispatch' &&
+          inputs.scope == 'cve-positive-aiohttp-continuation'
+        run: |
+          mkdir -p live-cve-positive-data
+          cp retained-aiohttp-baseline/live-cve-positive-data/repoauditor.db \
+            live-cve-positive-data/repoauditor.db
+      - name: Validate frozen continuation before model use
+        if: >-
+          github.event_name == 'workflow_dispatch' &&
+          inputs.scope == 'cve-positive-aiohttp-continuation'
+        env:
+          PYTHONPATH: tests
+        run: >-
+          uv run python tests/validate_cve_continuation.py
+          --database live-cve-positive-data/repoauditor.db
+          --results retained-aiohttp-baseline/live-cve-positive-results.json
+          --snapshot
+          tests/fixtures/acquisition_cve_aiohttp_cve_2024_23334_pre/snapshot
       - name: Smoke-test restored Juice Shop retrieval
         if: >-
           (
@@ -178,7 +214,8 @@ jobs:
           github.event_name == 'workflow_dispatch' &&
           (
             inputs.scope == 'detection-sentinels' ||
-            inputs.scope == 'cve-positive-aiohttp'
+            inputs.scope == 'cve-positive-aiohttp' ||
+            inputs.scope == 'cve-positive-aiohttp-continuation'
           )
         run: uv run repoauditor qualify-detection --format json > manufactured-detection-sentinels.json
       - name: Retain manufactured detection evidence
@@ -187,7 +224,8 @@ jobs:
           github.event_name == 'workflow_dispatch' &&
           (
             inputs.scope == 'detection-sentinels' ||
-            inputs.scope == 'cve-positive-aiohttp'
+            inputs.scope == 'cve-positive-aiohttp' ||
+            inputs.scope == 'cve-positive-aiohttp-continuation'
           )
         uses: actions/upload-artifact@v4
         with:
@@ -278,7 +316,8 @@ jobs:
             inputs.scope == 'cve-positive-simple-git' ||
             inputs.scope == 'cve-positive-reposilite' ||
             inputs.scope == 'cve-positive-ruby-saml' ||
-            inputs.scope == 'cve-positive-aiohttp'
+            inputs.scope == 'cve-positive-aiohttp' ||
+            inputs.scope == 'cve-positive-aiohttp-continuation'
           )
         timeout-minutes: 22
         env:
@@ -287,6 +326,8 @@ jobs:
               inputs.scope == 'cve-positive-reposilite' &&
               'reposilite_cve_2024_36116' ||
               inputs.scope == 'cve-positive-aiohttp' &&
+              'aiohttp_cve_2024_23334' ||
+              inputs.scope == 'cve-positive-aiohttp-continuation' &&
               'aiohttp_cve_2024_23334' ||
               inputs.scope == 'cve-positive-ruby-saml' &&
               'ruby_saml_cve_2025_25291_25292' ||
@@ -298,11 +339,20 @@ jobs:
           REPOAUDITOR_UAT_SCANNER_COVERAGE: not-installed-live-model-only
           REPOAUDITOR_UAT_MAX_BATCHES: "2"
           REPOAUDITOR_UAT_DATA_DIR: live-cve-positive-data
+          REPOAUDITOR_CVE_CONTINUATION_RESULTS: >-
+            ${{
+              inputs.scope == 'cve-positive-aiohttp-continuation' &&
+              'retained-aiohttp-baseline/live-cve-positive-results.json' ||
+              ''
+            }}
         run: |
           echo "CVE-positive pair: $REPOAUDITOR_CVE_POSITIVE_PAIR, pre-fix then post-fix."
-          echo "Phase 1 executes the normal bounded production detection screen."
-          echo "Phase 2 adds the frozen advisory target only when omitted; forced inclusion receives no production coverage credit."
-          echo "Paid falsification is target-file-scoped; unrelated detector output remains unadjudicated in the retained database/artifact."
+          echo "Phase 1 executes the normal bounded production screen under its own unchanged budget."
+          echo "Phase 2 runs only the applicable OWASP lens on the frozen target, then target-file-scoped falsification under a fresh unchanged budget."
+          echo "Forced target inclusion receives no production coverage credit; unrelated output remains unadjudicated."
+          if [[ -n "$REPOAUDITOR_CVE_CONTINUATION_RESULTS" ]]; then
+            echo "Continuation qualified: reusing frozen pre-fix production/target-detection checkpoints from run 30383181253."
+          fi
           echo "Hard timeout: 20 minutes; at most 2 linked batches per snapshot."
           timeout --signal=TERM --kill-after=30s 20m \
             uv run pytest tests/test_cve_positive_live.py::test_cve_positive_live_pair \
@@ -316,7 +366,8 @@ jobs:
             inputs.scope == 'cve-positive-simple-git' ||
             inputs.scope == 'cve-positive-reposilite' ||
             inputs.scope == 'cve-positive-ruby-saml' ||
-            inputs.scope == 'cve-positive-aiohttp'
+            inputs.scope == 'cve-positive-aiohttp' ||
+            inputs.scope == 'cve-positive-aiohttp-continuation'
           )
         uses: actions/upload-artifact@v4
         with:
