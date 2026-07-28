@@ -607,6 +607,13 @@ def generate_appendix(
         path.write_text(text)
         return path
 
+    # Local import avoids a module-load cycle: integrity resolves ScenarioParams from this
+    # module, while this presentation-only gate reuses the already-built scenarios.
+    from .integrity import audit_resolved_inputs, quantitative_disclosure
+
+    disclosure = quantitative_disclosure(
+        audit_resolved_inputs(scenarios, config, repo_id=repo_id)
+    )
     result = monte_carlo(scenarios, trials=trials, seed=seed)
     tornado = tornado_sensitivity(scenarios)
     charts = _render_charts(result, tornado, out_dir)
@@ -632,7 +639,10 @@ def generate_appendix(
         )
 
     path = out_dir / "risk_appendix.md"
-    path.write_text(_appendix_markdown(repo_id, scenarios, result, tornado, agg, charts, trials))
+    path.write_text(_appendix_markdown(
+        repo_id, scenarios, result, tornado, agg, charts, trials,
+        disclosure=disclosure,
+    ))
     return path
 
 
@@ -661,10 +671,16 @@ def quantify_appendix(
     )
 
 
-def _appendix_markdown(repo_id, scenarios, result, tornado, agg, charts, trials) -> str:
+def _appendix_markdown(
+    repo_id, scenarios, result, tornado, agg, charts, trials, *, disclosure=None
+) -> str:
     lines = [
         f"# Risk Quantification Appendix — {repo_id}",
         "",
+    ]
+    if disclosure:
+        lines += [f"> **{disclosure}**", ""]
+    lines += [
         "## Methodology",
         "",
         _METHODOLOGY.format(trials=trials),

@@ -418,6 +418,17 @@ without CVE enrichment use the cited industry frequency baseline and are labeled
 Every published prior and engagement input retains provenance so a reviewer can distinguish
 published data, derived application evidence, conservative defaults, and analyst overrides.
 
+RepoAuditor also runs a read-only integrity audit over resolved scenario inputs. If it finds
+a blocking applicability problem—currently including reuse of a full organization-level
+frequency baseline once per finding—the CLI, leadership memo, and quantitative appendix
+visibly label the dollar output **experimental and not decision-grade**. The figures remain
+available for method evaluation, but must not be used for deal, budget, or risk-acceptance
+decisions. Inspect the attributable evidence with:
+
+```sh
+uv run repoauditor quant-audit <repo-id>
+```
+
 Analyst overrides live in `[risk_quant]` in `config.toml`. Keys may name one scenario, such
 as `data_breach`, or use `"*"` for an engagement-wide value. Recognized scenario names are
 `credential_compromise`, `data_breach`, `rce_full_compromise`, `service_disruption`, and

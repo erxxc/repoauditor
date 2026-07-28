@@ -38,6 +38,19 @@ class QuantAuditResult:
         return sum(issue.level is AuditLevel.BLOCKING for issue in self.issues)
 
 
+_EXPERIMENTAL_DISCLOSURE = (
+    "EXPERIMENTAL QUANTITATIVE OUTPUT — NOT DECISION-GRADE: the integrity audit found "
+    "one or more blocking model-applicability issues. Dollar ranges are retained for "
+    "method evaluation only and must not be used for deal, budget, or risk-acceptance "
+    "decisions. Run `repoauditor quant-audit <repo-id>` for the attributable evidence."
+)
+
+
+def quantitative_disclosure(result: QuantAuditResult) -> str | None:
+    """Return the mandatory presentation gate when the read-only audit is blocking."""
+    return _EXPERIMENTAL_DISCLOSURE if result.blocking else None
+
+
 _BELOW_FREQUENCY_SOURCE_POPULATION = {
     "under_100k", "100k_to_1m", "1m_to_10m",
 }

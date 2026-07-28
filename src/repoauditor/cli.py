@@ -25,7 +25,12 @@ import typer
 from pathlib import Path
 
 from . import __version__
-from .analyze import audit_quantitative_inputs, quantify_appendix, render_quant_audit
+from .analyze import (
+    audit_quantitative_inputs,
+    quantitative_disclosure,
+    quantify_appendix,
+    render_quant_audit,
+)
 from .config import get_config
 from .detect import (
     DetectionRun,
@@ -528,6 +533,9 @@ def _quantify_stage(
             persist=record_audit,
         )
     path, scenario_count = artifacts
+    disclosure = quantitative_disclosure(audit_quantitative_inputs(repo_id, config))
+    if disclosure:
+        typer.secho(disclosure, fg=typer.colors.YELLOW, err=True)
     _stage_summary(
         f"quantified {repo_id}: scenarios={scenario_count}, "
         f"record-audit={'yes' if record_audit else 'no'}; wrote {path}", timing

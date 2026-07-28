@@ -1,7 +1,7 @@
 {
   "schema_version": "untouched-production-selection-plan-v1",
   "frozen_at": "2026-07-28",
-  "status": "instrument_ready_new_acquisition_required",
+  "status": "completed",
   "question": "Does the unchanged bounded production planner select a reviewed vulnerability target when no advisory, answer key, target path, severity, or patch location is available to the planner?",
   "current_corpus_eligibility": {
     "eligible_pairs": 0,
@@ -75,5 +75,15 @@
     "precision_recall": "One target cannot establish planner precision or population recall.",
     "training": "The pair becomes development-exposed immediately after target disclosure and is never an untouched target again."
   },
-  "next_action": "Merge the zero-token instrument first. Then acquire one new eligible pair without target-path inspection, create both blind captures, and only afterward reveal and adjudicate the advisory target."
+  "completion": {
+    "project": "Plotly.js",
+    "cve": "CVE-2017-1000006",
+    "receipt": "docs/plotly-untouched-production-selection-2026-07-28.json",
+    "target_disclosed_after_both_captures": true,
+    "target_selected_pre_fix": false,
+    "target_selected_post_fix": false,
+    "result_class": "bounded_plan_omission",
+    "claim_boundary": "Planner coverage evidence only; not a semantic detector false negative."
+  },
+  "next_action": "Do not rerun or tune against the revealed Plotly.js target. Complete the remaining POC MVP items before activating OPT-007 planner improvement."
 }

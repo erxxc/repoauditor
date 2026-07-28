@@ -41,6 +41,10 @@ II. Acceptance evidence
          must not be represented as decision-grade. Before POC completion, either resolve
          that defect from a defensible source/model specification or visibly gate the
          affected output as experimental and unsuitable for decision use.
+      4. Satisfied for the POC by the owner-approved disclosure-only gate: a blocking
+         read-only integrity audit labels affected CLI, memo, and appendix output
+         experimental and not decision-grade. The underlying model is deliberately
+         unchanged; sourced correction remains post-MVP work.
 
    C. Independent semantic evidence
 
@@ -53,9 +57,13 @@ II. Acceptance evidence
    D. Untouched production-selection evidence
 
       1. The target-blind capture/adjudication instrument is implemented and frozen.
-      2. No current checked-in pair remains untouched.
-      3. One new eligible public pre/post pair must be acquired, captured, and adjudicated
-         under the frozen protocol.
+      2. Satisfied by the Plotly.js CVE-2017-1000006 pre-fix/post-fix measurement recorded
+         in
+         [`plotly-untouched-production-selection-2026-07-28.json`](plotly-untouched-production-selection-2026-07-28.json).
+      3. Both captures were written before target disclosure. The reviewed target was
+         present in both source inventories but omitted by both bounded plans. This is
+         production-selection evidence, not a semantic-detector false negative, and no
+         target-aware rerun receives credit.
 
 III. Explicitly outside the POC Definition of Done
 

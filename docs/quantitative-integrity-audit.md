@@ -32,7 +32,11 @@ source does not publish a per-finding conditional rate.
 The audit flags multi-finding scenarios but does not choose a replacement. A correction
 requires a sourced modeling decision: for example, whether the baseline is allocated once
 per portfolio, once per scenario, or decomposed through calibrated threat-event categories.
-Until then, affected quantitative output should not be called decision-grade.
+Until then, affected quantitative output is conditionally gated in the CLI, leadership memo,
+and quantitative appendix as **experimental and not decision-grade** whenever the read-only
+integrity audit returns a blocking issue. The simulation and stored inputs are unchanged;
+the gate preserves figures for method evaluation while prohibiting deal, budget, or
+risk-acceptance use.
 
 ## Applicability gaps
 
