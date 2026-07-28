@@ -386,6 +386,15 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
   unchanged budgets, runs only OWASP on the forced target, unwraps root failures, and
   permits only an exact digest-pinned continuation that reuses the 18 production calls and
   completed target OWASP checkpoint. Do not raise the token ceiling or rerun that work.
+- [x] Complete and adjudicate the aiohttp continuation. Run `30387051690` passed both
+  manufactured gates and the digest-pinned continuation. Human review assigned
+  `target_match`: the confirmed pre-fix rationale satisfies all three frozen semantic
+  obligations, while the post-fix target phase raised no signal. The offline rescore is one
+  confirmed target recovery with zero unadjudicated confirmed groups. Both blind production
+  plans omitted the target, so this is development-exposed target-conditioned semantic
+  evidence—not production-selection recall. The immutable receipt, artifact hashes, phase
+  usage, and claim boundary are in
+  `docs/aiohttp-target-conditioned-baseline-2026-07-28.json`. Do not rerun this pair.
 - [ ] Improve ground-truth-blind production planning for security-critical library code.
   The Ruby-SAML target was omitted in both variants; target-forced inclusion receives no
   production coverage credit.

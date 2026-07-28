@@ -44,6 +44,11 @@ AIOHTTP_PLAN = (
     / "docs"
     / "aiohttp-owasp-v3-validation-plan-2026-07-28.json"
 )
+AIOHTTP_BASELINE = (
+    Path(__file__).parents[1]
+    / "docs"
+    / "aiohttp-target-conditioned-baseline-2026-07-28.json"
+)
 TARGET_CONDITIONING_BASIS = "evaluation-target-conditioned"
 
 
@@ -721,7 +726,7 @@ def test_aiohttp_validation_pair_is_frozen_before_live_execution():
 def test_aiohttp_validation_plan_is_frozen_to_current_instrument():
     plan = json.loads(AIOHTTP_PLAN.read_text())
 
-    assert plan["status"] == "partial_failed_budget_isolation"
+    assert plan["status"] == "completed_target_conditioned_semantic_recovery"
     assert plan["project"]["slug"] == "aiohttp_cve_2024_23334"
     assert plan["evidence_classification"]["selection_holdout"] is False
     assert plan["execution"]["prompt_versions"] == _live_prompt_versions()
@@ -738,6 +743,43 @@ def test_aiohttp_validation_plan_is_frozen_to_current_instrument():
     assert plan["continuation"]["workflow_run_id"] == 30383181253
     assert plan["continuation"]["completed_production_region_calls"] == 18
     assert plan["continuation"]["aggregate_usage"]["calls"] == 22
+    assert plan["completion"]["human_semantic_adjudication"] == "target_match"
+    assert plan["completion"]["pre_fix_confirmed_recovery"] is True
+    assert plan["completion"]["post_fix_any_semantic_signal_persistence"] is False
+
+
+def test_aiohttp_baseline_records_bounded_human_adjudication():
+    baseline = json.loads(AIOHTTP_BASELINE.read_text())
+
+    assert baseline["workflow_run"]["id"] == 30387051690
+    assert baseline["workflow_run"]["results_sha256"] == (
+        "5b7c6e0e87560e730ec3772438cf124a3c439a036c81697e1f65348ef315f3ef"
+    )
+    assert baseline["results"]["pre_fix"]["human_semantic_adjudication"][
+        "status"
+    ] == "target_match"
+    assert baseline["results"]["pre_fix"][
+        "pre_fix_confirmed_recovery_after_adjudication"
+    ] is True
+    assert baseline["results"]["post_fix"][
+        "post_fix_any_semantic_signal_persistence"
+    ] is False
+    phases = [
+        *baseline["results"]["pre_fix"]["phases"].values(),
+        *baseline["results"]["post_fix"]["phases"].values(),
+    ]
+    aggregate = baseline["aggregate_pair_usage"]
+    assert sum(phase["calls"] for phase in phases) == aggregate["calls"]
+    assert sum(phase["input_tokens"] for phase in phases) == aggregate["input_tokens"]
+    assert sum(phase["output_tokens"] for phase in phases) == aggregate[
+        "output_tokens"
+    ]
+    assert aggregate["input_tokens"] + aggregate["output_tokens"] == (
+        aggregate["known_tokens"]
+    ) == 487803
+    assert baseline["interpretation"]["production_selection"].endswith(
+        "no production-selection recall credit."
+    )
 
 
 def test_split_phase_planner_executes_production_screen_and_semantic_target(
