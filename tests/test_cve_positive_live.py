@@ -36,6 +36,11 @@ from uat_scoring import score_independent_target
 
 FIXTURES = Path(__file__).parent / "fixtures"
 MANIFEST = FIXTURES / "cve_positive_acquisition_cohort.json"
+AIOHTTP_PLAN = (
+    Path(__file__).parents[1]
+    / "docs"
+    / "aiohttp-owasp-v3-validation-plan-2026-07-28.json"
+)
 TARGET_CONDITIONING_BASIS = "evaluation-target-conditioned"
 
 
@@ -333,6 +338,50 @@ def test_ruby_saml_validation_pair_is_frozen_as_one_compound_target():
     )
     assert pair[1].expected["findings"] == []
     assert pair[1].expected["expected_absent"] == [target]
+
+
+def test_aiohttp_validation_pair_is_frozen_before_live_execution():
+    pair = _pair("aiohttp_cve_2024_23334", Path("/nonexistent"))
+
+    assert [item.expected["source"]["variant"] for item in pair] == [
+        "pre_fix", "post_fix",
+    ]
+    target = pair[0].expected["findings"][0]
+    assert target == {
+        "title": "Directory traversal when static resources follow symlinks",
+        "file": "aiohttp/web_urldispatcher.py",
+        "line_start": 637,
+        "line_end": 647,
+        "citation_contains": "self._directory.joinpath(filename).resolve()",
+        "cve": "CVE-2024-23334",
+    }
+    assert pair[0].expected["source"]["pinned_commit"] == (
+        "33ccdfb0a12690af5bb49bda2319ec0907fa7827"
+    )
+    assert pair[1].expected["source"]["pinned_commit"] == (
+        "1c335944d6a8b1298baf179b7c0b3069f10c514b"
+    )
+    assert pair[1].expected["findings"] == []
+    assert pair[1].expected["expected_absent"] == [target]
+
+
+def test_aiohttp_validation_plan_is_frozen_to_current_instrument():
+    plan = json.loads(AIOHTTP_PLAN.read_text())
+
+    assert plan["status"] == "ready_not_run"
+    assert plan["project"]["slug"] == "aiohttp_cve_2024_23334"
+    assert plan["evidence_classification"]["selection_holdout"] is False
+    assert plan["execution"]["prompt_versions"] == _live_prompt_versions()
+    assert plan["execution"]["production_region_cap"] == 6
+    assert plan["execution"]["evaluation_target_region_allowance"] == 1
+    assert plan["execution"]["pipeline_call_ceiling"] == 75
+    assert plan["execution"]["pipeline_token_ceiling"] == 250000
+    assert plan["execution"]["outer_timeout_minutes"] == 20
+    assert plan["execution"][
+        "requires_same-run_manufactured_archive_detection_qualification"
+    ] is True
+    assert len(plan["frozen_semantic_obligations"]["positive"]) == 3
+    assert "follow_symlinks" in plan["frozen_semantic_obligations"]["positive"][1]
 
 
 def test_split_phase_planner_executes_production_screen_and_semantic_target(

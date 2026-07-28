@@ -372,8 +372,12 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
   Normalize punctuation as token boundaries, regression-test the exact retained candidate,
   and accept the offline rescore without another paid run. The immutable original result
   and correction are in `docs/xml-detection-qualification-2026-07-28.json`.
-- [ ] Select a different independent target for OWASP v3 validation. Do not rerun
-  Ruby-SAML as untouched evidence.
+- [x] Freeze aiohttp CVE-2024-23334 as the next independent OWASP-v3 semantic target.
+  Its exact commits, target, mechanism obligations, split-phase bounds, acceptance rules,
+  and prohibited changes are in `docs/aiohttp-owasp-v3-validation-plan-2026-07-28.json`.
+  The source and semantic prompt are independent, but the target was already inspected in
+  the planner diagnostic; report it as development-exposed for selection and never as an
+  untouched production-planning holdout. Do not rerun Ruby-SAML as untouched evidence.
 - [ ] Improve ground-truth-blind production planning for security-critical library code.
   The Ruby-SAML target was omitted in both variants; target-forced inclusion receives no
   production coverage credit.

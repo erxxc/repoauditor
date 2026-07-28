@@ -96,6 +96,29 @@
         "line_end": 135,
         "citation_contains": "javadocUnpackPath.toString()"
       }
+    },
+    {
+      "slug": "aiohttp_cve_2024_23334",
+      "project": "aiohttp",
+      "language": "Python",
+      "repository": "https://github.com/aio-libs/aiohttp.git",
+      "vulnerable_commit": "33ccdfb0a12690af5bb49bda2319ec0907fa7827",
+      "fixed_commit": "1c335944d6a8b1298baf179b7c0b3069f10c514b",
+      "license": "Apache-2.0",
+      "license_file": "LICENSE.txt",
+      "cve_ids": ["CVE-2024-23334"],
+      "ghsa_ids": ["GHSA-5h86-8mv2-jq9f"],
+      "cwe_ids": ["CWE-22"],
+      "mechanism": "Directory traversal through lexical parent segments when static-resource symlink following is enabled",
+      "advisory": "https://github.com/advisories/GHSA-5h86-8mv2-jq9f",
+      "patch_scope": "One production module plus regression tests; the target covers StaticResource._handle only",
+      "target": {
+        "title": "Directory traversal when static resources follow symlinks",
+        "file": "aiohttp/web_urldispatcher.py",
+        "line_start": 637,
+        "line_end": 647,
+        "citation_contains": "self._directory.joinpath(filename).resolve()"
+      }
     }
   ]
 }

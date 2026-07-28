@@ -105,6 +105,14 @@ mechanism. Both variants remain `evaluation_eligible=false`. Materialize them wi
 `--cve-positive-acquisition-only`; detector output still requires human adjudication and
 unrelated candidates are not ground truth.
 
+On 2026-07-28 the manifest was extended, before any paid aiohttp semantic run, with
+aiohttp CVE-2024-23334 and its exact Apache-2.0 pre/post commits. This fifth pair is not a
+selection holdout: its advisory target had already been inspected in the ground-truth-blind
+planner diagnostic, and its historical deterministic scan was already available. It is
+eligible only for the frozen OWASP-v3 semantic question under separately attributed target
+inclusion. The evidence boundary and prohibited claims are recorded in
+`docs/aiohttp-owasp-v3-validation-plan-2026-07-28.json`.
+
 CI materializes these snapshots in the scheduled/manual `public corpus cache` workflow. The
 cache key hashes this materializer and all acquisition metadata; an exact hit is reused and a
 miss reacquires every pinned commit. No fallback key is used, acquired code is never executed,

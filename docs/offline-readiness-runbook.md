@@ -394,6 +394,34 @@ rescore passes both cases, so no paid rerun is warranted. The diagnosis and immu
 original result are in
 [`xml-detection-qualification-2026-07-28.json`](xml-detection-qualification-2026-07-28.json).
 
+### Frozen next validation: aiohttp CVE-2024-23334
+
+The next manual semantic validation is the pre/post aiohttp pair frozen in
+[`aiohttp-owasp-v3-validation-plan-2026-07-28.json`](aiohttp-owasp-v3-validation-plan-2026-07-28.json).
+The positive obligation is narrower than “path traversal”: a passing candidate must connect
+request-derived lexical parent segments, the `follow_symlinks=true` containment gap, and
+file access outside the configured static directory. Location or generic CWE-22 language
+remains pending human adjudication.
+
+This is independent upstream code and the OWASP-v3 prompt was not tuned against it, but it
+is not an untouched planner holdout. The target and its blind-plan omission were already
+inspected in `source-selection-diagnostic-2026-07-28.json`. The run may therefore validate
+semantic handling under separately attributed target inclusion; it may not validate
+production target selection.
+
+After the enabling PR merges:
+
+1. run `public corpus cache` to create the new exact cache key containing the fifth
+   CVE-positive pair;
+2. manually run only `live model tests` with scope `cve-positive-aiohttp`; and
+3. retain the workflow artifact before human mechanism adjudication.
+
+The scope first runs both the manufactured falsification qualification and the applicable
+OWASP archive-detection qualification. Either failure prevents the pair from starting.
+The split-phase pair retains the 20-minute outer timeout, two linked batches per snapshot,
+75-call/250,000-token pipeline breakers, six production regions, and at most one separately
+attributed target region. No limit should be raised after observing the result.
+
 ## Analyst decision after collection
 
 Keep the current limits unless the three-run evidence demonstrates a specific operational

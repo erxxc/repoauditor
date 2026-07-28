@@ -1,0 +1,96 @@
+{
+  "schema_version": "split-phase-validation-plan-v1",
+  "frozen_at": "2026-07-28",
+  "status": "ready_not_run",
+  "project": {
+    "slug": "aiohttp_cve_2024_23334",
+    "name": "aiohttp",
+    "language": "Python",
+    "cve": "CVE-2024-23334",
+    "ghsa": "GHSA-5h86-8mv2-jq9f",
+    "cwe": "CWE-22",
+    "mechanism": "Directory traversal through lexical parent segments when static-resource symlink following is enabled",
+    "advisory": "https://github.com/advisories/GHSA-5h86-8mv2-jq9f",
+    "vulnerable_commit": "33ccdfb0a12690af5bb49bda2319ec0907fa7827",
+    "fixed_commit": "1c335944d6a8b1298baf179b7c0b3069f10c514b",
+    "license": "Apache-2.0",
+    "license_file": "LICENSE.txt",
+    "target_file": "aiohttp/web_urldispatcher.py",
+    "target_lines": [637, 647],
+    "citation_contains": "self._directory.joinpath(filename).resolve()"
+  },
+  "evidence_classification": {
+    "independent_upstream_source": true,
+    "semantic_prompt_untouched_by_this_target": true,
+    "selection_holdout": false,
+    "reason_not_selection_holdout": "The target and its prior production-plan omission were inspected in the frozen source-selection diagnostic after the generic selection policy was locked.",
+    "permitted_claim": "Independent development validation of OWASP-v3 semantic handling under forced target inclusion, with production selection reported separately.",
+    "prohibited_claim": "Do not use this run as untouched evidence that production planning finds the target."
+  },
+  "frozen_semantic_obligations": {
+    "positive": [
+      "Identify that request-derived static-resource filename segments can contain lexical parent traversal.",
+      "Identify that follow_symlinks=true skips the pre-fix containment check after resolution.",
+      "Connect the missing containment property to reading a file outside the configured static directory."
+    ],
+    "insufficient": [
+      "Generic path-traversal wording without the follow_symlinks control condition.",
+      "A citation to the target file without an explained containment failure.",
+      "A severity assertion without a request-to-file path."
+    ],
+    "negative_control": "The post-fix branch normalizes the unresolved path and checks lexical containment before resolving symlinks; a semantically equivalent confirmed finding fails the negative control."
+  },
+  "execution": {
+    "workflow_scope": "cve-positive-aiohttp",
+    "order": ["pre_fix", "post_fix"],
+    "split_phases": [
+      "unchanged bounded production detection screen",
+      "separately attributed target-conditioned semantic region",
+      "exact-target-file-scoped falsification"
+    ],
+    "record_production_selected_and_omitted_regions": true,
+    "forced_target_inclusion_receives_production_credit": false,
+    "unrelated_findings_retained_as_unadjudicated": true,
+    "prompt_versions": {
+      "map": "architecture_recovery_v2",
+      "detect": "owasp_v3+untrusted_repository_content_v1+detection_context_v2+supply_chain_v1+untrusted_repository_content_v1+detection_context_v2+agentic_surface_v1+untrusted_repository_content_v1+detection_context_v2+citation_integrity_v1",
+      "falsify": "falsification_v3+untrusted_repository_content_v1+falsification_selfcritique_v2+untrusted_repository_content_v1+falsification_context_v3",
+      "normalize": "severity_adjudication_v3"
+    },
+    "production_region_cap": 6,
+    "evaluation_target_region_allowance": 1,
+    "max_batches_per_snapshot": 2,
+    "pipeline_call_ceiling": 75,
+    "pipeline_token_ceiling": 250000,
+    "provider_request_timeout_seconds": 120,
+    "outer_timeout_minutes": 20,
+    "requires_exact_public_corpus_cache": true,
+    "requires_same-run_manufactured_falsification_qualification": true,
+    "requires_same-run_manufactured_archive_detection_qualification": true
+  },
+  "acceptance": {
+    "instrument": "Both manufactured qualification steps must pass before the pair runs.",
+    "pre_fix": {
+      "confirmed_recovery": "Requires explicit human target_match adjudication against all frozen semantic obligations plus falsification status confirmed.",
+      "unresolved": "Abstention; not a recovered target.",
+      "location_only": "Pending human adjudication; not a target match.",
+      "different_mechanism": "Not a target match."
+    },
+    "post_fix": {
+      "semantic_signal": "Disclose every location candidate and its human mechanism adjudication.",
+      "confirmed_persistence": "A confirmed target_match fails the negative control.",
+      "location_only": "Pending human adjudication; not automatic persistence."
+    },
+    "production_planner": "Report target selection or omission independently; it is not part of the semantic acceptance gate.",
+    "non_target_findings": "Retain and disclose as unadjudicated because the project answer key is not exhaustive."
+  },
+  "prohibited_changes_after_run": [
+    "target file, lines, citation, or semantic obligations",
+    "pre-fix or post-fix commit",
+    "prompt versions or context ranking",
+    "matching vocabulary or human adjudication criteria",
+    "thresholds",
+    "region, batch, call, token, request-timeout, or outer-timeout limits"
+  ],
+  "next_action": "After merge, refresh the exact public-corpus cache, then manually run only cve-positive-aiohttp once."
+}
