@@ -439,7 +439,7 @@ def score_independent_target(
         "post_fix_confirmed_persistence": (
             target_confirmed > 0 if variant == "post_fix" else None
         ),
-        "post_fix_any_signal_persistence": (
+        "post_fix_any_semantic_signal_persistence": (
             target_candidates > 0 if variant == "post_fix" else None
         ),
         "target_signals": target_signals,

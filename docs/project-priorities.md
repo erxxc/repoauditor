@@ -320,8 +320,28 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
   corpus cache, sentinel gate, two-batch ceiling, and 20-minute timeout. Acceptance and
   prohibited post-result changes are frozen in
   `docs/reposilite-validation-plan-2026-07-28.json`.
-- [ ] Run `cve-positive-reposilite` once, retain the artifact/database, then perform human
-  semantic adjudication before scoring target recovery or persistence.
+- [x] Run `cve-positive-reposilite` once and retain the artifact/database. Actions run
+  `30327552345` passed 4/4 manufactured falsification controls and completed both snapshots
+  in one batch each, but failed validation: no pre-fix candidate was raised even with the
+  complete target file forced into detection. Production selection also omitted the target
+  because `.kt`/`.kts` were absent from the shared source inventory. There were no
+  candidates to adjudicate. Reposilite is now development evidence; exact results are in
+  `docs/reposilite-target-conditioned-baseline-2026-07-28.json`.
+- [x] Add bounded Kotlin visibility to the shared source inventory. Map context remains
+  capped at 40 files/its existing character budget, and detection remains capped by
+  `[detect].max_llm_regions_per_run`; the work projection now reports Kotlin in the
+  unbounded/omitted counts instead of silently excluding it. Retrieval uses its explicit
+  logged lexical fallback until a Kotlin AST contract is independently tested.
+- [x] Version the OWASP lens to `owasp_v2` with explicit path-traversal and unsafe
+  archive-extraction obligations. Add external-answer-key, zero-token archive-containment
+  controls that distinguish an accepted `../../` escape from normalized containment
+  rejection without claiming attacker control or runtime sink execution.
+- [x] Build a separate, budgeted `qualify-detection` command and manual
+  `detection-sentinels` Actions scope. It calls only the OWASP lens once per manufactured
+  archive case, requires semantic/location agreement for the vulnerable case, fails on any
+  patched-control candidate, and retains authoritative usage in its JSON.
+- [ ] Run that manufactured archive-detection qualification before spending on another
+  independent project. Keep ruby-saml untouched until the instrument check passes.
 
 ### C — methodology blocked
 

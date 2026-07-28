@@ -13,7 +13,7 @@ from pathlib import Path
 # lockfiles and manifests are handled separately by the supply-chain lens.
 SOURCE_EXTENSIONS: set[str] = {
     ".py", ".js", ".jsx", ".ts", ".tsx", ".go", ".rb", ".php", ".java",
-    ".rs", ".c", ".h", ".cpp", ".cs", ".sh",
+    ".kt", ".kts", ".rs", ".c", ".h", ".cpp", ".cs", ".sh",
 }
 
 _SKIP_DIRS = {".git", "node_modules", "__pycache__", ".venv", "venv", "dist", "build"}

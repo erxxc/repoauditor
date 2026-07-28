@@ -85,6 +85,7 @@ class SentinelQualification(BaseModel):
     negative_recovery: float
     overall_recovery: float
     qualified: bool
+    model_usage: dict[str, int] | None = None
     evidence_scope: str = (
         "manufactured controls only; not real-world precision or recall"
     )

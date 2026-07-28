@@ -36,9 +36,11 @@ from .detect import (
 from .detect.ensemble import CITATION_INTEGRITY_VERSION, LENS_PROMPT_VERSIONS
 from .eval import (
     build_usage_calibration,
+    evaluate_archive_detection_sentinels,
     evaluate_finding_convergence,
     evaluate_manufactured_sentinels,
     render_convergence,
+    render_detection_qualification,
     render_sentinel_qualification,
     render_usage_calibration,
 )
@@ -1180,14 +1182,45 @@ def qualify_instrument(
     """
     config = get_config()
     fixture = config.root / "tests" / "fixtures" / "manufactured_sentinels"
-    result, _ = _metered_operation(
+    result, pipeline = _metered_operation(
         "evaluation:manufactured-sentinels", "qualify-instrument",
         lambda: evaluate_manufactured_sentinels(fixture, config=config), config,
+    )
+    result.model_usage = db.summarize_model_usage(
+        pipeline.id, config, stage="qualify-instrument"
     )
     typer.echo(
         result.model_dump_json(indent=2)
         if output_format is ListFormat.JSON
         else render_sentinel_qualification(result)
+    )
+    if not result.qualified:
+        raise typer.Exit(code=1)
+
+
+@app.command(name="qualify-detection")
+@_clean_errors("qualify-detection")
+def qualify_detection(
+    output_format: ListFormat = typer.Option(
+        ListFormat.HUMAN, "--format", help="Output format: human or json."
+    ),
+) -> None:
+    """Run the paid manufactured archive pair against the OWASP detection lens."""
+    config = get_config()
+    fixture = config.root / "tests" / "fixtures" / "manufactured_archive_controls"
+    result, pipeline = _metered_operation(
+        "evaluation:manufactured-archive-detection",
+        "qualify-detection",
+        lambda: evaluate_archive_detection_sentinels(fixture, config=config),
+        config,
+    )
+    result.model_usage = db.summarize_model_usage(
+        pipeline.id, config, stage="qualify-detection"
+    )
+    typer.echo(
+        result.model_dump_json(indent=2)
+        if output_format is ListFormat.JSON
+        else render_detection_qualification(result)
     )
     if not result.qualified:
         raise typer.Exit(code=1)

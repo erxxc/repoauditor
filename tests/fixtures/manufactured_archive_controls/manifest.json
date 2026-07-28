@@ -1,0 +1,33 @@
+{
+  "schema_version": "manufactured-archive-controls-v1",
+  "kind": "manufactured_solution",
+  "purpose": "Zero-token archive-entry containment controls; not real-world performance evidence.",
+  "cases": [
+    {
+      "id": "positive-unchecked-archive-entry",
+      "file": "VulnerableArchive.kt",
+      "line_start": 6,
+      "line_end": 7,
+      "citation_snippet": "val output = destination.resolve(entry.name)",
+      "destination": "/srv/javadocs",
+      "entry_name": "../../outside.txt",
+      "containment_enforced": false,
+      "expected": "verified_escape_accepted",
+      "expected_detection": "raised",
+      "ground_truth_basis": "The concrete entry resolves outside the destination and the manufactured extraction shape has no normalized containment rejection."
+    },
+    {
+      "id": "negative-normalized-containment",
+      "file": "PatchedArchive.kt",
+      "line_start": 7,
+      "line_end": 10,
+      "citation_snippet": "require(output.startsWith(root))",
+      "destination": "/srv/javadocs",
+      "entry_name": "../../outside.txt",
+      "containment_enforced": true,
+      "expected": "verified_escape_rejected",
+      "expected_detection": "absent",
+      "ground_truth_basis": "The same escaping entry is rejected by a normalized destination-containment check before the manufactured sink."
+    }
+  ]
+}

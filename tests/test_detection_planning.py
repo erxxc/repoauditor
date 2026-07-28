@@ -14,6 +14,7 @@ from repoauditor.detect.planning import (
     validate_detection_projection,
 )
 from repoauditor.map import ArchitectureMap, EntryPoint
+from repoauditor.sourcefiles import iter_source_files
 from repoauditor.store.models import Severity
 
 
@@ -56,6 +57,72 @@ def test_projection_reports_unbounded_and_bounded_work(tmp_config, tmp_path):
     assert projection.planned_regions == 6
     assert projection.planned_base_calls == 18
     assert projection.omitted_regions == 4
+
+
+def test_kotlin_sources_are_visible_but_detection_work_remains_bounded(
+    tmp_config, tmp_path,
+):
+    _sources(tmp_path, 8)
+    (tmp_path / "Service.kt").write_text(
+        "fun unpack(entry: String) = destination.resolve(entry)\n"
+    )
+    (tmp_path / "build.gradle.kts").write_text("plugins { kotlin(\"jvm\") }\n")
+
+    visible = {
+        path.relative_to(tmp_path).as_posix()
+        for path in iter_source_files(tmp_path)
+    }
+    projection = project_detection_work(tmp_path, tmp_config, lens_count=3)
+
+    assert {"Service.kt", "build.gradle.kts"} <= visible
+    assert projection.source_files == 10
+    assert projection.unbounded_base_calls == 30
+    assert projection.planned_regions == tmp_config.detect.max_llm_regions_per_run
+    assert projection.planned_base_calls == (
+        tmp_config.detect.max_llm_regions_per_run * 3
+    )
+
+
+def test_architecture_signal_can_select_kotlin_without_expanding_region_cap(
+    tmp_config, tmp_path,
+):
+    _sources(tmp_path, 8)
+    target = tmp_path / "ArchiveService.kt"
+    target.write_text("fun unpack(entry: String) = destination.resolve(entry)\n")
+    architecture = ArchitectureMap(
+        repo_id="repo",
+        commit="commit",
+        entry_points=[EntryPoint(name="archive upload", location="ArchiveService.kt:1")],
+    )
+
+    plan = plan_detection_regions(
+        tmp_path,
+        tmp_config,
+        commit="commit",
+        architecture=architecture,
+        tool_candidates=[],
+    )
+
+    by_file = {item.relative_path: item.selection_basis for item in plan}
+    assert by_file["ArchiveService.kt"] == "architecture-map"
+    assert len(plan) == tmp_config.detect.max_llm_regions_per_run
+
+
+def test_kotlin_participates_in_retrieval_via_logged_lexical_fallback(tmp_path):
+    source = tmp_path / "ArchiveService.kt"
+    source.write_text(
+        "fun unpack(entry: String) {\n"
+        "  val output = destination.resolve(entry)\n"
+        "  Files.copy(stream, output)\n"
+        "}\n"
+    )
+
+    index = RetrievalIndex().build(tmp_path)
+
+    functions = index.functions_in_file("ArchiveService.kt")
+    assert len(functions) == 1
+    assert functions[0].language == "lexical"
+    assert "resolve" in functions[0].calls
 
 
 def test_projection_fails_before_calls_when_configured_cap_cannot_fit(
