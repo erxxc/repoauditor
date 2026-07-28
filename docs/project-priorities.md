@@ -398,6 +398,14 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
 - [ ] Improve ground-truth-blind production planning for security-critical library code.
   The Ruby-SAML target was omitted in both variants; target-forced inclusion receives no
   production coverage credit.
+- [~] Measure production selection on a genuinely untouched project. The corpus audit found
+  zero eligible checked-in pairs: all existing answer keys are visible or the pair has
+  already been inspected. A zero-token capture/adjudication instrument now makes target
+  disclosure structurally later than planner capture and fails on receipt or snapshot
+  mutation. The frozen acquisition criteria, sequencing, claim boundary, and explicit
+  map-only future provider cost are in
+  `docs/untouched-production-selection-plan-2026-07-28.json`. Merge the instrument before
+  selecting a new pair; do not relabel a development fixture as untouched.
 - [x] Split future CVE acquisition evaluation into a bounded production detection screen
   plus one separately attributed advisory-target region, followed by target-file-scoped
   falsification. Forced target inclusion receives no production-selection credit; every
@@ -447,9 +455,11 @@ methodology-blocking. This hold is the priority-10 decision, not an incomplete t
   bounded-coverage limitation, not a semantic detector failure or a reason to tune filenames.
 - [x] Checkpoint every file+lens unit so a fresh standalone detect budget reuses completed
   units rather than repeating provider calls.
-- [ ] Validate the bounded planner on independent projects without tuning its selection
+- [~] Validate the bounded planner on independent projects without tuning its selection
   against advisory target locations. Treat missed omitted-region targets as coverage
-  evidence, not false-negative model judgments.
+  evidence, not false-negative model judgments. Existing aiohttp/Rack measurements are
+  development diagnostics. The next independent measurement requires the newly frozen blind
+  acquisition/capture protocol and a public pair not already represented in this repository.
 - [x] Allow auditable human assessment of every canonical detector finding while explicitly
   withholding non-SARIF assessment-only evidence from the SAST classifier label/training
   gate. Never synthesize missing feature vectors to inflate the usable-label count.

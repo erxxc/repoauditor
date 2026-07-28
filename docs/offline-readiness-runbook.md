@@ -33,6 +33,23 @@ uv run repoauditor triage-collection
 The dimension view is descriptive. Merely declaring a dimension does not advance the
 40-label/eight-engagement activation gate, and uncertain assessments remain abstentions.
 
+Prepare the next production-selection measurement without loading an answer key:
+
+- use `tests/selection_evidence.py` to capture the unchanged planner output from snapshot,
+  architecture-map, deterministic-candidate, and configuration inputs;
+- write both pre-fix and post-fix captures before a reviewer opens the advisory patch or
+  records its target path; and
+- only then use the separate adjudication function to compare the reviewed target with the
+  signed captures.
+
+The checked-in corpus currently has no untouched pair suitable for this measurement.
+Existing pairs have visible answer keys or prior evaluation exposure. The complete
+eligibility rules and frozen sequence are in
+[`untouched-production-selection-plan-2026-07-28.json`](untouched-production-selection-plan-2026-07-28.json).
+The remaining acquisition requires network access, and the eventual normal architecture map
+requires bounded provider calls; LLM detection and falsification are not needed to answer
+the selection-only question.
+
 ## Fixed evaluation roles
 
 - `uat_lightweight_app` is `calibration_fixture`: useful for operational consumption and
