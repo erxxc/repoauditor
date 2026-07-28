@@ -70,6 +70,80 @@ def build_corpus_readiness(fixtures_root: Path) -> dict:
     protected_materialized = bool(protected) and all(
         record["materialized"] for record in protected
     )
+    acquisition_path = fixtures_root / "training_acquisition_cohort.json"
+    acquisition: list[dict] = []
+    if acquisition_path.is_file():
+        manifest = json.loads(acquisition_path.read_text())
+        if manifest.get("evaluation_eligible") is not False:
+            issues.append("training acquisition cohort must be evaluation_eligible=false")
+        if not manifest.get("selection_policy") or not manifest.get("ground_truth_policy"):
+            issues.append("training acquisition cohort lacks selection/ground-truth policy")
+        for project in manifest.get("projects", []):
+            missing = [
+                field for field in (
+                    "slug", "project", "language", "repository", "pinned_commit",
+                    "license", "license_file",
+                )
+                if not project.get(field)
+            ]
+            if missing:
+                issues.append(
+                    f"training acquisition entry missing {', '.join(missing)}"
+                )
+                continue
+            acquisition.append({
+                **project,
+                "evaluation_eligible": False,
+                "materialized": (
+                    fixtures_root / f"acquisition_{project['slug']}" / "snapshot"
+                ).is_dir(),
+            })
+    cve_acquisition_path = fixtures_root / "cve_positive_acquisition_cohort.json"
+    cve_acquisition: list[dict] = []
+    if cve_acquisition_path.is_file():
+        manifest = json.loads(cve_acquisition_path.read_text())
+        if manifest.get("evaluation_eligible") is not False:
+            issues.append("CVE-positive acquisition cohort must be evaluation_eligible=false")
+        if not manifest.get("selection_policy") or not manifest.get("ground_truth_policy"):
+            issues.append("CVE-positive acquisition cohort lacks selection/ground-truth policy")
+        for project in manifest.get("projects", []):
+            missing = [
+                field for field in (
+                    "slug", "project", "language", "repository", "vulnerable_commit",
+                    "fixed_commit", "license", "license_file", "cve_ids", "mechanism",
+                    "advisory", "patch_scope", "target",
+                )
+                if not project.get(field)
+            ]
+            if missing:
+                issues.append(
+                    f"CVE-positive acquisition entry missing {', '.join(missing)}"
+                )
+                continue
+            target_missing = [
+                field for field in (
+                    "title", "file", "line_start", "line_end", "citation_contains",
+                )
+                if project["target"].get(field) in (None, "")
+            ]
+            if target_missing:
+                issues.append(
+                    f"CVE-positive acquisition target missing {', '.join(target_missing)}"
+                )
+                continue
+            variants = {
+                variant: (
+                    fixtures_root
+                    / f"acquisition_cve_{project['slug']}_{variant}"
+                    / "snapshot"
+                ).is_dir()
+                for variant in ("pre", "post")
+            }
+            cve_acquisition.append({
+                **project,
+                "evaluation_eligible": False,
+                "materialized_variants": variants,
+            })
     return {
         "schema_version": 1,
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -100,8 +174,19 @@ def build_corpus_readiness(fixtures_root: Path) -> dict:
                 record["materialized"] for record in protected
             ),
             "calibration_fixture_count": len(calibration),
+            "training_acquisition_count": len(acquisition),
+            "training_acquisition_materialized_count": sum(
+                record["materialized"] for record in acquisition
+            ),
+            "cve_positive_acquisition_count": len(cve_acquisition),
+            "cve_positive_acquisition_materialized_pair_count": sum(
+                all(record["materialized_variants"].values())
+                for record in cve_acquisition
+            ),
         },
         "protected_holdout": protected,
+        "training_acquisition": acquisition,
+        "cve_positive_acquisition": cve_acquisition,
         "records": records,
     }
 
@@ -115,6 +200,11 @@ def main() -> None:
         action="store_true",
         help="Also fail unless the protected holdout snapshots are present.",
     )
+    parser.add_argument(
+        "--require-cve-positive-materialized",
+        action="store_true",
+        help="Also fail unless every frozen CVE-positive pre/post pair is present.",
+    )
     args = parser.parse_args()
     report = build_corpus_readiness(args.fixtures)
     payload = json.dumps(report, indent=2) + "\n"
@@ -126,6 +216,12 @@ def main() -> None:
         raise SystemExit(1)
     if args.require_materialized and not report["online_execution_ready"]:
         raise SystemExit(2)
+    if (
+        args.require_cve_positive_materialized
+        and report["summary"]["cve_positive_acquisition_materialized_pair_count"]
+        != report["summary"]["cve_positive_acquisition_count"]
+    ):
+        raise SystemExit(3)
 
 
 if __name__ == "__main__":

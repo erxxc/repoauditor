@@ -96,6 +96,10 @@ class SarifFinding:
     cwe: int | None = None
     security_severity: float | None = None
     dataflow_length: int = 0         # #locations across the result's codeFlows
+    detector: str = "unknown"        # explicit SARIF driver name; distinct from fallback
+    language: str = "unknown"        # explicit SARIF artifact sourceLanguage only
+    language_source: str = "unavailable"
+    detector_source: str = "unavailable"
     raw: dict = field(default_factory=dict)
 
     @property
@@ -136,7 +140,9 @@ def load_sarif(source: str | Path) -> list[SarifFinding]:
     findings: list[SarifFinding] = []
     for run in doc.get("runs", []):
         driver = run.get("tool", {}).get("driver", {})
-        tool_name = driver.get("name", "sast")
+        detector = _metadata_value(driver.get("name"))
+        tool_name = detector if detector != "unknown" else "sast"
+        artifacts_by_index, artifacts_by_uri = _artifact_languages(run)
         # Index rule metadata (CWE tags + security-severity) by rule id.
         rule_meta: dict[str, dict] = {}
         for rule in driver.get("rules", []):
@@ -154,6 +160,9 @@ def load_sarif(source: str | Path) -> list[SarifFinding]:
             rule_id = result.get("ruleId") or result.get("rule", {}).get("id", "unknown")
             meta = rule_meta.get(rule_id, {})
             loc = _primary_location(result)
+            language, language_source = _location_language(
+                loc, artifacts_by_index, artifacts_by_uri
+            )
             props = result.get("properties", {}) or {}
             cwe = meta.get("cwe") or _extract_cwe(
                 *(result.get("taxa", []) and [str(result["taxa"])] or []),
@@ -174,6 +183,14 @@ def load_sarif(source: str | Path) -> list[SarifFinding]:
                     security_severity=(meta.get("security_severity")
                                        or _to_float(props.get("security-severity"))),
                     dataflow_length=_dataflow_length(result),
+                    detector=detector,
+                    language=language,
+                    language_source=language_source,
+                    detector_source=(
+                        "sarif:run.tool.driver.name"
+                        if detector != "unknown"
+                        else "unavailable"
+                    ),
                     raw=result,
                 )
             )
@@ -220,6 +237,41 @@ def _to_float(value) -> float | None:
         return None
 
 
+def _metadata_value(value: object) -> str:
+    """Normalize an explicit categorical metadata value without deriving one."""
+    if not isinstance(value, str) or not value.strip():
+        return "unknown"
+    return value.strip().casefold()
+
+
+def _artifact_languages(run: dict) -> tuple[dict[int, str], dict[str, str]]:
+    """Index explicit SARIF artifact languages; never infer them from a URI suffix."""
+    by_index: dict[int, str] = {}
+    by_uri: dict[str, str] = {}
+    for index, artifact in enumerate(run.get("artifacts", []) or []):
+        language = _metadata_value(artifact.get("sourceLanguage"))
+        if language == "unknown":
+            continue
+        by_index[index] = language
+        uri = (artifact.get("location", {}) or {}).get("uri")
+        if isinstance(uri, str) and uri:
+            by_uri[uri] = language
+    return by_index, by_uri
+
+
+def _location_language(
+    location: dict, by_index: dict[int, str], by_uri: dict[str, str]
+) -> tuple[str, str]:
+    """Resolve only a language explicitly attached to the located SARIF artifact."""
+    artifact_index = location.get("artifact_index")
+    if isinstance(artifact_index, int) and artifact_index in by_index:
+        return by_index[artifact_index], "sarif:artifact.sourceLanguage"
+    uri = location["file"]
+    if uri in by_uri:
+        return by_uri[uri], "sarif:artifact.sourceLanguage"
+    return "unknown", "unavailable"
+
+
 def _message_text(result: dict) -> str:
     msg = result.get("message", {})
     return msg.get("text", "") if isinstance(msg, dict) else str(msg)
@@ -229,12 +281,17 @@ def _primary_location(result: dict) -> dict:
     """First physical location of a result, with a safe empty default."""
     locs = result.get("locations", []) or []
     if not locs:
-        return {"file": "unknown", "line_start": 1, "line_end": 1, "snippet": ""}
+        return {
+            "file": "unknown", "artifact_index": None,
+            "line_start": 1, "line_end": 1, "snippet": "",
+        }
     phys = locs[0].get("physicalLocation", {})
+    artifact = phys.get("artifactLocation", {}) or {}
     region = phys.get("region", {}) or {}
     start = region.get("startLine", 1)
     return {
-        "file": phys.get("artifactLocation", {}).get("uri", "unknown"),
+        "file": artifact.get("uri", "unknown"),
+        "artifact_index": artifact.get("index"),
         "line_start": start,
         "line_end": region.get("endLine", start),
         "snippet": (region.get("snippet", {}) or {}).get("text", ""),

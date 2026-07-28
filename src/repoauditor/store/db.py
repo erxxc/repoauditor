@@ -21,6 +21,7 @@ from .models import (
     ClaimEvidence,
     DealRisk,
     DebatePosition,
+    DetectionRegionRun,
     Entity,
     EntityKind,
     EvalRun,
@@ -266,6 +267,81 @@ def list_model_usage(
                 (pipeline_run_id,),
             ).fetchall()
         return [ModelUsage(**dict(row)) for row in rows]
+    finally:
+        conn.close()
+
+
+def start_detection_region(
+    region: DetectionRegionRun, config: Config | None = None
+) -> DetectionRegionRun:
+    """Start/restart one region; a completed row is returned unchanged."""
+    conn = get_connection(config)
+    try:
+        with conn:
+            conn.execute(
+                "INSERT INTO detection_region_run "
+                "(repo_id, commit_hash, file, lens, prompt_version, selection_basis, status) "
+                "VALUES (?, ?, ?, ?, ?, ?, 'running') "
+                "ON CONFLICT(repo_id, commit_hash, file, lens, prompt_version) DO UPDATE SET "
+                "selection_basis=excluded.selection_basis, status=CASE "
+                "WHEN detection_region_run.status='completed' THEN 'completed' ELSE 'running' END, "
+                "started_at=CASE WHEN detection_region_run.status='completed' "
+                "THEN detection_region_run.started_at ELSE datetime('now') END, "
+                "completed_at=CASE WHEN detection_region_run.status='completed' "
+                "THEN detection_region_run.completed_at ELSE NULL END, "
+                "failure_detail=CASE WHEN detection_region_run.status='completed' "
+                "THEN detection_region_run.failure_detail ELSE NULL END",
+                (
+                    region.repo_id, region.commit_hash, region.file, region.lens,
+                    region.prompt_version, region.selection_basis,
+                ),
+            )
+            row = conn.execute(
+                "SELECT * FROM detection_region_run WHERE repo_id=? AND commit_hash=? "
+                "AND file=? AND lens=? AND prompt_version=?",
+                (
+                    region.repo_id, region.commit_hash, region.file, region.lens,
+                    region.prompt_version,
+                ),
+            ).fetchone()
+        return DetectionRegionRun(**dict(row))
+    finally:
+        conn.close()
+
+
+def finish_detection_region(
+    region_id: int,
+    status: RunStatus,
+    *,
+    finding_count: int = 0,
+    failure_detail: str | None = None,
+    config: Config | None = None,
+) -> None:
+    conn = get_connection(config)
+    try:
+        with conn:
+            conn.execute(
+                "UPDATE detection_region_run SET status=?, finding_count=?, "
+                "completed_at=datetime('now'), failure_detail=? WHERE id=?",
+                (str(status), finding_count, failure_detail, region_id),
+            )
+    finally:
+        conn.close()
+
+
+def list_detection_regions(
+    repo_id: str,
+    commit_hash: str,
+    config: Config | None = None,
+) -> list[DetectionRegionRun]:
+    conn = get_connection(config)
+    try:
+        rows = conn.execute(
+            "SELECT * FROM detection_region_run WHERE repo_id=? AND commit_hash=? "
+            "ORDER BY id",
+            (repo_id, commit_hash),
+        ).fetchall()
+        return [DetectionRegionRun(**dict(row)) for row in rows]
     finally:
         conn.close()
 
@@ -1109,6 +1185,24 @@ def list_triage_labels(
         conn.close()
 
 
+def delete_triage_label_projection(
+    engagement: str,
+    finding_fingerprint: str,
+    config: Config | None = None,
+) -> None:
+    """Remove an effective training projection while retaining assessment evidence."""
+    conn = get_connection(config)
+    try:
+        with conn:
+            conn.execute(
+                "DELETE FROM triage_label "
+                "WHERE engagement = ? AND finding_fingerprint = ?",
+                (engagement, finding_fingerprint),
+            )
+    finally:
+        conn.close()
+
+
 def insert_triage_assessment(
     assessment: TriageAssessment, config: Config | None = None
 ) -> int:
@@ -1118,12 +1212,14 @@ def insert_triage_assessment(
         with conn:
             cur = conn.execute(
                 "INSERT INTO triage_assessment "
-                "(finding_id, engagement, outcome, disposition, rationale, analyst, dimensions) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?)",
+                "(finding_id, engagement, outcome, disposition, rationale, analyst, "
+                " material, classifier_eligible, dimensions) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (
                     assessment.finding_id, assessment.engagement, str(assessment.outcome),
                     str(assessment.disposition) if assessment.disposition else None,
                     assessment.rationale, assessment.analyst,
+                    int(assessment.material), int(assessment.classifier_eligible),
                     json.dumps(assessment.dimensions),
                 ),
             )
@@ -1151,7 +1247,9 @@ def list_triage_assessments(
             disposition=(
                 TriageDisposition(row["disposition"]) if row["disposition"] else None
             ),
-            analyst=row["analyst"], dimensions=json.loads(row["dimensions"]),
+            analyst=row["analyst"], material=bool(row["material"]),
+            classifier_eligible=bool(row["classifier_eligible"]),
+            dimensions=json.loads(row["dimensions"]),
             created_at=row["created_at"],
         ) for row in rows]
     finally:
@@ -1175,12 +1273,15 @@ def upsert_triage_features(
         with conn:
             cur = conn.execute(
                 "INSERT INTO triage_features "
-                "(finding_id, engagement, rule_id, fingerprint, features, feature_names) "
-                "VALUES (?, ?, ?, ?, ?, ?) "
+                "(finding_id, engagement, rule_id, fingerprint, features, feature_names, "
+                " detector, detector_source, language, language_source) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
                 "ON CONFLICT (finding_id) DO UPDATE SET "
                 "  engagement = excluded.engagement, rule_id = excluded.rule_id, "
                 "  fingerprint = excluded.fingerprint, features = excluded.features, "
-                "  feature_names = excluded.feature_names",
+                "  feature_names = excluded.feature_names, detector = excluded.detector, "
+                "  detector_source = excluded.detector_source, language = excluded.language, "
+                "  language_source = excluded.language_source",
                 (
                     record.finding_id,
                     record.engagement,
@@ -1188,6 +1289,10 @@ def upsert_triage_features(
                     record.fingerprint,
                     json.dumps(record.features),
                     json.dumps(record.feature_names),
+                    record.detector,
+                    record.detector_source,
+                    record.language,
+                    record.language_source,
                 ),
             )
         return int(cur.lastrowid)
@@ -1203,6 +1308,10 @@ def _triage_feature_record_from_row(row: sqlite3.Row) -> TriageFeatureRecord:
         fingerprint=row["fingerprint"],
         features=json.loads(row["features"]),
         feature_names=json.loads(row["feature_names"]),
+        detector=row["detector"],
+        detector_source=row["detector_source"],
+        language=row["language"],
+        language_source=row["language_source"],
     )
 
 
@@ -1591,10 +1700,14 @@ def insert_prior_source(ps: PriorSource, config: Config | None = None) -> int:
         with conn:
             cur = conn.execute(
                 "INSERT INTO prior_source (kind, param_path, source, detail, publication, "
-                " edition, locator, url, transformation, provenance_status) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                " edition, locator, url, transformation, provenance_status, "
+                " target_population, effective_date, data_vintage, "
+                " aleatory_representation, epistemic_status) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (ps.kind, ps.param_path, ps.source, ps.detail, ps.publication,
-                 ps.edition, ps.locator, ps.url, ps.transformation, ps.provenance_status),
+                 ps.edition, ps.locator, ps.url, ps.transformation, ps.provenance_status,
+                 ps.target_population, ps.effective_date, ps.data_vintage,
+                 ps.aleatory_representation, ps.epistemic_status),
             )
         return int(cur.lastrowid)
     finally:
@@ -1619,6 +1732,11 @@ def list_prior_sources(config: Config | None = None) -> list[PriorSource]:
                 url=r["url"],
                 transformation=r["transformation"],
                 provenance_status=r["provenance_status"],
+                target_population=r["target_population"],
+                effective_date=r["effective_date"],
+                data_vintage=r["data_vintage"],
+                aleatory_representation=r["aleatory_representation"],
+                epistemic_status=r["epistemic_status"],
             )
             for r in rows
         ]
@@ -2169,14 +2287,19 @@ def upsert_security_claim(
         with conn:
             conn.execute(
                 "INSERT INTO security_claim "
-                "(finding_id, claim_version, snapshot_commit, mechanism, "
-                " entry_evidence, source_evidence, sink_evidence, "
+                "(finding_id, claim_version, snapshot_commit, mechanism, language, "
+                " entry_evidence, caller_evidence, authorization_evidence, "
+                " registration_evidence, source_evidence, sink_evidence, "
                 " path_nodes, path_predicates, control_candidate, producer_type, "
                 " producer_name, prompt_version) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
                 "ON CONFLICT (finding_id, claim_version) DO UPDATE SET "
                 "snapshot_commit=excluded.snapshot_commit, mechanism=excluded.mechanism, "
+                "language=excluded.language, "
                 "entry_evidence=excluded.entry_evidence, "
+                "caller_evidence=excluded.caller_evidence, "
+                "authorization_evidence=excluded.authorization_evidence, "
+                "registration_evidence=excluded.registration_evidence, "
                 "source_evidence=excluded.source_evidence, "
                 "sink_evidence=excluded.sink_evidence, path_nodes=excluded.path_nodes, "
                 "path_predicates=excluded.path_predicates, "
@@ -2188,7 +2311,15 @@ def upsert_security_claim(
                     claim.claim_version,
                     claim.snapshot_commit,
                     claim.mechanism,
+                    claim.language,
                     json.dumps([item.model_dump() for item in claim.entry_evidence]),
+                    json.dumps([item.model_dump() for item in claim.caller_evidence]),
+                    json.dumps([
+                        item.model_dump() for item in claim.authorization_evidence
+                    ]),
+                    json.dumps([
+                        item.model_dump() for item in claim.registration_evidence
+                    ]),
                     json.dumps([item.model_dump() for item in claim.source_evidence]),
                     json.dumps(claim.sink_evidence.model_dump())
                     if claim.sink_evidence else None,
@@ -2226,8 +2357,20 @@ def list_security_claims(
                 claim_version=row["claim_version"],
                 snapshot_commit=row["snapshot_commit"],
                 mechanism=row["mechanism"],
+                language=row["language"],
                 entry_evidence=[
                     ClaimEvidence(**item) for item in json.loads(row["entry_evidence"])
+                ],
+                caller_evidence=[
+                    ClaimEvidence(**item) for item in json.loads(row["caller_evidence"])
+                ],
+                authorization_evidence=[
+                    ClaimEvidence(**item)
+                    for item in json.loads(row["authorization_evidence"])
+                ],
+                registration_evidence=[
+                    ClaimEvidence(**item)
+                    for item in json.loads(row["registration_evidence"])
                 ],
                 source_evidence=[
                     ClaimEvidence(**item) for item in json.loads(row["source_evidence"])

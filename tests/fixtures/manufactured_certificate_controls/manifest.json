@@ -1,0 +1,90 @@
+{
+  "schema_version": "manufactured-certificate-controls-v1",
+  "kind": "manufactured_solution",
+  "cases": [
+    {
+      "id": "js-ssrf-positive",
+      "title": "SSRF [CWE-918]",
+      "file": "controls.js",
+      "line": 2,
+      "citation": "axios.get(req.query.url)",
+      "expected_slice": "local",
+      "expected_verification": "structurally_verified",
+      "basis": "Direct request query property is the exact Axios URL argument."
+    },
+    {
+      "id": "js-ssrf-negative-fixed-target",
+      "title": "SSRF [CWE-918]",
+      "file": "controls.js",
+      "line": 6,
+      "citation": "axios.get(\"https://status.example.test/health\")",
+      "expected_slice": "incomplete",
+      "expected_verification": "verification_incomplete",
+      "basis": "The outbound target is a fixed literal and has no request-input chain."
+    },
+    {
+      "id": "js-command-positive",
+      "title": "Command injection [CWE-78]",
+      "file": "controls.js",
+      "line": 10,
+      "citation": "child_process.exec(req.body.command)",
+      "expected_slice": "local",
+      "expected_verification": "structurally_verified",
+      "basis": "Direct request body property is the exact exec command argument."
+    },
+    {
+      "id": "js-command-negative-fixed-command",
+      "title": "Command injection [CWE-78]",
+      "file": "controls.js",
+      "line": 14,
+      "citation": "child_process.exec(\"/usr/bin/id\")",
+      "expected_slice": "incomplete",
+      "expected_verification": "verification_incomplete",
+      "basis": "The command is a fixed literal and has no request-input chain."
+    },
+    {
+      "id": "java-ssrf-positive",
+      "title": "SSRF [CWE-918]",
+      "file": "Controls.java",
+      "line": 3,
+      "citation": "new URL(request.getParameter(\"url\")).openStream()",
+      "expected_slice": "local",
+      "expected_verification": "structurally_verified",
+      "basis": "Literal-key servlet parameter is the exact URL constructor argument."
+    },
+    {
+      "id": "java-ssrf-negative-fixed-target",
+      "title": "SSRF [CWE-918]",
+      "file": "Controls.java",
+      "line": 7,
+      "citation": "new URL(\"https://status.example.test/health\").openStream()",
+      "expected_slice": "incomplete",
+      "expected_verification": "verification_incomplete",
+      "basis": "The Java URL is fixed and has no servlet-input chain."
+    },
+    {
+      "id": "authorization-positive-candidate",
+      "title": "Command injection [CWE-78]",
+      "file": "auth_controls.py",
+      "line": 7,
+      "citation": "os.system(command)",
+      "expected_slice": "local",
+      "expected_verification": "structurally_verified",
+      "expected_check": "authorization_syntax_verified",
+      "expected_check_value": true,
+      "basis": "The same function carries an explicit ownership-authorization candidate."
+    },
+    {
+      "id": "authorization-negative-authentication-only",
+      "title": "Command injection [CWE-78]",
+      "file": "auth_controls.py",
+      "line": 13,
+      "citation": "os.system(command)",
+      "expected_slice": "local",
+      "expected_verification": "structurally_verified",
+      "expected_check": "authorization_syntax_verified",
+      "expected_check_value": false,
+      "basis": "Authentication-only login_required must not be classified as authorization."
+    }
+  ]
+}

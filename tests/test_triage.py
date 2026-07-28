@@ -86,6 +86,31 @@ def test_load_sarif_reads_rule_metadata_cwe_and_dataflow():
     assert f.fingerprint  # stable, non-empty
 
 
+def test_load_sarif_uses_only_explicit_artifact_language_metadata():
+    document = json.loads(_sarif(
+        rules=[{"id": "py.sqli"}],
+        results=[
+            _result("py.sqli", "app/db.py", 10),
+            _result("py.sqli", "app/unknown.py", 20),
+        ],
+    ))
+    document["runs"][0]["artifacts"] = [{
+        "location": {"uri": "app/db.py"},
+        "sourceLanguage": "Python",
+    }]
+
+    explicit, unavailable = load_sarif(json.dumps(document))
+
+    assert explicit.tool_name == "semgrep"
+    assert explicit.detector_source == "sarif:run.tool.driver.name"
+    assert explicit.language == "python"
+    assert explicit.language_source == "sarif:artifact.sourceLanguage"
+    # A suggestive extension is deliberately not treated as cohort evidence.
+    assert unavailable.file.endswith(".py")
+    assert unavailable.language == "unknown"
+    assert unavailable.language_source == "unavailable"
+
+
 def test_feature_vector_matches_schema_width_and_flags_paths():
     doc = _sarif(
         rules=[{"id": "r1", "name": "x", "properties": {"tags": ["CWE-78"], "security-severity": "9.0"}}],
@@ -399,6 +424,110 @@ def test_insufficient_evidence_persists_without_training_label(cfg, tmp_path):
     )
 
     assert assessment.outcome is TriageAssessmentOutcome.UNCERTAIN
+    assert label is None
+    assert db.list_triage_labels(config=cfg) == []
+
+
+def test_non_sarif_finding_accepts_assessment_without_classifier_label(cfg):
+    db.init_db(cfg)
+    finding_id = db.insert_finding(
+        Finding(
+            repo_id="eng1",
+            title="LLM candidate",
+            file="app.py",
+            line_start=3,
+            line_end=3,
+            citation_snippet="dangerous(value)",
+            source_lens="owasp",
+            confidence=0.7,
+            severity=Severity.MEDIUM,
+        ),
+        cfg,
+    )
+
+    assessment, label = assess_finding(
+        finding_id,
+        TriageDisposition.CONFIRMED_ACTIONABLE,
+        "human verified the cited path",
+        "alice",
+        ["business-logic"],
+        cfg,
+    )
+
+    assert assessment.classifier_eligible is False
+    assert assessment.engagement == "eng1"
+    assert label is None
+    assert db.list_triage_labels(config=cfg) == []
+    persisted = db.list_triage_assessments("eng1", cfg)
+    assert persisted[0].classifier_eligible is False
+
+
+def test_material_assessment_requires_matching_independent_review(cfg, tmp_path):
+    db.init_db(cfg)
+    finding = _triage_three(cfg, tmp_path)["a.py"]
+
+    first, label = assess_finding(
+        finding.id,
+        TriageDisposition.CONFIRMED_ACTIONABLE,
+        "reachable cross-tenant path",
+        "alice",
+        ["tenant-isolation"],
+        cfg,
+        material=True,
+    )
+    assert first.material is True
+    assert label is None
+    assert db.list_triage_labels(config=cfg) == []
+
+    _repeat, label = assess_finding(
+        finding.id,
+        TriageDisposition.CONFIRMED_ACTIONABLE,
+        "same analyst rechecked",
+        "alice",
+        ["tenant-isolation"],
+        cfg,
+        material=True,
+    )
+    assert label is None
+
+    _second, label = assess_finding(
+        finding.id,
+        TriageDisposition.CONFIRMED_ACTIONABLE,
+        "independent reproduction",
+        "bob",
+        ["tenant-isolation"],
+        cfg,
+        material=True,
+    )
+    assert label is not None and label.actionable is True
+
+
+def test_material_disagreement_withholds_existing_projection(cfg, tmp_path):
+    db.init_db(cfg)
+    finding = _triage_three(cfg, tmp_path)["a.py"]
+    label_finding(finding.id, True, "earlier projection", cfg)
+
+    _first, label = assess_finding(
+        finding.id,
+        TriageDisposition.TOOL_INCORRECT,
+        "source is not attacker controlled",
+        "alice",
+        [],
+        cfg,
+        material=True,
+    )
+    assert label is None
+    assert db.list_triage_labels(config=cfg) == []
+
+    _second, label = assess_finding(
+        finding.id,
+        TriageDisposition.CONFIRMED_ACTIONABLE,
+        "independent reviewer found attacker control",
+        "bob",
+        [],
+        cfg,
+        material=True,
+    )
     assert label is None
     assert db.list_triage_labels(config=cfg) == []
 

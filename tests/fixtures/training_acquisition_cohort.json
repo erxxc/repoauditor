@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "cohort_id": "public-training-acquisition-2026-07-27",
+  "purpose": "Human adjudication and future classifier-training acquisition",
+  "evaluation_eligible": false,
+  "selection_policy": "Selected before scanner execution for language breadth, independent authorship, maturity, manageable acquisition size, and permissive licensing. Scanner outcomes must not be used to add, remove, or replace entries.",
+  "ground_truth_policy": "No expected findings are declared. Scanner candidates require human assessment and never become ground truth merely because a tool emitted them.",
+  "hosted_model_policy": "All entries are public upstream source. This manifest does not authorize transmitting proprietary source to a hosted model.",
+  "projects": [
+    {
+      "slug": "flask",
+      "project": "Flask",
+      "language": "Python",
+      "repository": "https://github.com/pallets/flask.git",
+      "pinned_commit": "36e4a824f340fdee7ed50937ba8e7f6bc7d17f81",
+      "license": "BSD-3-Clause",
+      "license_file": "LICENSE.txt"
+    },
+    {
+      "slug": "starlette",
+      "project": "Starlette",
+      "language": "Python",
+      "repository": "https://github.com/encode/starlette.git",
+      "pinned_commit": "5174d4c8358a6f06aa8056bafd14c2272dab8dd1",
+      "license": "BSD-3-Clause",
+      "license_file": "LICENSE.md"
+    },
+    {
+      "slug": "express",
+      "project": "Express",
+      "language": "JavaScript",
+      "repository": "https://github.com/expressjs/express.git",
+      "pinned_commit": "ae6dd37680e3a00618d6c8a3e522f0ee4eeba1a4",
+      "license": "MIT",
+      "license_file": "LICENSE"
+    },
+    {
+      "slug": "koa",
+      "project": "Koa",
+      "language": "JavaScript",
+      "repository": "https://github.com/koajs/koa.git",
+      "pinned_commit": "52d5e8ff5ac79f2479463b53df2999900ae95115",
+      "license": "MIT",
+      "license_file": "LICENSE"
+    },
+    {
+      "slug": "spark",
+      "project": "Spark",
+      "language": "Java",
+      "repository": "https://github.com/perwendel/spark.git",
+      "pinned_commit": "1973e402f5d4c1442ad34a1d38ed0758079f7773",
+      "license": "Apache-2.0",
+      "license_file": "LICENSE"
+    },
+    {
+      "slug": "javalin",
+      "project": "Javalin",
+      "language": "Java",
+      "repository": "https://github.com/javalin/javalin.git",
+      "pinned_commit": "6600d23a36eca699d57cca14110c3fb181222ed9",
+      "license": "Apache-2.0",
+      "license_file": "LICENSE"
+    },
+    {
+      "slug": "sinatra",
+      "project": "Sinatra",
+      "language": "Ruby",
+      "repository": "https://github.com/sinatra/sinatra.git",
+      "pinned_commit": "cb22afd7902b566b6eaba6c4ea89739494a65d12",
+      "license": "MIT",
+      "license_file": "LICENSE"
+    },
+    {
+      "slug": "hanami",
+      "project": "Hanami",
+      "language": "Ruby",
+      "repository": "https://github.com/hanami/hanami.git",
+      "pinned_commit": "091f27452bcd6f16a7030dbbeb511d671f178ec7",
+      "license": "MIT",
+      "license_file": "LICENSE"
+    }
+  ]
+}

@@ -225,6 +225,33 @@ def test_ensemble_can_run_lens_only_when_tools_disabled(tmp_config, scripted_llm
     assert findings and all(f.source_tool is None for f in findings)  # lens-only
 
 
+def test_completed_detection_regions_are_reused_without_model_calls(
+    tmp_config, scripted_llm, scripted_backend
+):
+    db.init_db(tmp_config)
+    cfg = tmp_config.model_copy(
+        update={"detect": tmp_config.detect.model_copy(
+            update={"run_deterministic_tools": False})})
+    repo_id = _ingest_and_map(cfg, scripted_llm)
+
+    first = run_ensemble(repo_id, cfg, llm=scripted_llm)
+    calls_after_first = len(scripted_backend.calls)
+    second = run_ensemble(repo_id, cfg, llm=scripted_llm)
+
+    assert len(scripted_backend.calls) == calls_after_first
+    assert first.completed_region_calls > 0
+    assert second.completed_region_calls == 0
+    assert second.skipped_completed_region_calls == first.completed_region_calls
+    commit = next(
+        repo.commit_hash for repo in db.list_ingested_repos(cfg)
+        if repo.repo_id == repo_id
+    )
+    regions = db.list_detection_regions(
+        repo_id, commit, cfg
+    )
+    assert regions and all(region.status.value == "completed" for region in regions)
+
+
 def test_fake_adapter_candidate_persists_through_ensemble_fast_lane(
     tmp_config, scripted_llm, monkeypatch
 ):

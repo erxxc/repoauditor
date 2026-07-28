@@ -85,6 +85,15 @@ pytest store is temporary. Use those artifacts for workflow safety and accuracy 
 three foreground runs in one persistent local store when producing the formal
 `usage-calibration` comparison above.
 
+For a large repository, inspect `run`'s detection preflight before authorizing provider
+work. The output distinguishes the unbounded call projection from the configured bounded
+region plan. If a bounded detect pass stops, run `repoauditor detect <repo-id>` again under a
+fresh budget; persisted file+lens checkpoints prevent completed units from being re-billed.
+If the original pipeline run already exhausted its total budget, continue through standalone
+`triage`, `falsify`, and `normalize` operations rather than reusing that exhausted run id.
+Never raise a limit merely to approximate all-files × all-lenses coverage, and never
+describe omitted regions as model-reviewed.
+
 ### Lightweight observations and completed harness corrections
 
 Actions run `30228015245` on 2026-07-27 passed all four manufactured controls, then stopped
@@ -137,6 +146,32 @@ rescoring against the retained database gives the defensible interpretation:
 Protected-pair evaluation therefore reports target recovery/persistence and unadjudicated
 confirmed groups, never project-wide precision. Only falsification-confirmed target matches
 count as recovery; unresolved matches remain visible abstentions.
+
+### CVE-positive semantic pilot
+
+The manual `cve-positive-pyjwt` scope in the `live model tests` workflow is the first
+evaluation initialized from `cve_positive_acquisition_cohort.json`. It is intentionally not
+scheduled and cannot expand to the other three pairs automatically. Run the `public corpus
+cache` workflow first; the live workflow fails before provider use unless the exact
+`public-corpus-v2` cache contains every frozen pre/post snapshot.
+
+The pilot always runs PyJWT pre-fix before post-fix, stops on the first failure, allows
+exactly one bounded batch per snapshot, and retains the existing 75-call/250,000-token
+per-batch circuit breakers plus a 20-minute outer timeout. Thus its conservative ceiling is
+150 calls and 500,000 provider-reported tokens across both snapshots, although a timeout
+or earlier pipeline stop should end it first. These are safety limits, not spending targets.
+
+Acceptance is target-scoped and was frozen before execution:
+
+- pre-fix: a falsification-confirmed match is recovery; unresolved is an abstention;
+- post-fix: any matching signal is disclosed, and confirmed persistence fails the negative
+  control; and
+- confirmed findings outside CVE-2022-29217 remain unadjudicated rather than becoming
+  automatic false positives.
+
+Review the JSON artifact, JUnit result, and retained SQLite usage evidence before enabling
+another CVE-positive pair. Do not change prompts, thresholds, target locations, or budgets
+from the pilot result; that would turn this acquisition check into tuning on its answer key.
 
 ## Analyst decision after collection
 

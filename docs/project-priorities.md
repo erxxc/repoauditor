@@ -55,10 +55,15 @@ order so future sessions do not have to reconstruct it from conversation history
 
 ## P1 — controlled real-world evidence
 
-- [ ] Complete triage roadmap Phase 3: at least 40 usable human labels, both classes
-  represented, across at least eight genuinely distinct engagements. Prefer 100–200 labels.
-- [ ] Review high-ranked, reserved novel, and sampled low-ranked findings. Preserve
-  `insufficient_evidence` as abstention and record evidence-based rationales.
+- [x] Complete the minimum triage roadmap Phase 3 activation floor: on 2026-07-27 the
+  training-acquisition cohort reached 40 usable manual labels (11 positive, 29 negative)
+  across eight genuinely distinct engagements, plus two explicit abstentions. The preferred
+  100–200-label maturity target remains open.
+- [~] Review high-ranked, reserved novel, and sampled low-ranked findings. The first
+  ground-truth-blind tranche covered all eight engagements and retained
+  `insufficient_evidence` as abstention. Coverage is not yet mature: nine of eleven positives
+  are CI mutable-action findings, and no usable language cohort is available because the
+  source SARIF did not persist explicit `sourceLanguage`.
 - [x] Freeze a protected baseline. The serialize-javascript pre/post bounded run completed
   in Actions run `30230644266`. Corrected target-CVE scoring shows that the pre-fix target
   was detected but unresolved (confirmed recovery failed), while the post-fix target was
@@ -86,26 +91,41 @@ order so future sessions do not have to reconstruct it from conversation history
   ranges rather than presenting bare point metrics.
 - [ ] Add temporal validation only after adequate chronological depth exists.
 - [x] Add an adjudication audit for reassessment, independent-review coverage, and
-  cross-analyst disagreement while retaining append-only evidence. Materiality is not
-  inferred because it is not currently persisted; an enforced material-case second-review
-  workflow remains a possible later schema change.
-- [~] Gate cohort views on adequate decided observations and both classes. Analyst-declared
-  mechanism dimensions and detailed dispositions are now reported; language and detector
-  cohorts remain explicitly unavailable because those fields are not persisted with labels.
-  Do not infer them from rule names.
+  cross-analyst disagreement while retaining append-only evidence. Analyst-declared
+  materiality is persisted and a matching disposition from a second distinct analyst is
+  required before classifier training; materiality is never inferred.
+- [x] Gate cohort views on adequate decided observations and both classes. Analyst-declared
+  mechanism dimensions, detailed dispositions, and explicitly persisted SARIF
+  language/detector cohorts are reported. Unavailable metadata remains visible and is never
+  inferred from rule names or file extensions.
 - [ ] Characterize repeatability on identical inputs, separating sampling variance from
   retrieval-resolution sensitivity. Report verdict/citation/confidence/token/latency spread.
-- [ ] Expand manufactured controls only where positive and negative mechanisms have
-  independently checkable ground truth.
+- [x] Expand manufactured controls only where positive and negative mechanisms have
+  independently checkable ground truth. Eight zero-token certificate controls now cover
+  JS/TS SSRF, JS/TS command injection, Java SSRF, and authorization-versus-authentication
+  semantics without expanding the paid weekly sentinel cohort.
 
 ## P3 — nonstandard-finding optimization
 
-- [ ] Improve language-specific slicing and authorization/source-to-sink context before
-  changing the classifier.
-- [~] Expand independently checked `SecurityClaim` certificates. Version 3 now persists and
+- [~] Improve language-specific slicing and authorization/source-to-sink context before
+  changing the classifier. Python and bounded JS/TS SSRF paths now exist; broader mechanism,
+  framework, and language coverage remains.
+- [~] Expand independently checked `SecurityClaim` certificates. Version 10 now persists and
   checks local HTTP-entry syntax, request-input identity, control-candidate identity, and
-  placement on the intraprocedural def-use chain. Runtime/interprocedural reachability,
-  deployed attacker control, and control effectiveness remain explicitly unverified.
+  placement on the intraprocedural def-use chain, plus exact direct Python caller syntax
+  and same-function authorization-candidate syntax independently reparsed from the snapshot.
+  Authentication-only syntax is excluded. Flask blueprint registration calls are also tied
+  back to their route subject and reparsed independently. Application startup,
+  runtime/interprocedural reachability, deployed attacker control, authorization
+  scope/effectiveness, and control effectiveness remain explicitly unverified.
+  JavaScript/TypeScript SSRF now has a separate tree-sitter producer/checker for bounded
+  local request-input chains into `fetch` or explicit global Axios URL-first methods.
+  Command injection now supports exact `child_process.exec/execSync` with one direct local
+  request-property input. Aliased/object-form Axios, child-process aliases/composition, and
+  other JS/TS mechanisms remain unsupported/incomplete.
+  Java SSRF now supports one direct `request.getParameter` to
+  `new URL(...).openStream/openConnection` shape. Broader Java clients and mechanisms remain
+  unsupported/incomplete.
 - [ ] Evaluate in-family/out-of-family novelty as an investigation-depth trigger. Do not
   train a novelty prioritizer until enough manually reviewed LLM findings exist.
 
@@ -140,32 +160,112 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
 
 ### A — offline engineering available now
 
-1. Persist trustworthy language and detector cohort metadata with triage labels/features;
-   then extend the existing sufficiency gate without inferring either field from rule names.
-2. Continue deterministic context/certificate work beyond the Python intraprocedural MVP:
-   authorization semantics, callers/references, and additional languages. Preserve explicit
-   unsupported/incomplete outcomes.
-3. Expand manufactured positive/negative controls only for mechanisms with independently
-   checkable ground truth. Fixture construction and deterministic checks are offline; live
-   provider qualification remains deferred.
-4. Add prior cohort metadata and effective dates without changing distributions. Define the
-   representation of aleatory variability versus epistemic uncertainty before adding any
-   hierarchical prior.
-5. Decide whether material adjudications need an explicit persisted materiality marker and
-   enforced second-review gate; current QA can report disagreement but cannot infer
-   materiality.
+1. [x] Persist trustworthy language and detector cohort metadata with triage
+   labels/features. SARIF detector identity and explicit artifact `sourceLanguage` now
+   travel with the triaged feature/label join, and `triage-collection` reports their
+   sufficiency. Missing metadata remains `unknown`; rule names and file extensions are
+   never used as substitutes.
+2. [x] Complete the bounded deterministic certificate expansion phase beyond the Python
+   intraprocedural MVP. Direct Python callers, authorization candidates, and Flask blueprint
+   registration are independently checked without being promoted to runtime facts. Bounded
+   JS/TS SSRF and command-injection paths plus one Java SSRF shape prove the multi-language
+   checker contract. Authorization effectiveness, non-Flask registration, further
+   client/mechanism enumeration, cross-file data flow, and Ruby support are deferred until
+   corpus results justify them; explicit unsupported/incomplete outcomes remain the default.
+3. [x] Expand manufactured positive/negative controls only for mechanisms with independently
+   checkable ground truth. Eight fast-lane, zero-token controls cover the bounded
+   multi-language certificates and authorization/authentication distinction; live provider
+   qualification remains separate and deferred.
+4. [x] Persist prior target-population and temporal-scope fields without changing
+   distributions. Aleatory representations and unquantified epistemic limitations are
+   separate. Exact effective date/data vintage remain null—and visibly warned by
+   `quant-audit`—because the configured citation does not establish them.
+5. [x] Persist analyst-declared materiality and enforce a matching review by a second,
+   distinct analyst before a material disposition enters classifier training. Materiality
+   is never inferred; pending and disputed reviews remain visible in `triage-collection`.
 
 ### B — evidence/data gated
 
-1. Collect at least 40 usable human labels, both classes, across eight genuine source
-   repositories; prefer 100–200. Review high-ranked, reserved-novel, and sampled-low-ranked
-   findings while retaining abstentions.
+1. [~] The minimum collection gate is met: 40 usable human labels, both classes, across
+   eight genuine source repositories. Continue toward 100–200 with mechanism and positive
+   diversity; review reserved-novel and sampled-low-ranked findings while retaining
+   abstentions.
+   - [x] Freeze a ground-truth-blind acquisition cohort before scanning: two independently
+     authored projects each in Python, JavaScript, Java, and Ruby, pinned at exact commits
+     with verified permissive licenses. It is explicitly excluded from evaluation and has
+     no scanner-derived answer keys. Semgrep Community registry access was verified
+     separately against an empty target (1,074 rules with Semgrep 1.170.0 on 2026-07-27).
+   - [~] The cohort was materialized and scanned with Semgrep 1.170.0 Community
+     `--config auto` on 2026-07-27. All eight scans completed and 127 SARIF candidates were
+     imported through the normal triage/store path: Flask 16, Starlette 3, Express 45,
+     Koa 7, Spark 7, Javalin 22, Sinatra 15, and Hanami 12. No human labels were created
+     automatically; the initial human tranche is recorded below. Scanner yield must not
+     retroactively change cohort membership.
+   - [x] The first adjudication tranche produced 40 usable manual labels and two abstentions.
+     The untouched retrospective threshold view shows no useful discrimination from the
+     pre-label synthetic model: thresholds 0.0–0.6 select all 40 (precision 0.275,
+     recall 1.0), while 0.7 selects 12 (precision 0.167, recall 0.182). This is baseline
+     evidence, not a threshold recommendation. Do not overwrite it with an in-sample
+     retrain; establish a new held-out scoring cohort before evaluating the real-label fit.
+   - [x] Freeze that next prospective cohort before retraining. The mechanically selected
+     19-candidate manifest is `docs/triage-prospective-holdout.json`: up to three lowest
+     stable fingerprint hashes per engagement among unassessed classifier-eligible
+     findings. It does not use existing score, rule outcome, or code verdict. Starlette had
+     no remaining unassessed candidate and is disclosed rather than replaced selectively.
+   - [x] Score the prospective cohort before adjudication. A first sequential pass exposed
+     order-dependent feature refresh; after every engagement's feature rows were refreshed,
+     runs 16–22 converged to identical fits and predictions. The converged grouped result
+     (AP 1.0, Brier 0.054311 on 11 rows) is explicitly not accepted as broad generalization
+     evidence because nine of eleven training positives share one mutable-action CI family.
+     Predictions are frozen in `docs/triage-prospective-holdout.json` before review.
+   - [x] Adjudicate the frozen predictions after scoring. At threshold 0.5 the 18 usable
+     cases produced 7 TP, 0 FP, 11 TN, and 0 FN, with one abstention. All seven positives
+     are the same mutable GitHub Actions family and every non-CI mechanism is negative.
+     Treat this as narrow rule-family discrimination—not cross-mechanism generalization or
+     permission to tune the operational threshold. The store now contains 58 usable manual
+     labels (18 positive, 40 negative) plus three abstentions across eight engagements.
 2. After adequate held-out family breadth exists, add family-aware bootstrap intervals.
 3. Add temporal validation only after sufficient chronological depth exists.
 4. Evaluate novelty as an investigation-depth trigger only after enough manually reviewed
    LLM findings exist; do not train a novelty prioritizer earlier.
 5. Run prior-predictive and held-out loss checks only after applicable organization/incident
    data exists; hierarchical priors remain behind that gate.
+
+### Current offline detector iteration
+
+- [x] Run the first zero-token Juice Shop/lightweight detector round without importing new
+  classifier labels. Semgrep 1.170.0 recovered the pinned Juice Shop login SQL injection
+  (1/1 reviewed target; 50 other raw candidates remain unadjudicated). On the lightweight
+  fixture it recovered SQL injection and SSRF, missed the planted IDOR, and raised both
+  reviewed kill controls (fake secret and unreachable command injection). The SCA-only
+  dependency case is excluded from the Semgrep denominator.
+- [x] Run the separate secrets and SCA detector checks for their owned lightweight cases.
+  Gitleaks raised exactly the planted Stripe-shaped placeholder, which remains an expected
+  falsification kill rather than a confirmed secret. pip-audit and OSV-Scanner both
+  recovered the designated requests 2.19.1 advisory through CVE-2018-18074's
+  PYSEC/GHSA aliases. Their denominators remain separate from Semgrep.
+- [x] Freeze a CVE-backed positive acquisition set before scanning. The four exact
+  pre-fix/post-fix pairs cover PyJWT key confusion, simple-git command-execution/control
+  bypass, Reposilite archive traversal, and ruby-saml signature wrapping across
+  Python/TypeScript/Kotlin/Ruby. All have reviewed advisories and verified permissive
+  licenses and are `evaluation_eligible=false`; existing evaluation pairs and the protected
+  serialize-javascript holdout remain unavailable for training.
+- [x] Materialize and scan the four frozen CVE-positive pairs with Semgrep Community
+  1.170.0. It recovered 0/4 narrowly defined advisory targets; pre- and post-fix variants
+  each produced 77 unrelated raw candidates in aggregate. This establishes a deterministic
+  coverage gap for the nonstandard mechanisms, not finding invalidity or model performance.
+  No scanner output was imported as a label.
+- [~] Initialize bounded, human-reviewed LLM/falsification evaluation without tuning.
+  The manual-only first pilot is PyJWT because it is the smallest pair and exercises
+  semantic key confusion. It requires the exact `public-corpus-v2` cache, runs pre-fix
+  before post-fix, caps each snapshot at one existing 75-call/250,000-token batch, and
+  has a 20-minute outer timeout. Review its usage and target-scoped artifact before enabling
+  ruby-saml, simple-git, or Reposilite.
+- Evidence receipt: `docs/offline-detector-round-2026-07-27.json`. It reports target
+  recovery and unmatched candidates, never project-wide precision from a partial answer key.
+- CVE-positive acquisition receipt:
+  `docs/cve-positive-acquisition-round-2026-07-27.json`. It preserves exact commits,
+  target-scoped recovery, scanner bounds, and the Reposilite wrapper parse warning.
 
 ### C — methodology blocked
 
@@ -184,3 +284,26 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
 4. Add provider dollar cost only from a dated, versioned provider/model price source.
 5. Consider agentic falsification only after every gate in
    [agentic-escalation-gate.md](agentic-escalation-gate.md) is satisfied.
+
+## Pre-tuning checkpoint
+
+The current evidence-backed decision is recorded in
+[pre-tuning-readiness.md](pre-tuning-readiness.md). Tuning is on hold: the local persistent
+store has no usable human-label cohort or completed same-store three-run calibration,
+repeatability is uncharacterized, and the organization-frequency defect remains
+methodology-blocking. This hold is the priority-10 decision, not an incomplete tuning run.
+
+## Large-repository detection safety
+
+- [x] Project unbounded all-files × lens calls before paid map/detect work and fail when
+  the configured bounded minimum cannot fit the pipeline call ceiling.
+- [x] Cap live regions through explicit configuration, prioritize only scanner/map evidence,
+  and reserve a stable ground-truth-blind coverage sample. Persist selected/omitted coverage.
+- [x] Checkpoint every file+lens unit so a fresh standalone detect budget reuses completed
+  units rather than repeating provider calls.
+- [ ] Validate the bounded planner on independent projects without tuning its selection
+  against advisory target locations. Treat missed omitted-region targets as coverage
+  evidence, not false-negative model judgments.
+- [x] Allow auditable human assessment of every canonical detector finding while explicitly
+  withholding non-SARIF assessment-only evidence from the SAST classifier label/training
+  gate. Never synthesize missing feature vectors to inflate the usable-label count.

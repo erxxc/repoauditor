@@ -357,7 +357,13 @@ effective mitigations, duplicates, and technically valid-but-non-actionable issu
 [adjudication taxonomy and evaluation protocol](docs/adjudication-taxonomy.md).
 `insufficient_evidence` (and legacy `uncertain`) assessments are retained in an append-only
 audit history but never enter model training. Decided outcomes update the effective manual
-binary label. Repeat `--dimension` with analyst-verified coverage descriptors such as
+binary label only when the finding has a compatible triage feature row. LLM, secrets, and
+SCA findings without that row can still be assessed, but are clearly recorded as
+assessment-only evidence and excluded from the classifier gate/training. For a material
+case, add `--material`: the assessment remains withheld until
+a second distinct analyst records the same detailed disposition. Materiality is explicit,
+never inferred from severity, and disagreement remains visible rather than becoming a
+training label. Repeat `--dimension` with analyst-verified coverage descriptors such as
 `business-logic`, `authorization`, `tenant-isolation`, `multi-service`, `ci-iac`,
 `agent-tool-boundary`, `dependency`, `secret`, `dead-code`, `safe-control`, or `near-miss`.
 These values are declared, not guessed from a scanner rule name. The controlled activation
@@ -533,6 +539,20 @@ count and persisted attempts. Validation, connection, timeout, HTTP 408, and 5xx
 may retry within that bound. Authentication, permission, invalid-request/model, quota/429,
 and other terminal 4xx failures stop immediately instead of spending the remaining budget.
 
+Live detection is also bounded by `[detect].max_llm_regions_per_run` (six by default).
+Before map/detect spend, `run` prints the all-files × three-lenses base-call projection and
+the bounded plan. Region selection is ground-truth-blind: independently produced scanner
+and architecture-map locations are considered first, with a stable content-derived sample
+reserved outside those signals. The completion summary discloses selected and omitted
+regions; bounded coverage must not be represented as a full-repository LLM review.
+
+Each selected file+lens unit is checkpointed in SQLite. If detection stops, rerun the
+standalone `repoauditor detect <repo-id>` command to receive a fresh usage budget; completed
+units are reused without another provider call. A pipeline run whose total budget was
+already exhausted must not be resumed for downstream paid stages under that same run id;
+continue with the standalone `triage`, `falsify`, and `normalize` commands, each of which
+opens its own bounded operation record.
+
 More autonomous tool-using falsification is intentionally not enabled yet. The
 [agentic escalation gate](docs/agentic-escalation-gate.md) requires authoritative usage
 accounting, a protected real-world baseline, recall-safety evidence, read-only tools, and
@@ -542,6 +562,8 @@ claims are documented in
 [docs/security-claim-certificates.md](docs/security-claim-certificates.md).
 The current cross-project sequence and evidence gates are recorded in
 [docs/project-priorities.md](docs/project-priorities.md).
+The current evidence-backed hold/advance decision before any parameter tuning is recorded in
+[docs/pre-tuning-readiness.md](docs/pre-tuning-readiness.md).
 Offline preparation and the exact later paid-calibration sequence are documented in
 [docs/offline-readiness-runbook.md](docs/offline-readiness-runbook.md).
 

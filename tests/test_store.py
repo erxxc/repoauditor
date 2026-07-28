@@ -15,6 +15,7 @@ from repoauditor.store.models import (
     ReviewRequest,
     Severity,
     SourceType,
+    TriageFeatureRecord,
     TrustBoundary,
 )
 
@@ -75,6 +76,15 @@ def test_pre_methodology_database_migrates_without_losing_audit_data(
         "0021_finding_identity.sql",
         "0022_pipeline_run_parent.sql",
         "0023_claim_entry_evidence.sql",
+        "0024_triage_cohort_metadata.sql",
+        "0025_claim_caller_evidence.sql",
+        "0026_claim_authorization_evidence.sql",
+        "0027_claim_registration_evidence.sql",
+        "0028_claim_language.sql",
+        "0029_triage_materiality.sql",
+        "0030_prior_scope_metadata.sql",
+        "0031_detection_region_runs.sql",
+        "0032_assessment_classifier_eligibility.sql",
     ]
 
     assert db.list_findings("r", tmp_config)[0].id == finding_id
@@ -126,15 +136,52 @@ def test_structural_status_migration_preserves_claim_audit_data(
         "0021_finding_identity.sql",
         "0022_pipeline_run_parent.sql",
         "0023_claim_entry_evidence.sql",
+        "0024_triage_cohort_metadata.sql",
+        "0025_claim_caller_evidence.sql",
+        "0026_claim_authorization_evidence.sql",
+        "0027_claim_registration_evidence.sql",
+        "0028_claim_language.sql",
+        "0029_triage_materiality.sql",
+        "0030_prior_scope_metadata.sql",
+        "0031_detection_region_runs.sql",
+        "0032_assessment_classifier_eligibility.sql",
     ]
 
     claim = db.list_security_claims(finding_id, tmp_config)[0]
     verification = db.list_claim_verifications(claim.id, tmp_config)[0]
     assert claim.snapshot_commit is None
     assert claim.entry_evidence == []
+    assert claim.caller_evidence == []
+    assert claim.authorization_evidence == []
+    assert claim.registration_evidence == []
+    assert claim.language == "python"
     assert verification.status.value == "verification_incomplete"
     assert verification.checks == {"source_present": True}
     assert verification.reason == "legacy structural result"
+
+
+def test_triage_feature_cohort_metadata_round_trip_and_legacy_defaults(tmp_config):
+    db.init_db(tmp_config)
+    finding_id = _f(tmp_config, tool="semgrep")
+    db.upsert_triage_features(TriageFeatureRecord(
+        finding_id=finding_id,
+        engagement="repo",
+        rule_id="python.sql",
+        fingerprint="fingerprint",
+        features=[1.0],
+        feature_names=["signal"],
+        detector="semgrep",
+        detector_source="sarif:run.tool.driver.name",
+        language="python",
+        language_source="sarif:artifact.sourceLanguage",
+    ), tmp_config)
+
+    stored = db.get_triage_features(finding_id, tmp_config)
+    assert stored is not None
+    assert stored.detector == "semgrep"
+    assert stored.detector_source == "sarif:run.tool.driver.name"
+    assert stored.language == "python"
+    assert stored.language_source == "sarif:artifact.sourceLanguage"
 
 
 def test_latest_ingested_repo_is_scoped_by_repo_id_and_newest_snapshot(tmp_config):

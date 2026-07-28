@@ -75,6 +75,23 @@ class ModelUsage(BaseModel):
     recorded_at: str | None = None
 
 
+class DetectionRegionRun(BaseModel):
+    """Durable unit of bounded detect work; completed rows are never re-billed."""
+
+    id: int | None = None
+    repo_id: str
+    commit_hash: str
+    file: str
+    lens: str
+    prompt_version: str
+    selection_basis: str
+    status: RunStatus = RunStatus.RUNNING
+    finding_count: int = 0
+    started_at: str | None = None
+    completed_at: str | None = None
+    failure_detail: str | None = None
+
+
 class Severity(StrEnum):
     INFO = "info"
     LOW = "low"
@@ -300,6 +317,8 @@ class TriageAssessment(BaseModel):
     disposition: TriageDisposition | None = None
     rationale: str = Field(min_length=1)
     analyst: str = Field(min_length=1)
+    material: bool = False
+    classifier_eligible: bool = True
     dimensions: list[str] = Field(default_factory=list)
     created_at: str | None = None
 
@@ -343,6 +362,10 @@ class TriageFeatureRecord(BaseModel):
     fingerprint: str
     features: list[float]
     feature_names: list[str]
+    detector: str = "unknown"
+    detector_source: str = "unavailable"
+    language: str = "unknown"
+    language_source: str = "unavailable"
 
 
 class RulePrior(BaseModel):
@@ -452,6 +475,11 @@ class PriorSource(BaseModel):
     url: str | None = None
     transformation: str | None = None
     provenance_status: str = "verified"
+    target_population: str | None = None
+    effective_date: str | None = None
+    data_vintage: str | None = None
+    aleatory_representation: str | None = None
+    epistemic_status: str | None = None
 
     @model_validator(mode="after")
     def _verified_provenance_is_exact(self) -> "PriorSource":
@@ -700,7 +728,11 @@ class SecurityClaim(BaseModel):
     claim_version: str
     snapshot_commit: str | None = None
     mechanism: str
+    language: str = "python"
     entry_evidence: list[ClaimEvidence] = Field(default_factory=list)
+    caller_evidence: list[ClaimEvidence] = Field(default_factory=list)
+    authorization_evidence: list[ClaimEvidence] = Field(default_factory=list)
+    registration_evidence: list[ClaimEvidence] = Field(default_factory=list)
     source_evidence: list[ClaimEvidence] = Field(default_factory=list)
     sink_evidence: ClaimEvidence | None = None
     path_nodes: list[ClaimEvidence] = Field(default_factory=list)

@@ -44,6 +44,10 @@ max_tokens_per_pipeline_run = 250000
 run_deterministic_tools = true
 # Per-tool subprocess timeout (seconds).
 tool_timeout_seconds = 180
+# Bound live-lens work independently of repository size. Selection is deterministic and
+# ground-truth-blind: scanner/map-indicated files first, plus a stable coverage sample.
+max_llm_regions_per_run = 6
+reserved_sample_regions = 2
 
 [falsify]
 # Falsification challenger loop (src/repoauditor/falsify/challenger.py).

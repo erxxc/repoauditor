@@ -106,6 +106,20 @@ class DetectConfig(BaseModel):
     run_deterministic_tools: bool = True
     # Per-tool subprocess timeout (seconds). A tool exceeding it contributes no findings.
     tool_timeout_seconds: int = 180
+    # Hard cap on source regions sent through every LLM lens in one detect pass. Large
+    # repositories are selected deterministically; zero disables LLM lens detection.
+    max_llm_regions_per_run: int = Field(default=6, ge=0)
+    # Preserve generic coverage outside deterministic/map-indicated files. Selection is
+    # stable by repo content identity and never consults a fixture answer key.
+    reserved_sample_regions: int = Field(default=2, ge=0)
+
+    @model_validator(mode="after")
+    def _sample_fits_region_cap(self) -> "DetectConfig":
+        if self.reserved_sample_regions > self.max_llm_regions_per_run:
+            raise ValueError(
+                "detect.reserved_sample_regions cannot exceed max_llm_regions_per_run"
+            )
+        return self
 
 
 class ReviewConfig(BaseModel):
@@ -216,6 +230,11 @@ class MagnitudePrior(BaseModel):
     url: str
     transformation: str
     detail: str | None = None
+    target_population: str | None = None
+    effective_date: str | None = None
+    data_vintage: str | None = None
+    aleatory_representation: str | None = None
+    epistemic_status: str | None = None
 
     @model_validator(mode="after")
     def _p95_exceeds_median(self) -> "MagnitudePrior":
@@ -235,6 +254,11 @@ class FrequencyPrior(BaseModel):
     url: str
     transformation: str
     detail: str | None = None
+    target_population: str | None = None
+    effective_date: str | None = None
+    data_vintage: str | None = None
+    aleatory_representation: str | None = None
+    epistemic_status: str | None = None
 
 
 class BetaPrior(BaseModel):

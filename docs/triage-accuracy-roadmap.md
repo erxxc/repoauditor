@@ -87,7 +87,10 @@ Collection mechanism now available:
 - Repeatable `--dimension` values record analyst-verified coverage without inferring a
   vulnerability taxonomy from noisy rule names.
 - `triage-collection [repo-id]` reports effective class/source counts, latest abstentions,
-  unlabelled triaged findings, declared dimensions, and progress against both activation gates.
+  unlabelled triaged findings, declared dimensions, explicit SARIF language/detector
+  cohorts, and progress against both activation gates. Language is accepted only from
+  artifact `sourceLanguage`; missing metadata remains visibly unavailable rather than being
+  inferred from rule names or file extensions.
 
 This phase remains open until actual UAT data reaches the activation floor. The lightweight
 fixture is one controlled engagement and cannot by itself satisfy repository diversity.
@@ -106,16 +109,34 @@ becomes a classifier feature.
 excluding duplicates and abstentions from their decided denominators, plus observable
 reassessment, independent-review, and cross-analyst-disagreement counts. It also withholds
 analyst-declared dimension cohorts below 40 decided observations or without both classes.
-Language and detector cohorts remain unavailable until those fields are persisted with labels;
-rule-name inference is prohibited.
+Language and detector cohorts use the persisted triage-feature/label join and apply the same
+40-decided-label/both-class descriptive sufficiency rule. Labels lacking explicit metadata
+are reported as unavailable and never assigned by rule-name or file-extension inference.
 
 ## Phase 5 — Nonstandard-finding optimization
 
 Expand unscripted live benchmarks by vulnerability family, language, trust boundary, and
 single-file versus cross-service reasoning. Improve detection/retrieval and authorization
-context before applying the SARIF-oriented classifier to LLM findings. Consider a separate
-novel-finding prioritizer only after enough manually reviewed LLM findings exist to show a
-held-out benefit.
+context before applying the SARIF-oriented classifier to LLM findings. Version-10 structural
+certificates add independently reparsed direct Python caller and narrow same-function
+authorization-candidate syntax, explicitly without claiming runtime/interprocedural
+reachability or authorization effectiveness. Authentication-only syntax is excluded.
+Flask blueprint registration syntax is now independently tied to its route subject without
+claiming application startup or external reachability. Authorization scope/effectiveness,
+non-Flask registration, cross-file data flow, and broader trusted non-Python coverage remain
+open.
+JavaScript/TypeScript now has separately parsed local SSRF certificates for `fetch` and
+explicit global Axios URL-first methods. Aliased/object-form Axios remains incomplete;
+exact `child_process.exec/execSync` command-injection chains are also supported for one
+direct request property. Aliases, composition, other mechanisms/clients, and Java/Ruby
+remain explicitly unsupported/incomplete. Java adds one separately parsed local
+`request.getParameter` to `new URL(...).openStream/openConnection` SSRF shape.
+
+This is the current deterministic-certificate phase boundary. Additional client/framework
+enumeration and cross-file flow should resume only when corpus misses demonstrate a specific
+coverage need; the active offline priority returns to manufactured controls.
+Consider a separate novelty prioritizer only after enough manually reviewed LLM findings
+exist to show a held-out benefit.
 
 ## Explicit non-goals
 

@@ -76,6 +76,39 @@ def audit_resolved_inputs(
             evidence="company_revenue_band=unknown",
         ))
 
+    for name, prior in (
+        ("magnitude.industry_baseline", config.priors.magnitude["industry_baseline"]),
+        ("frequency.industry_baseline", config.priors.frequency["industry_baseline"]),
+    ):
+        missing = [
+            field
+            for field in ("effective_date", "data_vintage")
+            if not getattr(prior, field)
+        ]
+        if missing:
+            issues.append(QuantAuditIssue(
+                code="prior_temporal_scope_unverified",
+                level=AuditLevel.WARNING,
+                message=(
+                    "The configured citation does not establish all temporal scope "
+                    "metadata; its edition is not silently reused as an effective date."
+                ),
+                evidence=f"prior={name}; missing={','.join(missing)}",
+            ))
+        issues.append(QuantAuditIssue(
+            code="prior_uncertainty_scope",
+            level=AuditLevel.INFO,
+            message=(
+                "Aleatory representation and unquantified epistemic limitations are "
+                "recorded separately; no distribution was changed."
+            ),
+            evidence=(
+                f"prior={name}; aleatory={prior.aleatory_representation}; "
+                f"epistemic={prior.epistemic_status}; "
+                f"target_population={prior.target_population}"
+            ),
+        ))
+
     for scenario in scenarios:
         if (
             len(scenario.conditional_frequency_lambdas) > 1

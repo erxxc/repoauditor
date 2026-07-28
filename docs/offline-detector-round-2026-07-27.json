@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "executed_at": "2026-07-27",
+  "purpose": "Zero-token deterministic detector regression before the next acquisition round",
+  "scanner": {
+    "name": "Semgrep Community Edition",
+    "version": "1.170.0",
+    "config": "auto",
+    "registry_rules_resolved": 1074,
+    "metrics_mode": "auto",
+    "per_rule_timeout_seconds": 30,
+    "max_memory_mb": 2048
+  },
+  "training_effect": "none; SARIF was not imported as classifier labels",
+  "results": [
+    {
+      "fixture": "uat_lightweight_app",
+      "kind": "fixture",
+      "targets_scanned": 26,
+      "applicable_rules_run": 290,
+      "raw_candidates": 7,
+      "reviewed_static_code_cases": 3,
+      "reviewed_cases_recovered": 2,
+      "reviewed_cases_missed": 1,
+      "recovered": [
+        {"case": 1, "mechanism": "SQL injection", "raw_rule_hits": 2},
+        {"case": 2, "mechanism": "SSRF", "raw_rule_hits": 2}
+      ],
+      "missed": [
+        {"case": 3, "mechanism": "IDOR / missing object ownership check"}
+      ],
+      "expected_falsification_candidates": [
+        {"case": 4, "mechanism": "fake secret placeholder", "raw_rule_hits": 1},
+        {"case": 8, "mechanism": "unreachable command injection", "raw_rule_hits": 2}
+      ],
+      "excluded_from_semgrep_denominator": [
+        {"case": 5, "mechanism": "vulnerable dependency", "reason": "SCA detector responsibility"}
+      ],
+      "interpretation": "Semgrep recovered two of three reviewed static-code positives and raised both reviewed kill controls. Raw rule hits are not deduplicated findings."
+    },
+    {
+      "fixture": "anchor_owasp_juice_shop",
+      "kind": "benchmark",
+      "pinned_commit": "33518f5a0911e25d9df747b1e70fb7af279a755c",
+      "targets_scanned": 1002,
+      "applicable_rules_run": 307,
+      "raw_candidates": 51,
+      "reviewed_targets": 1,
+      "reviewed_targets_recovered": 1,
+      "reviewed_targets_missed": 0,
+      "recovered": [
+        {
+          "mechanism": "SQL injection in login query",
+          "file": "routes/login.ts",
+          "line": 34,
+          "rule": "javascript.sequelize.security.audit.sequelize-injection-express.express-sequelize-injection"
+        }
+      ],
+      "unadjudicated_raw_candidates": 50,
+      "interpretation": "The sole checked-in reviewed target was recovered. The other raw candidates are not false positives; Juice Shop ground truth is not exhaustive."
+    }
+  ],
+  "owned_detector_results": {
+    "gitleaks": {
+      "version": "8.30.1",
+      "fixture": "uat_lightweight_app",
+      "raw_candidates": 1,
+      "reviewed_case_recovered": 4,
+      "rule": "stripe-access-token",
+      "expected_downstream_disposition": "killed as a non-working placeholder",
+      "interpretation": "Detection is correct; this is not a confirmed credential."
+    },
+    "pip_audit": {
+      "version": "2.10.1",
+      "fixture": "uat_lightweight_app",
+      "vulnerability_records": 24,
+      "affected_packages": 4,
+      "designated_case_recovered": 5,
+      "designated_advisory": "CVE-2018-18074",
+      "observed_primary_id": "PYSEC-2018-28",
+      "observed_aliases": ["CVE-2018-18074", "GHSA-x84v-xcm2-53pg"],
+      "interpretation": "The designated requests==2.19.1 advisory was recovered. Other current records are not part of the stable single-case denominator."
+    },
+    "osv_scanner": {
+      "version": "2.4.0",
+      "fixture": "uat_lightweight_app",
+      "designated_case_recovered": 5,
+      "designated_advisory": "CVE-2018-18074",
+      "observed_ids": ["PYSEC-2018-28", "GHSA-x84v-xcm2-53pg"],
+      "observed_alias": "CVE-2018-18074",
+      "interpretation": "The designated advisory was recovered through OSV alias-linked records; alias duplication is not multiple independent vulnerabilities."
+    }
+  },
+  "claims": {
+    "precision_reported": false,
+    "reason": "The Juice Shop answer key covers one reviewed target rather than every possible finding.",
+    "classifier_training_evidence": false,
+    "independent_real_world_generalization": false
+  }
+}

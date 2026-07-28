@@ -33,7 +33,20 @@ from ..llm.prompt_security import (
 from ..map import ArchitectureMap, load_architecture
 from ..sourcefiles import iter_source_files, read_numbered
 from ..store import db
-from ..store.models import FalsificationStatus, Finding, Severity, ValidationFailure
+from ..store.models import (
+    DetectionRegionRun,
+    FalsificationStatus,
+    Finding,
+    RunStatus,
+    Severity,
+    ValidationFailure,
+)
+from .planning import (
+    DetectionProjection,
+    plan_detection_regions,
+    project_detection_work,
+    validate_detection_projection,
+)
 from .retrieval import RetrievalIndex
 
 logger = logging.getLogger(__name__)
@@ -121,11 +134,19 @@ class DetectionRun(list[Finding]):
         source_counts: dict[str, int],
         sarif_path: Path | None = None,
         semgrep_status: str | None = None,
+        projection: DetectionProjection | None = None,
+        selected_regions: list[dict[str, str]] | None = None,
+        completed_region_calls: int = 0,
+        skipped_completed_region_calls: int = 0,
     ):
         super().__init__(findings)
         self.source_counts = source_counts
         self.sarif_path = sarif_path
         self.semgrep_status = semgrep_status
+        self.projection = projection
+        self.selected_regions = selected_regions or []
+        self.completed_region_calls = completed_region_calls
+        self.skipped_completed_region_calls = skipped_completed_region_calls
 
 
 def run_ensemble(
@@ -148,64 +169,124 @@ def run_ensemble(
     index = index or RetrievalIndex().build(snapshot_path)
 
     persisted: list[Finding] = []
-    source_counts = {
-        "semgrep": 0, "gitleaks": 0, "pip-audit": 0,
-        "osv-scanner": 0, "llm-ensemble": 0,
-    }
-    for path in iter_source_files(snapshot_path):
-        rel = path.relative_to(snapshot_path).as_posix()
-        file_text = read_numbered(path)
-        region = f"# FILE: {rel}\n{file_text}{_retrieval_context(index, path.read_text(errors='replace'))}"
-
-        for lens, prompt in _LENS_PROMPTS.items():
-            completion = llm.call(
-                module="detect",
-                prompt_version=LENS_PROMPT_VERSIONS[lens],
-                system=secure_system_prompt(prompt),
-                user=delimit_repository_evidence(region),
-                schema=LensFindings,
-                context={"stage": "detect", "repo_id": repo_id, "lens": lens, "file": rel},
-            )
-            for cand in completion.value.findings:
-                cand = _canonicalize_citation(
-                    cand, index, rel, lens, config
-                )
-                if cand is None:
-                    continue
-                cand, low = _resolve_confidence(cand, lens, prompt, index, repo_id, llm, threshold)
-                cand = _canonicalize_citation(
-                    cand, index, rel, lens, config
-                )
-                if cand is None:
-                    continue
-                persisted.append(
-                    _persist_candidate(cand, lens, repo_id, architecture, config, low)
-                )
-                source_counts["llm-ensemble"] += 1
-
-    # Deterministic tool findings land in the same table as the lens findings, tagged
-    # with `source_tool`, so triage / falsify / (later) corroboration see one unified set.
     artifact_path = (
         config.resolve(config.paths.data_dir)
         / "artifacts" / repo_id / commit / "detect" / "semgrep.sarif"
     )
     sarif_path = None
     semgrep_status = None
+    tool_candidates: list[CandidateFinding] = []
     if config.detect.run_deterministic_tools:
         tool_candidates, sarif_path, semgrep_status = _run_deterministic_adapters(
             snapshot_path, config, artifact_path
         )
         for cand in tool_candidates:
             persisted.append(_persist_tool_candidate(cand, repo_id, architecture, config))
-            if cand.producer in source_counts:
-                source_counts[cand.producer] += 1
     else:
         from .deterministic import SastAdapter
 
         sast = SastAdapter(sarif_output_path=artifact_path)
         sast.write_empty_artifact("disabled")
         sarif_path, semgrep_status = artifact_path, sast.run_status
-    return DetectionRun(persisted, source_counts, sarif_path, semgrep_status)
+
+    projection = project_detection_work(
+        snapshot_path, config, lens_count=len(LENSES)
+    )
+    validate_detection_projection(projection, config)
+    planned = plan_detection_regions(
+        snapshot_path,
+        config,
+        commit=commit,
+        architecture=architecture,
+        tool_candidates=tool_candidates,
+    )
+    completed_region_calls = skipped_completed_region_calls = 0
+    for planned_region in planned:
+        path = planned_region.path
+        rel = planned_region.relative_path
+        file_text = read_numbered(path)
+        region = f"# FILE: {rel}\n{file_text}{_retrieval_context(index, path.read_text(errors='replace'))}"
+
+        for lens, prompt in _LENS_PROMPTS.items():
+            region_run = db.start_detection_region(
+                DetectionRegionRun(
+                    repo_id=repo_id,
+                    commit_hash=commit,
+                    file=rel,
+                    lens=lens,
+                    prompt_version=LENS_PROMPT_VERSIONS[lens],
+                    selection_basis=planned_region.selection_basis,
+                ),
+                config,
+            )
+            if region_run.status is RunStatus.COMPLETED:
+                skipped_completed_region_calls += 1
+                continue
+            try:
+                completion = llm.call(
+                    module="detect",
+                    prompt_version=LENS_PROMPT_VERSIONS[lens],
+                    system=secure_system_prompt(prompt),
+                    user=delimit_repository_evidence(region),
+                    schema=LensFindings,
+                    context={"stage": "detect", "repo_id": repo_id, "lens": lens, "file": rel},
+                )
+                finding_count = 0
+                for cand in completion.value.findings:
+                    cand = _canonicalize_citation(
+                        cand, index, rel, lens, config
+                    )
+                    if cand is None:
+                        continue
+                    cand, low = _resolve_confidence(
+                        cand, lens, prompt, index, repo_id, llm, threshold
+                    )
+                    cand = _canonicalize_citation(
+                        cand, index, rel, lens, config
+                    )
+                    if cand is None:
+                        continue
+                    persisted.append(
+                        _persist_candidate(cand, lens, repo_id, architecture, config, low)
+                    )
+                    finding_count += 1
+                db.finish_detection_region(
+                    region_run.id,
+                    RunStatus.COMPLETED,
+                    finding_count=finding_count,
+                    config=config,
+                )
+                completed_region_calls += 1
+            except BaseException as exc:
+                db.finish_detection_region(
+                    region_run.id,
+                    RunStatus.FAILED,
+                    failure_detail=f"{type(exc).__name__}: {exc}"[:4000],
+                    config=config,
+                )
+                raise
+
+    all_findings = db.list_findings(repo_id, config)
+    source_counts = {
+        "semgrep": sum(c.producer == "semgrep" for c in tool_candidates),
+        "gitleaks": sum(c.producer == "gitleaks" for c in tool_candidates),
+        "pip-audit": sum(c.producer == "pip-audit" for c in tool_candidates),
+        "osv-scanner": sum(c.producer == "osv-scanner" for c in tool_candidates),
+        "llm-ensemble": sum(f.source_lens is not None for f in all_findings),
+    }
+    return DetectionRun(
+        all_findings,
+        source_counts,
+        sarif_path,
+        semgrep_status,
+        projection=projection,
+        selected_regions=[
+            {"file": item.relative_path, "basis": item.selection_basis}
+            for item in planned
+        ],
+        completed_region_calls=completed_region_calls,
+        skipped_completed_region_calls=skipped_completed_region_calls,
+    )
 
 
 def _same_file(candidate: str, actual: str) -> bool:

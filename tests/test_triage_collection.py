@@ -130,7 +130,61 @@ def test_collection_reports_actionability_and_technical_validity_separately(
         }
     }
     assert "authorization=insufficient(decided=3, positive=1, negative=2)" in rendered
-    assert "language/detector cohort metrics unavailable" in rendered
+    assert "language cohort sufficiency: none; unavailable labels=0" in rendered
+    assert "detector cohort sufficiency: none; unavailable labels=0" in rendered
+
+
+def test_collection_reports_explicit_language_and_detector_cohorts(
+    tmp_config, monkeypatch
+):
+    labels = [
+        _label("repo", "positive", True, TriageLabelSource.MANUAL),
+        _label("repo", "negative", False, TriageLabelSource.DERIVED_REVIEW),
+        _label("repo", "unknown", True, TriageLabelSource.MANUAL),
+    ]
+    features = [
+        SimpleNamespace(
+            engagement="repo", fingerprint="positive",
+            language="python", detector="semgrep",
+        ),
+        SimpleNamespace(
+            engagement="repo", fingerprint="negative",
+            language="python", detector="semgrep",
+        ),
+        SimpleNamespace(
+            engagement="repo", fingerprint="unknown",
+            language="unknown", detector="unknown",
+        ),
+    ]
+    monkeypatch.setattr(
+        "repoauditor.triage.collection.db.list_triage_labels", lambda config=None: labels
+    )
+    monkeypatch.setattr(
+        "repoauditor.triage.collection.db.list_triage_features", lambda config=None: features
+    )
+    monkeypatch.setattr(
+        "repoauditor.triage.collection.db.list_triage_assessments",
+        lambda repo_id=None, config=None: [],
+    )
+
+    status = collection_status(config=tmp_config)
+    rendered = render_collection_status(status)
+
+    expected = {
+        "python": {
+            "decided": 2, "positive": 1, "negative": 1, "sufficient": False,
+        }
+    }
+    assert status.language_cohorts == expected
+    assert status.detector_cohorts == {
+        "semgrep": {
+            "decided": 2, "positive": 1, "negative": 1, "sufficient": False,
+        }
+    }
+    assert status.labels_without_language == 1
+    assert status.labels_without_detector == 1
+    assert "python=insufficient(decided=2, positive=1, negative=1)" in rendered
+    assert "semgrep=insufficient(decided=2, positive=1, negative=1)" in rendered
 
 
 def test_collection_audits_independent_review_and_disagreement(

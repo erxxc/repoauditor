@@ -17,6 +17,7 @@ on:
           - sentinels-only
           - live-lightweight
           - bounded-independent
+          - cve-positive-pyjwt
           - retrieval-diagnostic
 
 permissions:
@@ -42,6 +43,7 @@ jobs:
             github.event_name == 'workflow_dispatch' &&
             (
               inputs.scope == 'bounded-independent' ||
+              inputs.scope == 'cve-positive-pyjwt' ||
               inputs.scope == 'retrieval-diagnostic'
             )
           ) ||
@@ -51,7 +53,8 @@ jobs:
           path: |
             tests/fixtures/independent_*/snapshot
             tests/fixtures/anchor_owasp_*/snapshot
-          key: public-corpus-v1-${{ runner.os }}-${{ hashFiles('tests/fixtures/materialize_public_corpus.py', 'tests/fixtures/independent_*/expected_findings.json', 'tests/fixtures/anchor_owasp_*/expected_findings.json') }}
+            tests/fixtures/acquisition_cve_*/snapshot
+          key: public-corpus-v2-${{ runner.os }}-${{ hashFiles('tests/fixtures/materialize_public_corpus.py', 'tests/fixtures/independent_*/expected_findings.json', 'tests/fixtures/anchor_owasp_*/expected_findings.json', 'tests/fixtures/cve_positive_acquisition_cohort.json') }}
       - name: Require a validated corpus cache
         if: >-
           (
@@ -59,6 +62,7 @@ jobs:
               github.event_name == 'workflow_dispatch' &&
               (
                 inputs.scope == 'bounded-independent' ||
+                inputs.scope == 'cve-positive-pyjwt' ||
                 inputs.scope == 'retrieval-diagnostic'
               )
             ) ||
@@ -79,6 +83,14 @@ jobs:
         run: >-
           python tests/fixtures/audit_corpus_readiness.py
           --require-materialized
+          --output corpus-readiness.json
+      - name: Verify restored CVE-positive cohort before paid execution
+        if: >-
+          github.event_name == 'workflow_dispatch' &&
+          inputs.scope == 'cve-positive-pyjwt'
+        run: >-
+          python tests/fixtures/audit_corpus_readiness.py
+          --require-cve-positive-materialized
           --output corpus-readiness.json
       - uses: astral-sh/setup-uv@v6
         with:
@@ -185,6 +197,39 @@ jobs:
             live-corpus-junit.xml
             corpus-readiness.json
             live-uat-data/repoauditor.db
+          retention-days: 30
+          if-no-files-found: warn
+      - name: Run CVE-positive PyJWT pilot
+        if: >-
+          success() &&
+          github.event_name == 'workflow_dispatch' &&
+          inputs.scope == 'cve-positive-pyjwt'
+        timeout-minutes: 22
+        env:
+          REPOAUDITOR_CVE_POSITIVE_PAIR: pyjwt_cve_2022_29217
+          REPOAUDITOR_UAT_RESULTS: live-cve-positive-results.json
+          REPOAUDITOR_UAT_SCANNER_COVERAGE: not-installed-live-model-only
+          REPOAUDITOR_UAT_MAX_BATCHES: "1"
+          REPOAUDITOR_UAT_DATA_DIR: live-cve-positive-data
+        run: |
+          echo "CVE-positive pilot: PyJWT pre-fix then post-fix."
+          echo "Hard timeout: 20 minutes; exactly one bounded batch per snapshot."
+          timeout --signal=TERM --kill-after=30s 20m \
+            uv run pytest tests/test_cve_positive_live.py::test_cve_positive_live_pair \
+              -s -vv --junitxml=live-cve-positive-junit.xml
+      - name: Retain CVE-positive pilot evidence
+        if: >-
+          always() &&
+          github.event_name == 'workflow_dispatch' &&
+          inputs.scope == 'cve-positive-pyjwt'
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-cve-positive-${{ github.run_id }}
+          path: |
+            live-cve-positive-results.json
+            live-cve-positive-junit.xml
+            corpus-readiness.json
+            live-cve-positive-data/repoauditor.db
           retention-days: 30
           if-no-files-found: warn
       - name: Retain manufactured-control evidence

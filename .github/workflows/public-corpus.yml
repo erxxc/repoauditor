@@ -35,7 +35,8 @@ jobs:
           path: |
             tests/fixtures/independent_*/snapshot
             tests/fixtures/anchor_owasp_*/snapshot
-          key: public-corpus-v1-${{ runner.os }}-${{ hashFiles('tests/fixtures/materialize_public_corpus.py', 'tests/fixtures/independent_*/expected_findings.json', 'tests/fixtures/anchor_owasp_*/expected_findings.json') }}
+            tests/fixtures/acquisition_cve_*/snapshot
+          key: public-corpus-v2-${{ runner.os }}-${{ hashFiles('tests/fixtures/materialize_public_corpus.py', 'tests/fixtures/independent_*/expected_findings.json', 'tests/fixtures/anchor_owasp_*/expected_findings.json', 'tests/fixtures/cve_positive_acquisition_cohort.json') }}
 
       - uses: astral-sh/setup-uv@v6
         with:
@@ -49,6 +50,7 @@ jobs:
         run: >-
           python tests/fixtures/materialize_public_corpus.py
           "$RUNNER_TEMP/public-corpus-clones"
+          --include-cve-positive-acquisition
           --fetch
 
       - name: Install locked test environment
@@ -58,6 +60,7 @@ jobs:
         run: >-
           python tests/fixtures/audit_corpus_readiness.py
           --require-materialized
+          --require-cve-positive-materialized
           --output corpus-readiness.json
 
       - name: Verify corpus provenance, pairs, citations, and negative controls

@@ -66,6 +66,15 @@ def test_audit_blocks_repeated_organization_frequency_per_finding(tmp_config):
     assert (
         by_code["frequency_population_unverified"].level is AuditLevel.WARNING
     )
+    temporal = [
+        issue for issue in result.issues
+        if issue.code == "prior_temporal_scope_unverified"
+    ]
+    assert len(temporal) == 2
+    assert all("effective_date,data_vintage" in issue.evidence for issue in temporal)
+    assert sum(
+        issue.code == "prior_uncertainty_scope" for issue in result.issues
+    ) == 2
     assert "decision-grade" in render_quant_audit(result)
 
 

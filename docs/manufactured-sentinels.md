@@ -46,3 +46,18 @@ preventing duplicate API cost.
 Current Anthropic and OpenAI-compatible transports do not provide a configured sampling
 seed, so the result explicitly reports repeatability as unisolated. Gauge/repeatability
 characterization remains a later phase.
+
+## Zero-token deterministic certificate controls
+
+The separate `manufactured_certificate_controls` fixture runs in the required fast lane and
+does not call a provider. Its eight externally labelled controls cover:
+
+- JS/TS Axios SSRF request input versus a fixed target;
+- JS/TS `child_process.exec` request input versus a fixed command;
+- Java `request.getParameter` SSRF versus a fixed URL; and
+- ownership authorization versus authentication-only syntax.
+
+The answer key remains outside the scanned snapshot. These controls qualify only the narrow
+structural producer/checker contracts and do not estimate real-world accuracy or prove
+control effectiveness. Keeping them separate also prevents this offline expansion from
+silently increasing the four-case weekly paid sentinel cohort.

@@ -2,8 +2,14 @@
 
 from pathlib import Path
 
+import pytest
+
 from repoauditor.detect.retrieval import RetrievalIndex
-from repoauditor.falsify.slicing import SLICE_VERSION, build_python_slice
+from repoauditor.falsify.slicing import (
+    SLICE_VERSION,
+    build_python_slice,
+    build_structural_slice,
+)
 from repoauditor.store.models import Finding
 
 UAT = Path(__file__).parent / "fixtures" / "uat_lightweight_app" / "snapshot"
@@ -40,6 +46,10 @@ def test_sql_slice_connects_request_assignments_to_query_sink():
     assert evidence.function == "search_products"
     assert evidence.sink and "db.query(sql)" in evidence.sink.source
     assert any('request.args.get("q"' in item.source for item in evidence.source_evidence)
+    assert any(
+        "register_blueprint(catalog_bp)" in item.source
+        for item in evidence.registration_evidence
+    )
     assert "reachability" in evidence.render()
 
 
@@ -57,6 +67,14 @@ def test_ssrf_slice_connects_request_target_to_http_sink():
     assert evidence is not None and evidence.status == "local"
     assert evidence.sink and "requests.get(target" in evidence.sink.source
     assert any('request.args.get("url"' in item.source for item in evidence.source_evidence)
+    assert any(
+        "require_admin()" in item.source
+        for item in evidence.authorization_candidates
+    )
+    assert any(
+        "register_blueprint(integrations_bp)" in item.source
+        for item in evidence.registration_evidence
+    )
 
 
 def test_dynamic_or_unresolved_dependency_is_explicitly_incomplete(tmp_path):
@@ -103,6 +121,36 @@ def test_command_slice_surfaces_control_candidate_without_calling_it_effective(t
     assert "sanitizer effectiveness" in evidence.render()
 
 
+def test_slice_separates_authorization_candidates_from_authentication(tmp_path):
+    (tmp_path / "svc.py").write_text(
+        "import os\n\n"
+        "@app.route('/run/<job_id>')\n"
+        "@owns_resource('job')\n"
+        "def run(job_id, command):\n"
+        "    current_customer_id()\n"
+        "    os.system(command)\n"
+    )
+    evidence = build_python_slice(
+        RetrievalIndex().build(tmp_path),
+        _finding(
+            "Command injection [CWE-78]",
+            "svc.py",
+            7,
+            "os.system(command)",
+        ),
+    )
+
+    assert evidence is not None
+    assert [item.source for item in evidence.authorization_candidates] == [
+        "@owns_resource('job')"
+    ]
+    assert all(
+        "current_customer_id" not in item.source
+        for item in evidence.authorization_candidates
+    )
+    assert "authorization-candidate" in evidence.render()
+
+
 def test_unsupported_mechanism_does_not_emit_a_slice():
     evidence = build_python_slice(
         RetrievalIndex().build(UAT),
@@ -115,3 +163,261 @@ def test_unsupported_mechanism_does_not_emit_a_slice():
     )
 
     assert evidence is None
+
+
+@pytest.mark.parametrize(
+    ("filename", "declaration", "language"),
+    [
+        ("preview.js", "const target = req.query.url;", "javascript"),
+        ("preview.ts", "const target: string = req.query.url;", "typescript"),
+    ],
+)
+def test_javascript_typescript_ssrf_slice_is_local_and_explicit(
+    tmp_path, filename, declaration, language
+):
+    (tmp_path / filename).write_text(
+        "export async function preview(req) {\n"
+        f"  {declaration}\n"
+        "  return fetch(target);\n"
+        "}\n"
+    )
+    finding = _finding(
+        "Server-side request forgery (SSRF) [CWE-918]",
+        filename,
+        3,
+        "fetch(target)",
+    )
+
+    evidence = build_structural_slice(RetrievalIndex().build(tmp_path), finding)
+
+    assert evidence is not None
+    assert evidence.status == "local"
+    assert evidence.language == language
+    assert evidence.sink and evidence.sink.source == "fetch(target)"
+    assert evidence.source_evidence
+    assert "req.query.url" in evidence.source_evidence[0].source
+    assert "runtime reachability" in evidence.render()
+
+
+def test_javascript_unimplemented_mechanism_is_explicitly_unsupported(tmp_path):
+    (tmp_path / "run.js").write_text(
+        "function run(command) {\n"
+        "  return exec(command);\n"
+        "}\n"
+    )
+    finding = _finding(
+        "SQL injection [CWE-89]", "run.js", 2, "exec(command)"
+    )
+
+    evidence = build_structural_slice(RetrievalIndex().build(tmp_path), finding)
+
+    assert evidence is not None
+    assert evidence.status == "unsupported"
+    assert evidence.language == "javascript"
+    assert "supports SSRF and command injection only" in evidence.limitations[0]
+
+
+@pytest.mark.parametrize(
+    "sink",
+    [
+        "axios.get(target)",
+        "axios.post(target, {preview: true})",
+        "axios.delete(target, {timeout: 1000})",
+    ],
+)
+def test_javascript_axios_url_member_calls_extend_ssrf_slice(tmp_path, sink):
+    (tmp_path / "preview.js").write_text(
+        "async function preview(req) {\n"
+        "  const target = req.query.url;\n"
+        f"  return {sink};\n"
+        "}\n"
+    )
+    finding = _finding(
+        "SSRF [CWE-918]", "preview.js", 3, sink
+    )
+
+    evidence = build_structural_slice(RetrievalIndex().build(tmp_path), finding)
+
+    assert evidence is not None and evidence.status == "local"
+    assert evidence.sink and evidence.sink.source == sink
+    assert "req.query.url" in evidence.source_evidence[0].source
+
+
+@pytest.mark.parametrize(
+    "sink",
+    [
+        "client.get(target)",
+        "axios.request({url: target})",
+        "get(target)",
+    ],
+)
+def test_unapproved_axios_like_shapes_remain_incomplete(tmp_path, sink):
+    (tmp_path / "preview.js").write_text(
+        "async function preview(req) {\n"
+        "  const target = req.query.url;\n"
+        f"  return {sink};\n"
+        "}\n"
+    )
+    finding = _finding("SSRF [CWE-918]", "preview.js", 3, sink)
+
+    evidence = build_structural_slice(RetrievalIndex().build(tmp_path), finding)
+
+    assert evidence is not None
+    assert evidence.status == "incomplete"
+    assert "supported sink" in evidence.limitations[-1]
+
+
+@pytest.mark.parametrize(
+    ("filename", "sink"),
+    [
+        ("run.js", "child_process.exec(command)"),
+        ("run.ts", "child_process.execSync(command, {timeout: 1000})"),
+    ],
+)
+def test_javascript_typescript_command_sink_is_bounded(tmp_path, filename, sink):
+    (tmp_path / filename).write_text(
+        "function run(req) {\n"
+        "  const command = req.body.command;\n"
+        f"  return {sink};\n"
+        "}\n"
+    )
+    finding = _finding("Command injection [CWE-78]", filename, 3, sink)
+
+    evidence = build_structural_slice(RetrievalIndex().build(tmp_path), finding)
+
+    assert evidence is not None and evidence.status == "local"
+    assert evidence.mechanism == "command_injection"
+    assert evidence.sink and evidence.sink.source == sink
+    assert "req.body.command" in evidence.source_evidence[0].source
+
+
+@pytest.mark.parametrize(
+    "sink",
+    [
+        "cp.exec(command)",
+        "exec(command)",
+        "child_process.spawn(command)",
+    ],
+)
+def test_unapproved_child_process_shapes_remain_incomplete(tmp_path, sink):
+    (tmp_path / "run.js").write_text(
+        "function run(req) {\n"
+        "  const command = req.body.command;\n"
+        f"  return {sink};\n"
+        "}\n"
+    )
+    finding = _finding("Command injection [CWE-78]", "run.js", 3, sink)
+
+    evidence = build_structural_slice(RetrievalIndex().build(tmp_path), finding)
+
+    assert evidence is not None and evidence.status == "incomplete"
+    assert "supported sink" in evidence.limitations[-1]
+
+
+def test_composed_command_input_remains_incomplete(tmp_path):
+    (tmp_path / "run.js").write_text(
+        "function run(req) {\n"
+        "  const command = 'cat ' + req.query.path;\n"
+        "  return child_process.exec(command);\n"
+        "}\n"
+    )
+    finding = _finding(
+        "Command injection [CWE-78]", "run.js", 3, "child_process.exec(command)"
+    )
+
+    evidence = build_structural_slice(RetrievalIndex().build(tmp_path), finding)
+
+    assert evidence is not None and evidence.status == "incomplete"
+    assert "direct local request property" in evidence.limitations[-1]
+
+
+@pytest.mark.parametrize(
+    ("source_line", "sink"),
+    [
+        (
+            'String target = request.getParameter("url");',
+            "new URL(target).openStream()",
+        ),
+        (
+            "",
+            'new URL(request.getParameter("url")).openConnection()',
+        ),
+    ],
+)
+def test_java_ssrf_slice_supports_one_direct_url_shape(
+    tmp_path, source_line, sink
+):
+    lines = [
+        "class Preview {",
+        "  void preview(HttpServletRequest request) throws Exception {",
+    ]
+    if source_line:
+        lines.append(f"    {source_line}")
+    sink_line = len(lines) + 1
+    lines.extend([f"    {sink};", "  }", "}"])
+    (tmp_path / "Preview.java").write_text("\n".join(lines) + "\n")
+    finding = _finding("SSRF [CWE-918]", "Preview.java", sink_line, sink)
+
+    evidence = build_structural_slice(RetrievalIndex().build(tmp_path), finding)
+
+    assert evidence is not None and evidence.status == "local"
+    assert evidence.language == "java"
+    assert evidence.sink and evidence.sink.source == sink
+    assert "getParameter" in evidence.source_evidence[0].source
+
+
+@pytest.mark.parametrize(
+    "sink",
+    [
+        "url.openConnection()",
+        "new URI(target).toURL().openStream()",
+    ],
+)
+def test_java_unapproved_url_shapes_remain_incomplete(tmp_path, sink):
+    (tmp_path / "Preview.java").write_text(
+        "class Preview {\n"
+        "  void preview(HttpServletRequest request) throws Exception {\n"
+        '    String target = request.getParameter("url");\n'
+        f"    {sink};\n"
+        "  }\n"
+        "}\n"
+    )
+    finding = _finding("SSRF [CWE-918]", "Preview.java", 4, sink)
+
+    evidence = build_structural_slice(RetrievalIndex().build(tmp_path), finding)
+
+    assert evidence is not None and evidence.status == "incomplete"
+    assert "new URL" in evidence.limitations[-1]
+
+
+def test_java_composed_url_input_remains_incomplete(tmp_path):
+    (tmp_path / "Preview.java").write_text(
+        "class Preview {\n"
+        "  void preview(HttpServletRequest request) throws Exception {\n"
+        '    String target = "https://proxy/" + request.getParameter("url");\n'
+        "    new URL(target).openStream();\n"
+        "  }\n"
+        "}\n"
+    )
+    finding = _finding(
+        "SSRF [CWE-918]", "Preview.java", 4, "new URL(target).openStream()"
+    )
+
+    evidence = build_structural_slice(RetrievalIndex().build(tmp_path), finding)
+
+    assert evidence is not None and evidence.status == "incomplete"
+    assert "direct request.getParameter" in evidence.limitations[-1]
+
+
+def test_java_non_ssrf_mechanism_is_explicitly_unsupported(tmp_path):
+    (tmp_path / "Preview.java").write_text(
+        "class Preview {\n  void run(String command) { Runtime.exec(command); }\n}\n"
+    )
+    finding = _finding(
+        "Command injection [CWE-78]", "Preview.java", 2, "Runtime.exec(command)"
+    )
+
+    evidence = build_structural_slice(RetrievalIndex().build(tmp_path), finding)
+
+    assert evidence is not None and evidence.status == "unsupported"
+    assert "supports SSRF only" in evidence.limitations[0]

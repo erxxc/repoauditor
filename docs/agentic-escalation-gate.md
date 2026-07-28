@@ -23,19 +23,30 @@ evidence exists.
    latency, token use, and cost per uniquely validated issue.
 4. **Recall safety — open/evidence-gated.** Aggressive false-positive reduction must not
    silently suppress true vulnerabilities. Any unresolved case remains reviewable.
-5. **Cohort breakdown — partial/evidence-gated.** Family and analyst-declared mechanism
-   gates exist; trustworthy language/detector label metadata and adequate cohort sizes do
-   not yet exist. Pooled gains cannot hide a weak subgroup.
+5. **Cohort breakdown — partial/evidence-gated.** Family, analyst-declared mechanism, and
+   explicitly sourced SARIF language/detector gates exist; adequate real cohort sizes do
+   not yet exist. Missing metadata stays unavailable rather than inferred. Pooled gains
+   cannot hide a weak subgroup.
 6. **Read-only tools — design only.** The agent may request indexed source, slices, callers,
    references, and stored architecture evidence. It may not execute repository code, invoke
    repository tools, access arbitrary networks, or mutate the checkout.
 7. **Independent verification — partial.** Agent-produced claims use the persisted
    `SecurityClaim` contract, bind to an immutable snapshot commit, and are checked by a
    separately versioned deterministic verifier that reopens the snapshot and reconstructs
-   supported facts without consuming the producer's evidence object. Version 3 additionally
+   supported facts without consuming the producer's evidence object. Version 10 additionally
    checks persisted local HTTP-entry evidence, request-input identity, and control-candidate
-   identity/def-use placement. These remain syntax facts—not runtime reachability, attacker
-   control, or control effectiveness. The agent never verifies its own claim.
+   identity/def-use placement, plus exact direct Python call-site and narrow same-function
+   authorization-candidate syntax and Flask blueprint registration tied to the route subject.
+   Authentication-only syntax is excluded. These remain syntax facts—not application
+   startup, runtime reachability, attacker control, authorization scope/effectiveness, or
+   control effectiveness. A separate tree-sitter path checks bounded JavaScript/TypeScript
+   SSRF request-input syntax into `fetch` and explicit global Axios URL-first methods;
+   aliased/object-form Axios is not inferred and other JS/TS mechanisms remain unsupported.
+   Exact `child_process.exec/execSync` command-injection syntax is also checked for one
+   direct request property; aliases and composed commands are not inferred. The agent never
+   verifies its own claim. A third checker path covers one direct Java
+   `request.getParameter` to `new URL(...).openStream/openConnection` SSRF shape; broader
+   Java clients remain unsupported.
 
 ## Proposed eligibility
 

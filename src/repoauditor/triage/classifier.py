@@ -542,6 +542,10 @@ def triage_repo(
                 fingerprint=findings[i].fingerprint,
                 features=[float(v) for v in X[i]],
                 feature_names=list(FEATURE_NAMES),
+                detector=findings[i].detector,
+                detector_source=findings[i].detector_source,
+                language=findings[i].language,
+                language_source=findings[i].language_source,
             ),
             config,
         )

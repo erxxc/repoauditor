@@ -115,6 +115,10 @@ def _prior_source(kind: str, path: str, prior) -> PriorSource:
         kind=kind, param_path=path, source=prior.source, detail=prior.detail,
         publication=prior.publication, edition=prior.edition, locator=prior.locator,
         url=prior.url, transformation=prior.transformation, provenance_status="verified",
+        target_population=prior.target_population, effective_date=prior.effective_date,
+        data_vintage=prior.data_vintage,
+        aleatory_representation=prior.aleatory_representation,
+        epistemic_status=prior.epistemic_status,
     )
 
 
