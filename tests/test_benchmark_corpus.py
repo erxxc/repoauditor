@@ -61,6 +61,7 @@ def _append_live_uat_result(
     path: Path, benchmark_repo, config, *, status: str,
     score: dict | None = None, run=None, pipeline: dict | None = None,
     failure_detail: str | None = None,
+    evaluation_design: dict | None = None,
 ) -> None:
     """Append one terminal paid-run result, including failures and partial usage."""
     if path.is_file():
@@ -90,6 +91,7 @@ def _append_live_uat_result(
         "failure_detail": failure_detail,
         "prompt_versions": run.prompt_versions if run is not None else {},
         "pipeline": pipeline,
+        "evaluation_design": evaluation_design,
         "evaluation": score,
     })
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -350,6 +352,10 @@ def test_live_uat_artifact_is_explicitly_fixture_derived(tmp_config, tmp_path, m
             "terminal_run_id": 17,
             "aggregate_usage": {"calls": 4, "input_tokens": 100, "output_tokens": 20},
         },
+        evaluation_design={
+            "mode": "target-conditioned",
+            "production_target_selected": False,
+        },
     )
 
     document = json.loads(artifact.read_text())
@@ -360,6 +366,10 @@ def test_live_uat_artifact_is_explicitly_fixture_derived(tmp_config, tmp_path, m
     assert document["results"][0]["status"] == "completed"
     assert document["results"][0]["pipeline"]["terminal_run_id"] == 17
     assert document["results"][0]["pipeline"]["aggregate_usage"]["calls"] == 4
+    assert document["results"][0]["evaluation_design"] == {
+        "mode": "target-conditioned",
+        "production_target_selected": False,
+    }
     final = document["results"][0]["evaluation"]["final_countable_confirmed"]
     assert final["precision"] == 0.75
 

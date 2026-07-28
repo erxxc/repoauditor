@@ -212,7 +212,9 @@ jobs:
           REPOAUDITOR_UAT_MAX_BATCHES: "2"
           REPOAUDITOR_UAT_DATA_DIR: live-cve-positive-data
         run: |
-          echo "CVE-positive pilot: PyJWT pre-fix then post-fix."
+          echo "CVE-positive pilot: PyJWT pre-fix then post-fix, target-conditioned."
+          echo "Paid semantic evaluation is restricted to the frozen advisory target file."
+          echo "Normal production region selection is recorded separately; forced inclusion does not receive coverage credit."
           echo "Hard timeout: 20 minutes; at most 2 linked batches per snapshot."
           timeout --signal=TERM --kill-after=30s 20m \
             uv run pytest tests/test_cve_positive_live.py::test_cve_positive_live_pair \

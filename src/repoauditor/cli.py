@@ -62,7 +62,14 @@ from .observability import (
     normalization_metrics,
 )
 from .preflight import PreflightResult, check_model, check_runtime
-from .presentation import ndjson_event, repos_json, repos_table, review_requests_json
+from .presentation import (
+    architecture_artifact_path,
+    architecture_ascii,
+    ndjson_event,
+    repos_json,
+    repos_table,
+    review_requests_json,
+)
 from .report import write_backlog, write_memo
 from .review import (
     decide,
@@ -414,10 +421,16 @@ def _map_stage(repo_id: str, config):
     snapshot_path, commit = latest_snapshot(config, repo_id)
     with _stage_timing("map") as timing, _progress("map"):
         result = _stub_guard(recover_architecture, snapshot_path, repo_id, commit, config)
+        artifact = architecture_artifact_path(
+            config.paths.data_dir, result.repo_id, result.commit
+        )
+        artifact.parent.mkdir(parents=True, exist_ok=True)
+        artifact.write_text(architecture_ascii(result), encoding="utf-8")
     _stage_summary(
         f"mapped {repo_id}: entry-points={len(result.entry_points)}, "
         f"trust-boundaries={len(result.trust_boundaries)}, "
-        f"data-stores={len(result.data_stores)}, integrations={len(result.integrations)}", timing
+        f"data-stores={len(result.data_stores)}, integrations={len(result.integrations)}; "
+        f"artifact={artifact}", timing
     )
     _verbose(f"snapshot={snapshot_path}; commit={commit}")
     return result
@@ -1358,16 +1371,22 @@ def run(
             f"omitted-regions={projection.omitted_regions}"
         )
 
+    map_artifact = architecture_artifact_path(config.paths.data_dir, repo_id, commit)
     if "map" not in completed:
         step(
-            "map", lambda: _map_stage(repo_id, config),
-            lambda value: ({
-                "llm": {
-                    "provider": config.llm.provider,
-                    "model": config.model.name,
-                    "prompt_versions": {"map": MAP_PROMPT_VERSION},
-                }
-            }, []),
+            "map",
+            lambda: _map_stage(repo_id, config),
+            lambda _value: (
+                {
+                    "llm": {
+                        "provider": config.llm.provider,
+                        "model": config.model.name,
+                        "prompt_versions": {"map": MAP_PROMPT_VERSION},
+                    },
+                    "artifact": str(map_artifact),
+                },
+                [str(map_artifact)],
+            ),
         )
 
     if "detect" not in completed:
@@ -1494,6 +1513,9 @@ def run(
         )
     artifact_items = [f"snapshot={snapshot_path}"]
     artifact_paths = [str(snapshot_path)]
+    if map_artifact.is_file():
+        artifact_items.append(f"architecture-map={map_artifact}")
+        artifact_paths.append(str(map_artifact))
     if detection.sarif_path is not None:
         artifact_items.append(f"semgrep-sarif={detection.sarif_path}")
         artifact_paths.append(str(detection.sarif_path))
