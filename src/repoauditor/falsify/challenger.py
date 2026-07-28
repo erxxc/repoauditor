@@ -50,13 +50,18 @@ from ..llm.prompt_security import (
 # Re-exported: the model's structured output shape for a falsification verdict.
 from .outcome import FalsificationOutcome, SelfCritique
 from .claims import claim_from_slice, verify_structural_claim
+from .counterexample import (
+    WitnessVerification,
+    WitnessVerificationStatus,
+    verify_javascript_regex_guard_witness,
+)
 from .slicing import StructuralSliceEvidence, build_structural_slice
 
-_PROMPT_ARTIFACT = "falsification_v2"
+_PROMPT_ARTIFACT = "falsification_v3"
 PROMPT_VERSION = f"{_PROMPT_ARTIFACT}+{PROMPT_SECURITY_VERSION}"
 PROMPT = (Path(__file__).parent / "prompts" / f"{_PROMPT_ARTIFACT}.md").read_text()
 
-_CRITIQUE_PROMPT_ARTIFACT = "falsification_selfcritique_v1"
+_CRITIQUE_PROMPT_ARTIFACT = "falsification_selfcritique_v2"
 CRITIQUE_PROMPT_VERSION = f"{_CRITIQUE_PROMPT_ARTIFACT}+{PROMPT_SECURITY_VERSION}"
 CRITIQUE_PROMPT = (
     Path(__file__).parent / "prompts" / f"{_CRITIQUE_PROMPT_ARTIFACT}.md"
@@ -206,6 +211,7 @@ def _verdict_prompt(finding: Finding, boundary: str, evidence_block: str) -> str
 
 
 def _critique_prompt(finding: Finding, verdict: FalsificationOutcome, evidence_block: str) -> str:
+    witness_verification = _verify_counterexample(finding, verdict, evidence_block)
     return (
         f"CANDIDATE FINDING\n"
         f"title: {finding.title}\n"
@@ -217,8 +223,56 @@ def _critique_prompt(finding: Finding, verdict: FalsificationOutcome, evidence_b
         f"reachable: {verdict.reachable}\n"
         f"mitigating_control: {verdict.mitigating_control}\n"
         f"reported_confidence: {verdict.confidence}\n"
+        f"counterexample_witness: "
+        f"{verdict.counterexample_witness.model_dump_json() if verdict.counterexample_witness else None}\n"
+        f"deterministic_counterexample_check: "
+        f"{witness_verification.model_dump_json() if witness_verification else None}\n"
         f"\nEVIDENCE YOU ACTUALLY HAD:\n{evidence_block or '(no related context was retrieved)'}"
     )
+
+
+def _requires_regex_bypass_witness(finding: Finding, evidence_block: str) -> bool:
+    """Identify the narrow claim family for which the local checker is authoritative.
+
+    This does not attempt a general security taxonomy. It gates only claims that describe
+    evading a JavaScript regex-based guard or validation control and for which a concrete
+    ``/regex/flags.test(...)`` expression is present in the supplied evidence.
+    """
+    claim = f"{finding.title}\n{finding.citation_snippet}".lower()
+    control_terms = (
+        "bypass", "evad", "case-sensitive", "case sensitivity",
+        "validation", "allowlist", "denylist", "blocklist", "guard",
+    )
+    evidence = f"{finding.citation_snippet}\n{evidence_block}"
+    return any(term in claim for term in control_terms) and bool(
+        re.search(r"/(?:\\.|[^/\n])*/[a-z]*\.test\s*\(", evidence)
+    )
+
+
+def _verify_counterexample(
+    finding: Finding,
+    verdict: FalsificationOutcome,
+    evidence_block: str,
+) -> WitnessVerification | None:
+    """Check a supplied regex witness without extending the checker's proof boundary."""
+    witness = verdict.counterexample_witness
+    required = _requires_regex_bypass_witness(finding, evidence_block)
+    if witness is None:
+        if not required:
+            return None
+        return WitnessVerification(
+            status=WitnessVerificationStatus.VERIFICATION_INCOMPLETE,
+            input="",
+            reason="A concrete regex-control bypass witness is required but was not supplied.",
+        )
+    evidence = f"{finding.citation_snippet}\n{evidence_block}"
+    if witness.control_expression not in evidence:
+        return WitnessVerification(
+            status=WitnessVerificationStatus.VERIFICATION_INCOMPLETE,
+            input=witness.input,
+            reason="The witness control expression does not occur verbatim in the evidence.",
+        )
+    return verify_javascript_regex_guard_witness(witness)
 
 
 def challenge_finding(
@@ -299,6 +353,15 @@ def challenge_finding(
             },
         )
         verdict = verdict_completion.value
+        counterexample_verification = _verify_counterexample(
+            finding, verdict, evidence_block
+        )
+        counterexample_upholds = (
+            counterexample_verification is None
+            or counterexample_verification.status
+            is WitnessVerificationStatus.VERIFIED_GUARD_MISS
+            or verdict.status is not FalsificationStatus.CONFIRMED
+        )
 
         # REFLECT — self-critique the verdict against the evidence before committing.
         if self_critique:
@@ -318,7 +381,11 @@ def challenge_finding(
                 },
             )
             critique = critique_completion.value
-            upheld = critique.upholds and not critique_completion.low_confidence
+            upheld = (
+                critique.upholds
+                and not critique_completion.low_confidence
+                and counterexample_upholds
+            )
         else:
             # Prior-version baseline: no reflect step. Recorded honestly in the trace so
             # the disabled critique is auditable rather than implied.
@@ -327,7 +394,7 @@ def challenge_finding(
                 concern="self-critique step disabled (prior-version eval baseline)",
                 confidence=1.0,
             )
-            upheld = True
+            upheld = counterexample_upholds
 
         committed = (
             verdict.status in _TERMINAL
@@ -337,7 +404,8 @@ def challenge_finding(
 
         if persist_artifacts:
             _log_iteration(
-                finding, iteration, evidence_block, verdict, critique, committed, config
+                finding, iteration, evidence_block, verdict, critique,
+                counterexample_verification, committed, config
             )
         last_verdict, last_critique = verdict, critique
 
@@ -354,6 +422,7 @@ def _log_iteration(
     evidence_block: str,
     verdict: FalsificationOutcome,
     critique: SelfCritique,
+    counterexample_verification: WitnessVerification | None,
     committed: bool,
     config: Config,
 ) -> None:
@@ -370,6 +439,14 @@ def _log_iteration(
             verdict_confidence=verdict.confidence,
             critique_upholds=critique.upholds,
             critique_note=critique.concern,
+            counterexample_witness=(
+                verdict.counterexample_witness.model_dump(mode="json")
+                if verdict.counterexample_witness else None
+            ),
+            counterexample_verification=(
+                counterexample_verification.model_dump(mode="json")
+                if counterexample_verification else None
+            ),
             committed=committed,
         ),
         config,
@@ -401,6 +478,7 @@ def _unresolved(
         reachable=last_verdict.reachable,
         mitigating_control=last_verdict.mitigating_control,
         confidence=last_verdict.confidence,
+        counterexample_witness=last_verdict.counterexample_witness,
     )
 
 

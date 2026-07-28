@@ -281,11 +281,15 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
   paths over tests, and gathers matches in one index pass. The version participates in
   detection checkpoint and evaluation provenance. Validate on a different frozen,
   untouched CVE pair; a PyJWT rerun may be used only as development confirmation.
-- [~] Run the first untouched `detection_context_v2` validation on the frozen simple-git
+- [x] Run and adjudicate the first untouched `detection_context_v2` validation on the frozen simple-git
   CVE-2026-28292 pair. The manual `cve-positive-simple-git` scope reuses the exact
   target-conditioned/production-selection split, two-batch ceiling, manufactured controls,
-  and 20-minute timeout. Acceptance criteria are frozen in the offline runbook. Do not tune
-  against this pair before its first artifact is recorded.
+  and 20-minute timeout. Actions run `30325190074` passed 4/4 sentinels and completed both
+  snapshots, but failed semantic validation: the production planner omitted the advisory
+  file in both snapshots and the same-line candidates alleged a wildcard-dot mechanism,
+  not the CVE's missing case-insensitive flag. The pre-fix target was therefore missed.
+  The scorer now separates location evidence from human-adjudicated mechanism matches, and
+  simple-git is development evidence rather than an untouched holdout.
 - Evidence receipt: `docs/offline-detector-round-2026-07-27.json`. It reports target
   recovery and unmatched candidates, never project-wide precision from a partial answer key.
 - CVE-positive acquisition receipt:
@@ -293,6 +297,31 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
   target-scoped recovery, scanner bounds, and the Reposilite wrapper parse warning.
 - Target-conditioned PyJWT receipt:
   `docs/pyjwt-target-conditioned-baseline-2026-07-28.json`.
+- Target-conditioned simple-git receipt:
+  `docs/simple-git-target-conditioned-baseline-2026-07-28.json`.
+
+### Current falsification tuning
+
+- [x] Require semantic human adjudication before a same-location candidate counts as a
+  CVE target match. Location overlap remains visible but cannot silently stand in for
+  mechanism agreement.
+- [x] Add a zero-token manufactured case-sensitivity control and a small deterministic
+  JavaScript regex-witness checker.
+- [x] Gate confirmation of the supported regex-control bypass family on a concrete input,
+  an exact control expression present in evidence, and a verified guard miss. Persist both
+  the witness and checker result. This proves only the regex miss; application acceptance,
+  path feasibility, and security effect remain separate evidence obligations.
+- [ ] Measure production region selection independently on the next untouched project.
+  Target-conditioned inclusion receives no production-coverage credit, and omitted target
+  regions remain planner coverage evidence rather than semantic model false negatives.
+- [x] Freeze Reposilite CVE-2024-36116 as that next untouched project. It has one localized
+  Kotlin archive-traversal target and is lower-complexity than the remaining two-CVE
+  ruby-saml pair. The manual `cve-positive-reposilite` workflow scope retains the exact
+  corpus cache, sentinel gate, two-batch ceiling, and 20-minute timeout. Acceptance and
+  prohibited post-result changes are frozen in
+  `docs/reposilite-validation-plan-2026-07-28.json`.
+- [ ] Run `cve-positive-reposilite` once, retain the artifact/database, then perform human
+  semantic adjudication before scoring target recovery or persistence.
 
 ### C — methodology blocked
 

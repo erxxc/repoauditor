@@ -2201,14 +2201,18 @@ def insert_falsification_iteration(
             cur = conn.execute(
                 "INSERT INTO falsification_iteration "
                 "(finding_id, iteration, evidence, verdict_status, verdict_rationale, "
-                " verdict_confidence, critique_upholds, critique_note, committed) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) "
+                " verdict_confidence, critique_upholds, critique_note, "
+                " counterexample_witness, counterexample_verification, committed) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
                 "ON CONFLICT (finding_id, iteration) DO UPDATE SET "
                 "  evidence = excluded.evidence, verdict_status = excluded.verdict_status, "
                 "  verdict_rationale = excluded.verdict_rationale, "
                 "  verdict_confidence = excluded.verdict_confidence, "
                 "  critique_upholds = excluded.critique_upholds, "
-                "  critique_note = excluded.critique_note, committed = excluded.committed",
+                "  critique_note = excluded.critique_note, "
+                "  counterexample_witness = excluded.counterexample_witness, "
+                "  counterexample_verification = excluded.counterexample_verification, "
+                "  committed = excluded.committed",
                 (
                     iteration.finding_id,
                     iteration.iteration,
@@ -2218,6 +2222,14 @@ def insert_falsification_iteration(
                     iteration.verdict_confidence,
                     int(iteration.critique_upholds),
                     iteration.critique_note,
+                    (
+                        json.dumps(iteration.counterexample_witness)
+                        if iteration.counterexample_witness is not None else None
+                    ),
+                    (
+                        json.dumps(iteration.counterexample_verification)
+                        if iteration.counterexample_verification is not None else None
+                    ),
                     int(iteration.committed),
                 ),
             )
@@ -2267,6 +2279,14 @@ def list_falsification_iterations(
                 verdict_confidence=r["verdict_confidence"],
                 critique_upholds=bool(r["critique_upholds"]),
                 critique_note=r["critique_note"],
+                counterexample_witness=(
+                    json.loads(r["counterexample_witness"])
+                    if r["counterexample_witness"] else None
+                ),
+                counterexample_verification=(
+                    json.loads(r["counterexample_verification"])
+                    if r["counterexample_verification"] else None
+                ),
                 committed=bool(r["committed"]),
             )
             for r in rows

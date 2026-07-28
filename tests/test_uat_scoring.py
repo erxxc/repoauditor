@@ -191,12 +191,16 @@ def test_independent_pre_fix_unresolved_target_is_abstention_not_recovery():
         ),
     ]
 
+    findings[0] = findings[0].model_copy(update={"id": 1})
     result = score_independent_target(
-        findings, _independent_expected("pre_fix")
+        findings,
+        _independent_expected("pre_fix"),
+        semantic_adjudications={1: "target_match"},
     )
 
     assert result["target_confirmed_count"] == 0
     assert result["target_candidate_count"] == 1
+    assert result["location_candidate_count"] == 1
     assert result["pre_fix_confirmed_recovery"] is False
     assert result["target_signals"][0]["disposition"] == "unresolved"
     assert result["unadjudicated_confirmed_group_count"] == 0
@@ -213,8 +217,11 @@ def test_independent_pre_fix_confirmed_target_is_recovered():
         ),
     ]
 
+    findings[0] = findings[0].model_copy(update={"id": 2})
     result = score_independent_target(
-        findings, _independent_expected("pre_fix")
+        findings,
+        _independent_expected("pre_fix"),
+        semantic_adjudications={2: "target_match"},
     )
 
     assert result["target_confirmed_count"] == 1
@@ -253,10 +260,60 @@ def test_independent_post_fix_confirmed_target_is_persistent():
         ),
     ]
 
+    findings[0] = findings[0].model_copy(update={"id": 3})
     result = score_independent_target(
-        findings, _independent_expected("post_fix")
+        findings,
+        _independent_expected("post_fix"),
+        semantic_adjudications={3: "target_match"},
     )
 
     assert result["post_fix_confirmed_persistence"] is True
     assert result["post_fix_any_signal_persistence"] is True
     assert result["unadjudicated_confirmed_group_count"] == 0
+
+
+def test_independent_same_location_different_mechanism_is_not_target_signal():
+    finding = _finding(
+        id=4,
+        title="Unescaped regex dot broadens matching",
+        file="index.js",
+        line_start=191,
+        line_end=191,
+        citation_snippet="return regexps[valueIndex].toString()",
+    )
+
+    result = score_independent_target(
+        [finding],
+        _independent_expected("pre_fix"),
+        semantic_adjudications={4: "different_mechanism"},
+    )
+
+    assert result["location_candidate_count"] == 1
+    assert result["target_candidate_count"] == 0
+    assert result["target_confirmed_count"] == 0
+    assert result["pre_fix_confirmed_recovery"] is False
+    assert result["target_signals"][0]["disposition"] == "different_mechanism"
+    assert result["unadjudicated_confirmed_group_count"] == 1
+
+
+def test_independent_unadjudicated_location_match_stays_pending():
+    finding = _finding(
+        id=5,
+        file="index.js",
+        line_start=191,
+        line_end=191,
+        citation_snippet="return regexps[valueIndex].toString()",
+    )
+
+    result = score_independent_target(
+        [finding], _independent_expected("post_fix")
+    )
+
+    signal = result["target_signals"][0]
+    assert result["location_candidate_count"] == 1
+    assert result["target_candidate_count"] == 0
+    assert result["post_fix_any_signal_persistence"] is False
+    assert signal["disposition"] == "location_match_pending_human_adjudication"
+    assert signal["location_matches"][0]["semantic_adjudication"] == (
+        "pending_human_adjudication"
+    )

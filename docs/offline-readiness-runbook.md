@@ -197,9 +197,9 @@ primary definitions rank higher within each class. The version is part of detect
 checkpoint/evaluation provenance. Validate it on another frozen pair that did not motivate
 the change. A later PyJWT rerun is development confirmation only, never an unbiased gate.
 
-### Untouched simple-git validation
+### Completed simple-git validation
 
-The manual `cve-positive-simple-git` scope is the first independent validation of
+The manual `cve-positive-simple-git` scope was the first independent validation of
 `detection_context_v2`. Its commits, target, and acceptance criteria were frozen in
 `cve_positive_acquisition_cohort.json` before the context change:
 
@@ -210,26 +210,64 @@ The manual `cve-positive-simple-git` scope is the first independent validation o
 - confirmed non-target findings remain unadjudicated because the project answer key is not
   exhaustive.
 
-The paid run remains target-conditioned on
+Actions run `30325190074` completed both target-conditioned snapshots and passed all four
+manufactured sentinels. It used 31 calls, 141,839 input tokens, 10,473 output tokens, and
+195,273 ms of recorded model latency. The production planner omitted the target file in
+both snapshots. At the advisory line, the model raised candidates about wildcard-dot
+matching; manual adjudication found those to be a different mechanism from the missing
+case-insensitive flag in CVE-2026-28292. The pre-fix target was therefore not recovered,
+and same-line post-fix output was not a persisted target signal. The exact receipt is
+[`simple-git-target-conditioned-baseline-2026-07-28.json`](simple-git-target-conditioned-baseline-2026-07-28.json).
+
+This exposed a scoring defect: location overlap had been treated as target matching without
+semantic adjudication. The scorer now reports location candidates separately and counts a
+target only after a human marks its mechanism `target_match`. Missing adjudication remains
+pending, never an inferred match. The supported regex-control bypass family also now
+requires a concrete, checkable witness before a confirmation can commit. These corrections
+make simple-git development evidence; it is no longer an untouched validation target.
+
+The paid run was target-conditioned on
 `simple-git/src/lib/plugins/block-unsafe-operations-plugin.ts` while separately recording
-the unchanged production region plan. It runs pre-fix before post-fix, requires all four
-manufactured controls to qualify, permits at most two existing bounded batches per
-snapshot, and retains the 20-minute outer timeout. Run it once after the exact public-corpus
-cache is available. Do not change prompts, context ranking, target metadata, thresholds, or
-budgets after seeing its result; review and record the artifact before enabling another
-pair.
+the unchanged production region plan. The next pair must retain this separation: forced
+inclusion measures semantic handling, while unchanged production selection measures
+planner coverage.
 
 Acceptance is target-scoped and was frozen before execution:
 
-- pre-fix: a falsification-confirmed match is recovery; unresolved is an abstention;
+- pre-fix: a semantically adjudicated, falsification-confirmed match is recovery;
+  unresolved is an abstention;
 - post-fix: any matching signal is disclosed, and confirmed persistence fails the negative
   control; and
-- confirmed findings outside CVE-2022-29217 remain unadjudicated rather than becoming
+- confirmed findings outside CVE-2026-28292 remain unadjudicated rather than becoming
   automatic false positives.
 
 Review the JSON artifact, JUnit result, and retained SQLite usage evidence before enabling
 another CVE-positive pair. Do not change prompts, thresholds, target locations, or budgets
 from the pilot result; that would turn this acquisition check into tuning on its answer key.
+
+### Next untouched validation: Reposilite
+
+Reposilite CVE-2024-36116 is the next pair. It was selected before ruby-saml because it
+has one localized Kotlin archive-traversal target, while ruby-saml combines two CVEs, an
+XML parser differential, signature wrapping, and a seven-file patch. The previous Semgrep
+partial-parse warning came from a Gradle wrapper script, not the target Kotlin file.
+
+The manual Actions scope is `cve-positive-reposilite`. It requires the exact validated
+public-corpus cache and a passing manufactured-instrument qualification, then runs the
+pre-fix commit before the post-fix control. It retains the existing two-batch maximum per
+snapshot, provider call/token ceilings, and 20-minute outer timeout. Target-conditioned
+semantic evaluation and unchanged production-planner selection remain separate.
+
+Scoring now requires human semantic adjudication. A same-file or same-line alert is only a
+location candidate. Pre-fix recovery requires `target_match` plus a falsification-confirmed
+verdict; unresolved is an abstention. Post-fix confirmed persistence of a semantically
+matched target fails the negative control. Non-target findings remain unadjudicated because
+the answer key is intentionally not exhaustive.
+
+The exact commits, target, acceptance criteria, ceilings, and prohibited post-result changes
+are frozen in
+[`reposilite-validation-plan-2026-07-28.json`](reposilite-validation-plan-2026-07-28.json).
+Run the scope once and retain its JSON, JUnit, and SQLite artifacts before any tuning.
 
 ## Analyst decision after collection
 

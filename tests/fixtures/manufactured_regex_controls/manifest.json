@@ -1,0 +1,27 @@
+{
+  "schema_version": "manufactured-regex-controls-v1",
+  "kind": "manufactured_solution",
+  "cases": [
+    {
+      "id": "case-sensitive-mixed-case-bypass",
+      "line": 2,
+      "witness": "Protocol.allow=always",
+      "expected": "verified_guard_miss",
+      "basis": "The case-sensitive guard misses a mixed-case spelling of the protected key."
+    },
+    {
+      "id": "case-sensitive-lowercase-blocked",
+      "line": 2,
+      "witness": "protocol.allow=always",
+      "expected": "refuted_guard_match",
+      "basis": "The vulnerable guard still matches the exact lowercase spelling."
+    },
+    {
+      "id": "case-insensitive-mixed-case-blocked",
+      "line": 6,
+      "witness": "Protocol.allow=always",
+      "expected": "refuted_guard_match",
+      "basis": "The fixed case-insensitive guard matches the mixed-case spelling."
+    }
+  ]
+}

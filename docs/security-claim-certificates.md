@@ -4,6 +4,12 @@
 The producer may retrieve and slice broadly; the checker reopens the immutable snapshot,
 parses it independently, and accepts only narrowly defined structural facts.
 
+Falsification also has one deliberately smaller, separate certificate:
+`verify_javascript_regex_guard_witness` checks whether a concrete string makes an exact
+JavaScript `/pattern/flags.test(...)` expression from the supplied evidence miss. A
+supported regex-control bypass cannot be confirmed without that witness and a verified
+guard miss. The witness and checker result are stored with the falsification iteration.
+
 Current certificate version: `security_claim_v10`
 Current verifier: `deterministic_structural_certificate_checker_v10`
 
@@ -60,6 +66,8 @@ Structural verification does **not** establish:
 - exploitability, severity, or real-world risk.
 - that a JavaScript/TypeScript `req` or `request` object is actually framework-provided,
   attacker-controlled, or unsanitized in the deployed application.
+- for a verified regex guard miss, that the application accepts the concrete string, that
+  the relevant path executes, or that the claimed security effect occurs.
 
 A plain function parameter is not treated as attacker-controlled unless the same local
 function has a checked route placeholder for that parameter. A control-like function name

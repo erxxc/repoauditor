@@ -19,6 +19,7 @@ on:
           - bounded-independent
           - cve-positive-pyjwt
           - cve-positive-simple-git
+          - cve-positive-reposilite
           - retrieval-diagnostic
 
 permissions:
@@ -46,6 +47,7 @@ jobs:
               inputs.scope == 'bounded-independent' ||
               inputs.scope == 'cve-positive-pyjwt' ||
               inputs.scope == 'cve-positive-simple-git' ||
+              inputs.scope == 'cve-positive-reposilite' ||
               inputs.scope == 'retrieval-diagnostic'
             )
           ) ||
@@ -66,6 +68,7 @@ jobs:
                 inputs.scope == 'bounded-independent' ||
                 inputs.scope == 'cve-positive-pyjwt' ||
                 inputs.scope == 'cve-positive-simple-git' ||
+                inputs.scope == 'cve-positive-reposilite' ||
                 inputs.scope == 'retrieval-diagnostic'
               )
             ) ||
@@ -92,7 +95,8 @@ jobs:
           github.event_name == 'workflow_dispatch' &&
           (
             inputs.scope == 'cve-positive-pyjwt' ||
-            inputs.scope == 'cve-positive-simple-git'
+            inputs.scope == 'cve-positive-simple-git' ||
+            inputs.scope == 'cve-positive-reposilite'
           )
         run: >-
           python tests/fixtures/audit_corpus_readiness.py
@@ -211,12 +215,15 @@ jobs:
           github.event_name == 'workflow_dispatch' &&
           (
             inputs.scope == 'cve-positive-pyjwt' ||
-            inputs.scope == 'cve-positive-simple-git'
+            inputs.scope == 'cve-positive-simple-git' ||
+            inputs.scope == 'cve-positive-reposilite'
           )
         timeout-minutes: 22
         env:
           REPOAUDITOR_CVE_POSITIVE_PAIR: >-
             ${{
+              inputs.scope == 'cve-positive-reposilite' &&
+              'reposilite_cve_2024_36116' ||
               inputs.scope == 'cve-positive-simple-git' &&
               'simple_git_cve_2026_28292' ||
               'pyjwt_cve_2022_29217'
@@ -239,7 +246,8 @@ jobs:
           github.event_name == 'workflow_dispatch' &&
           (
             inputs.scope == 'cve-positive-pyjwt' ||
-            inputs.scope == 'cve-positive-simple-git'
+            inputs.scope == 'cve-positive-simple-git' ||
+            inputs.scope == 'cve-positive-reposilite'
           )
         uses: actions/upload-artifact@v4
         with:

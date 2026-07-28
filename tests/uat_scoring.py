@@ -300,13 +300,26 @@ def score_live_uat(
     }
 
 
-def score_independent_target(findings: list[Finding], expected: dict) -> dict:
+_SEMANTIC_ADJUDICATIONS = {
+    "target_match",
+    "different_mechanism",
+    "insufficient_evidence",
+}
+
+
+def score_independent_target(
+    findings: list[Finding],
+    expected: dict,
+    semantic_adjudications: dict[int, str] | None = None,
+) -> dict:
     """Score one reviewed CVE target without claiming exhaustive-project precision.
 
-    Pre-fix recovery requires a falsification-confirmed target match. Unresolved matches are
-    explicit abstentions, never true positives. For a post-fix snapshot, both confirmed
-    persistence and any residual target signal are reported. Confirmed findings outside the
-    reviewed target remain unadjudicated and never become automatic false positives.
+    Location/citation overlap identifies candidates for human semantic adjudication; it is
+    not itself evidence that the candidate describes the reviewed CVE mechanism. Pre-fix
+    recovery requires both an explicit ``target_match`` adjudication and falsification
+    confirmation. Missing adjudications remain pending rather than being inferred from
+    title similarity. Confirmed findings outside the semantically matched target remain
+    unadjudicated and never become automatic false positives.
     """
     source = expected["source"]
     variant = source["variant"]
@@ -320,11 +333,25 @@ def score_independent_target(findings: list[Finding], expected: dict) -> dict:
         if finding.falsification_status is FalsificationStatus.CONFIRMED
     ]
     confirmed_groups = find_matches(confirmed).groups
+    adjudications = semantic_adjudications or {}
+    invalid = set(adjudications.values()) - _SEMANTIC_ADJUDICATIONS
+    if invalid:
+        raise ValueError(
+            "unknown semantic adjudication(s): " + ", ".join(sorted(invalid))
+        )
     matched_group_indexes: set[int] = set()
     target_signals: list[dict] = []
     for target in targets:
-        matches = [
+        location_matches = [
             finding for finding in findings if _match_basis(finding, target)
+        ]
+        adjudicated_matches = [
+            (finding, adjudications.get(finding.id, "pending_human_adjudication"))
+            for finding in location_matches
+        ]
+        matches = [
+            finding for finding, status in adjudicated_matches
+            if status == "target_match"
         ]
         confirmed_matches = [
             finding for finding in matches
@@ -338,8 +365,9 @@ def score_independent_target(findings: list[Finding], expected: dict) -> dict:
             finding for finding in matches
             if finding.falsification_status is FalsificationStatus.KILLED
         ]
+        semantic_ids = {finding.id for finding in matches}
         for index, group in enumerate(confirmed_groups):
-            if _group_match_basis(group, target):
+            if any(finding.id in semantic_ids for finding in group.findings):
                 matched_group_indexes.add(index)
         if confirmed_matches:
             disposition = "confirmed"
@@ -347,6 +375,18 @@ def score_independent_target(findings: list[Finding], expected: dict) -> dict:
             disposition = "unresolved"
         elif killed_matches:
             disposition = "killed"
+        elif any(
+            status == "pending_human_adjudication"
+            for _finding, status in adjudicated_matches
+        ):
+            disposition = "location_match_pending_human_adjudication"
+        elif any(
+            status == "insufficient_evidence"
+            for _finding, status in adjudicated_matches
+        ):
+            disposition = "location_match_semantically_inconclusive"
+        elif location_matches:
+            disposition = "different_mechanism"
         else:
             disposition = "not_detected"
         target_signals.append({
@@ -355,30 +395,44 @@ def score_independent_target(findings: list[Finding], expected: dict) -> dict:
             "file": target["file"],
             "citation_contains": target.get("citation_contains"),
             "disposition": disposition,
+            "location_candidate_raised": bool(location_matches),
             "candidate_raised": bool(matches),
             "confirmed": bool(confirmed_matches),
+            "location_matches": [
+                {
+                    **_evidence(finding),
+                    "semantic_adjudication": status,
+                }
+                for finding, status in adjudicated_matches
+            ],
             "matches": [_evidence(finding) for finding in matches],
         })
 
     target_confirmed = sum(signal["confirmed"] for signal in target_signals)
     target_candidates = sum(signal["candidate_raised"] for signal in target_signals)
+    location_candidates = sum(
+        signal["location_candidate_raised"] for signal in target_signals
+    )
     unadjudicated_groups = [
         group for index, group in enumerate(confirmed_groups)
         if index not in matched_group_indexes
     ]
     return {
         "methodology": (
-            "One human-reviewed historical CVE target; confirmed target recovery and "
-            "post-fix target persistence are reported directly. Unresolved target matches "
-            "are abstentions. Because repository ground truth is non-exhaustive, confirmed "
-            "findings outside the target are disclosed as unadjudicated and are not counted "
-            "as false positives. No project-wide precision is claimed."
+            "One human-reviewed historical CVE target. File/citation overlap is reported "
+            "as location evidence only; an explicit human semantic adjudication is required "
+            "before a candidate can match the target mechanism. Confirmed recovery requires "
+            "both semantic match and falsification confirmation. Because repository ground "
+            "truth is non-exhaustive, confirmed findings outside the target are disclosed "
+            "as unadjudicated and are not counted as false positives. No project-wide "
+            "precision is claimed."
         ),
         "project_id": source["project_id"],
         "variant": variant,
         "target_count": len(target_signals),
         "target_confirmed_count": target_confirmed,
         "target_candidate_count": target_candidates,
+        "location_candidate_count": location_candidates,
         "pre_fix_confirmed_recovery": (
             target_confirmed == len(target_signals) if variant == "pre_fix" else None
         ),

@@ -9,6 +9,7 @@ from __future__ import annotations
 from pydantic import BaseModel
 
 from ..store.models import FalsificationStatus
+from .counterexample import RegexGuardWitness
 
 
 class FalsificationOutcome(BaseModel):
@@ -26,6 +27,9 @@ class FalsificationOutcome(BaseModel):
     # The model's confidence in this verdict (falsification_v2+). Below the configured
     # threshold, the verdict is escalated to `unresolved` rather than guessed either way.
     confidence: float = 1.0
+    # Concrete, deterministically checkable evidence for a JavaScript regex-control
+    # bypass claim. Optional for findings outside that deliberately narrow checker.
+    counterexample_witness: RegexGuardWitness | None = None
 
 
 class SelfCritique(BaseModel):

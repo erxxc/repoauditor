@@ -1,0 +1,109 @@
+{
+  "schema_version": "target-conditioned-baseline-v1",
+  "recorded_at": "2026-07-28",
+  "workflow_run": {
+    "id": 30325190074,
+    "url": "https://github.com/erxxc/repoauditor/actions/runs/30325190074",
+    "head_sha": "8ec6e97394589081bff7f6a7348fd13d8727e30c",
+    "conclusion": "success"
+  },
+  "scope": {
+    "project": "simple-git",
+    "project_id": "simple_git_cve_2026_28292",
+    "cve": "CVE-2026-28292",
+    "advisory": "GHSA-r275-fr43-pm7q",
+    "vulnerable_commit": "f8cb7df3feb3c135d2e10803586d64dfe6a2bfe9",
+    "fixed_commit": "f7042088aa2dac59e3c49a84d7a2f4b26048a257",
+    "target_file": "simple-git/src/lib/plugins/block-unsafe-operations-plugin.ts",
+    "target_conditioned": true,
+    "scanner_coverage": "not-installed-live-model-only",
+    "context_version": "detection_context_v2"
+  },
+  "instrument_qualification": {
+    "manufactured_controls_passed": 4,
+    "manufactured_controls_total": 4,
+    "positive_recovery": 1.0,
+    "negative_recovery": 1.0,
+    "evidence_scope": "manufactured controls only; not real-world precision or recall"
+  },
+  "provider": {
+    "name": "anthropic",
+    "model": "claude-opus-4-8",
+    "unknown_usage_calls": 0
+  },
+  "results": {
+    "pre_fix": {
+      "status": "completed",
+      "production_target_selected": false,
+      "location_matches": 1,
+      "human_semantic_adjudication": {
+        "finding_id": 1,
+        "status": "different_mechanism",
+        "observed_claim": "Unescaped regex dots may permit a protocol override bypass.",
+        "target_mechanism": "Missing case-insensitive matching permits mixed-case protocol.allow keys.",
+        "reason": "The citation overlaps the patch line, but the finding never identifies case sensitivity or a mixed-case bypass witness."
+      },
+      "semantic_target_candidates": 0,
+      "pre_fix_confirmed_recovery": false,
+      "non_target_dispositions": {
+        "killed": 2,
+        "unresolved": 1
+      },
+      "open_review": {
+        "finding_id": 3,
+        "status": "unresolved",
+        "claim": "Null-byte stripping may not neutralize an embedded-null clone switch.",
+        "ground_truth_status": "unadjudicated_non_target"
+      },
+      "deferred_findings": 0,
+      "usage": {
+        "calls": 19,
+        "input_tokens": 83022,
+        "output_tokens": 6634,
+        "latency_ms": 122797
+      }
+    },
+    "post_fix": {
+      "status": "completed",
+      "production_target_selected": false,
+      "location_matches": 1,
+      "human_semantic_adjudication": {
+        "finding_id": 5,
+        "status": "different_mechanism",
+        "observed_claim": "Unanticipated config forms may bypass the broad regex.",
+        "target_mechanism": "Missing case-insensitive matching permits mixed-case protocol.allow keys.",
+        "reason": "The patched citation includes the case-insensitive flag, and the finding does not claim persistence of the reviewed case-sensitivity mechanism."
+      },
+      "semantic_target_candidates": 0,
+      "post_fix_confirmed_persistence": false,
+      "post_fix_any_semantic_signal_persistence": false,
+      "non_target_dispositions": {
+        "killed": 2
+      },
+      "deferred_findings": 0,
+      "usage": {
+        "calls": 12,
+        "input_tokens": 58817,
+        "output_tokens": 3839,
+        "latency_ms": 72476
+      }
+    }
+  },
+  "aggregate_usage": {
+    "calls": 31,
+    "input_tokens": 141839,
+    "output_tokens": 10473,
+    "known_tokens": 152312,
+    "latency_ms": 195273
+  },
+  "interpretation": {
+    "validation_gate": "failed",
+    "semantic_result": "The pre-fix advisory mechanism was not raised. A same-line finding asserted a different regex-dot mechanism and was killed.",
+    "negative_control": "No semantically adjudicated target mechanism persisted post-fix.",
+    "scorer_finding": "File/citation overlap alone overstated target-candidate and post-fix signal counts. Semantic target matching requires an explicit human adjudication.",
+    "falsification_finding": "Falsification correctly evaluated the candidate's stated regex-dot claim; it did not independently discover the missing case-sensitivity claim.",
+    "retrieval_result": "The unchanged production planner omitted the target file in both snapshots.",
+    "precision_scope": "The answer key covers one historical CVE and is not exhaustive. Non-target findings are not automatic false positives.",
+    "training_status": "simple-git becomes development evidence after this review and must not serve as an untouched validation target for resulting corrections."
+  }
+}

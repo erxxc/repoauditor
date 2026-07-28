@@ -14,6 +14,7 @@ from repoauditor.config import FalsifyConfig
 from repoauditor.detect.retrieval import RetrievalIndex
 from repoauditor.falsify import challenge_finding
 from repoauditor.falsify.challenger import _falsification_context
+from repoauditor.falsify.counterexample import RegexGuardWitness
 from repoauditor.falsify.outcome import FalsificationOutcome, SelfCritique
 from repoauditor.llm import LLMClient, ScriptedBackend
 from repoauditor.map import ArchitectureMap, EntryPoint
@@ -183,6 +184,98 @@ def test_shaky_self_critique_confidence_also_blocks_commit(tmp_config):
     )
     assert outcome.status is FalsificationStatus.UNRESOLVED
     assert len(db.list_falsification_iterations(finding.id, tmp_config)) == 3
+
+
+def _regex_bypass_finding(cfg) -> Finding:
+    finding = Finding(
+        repo_id="r",
+        title="Case-sensitive validation bypass",
+        file="guards.js",
+        line_start=2,
+        line_end=2,
+        citation_snippet='const blocked = /^safe$/.test(input);',
+        source_tool="semgrep",
+        confidence=0.9,
+        severity="high",
+        falsification_status=FalsificationStatus.UNRESOLVED,
+    )
+    finding_id = db.insert_finding(finding, cfg)
+    return finding.model_copy(update={"id": finding_id})
+
+
+def _regex_handler(witness: RegexGuardWitness | None):
+    def handler(system, user, schema, context):
+        if schema is SelfCritique:
+            return SelfCritique(
+                upholds=True,
+                concern="reachability, acceptance, and effect are present in the fixture",
+                confidence=0.95,
+            )
+        return FalsificationOutcome(
+            status=FalsificationStatus.CONFIRMED,
+            rationale="scripted regex-control bypass",
+            reachable=True,
+            confidence=0.95,
+            counterexample_witness=witness,
+        )
+    return handler
+
+
+def test_regex_bypass_confirm_without_witness_cannot_commit(tmp_config):
+    db.init_db(tmp_config)
+    finding = _regex_bypass_finding(tmp_config)
+
+    outcome = _challenge(tmp_config, _regex_handler(None), finding)
+
+    assert outcome.status is FalsificationStatus.UNRESOLVED
+    trace = db.list_falsification_iterations(finding.id, tmp_config)
+    assert len(trace) == 3
+    assert all(not row.committed for row in trace)
+    assert {
+        row.counterexample_verification["status"] for row in trace
+    } == {"verification_incomplete"}
+
+
+def test_regex_bypass_confirm_with_matching_input_cannot_commit(tmp_config):
+    db.init_db(tmp_config)
+    finding = _regex_bypass_finding(tmp_config)
+    witness = RegexGuardWitness(
+        input="safe",
+        control_expression="/^safe$/.test(input)",
+        expected_security_effect="input passes the validation control",
+    )
+
+    outcome = _challenge(tmp_config, _regex_handler(witness), finding)
+
+    assert outcome.status is FalsificationStatus.UNRESOLVED
+    trace = db.list_falsification_iterations(finding.id, tmp_config)
+    assert all(not row.committed for row in trace)
+    assert {
+        row.counterexample_verification["status"] for row in trace
+    } == {"refuted_guard_match"}
+
+
+def test_regex_bypass_confirm_with_verified_guard_miss_can_commit_and_is_logged(
+    tmp_config,
+):
+    db.init_db(tmp_config)
+    finding = _regex_bypass_finding(tmp_config)
+    witness = RegexGuardWitness(
+        input="SAFE",
+        control_expression="/^safe$/.test(input)",
+        expected_security_effect="mixed-case input evades a case-sensitive validation guard",
+    )
+
+    outcome = _challenge(tmp_config, _regex_handler(witness), finding)
+
+    assert outcome.status is FalsificationStatus.CONFIRMED
+    trace = db.list_falsification_iterations(finding.id, tmp_config)
+    assert len(trace) == 1 and trace[0].committed
+    assert trace[0].counterexample_witness["input"] == "SAFE"
+    assert (
+        trace[0].counterexample_verification["status"]
+        == "verified_guard_miss"
+    )
 
 
 def test_sql_injection_confirms_when_enclosing_route_context_is_retrieved(tmp_config):
