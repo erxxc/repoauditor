@@ -179,6 +179,46 @@ The post-fix snapshot stopped with two deferred non-target findings. That result
 the target-conditioned harness above; rerunning the unchanged whole-repository pilot would
 spend more without resolving the confound.
 
+The target-conditioned baseline (Actions run `30323666007`) completed both snapshots in
+one batch each with no deferred findings. All four manufactured controls passed. The pair
+used 17 calls and 164,537 known tokens. The pre-fix target was not raised even with
+`jwt/algorithms.py` supplied explicitly; post-fix had no target signal. The structured
+receipt is
+[`pyjwt-target-conditioned-baseline-2026-07-28.json`](pyjwt-target-conditioned-baseline-2026-07-28.json).
+It also records the separate production-selection outcome and the context diagnostic.
+Because that diagnostic now informs development, PyJWT is not an untouched validation
+target for subsequent context-construction changes.
+
+`detection_context_v2` is the resulting generic correction. It retrieves bounded external
+syntactic call-name matches for functions defined in the primary file before falling back
+to external similar-pattern matches; same-file blocks already present in the primary region
+are not repeated. Production paths rank ahead of test paths, and candidates matching more
+primary definitions rank higher within each class. The version is part of detection
+checkpoint/evaluation provenance. Validate it on another frozen pair that did not motivate
+the change. A later PyJWT rerun is development confirmation only, never an unbiased gate.
+
+### Untouched simple-git validation
+
+The manual `cve-positive-simple-git` scope is the first independent validation of
+`detection_context_v2`. Its commits, target, and acceptance criteria were frozen in
+`cve_positive_acquisition_cohort.json` before the context change:
+
+- pre-fix `f8cb7df3feb3c135d2e10803586d64dfe6a2bfe9`: a
+  falsification-confirmed match for CVE-2026-28292 is recovery; unresolved is an abstention;
+- post-fix `f7042088aa2dac59e3c49a84d7a2f4b26048a257`: any matching signal is disclosed and
+  confirmed persistence fails the negative control; and
+- confirmed non-target findings remain unadjudicated because the project answer key is not
+  exhaustive.
+
+The paid run remains target-conditioned on
+`simple-git/src/lib/plugins/block-unsafe-operations-plugin.ts` while separately recording
+the unchanged production region plan. It runs pre-fix before post-fix, requires all four
+manufactured controls to qualify, permits at most two existing bounded batches per
+snapshot, and retains the 20-minute outer timeout. Run it once after the exact public-corpus
+cache is available. Do not change prompts, context ranking, target metadata, thresholds, or
+budgets after seeing its result; review and record the artifact before enabling another
+pair.
+
 Acceptance is target-scoped and was frozen before execution:
 
 - pre-fix: a falsification-confirmed match is recovery; unresolved is an abstention;

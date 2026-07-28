@@ -1,0 +1,121 @@
+{
+  "schema_version": "target-conditioned-baseline-v1",
+  "recorded_at": "2026-07-28",
+  "workflow_run": {
+    "id": 30323666007,
+    "url": "https://github.com/erxxc/repoauditor/actions/runs/30323666007",
+    "head_sha": "3e45008c232a5444b3ce82b178f3aed6b3624e10",
+    "conclusion": "success"
+  },
+  "scope": {
+    "project": "PyJWT",
+    "project_id": "pyjwt_cve_2022_29217",
+    "cve": "CVE-2022-29217",
+    "advisory": "GHSA-ffqj-6fqr-9h24",
+    "vulnerable_commit": "24b29adfebcb4f057a3cef5aaf35653bc0c1c8cc",
+    "fixed_commit": "9c528670c455b8d948aff95ed50e22940d1ad3fc",
+    "target_file": "jwt/algorithms.py",
+    "target_conditioned": true,
+    "scanner_coverage": "not-installed-live-model-only"
+  },
+  "instrument_qualification": {
+    "manufactured_controls_passed": 4,
+    "manufactured_controls_total": 4,
+    "positive_recovery": 1.0,
+    "negative_recovery": 1.0,
+    "evidence_scope": "manufactured controls only; not real-world precision or recall"
+  },
+  "provider": {
+    "name": "anthropic",
+    "model": "claude-opus-4-8",
+    "unknown_usage_calls": 0
+  },
+  "results": {
+    "pre_fix": {
+      "status": "completed",
+      "production_target_selected": false,
+      "production_selected_regions": [
+        "jwt/api_jws.py",
+        "jwt/api_jwt.py",
+        "jwt/help.py",
+        "jwt/jwks_client.py",
+        "setup.py",
+        "tests/test_jwt.py"
+      ],
+      "evaluation_selected_regions": [
+        "jwt/algorithms.py"
+      ],
+      "target_candidate_count": 0,
+      "target_confirmed_count": 0,
+      "pre_fix_confirmed_recovery": false,
+      "non_target_dispositions": {
+        "killed": 1
+      },
+      "deferred_findings": 0,
+      "usage": {
+        "calls": 7,
+        "input_tokens": 74844,
+        "output_tokens": 1713,
+        "latency_ms": 34326
+      }
+    },
+    "post_fix": {
+      "status": "completed",
+      "production_target_selected": true,
+      "production_selected_regions": [
+        "jwt/api_jws.py",
+        "jwt/api_jwt.py",
+        "jwt/help.py",
+        "jwt/jwks_client.py",
+        "jwt/algorithms.py",
+        "jwt/utils.py"
+      ],
+      "evaluation_selected_regions": [
+        "jwt/algorithms.py"
+      ],
+      "target_candidate_count": 0,
+      "target_confirmed_count": 0,
+      "post_fix_confirmed_persistence": false,
+      "post_fix_any_signal_persistence": false,
+      "non_target_dispositions": {
+        "killed": 2
+      },
+      "deferred_findings": 0,
+      "usage": {
+        "calls": 10,
+        "input_tokens": 85280,
+        "output_tokens": 2700,
+        "latency_ms": 48061
+      }
+    }
+  },
+  "aggregate_usage": {
+    "calls": 17,
+    "input_tokens": 160124,
+    "output_tokens": 4413,
+    "known_tokens": 164537,
+    "latency_ms": 82387
+  },
+  "interpretation": {
+    "semantic_result": "The pre-fix advisory target was not raised even when its file was supplied explicitly. This is a detection miss, not a scorer mismatch.",
+    "negative_control": "No target signal persisted post-fix, but this alone does not establish discrimination because the vulnerable target was also missed.",
+    "retrieval_result": "The unchanged production planner omitted the target file pre-fix and selected it post-fix, so production coverage is commit-sensitive for this pair.",
+    "precision_scope": "The answer key covers one historical CVE and is not exhaustive. Non-target findings are not automatic false positives.",
+    "training_status": "PyJWT becomes development evidence after this context review and must not serve as an untouched validation target for a context change motivated by this run."
+  },
+  "context_diagnostic": {
+    "primary_file_lines": 680,
+    "primary_file_characters": 22388,
+    "retrieved_context_characters": 6927,
+    "retrieved_blocks": [
+      "jwt/algorithms.py:303-375 from_jwk",
+      "jwt/algorithms.py:447-511 from_jwk",
+      "jwt/algorithms.py:607-645 to_jwk"
+    ],
+    "direct_callers_available_but_not_supplied": [
+      "jwt/api_jws.py:76-150 encode",
+      "jwt/api_jws.py:250-272 _verify_signature"
+    ],
+    "finding": "Detection context used whole-file call-token similarity, which selected same-file functions and omitted the direct verification call path available in the index."
+  }
+}

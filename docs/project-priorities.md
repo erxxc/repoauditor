@@ -268,11 +268,31 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
   production planner selected it. Forced inclusion receives no production-coverage credit.
   Review that cheaper target-scoped artifact before enabling ruby-saml, simple-git, or
   Reposilite.
+- [x] Record the PyJWT target-conditioned pre-tuning baseline. Run `30323666007`
+  qualified 4/4 manufactured controls and completed both snapshots with 17 calls and
+  164,537 known tokens. The pre-fix target was not raised even when its file was supplied;
+  post-fix had no target signal. Context reconstruction showed that whole-file similarity
+  added three same-file helper blocks while omitting the indexed `encode` and
+  `_verify_signature` callers of `prepare_key`. PyJWT is development evidence after this
+  diagnosis, not an untouched validation target for the resulting context change.
+- [x] Implement the answer-key-independent context correction as
+  `detection_context_v2`. Detection now ranks bounded external syntactic call-name matches
+  ahead of whole-file similarity, excludes redundant same-file blocks, prefers production
+  paths over tests, and gathers matches in one index pass. The version participates in
+  detection checkpoint and evaluation provenance. Validate on a different frozen,
+  untouched CVE pair; a PyJWT rerun may be used only as development confirmation.
+- [~] Run the first untouched `detection_context_v2` validation on the frozen simple-git
+  CVE-2026-28292 pair. The manual `cve-positive-simple-git` scope reuses the exact
+  target-conditioned/production-selection split, two-batch ceiling, manufactured controls,
+  and 20-minute timeout. Acceptance criteria are frozen in the offline runbook. Do not tune
+  against this pair before its first artifact is recorded.
 - Evidence receipt: `docs/offline-detector-round-2026-07-27.json`. It reports target
   recovery and unmatched candidates, never project-wide precision from a partial answer key.
 - CVE-positive acquisition receipt:
   `docs/cve-positive-acquisition-round-2026-07-27.json`. It preserves exact commits,
   target-scoped recovery, scanner bounds, and the Reposilite wrapper parse warning.
+- Target-conditioned PyJWT receipt:
+  `docs/pyjwt-target-conditioned-baseline-2026-07-28.json`.
 
 ### C — methodology blocked
 

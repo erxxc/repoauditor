@@ -145,6 +145,22 @@ def test_cve_positive_pair_builder_preserves_pre_post_order_and_target():
     )
 
 
+def test_simple_git_validation_pair_is_frozen_before_live_execution():
+    pair = _pair("simple_git_cve_2026_28292", Path("/nonexistent"))
+
+    assert [item.expected["source"]["variant"] for item in pair] == [
+        "pre_fix", "post_fix",
+    ]
+    target = pair[0].expected["findings"][0]
+    assert target["cve"] == "CVE-2026-28292"
+    assert target["file"] == (
+        "simple-git/src/lib/plugins/block-unsafe-operations-plugin.ts"
+    )
+    assert target["citation_contains"] == "protocol(.[a-z]+)?.allow"
+    assert pair[1].expected["findings"] == []
+    assert pair[1].expected["expected_absent"] == [target]
+
+
 def test_target_conditioned_planner_separates_semantic_eval_from_production_selection(
     tmp_config, tmp_path,
 ):

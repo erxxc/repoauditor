@@ -42,6 +42,25 @@ def test_find_callers(tmp_path):
     assert [c.symbol for c in callers] == ["handler"]
 
 
+def test_functions_in_file_returns_source_order(tmp_path):
+    index = _index(tmp_path)
+
+    functions = index.functions_in_file("app.py")
+
+    assert [item.symbol for item in functions] == ["run_query", "handler", "other"]
+
+
+def test_find_callers_matching_returns_matched_names(tmp_path):
+    index = _index(tmp_path)
+
+    callers = index.find_callers_matching({"run_query", "execute"})
+    by_symbol = {item.symbol: matched for item, matched in callers}
+
+    assert by_symbol["handler"] == frozenset({"run_query"})
+    assert by_symbol["run_query"] == frozenset({"execute"})
+    assert by_symbol["other"] == frozenset({"execute"})
+
+
 def test_find_callees(tmp_path):
     index = _index(tmp_path)
     callees = {c.symbol for c in index.find_callees("handler")}

@@ -29,6 +29,7 @@ import ast
 import logging
 import os
 import re
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -186,6 +187,33 @@ class RetrievalIndex:
         """Functions whose body calls `symbol`, ordered by (file, line)."""
         hits = [f for f in self._functions if symbol in f.calls]
         return sorted(hits, key=lambda f: (f.file, f.line_start))
+
+    def functions_in_file(self, file: str) -> list[FunctionInfo]:
+        """Indexed function definitions in one file, in source order."""
+        rel = self._resolve_file(file)
+        if rel is None:
+            return []
+        return sorted(
+            (info for info in self._functions if info.file == rel),
+            key=lambda info: (info.line_start, info.line_end, info.symbol),
+        )
+
+    def find_callers_matching(
+        self, symbols: Iterable[str]
+    ) -> list[tuple[FunctionInfo, frozenset[str]]]:
+        """Functions calling any requested name, with the matched names attached.
+
+        This performs one index pass for a region's definition set rather than one full
+        pass per definition. Member calls remain syntactic name matches, not type-resolved
+        proof of a runtime edge.
+        """
+        wanted = set(symbols)
+        matches = [
+            (info, frozenset(info.calls & wanted))
+            for info in self._functions
+            if info.calls & wanted
+        ]
+        return sorted(matches, key=lambda item: (item[0].file, item[0].line_start))
 
     def find_callees(self, symbol: str) -> list[FunctionInfo]:
         """Functions that `symbol` calls (those we have indexed), deduped + ordered.

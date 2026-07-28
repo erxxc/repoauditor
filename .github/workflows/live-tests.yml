@@ -18,6 +18,7 @@ on:
           - live-lightweight
           - bounded-independent
           - cve-positive-pyjwt
+          - cve-positive-simple-git
           - retrieval-diagnostic
 
 permissions:
@@ -44,6 +45,7 @@ jobs:
             (
               inputs.scope == 'bounded-independent' ||
               inputs.scope == 'cve-positive-pyjwt' ||
+              inputs.scope == 'cve-positive-simple-git' ||
               inputs.scope == 'retrieval-diagnostic'
             )
           ) ||
@@ -63,6 +65,7 @@ jobs:
               (
                 inputs.scope == 'bounded-independent' ||
                 inputs.scope == 'cve-positive-pyjwt' ||
+                inputs.scope == 'cve-positive-simple-git' ||
                 inputs.scope == 'retrieval-diagnostic'
               )
             ) ||
@@ -87,7 +90,10 @@ jobs:
       - name: Verify restored CVE-positive cohort before paid execution
         if: >-
           github.event_name == 'workflow_dispatch' &&
-          inputs.scope == 'cve-positive-pyjwt'
+          (
+            inputs.scope == 'cve-positive-pyjwt' ||
+            inputs.scope == 'cve-positive-simple-git'
+          )
         run: >-
           python tests/fixtures/audit_corpus_readiness.py
           --require-cve-positive-materialized
@@ -199,20 +205,28 @@ jobs:
             live-uat-data/repoauditor.db
           retention-days: 30
           if-no-files-found: warn
-      - name: Run CVE-positive PyJWT pilot
+      - name: Run target-conditioned CVE-positive pair
         if: >-
           success() &&
           github.event_name == 'workflow_dispatch' &&
-          inputs.scope == 'cve-positive-pyjwt'
+          (
+            inputs.scope == 'cve-positive-pyjwt' ||
+            inputs.scope == 'cve-positive-simple-git'
+          )
         timeout-minutes: 22
         env:
-          REPOAUDITOR_CVE_POSITIVE_PAIR: pyjwt_cve_2022_29217
+          REPOAUDITOR_CVE_POSITIVE_PAIR: >-
+            ${{
+              inputs.scope == 'cve-positive-simple-git' &&
+              'simple_git_cve_2026_28292' ||
+              'pyjwt_cve_2022_29217'
+            }}
           REPOAUDITOR_UAT_RESULTS: live-cve-positive-results.json
           REPOAUDITOR_UAT_SCANNER_COVERAGE: not-installed-live-model-only
           REPOAUDITOR_UAT_MAX_BATCHES: "2"
           REPOAUDITOR_UAT_DATA_DIR: live-cve-positive-data
         run: |
-          echo "CVE-positive pilot: PyJWT pre-fix then post-fix, target-conditioned."
+          echo "CVE-positive pair: $REPOAUDITOR_CVE_POSITIVE_PAIR, pre-fix then post-fix."
           echo "Paid semantic evaluation is restricted to the frozen advisory target file."
           echo "Normal production region selection is recorded separately; forced inclusion does not receive coverage credit."
           echo "Hard timeout: 20 minutes; at most 2 linked batches per snapshot."
@@ -223,7 +237,10 @@ jobs:
         if: >-
           always() &&
           github.event_name == 'workflow_dispatch' &&
-          inputs.scope == 'cve-positive-pyjwt'
+          (
+            inputs.scope == 'cve-positive-pyjwt' ||
+            inputs.scope == 'cve-positive-simple-git'
+          )
         uses: actions/upload-artifact@v4
         with:
           name: live-cve-positive-${{ github.run_id }}

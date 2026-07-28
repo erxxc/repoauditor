@@ -59,8 +59,10 @@ LENSES: dict[str, str] = {
 }
 # Prompt version per lens (the v1 lens prompts already request a confidence field, so
 # no _v2 was needed for detect). Exposed for the eval regression record.
+DETECTION_CONTEXT_VERSION = "detection_context_v2"
 LENS_PROMPT_VERSIONS: dict[str, str] = {
-    name: f"{file[:-3]}+{PROMPT_SECURITY_VERSION}" for name, file in LENSES.items()
+    name: f"{file[:-3]}+{PROMPT_SECURITY_VERSION}+{DETECTION_CONTEXT_VERSION}"
+    for name, file in LENSES.items()
 }
 PROMPT_VERSION = "+".join(LENS_PROMPT_VERSIONS[name] for name in LENSES)
 CITATION_INTEGRITY_VERSION = "citation_integrity_v1"
@@ -113,16 +115,58 @@ class CandidateFinding(BaseModel):
     rationale: str | None = None
 
 
-def _retrieval_context(index: RetrievalIndex, file_text: str) -> str:
-    """Related call sites for a region, formatted for the prompt (may be empty)."""
-    similar = index.find_similar_patterns(file_text, limit=3)
-    if not similar:
+def _retrieval_context(
+    index: RetrievalIndex, relative_file: str, file_text: str, *, limit: int = 3
+) -> str:
+    """Bounded external call-name context for a region (may be empty).
+
+    Direct external callers of functions defined in the primary file carry more semantic
+    information than whole-file call-token similarity. The index is syntactic rather than
+    type-resolved, so these blocks are explicitly labelled call-name matches. External
+    similar-pattern blocks fill any remaining slots; same-file blocks are redundant because
+    the complete primary file is already present.
+    """
+    definitions = {
+        definition.symbol for definition in index.functions_in_file(relative_file)
+    }
+    related = [
+        ("CALL-NAME MATCH", caller, len(matched_symbols))
+        for caller, matched_symbols in index.find_callers_matching(definitions)
+        if caller.file != relative_file
+    ]
+    related.sort(
+        key=lambda item: (
+            _is_test_path(item[1].file),
+            -item[2],
+            item[1].file,
+            item[1].line_start,
+            item[1].symbol,
+        )
+    )
+    seen = {
+        (caller.file, caller.line_start, caller.symbol)
+        for _basis, caller, _score in related
+    }
+    for similar in index.find_similar_patterns(file_text, limit=limit * 3):
+        key = (similar.file, similar.line_start, similar.symbol)
+        if similar.file == relative_file or key in seen:
+            continue
+        seen.add(key)
+        related.append(("SIMILAR PATTERN", similar, 0))
+    selected = related[:limit]
+    if not selected:
         return ""
     blocks = [
-        f"# RELATED: {info.symbol} ({info.file}:{info.line_start})\n{info.source}"
-        for info in similar
+        f"# RELATED {basis}: {info.symbol} ({info.file}:{info.line_start})\n"
+        f"{info.source}"
+        for basis, info, _score in selected
     ]
-    return "\n\n# --- related call sites (retrieval) ---\n" + "\n\n".join(blocks)
+    return "\n\n# --- external retrieval context ---\n" + "\n\n".join(blocks)
+
+
+def _is_test_path(path: str) -> bool:
+    normalized = "/" + path.replace("\\", "/").lower().strip("/") + "/"
+    return "/test/" in normalized or "/tests/" in normalized or "/spec/" in normalized
 
 
 class DetectionRun(list[Finding]):
@@ -205,7 +249,10 @@ def run_ensemble(
         path = planned_region.path
         rel = planned_region.relative_path
         file_text = read_numbered(path)
-        region = f"# FILE: {rel}\n{file_text}{_retrieval_context(index, path.read_text(errors='replace'))}"
+        region = (
+            f"# FILE: {rel}\n{file_text}"
+            f"{_retrieval_context(index, rel, path.read_text(errors='replace'))}"
+        )
 
         for lens, prompt in _LENS_PROMPTS.items():
             region_run = db.start_detection_region(
