@@ -73,7 +73,7 @@ def test_sast_adapter_writes_empty_sarif_when_semgrep_is_unavailable(tmp_path, m
     monkeypatch.setattr("repoauditor.detect.deterministic.sast_adapter.shutil.which",
                         lambda _binary: None)
 
-    adapter = SastAdapter(sarif_output_path=artifact)
+    adapter = SastAdapter(sarif_output_path=artifact, configuration="test-rules")
     assert adapter.run(tmp_path) == []
     assert adapter.run_status == "unavailable"
     doc = json.loads(artifact.read_text(encoding="utf-8"))
@@ -104,7 +104,7 @@ def test_sast_adapter_preserves_valid_sarif_outside_snapshot(tmp_path, monkeypat
         "repoauditor.detect.deterministic.sast_adapter.subprocess.run", run
     )
 
-    adapter = SastAdapter(sarif_output_path=artifact)
+    adapter = SastAdapter(sarif_output_path=artifact, configuration="test-rules")
     findings = adapter.run(snapshot)
 
     assert len(findings) == 1
@@ -119,13 +119,15 @@ def test_sast_adapter_preserves_valid_sarif_outside_snapshot(tmp_path, monkeypat
         "--json-output",
         calls[0][0][calls[0][0].index("--json-output") + 1],
         "--config",
-        "auto",
+        "test-rules",
         str(snapshot),
     ]
     assert artifact.read_text(encoding="utf-8") == _SARIF
     assert stat.S_IMODE(artifact.stat().st_mode) == 0o600
     assert not (snapshot / "semgrep.sarif").exists()
-    assert adapter.execution().model_dump(exclude_none=True) == {
+    execution = adapter.execution().model_dump(exclude_none=True)
+    execution.pop("version", None)
+    assert execution == {
         "scanner": "semgrep",
         "status": "complete",
         "applicable": True,
@@ -133,7 +135,13 @@ def test_sast_adapter_preserves_valid_sarif_outside_snapshot(tmp_path, monkeypat
         "finding_count": 1,
         "target_count": 1,
         "target_count_basis": "scanner-reported-files",
-        "configuration": "auto",
+        "configuration": "test-rules",
+        "invocation": (
+            "semgrep", "scan", "--sarif", "--quiet", "--no-git-ignore",
+            "--project-root", "$SNAPSHOT", "--json-output", "$TARGET_REPORT",
+            "--config", "$CONFIG", "$SNAPSHOT",
+        ),
+        "configuration_resolution": "live-service",
     }
 
 
@@ -181,6 +189,13 @@ def test_scanner_execution_serializes_clean_zero_evidence():
         "target_count_basis": "submitted-root",
         "version": None,
         "configuration": None,
+        "invocation": (),
+        "configuration_digest": None,
+        "rule_count": None,
+        "configuration_resolution": None,
+        "advisory_database": None,
+        "advisory_database_version": None,
+        "advisory_database_checked_at": None,
         "failure_detail": None,
     }
 
@@ -211,7 +226,7 @@ def test_sast_adapter_fails_closed_when_semgrep_selects_zero_targets(
         "repoauditor.detect.deterministic.sast_adapter.subprocess.run", run
     )
 
-    adapter = SastAdapter(sarif_output_path=artifact)
+    adapter = SastAdapter(sarif_output_path=artifact, configuration="test-rules")
 
     assert adapter.run(snapshot) == []
     assert adapter.run_status == "failed"

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -39,6 +40,20 @@ class ScannerExecution(BaseModel):
     ]
     version: str | None = None
     configuration: str | None = None
+    invocation: tuple[str, ...] = ()
+    configuration_digest: str | None = None
+    rule_count: int | None = Field(default=None, ge=0)
+    configuration_resolution: Literal[
+        "pinned-verified",
+        "embedded-default",
+        "live-service",
+        "not-applicable",
+        "unavailable",
+        "failed",
+    ] | None = None
+    advisory_database: str | None = None
+    advisory_database_version: str | None = None
+    advisory_database_checked_at: datetime | None = None
     failure_detail: str | None = None
 
     @model_validator(mode="after")

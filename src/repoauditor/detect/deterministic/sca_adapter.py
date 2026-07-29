@@ -27,6 +27,7 @@ from ...store.models import Severity
 from ..ensemble import CandidateFinding
 from ._common import relativize
 from .execution import ScannerExecution
+from .provenance import tool_version, utc_now
 
 logger = logging.getLogger(__name__)
 
@@ -86,6 +87,12 @@ class ScaAdapter:
         self.target_counts = {"pip-audit": 0, "osv-scanner": 0}
         self.output_valid = {"pip-audit": False, "osv-scanner": False}
         self.finding_counts = {"pip-audit": 0, "osv-scanner": 0}
+        self.versions = {"pip-audit": None, "osv-scanner": None}
+        self.invocations: dict[str, tuple[str, ...]] = {
+            "pip-audit": (),
+            "osv-scanner": (),
+        }
+        self.database_checked_at = {"pip-audit": None, "osv-scanner": None}
 
     def run(self, snapshot_path: Path) -> list[CandidateFinding]:
         candidates: list[CandidateFinding] = []
@@ -99,6 +106,9 @@ class ScaAdapter:
             logger.info("pip-audit not installed; skipping")
             self.run_statuses["pip-audit"] = "unavailable"
             return []
+        self.versions["pip-audit"] = tool_version(
+            "pip-audit", "--version", timeout_seconds=self.timeout_seconds
+        )
         reqs = sorted(snapshot_path.glob("requirements*.txt"))
         if not reqs:
             self.run_statuses["pip-audit"] = "not-applicable"
@@ -106,6 +116,11 @@ class ScaAdapter:
         self.target_counts["pip-audit"] = len(reqs)
         out: list[CandidateFinding] = []
         for req in reqs:
+            self.invocations["pip-audit"] = (
+                "pip-audit", "-r", "$MANIFEST", "-f", "json",
+                "--progress-spinner", "off",
+            )
+            self.database_checked_at["pip-audit"] = utc_now()
             try:
                 proc = subprocess.run(
                     ["pip-audit", "-r", str(req), "-f", "json", "--progress-spinner", "off"],
@@ -121,6 +136,10 @@ class ScaAdapter:
                     proc.stderr.strip() or f"exit code {proc.returncode}"
                 )[:350]
                 if _direct_pins_only(req):
+                    self.invocations["pip-audit"] = (
+                        "pip-audit", "-r", "$MANIFEST", "-f", "json",
+                        "--progress-spinner", "off", "--disable-pip", "--no-deps",
+                    )
                     try:
                         proc = subprocess.run(
                             [
@@ -209,7 +228,15 @@ class ScaAdapter:
             logger.info("osv-scanner not installed; skipping")
             self.run_statuses["osv-scanner"] = "unavailable"
             return []
+        self.versions["osv-scanner"] = tool_version(
+            "osv-scanner", "--version", timeout_seconds=self.timeout_seconds
+        )
         self.target_counts["osv-scanner"] = 1
+        self.invocations["osv-scanner"] = (
+            "osv-scanner", "scan", "source", "--format", "json",
+            "--recursive", "--no-ignore", "$SNAPSHOT",
+        )
+        self.database_checked_at["osv-scanner"] = utc_now()
         try:
             proc = subprocess.run(
                 [
@@ -244,6 +271,10 @@ class ScaAdapter:
                     fallback_failures: list[str] = []
                     only_no_source_failures = True
                     for requirement in explicit:
+                        self.invocations["osv-scanner"] = (
+                            "osv-scanner", "scan", "source", "--format", "json",
+                            "--lockfile", "$MANIFEST",
+                        )
                         try:
                             fallback = subprocess.run(
                                 [
@@ -305,6 +336,7 @@ class ScaAdapter:
                     if fallback_failures and only_no_source_failures:
                         self.run_statuses["osv-scanner"] = "not-applicable"
                         self.target_counts["osv-scanner"] = 0
+                        self.database_checked_at["osv-scanner"] = None
                         return []
                     primary_failure += (
                         "; explicit requirements fallback failures: "
@@ -313,6 +345,7 @@ class ScaAdapter:
                 else:
                     self.run_statuses["osv-scanner"] = "not-applicable"
                     self.target_counts["osv-scanner"] = 0
+                    self.database_checked_at["osv-scanner"] = None
                     return []
             self.run_statuses["osv-scanner"] = "failed"
             self.failure_details["osv-scanner"] = primary_failure[:500]
@@ -359,6 +392,28 @@ class ScaAdapter:
                 finding_count=self.finding_counts[scanner],
                 target_count=self.target_counts[scanner],
                 target_count_basis=basis,
+                version=self.versions[scanner],
+                configuration=(
+                    "PyPI vulnerability service"
+                    if scanner == "pip-audit"
+                    else "OSV.dev live API"
+                ),
+                invocation=self.invocations[scanner],
+                configuration_resolution=(
+                    "unavailable"
+                    if status == "unavailable"
+                    else (
+                        "not-applicable"
+                        if status == "not-applicable"
+                        else ("failed" if status == "failed" else "live-service")
+                    )
+                ),
+                advisory_database=(
+                    "PyPI Advisory Database"
+                    if scanner == "pip-audit"
+                    else "OSV.dev"
+                ),
+                advisory_database_checked_at=self.database_checked_at[scanner],
                 failure_detail=detail,
             ))
         return records

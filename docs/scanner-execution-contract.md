@@ -15,8 +15,10 @@ Fields:
 - `target_count` and `target_count_basis` disclose what was actually counted. Semgrep reports
   selected files; pip-audit reports submitted manifests; OSV-Scanner and gitleaks currently
   report the submitted snapshot root.
-- `version` and `configuration` retain provenance already available from scanner output.
-  Completing reproducible configuration/database provenance is OPT-024.
+- `version`, `configuration`, normalized `invocation`, configuration
+  digest/rule-count/resolution fields, and advisory database identity/version/query time
+  retain the OPT-024 execution provenance described in
+  [`scanner-provenance.md`](scanner-provenance.md).
 - `failure_detail` is mandatory for `failed` records.
 
 The model rejects a clean `empty` or `complete` status unless the run was applicable, output
@@ -31,5 +33,5 @@ evidence in `runs show`, audit records, and downstream report projections. Histo
 summaries without `scanner_executions` remain readable; absence is unavailable historical
 evidence, never reconstructed as a clean scan.
 
-OPT-023 will add isolated positive and clean deployment canaries that exercise this same
-adapter path. Canary results must not enter product findings.
+OPT-023 adds isolated positive and clean deployment canaries that exercise this same adapter
+path. Canary results do not enter product findings.
