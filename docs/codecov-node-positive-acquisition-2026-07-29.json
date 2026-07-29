@@ -58,6 +58,6 @@
       }
     ]
   },
-  "interpretation": "The advisory-backed pre-fix mechanism remains valid source evidence, but this detector run produced no candidate at the target. The pair therefore adds no reviewable command-injection label and no classifier evidence. The two unrelated CI findings are not treated as target ground truth or automatically labelled.",
+  "interpretation": "The advisory-backed pre-fix mechanism remains valid source evidence, but this detector run produced no candidate at the target. A direct syntax control found execSync(gcov), proving the engine parsed and matched the exact file; the public Node.js pack still returned zero because it does not model this library-API input as an untrusted source. The pair therefore adds no reviewable command-injection label and no classifier evidence. Separately, follow-up validation found that RepoAuditor's adapter allowed parent Git and default Semgrep ignore discovery to exclude normal data/raw and materialized tests/fixtures snapshots; that integration defect does not affect this scan, which ran from the upstream checkout's Git root, and is fixed by passing --no-git-ignore with the snapshot as --project-root. The two unrelated CI findings are not treated as target ground truth or automatically labelled.",
   "next_step": "Retain the pair and the negative acquisition result. Select any future tranche under a newly frozen, scanner-blind protocol; do not replace this entry based on its observed detector miss."
 }

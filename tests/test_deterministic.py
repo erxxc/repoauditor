@@ -89,15 +89,74 @@ def test_sast_adapter_preserves_valid_sarif_outside_snapshot(tmp_path, monkeypat
 
     monkeypatch.setattr("repoauditor.detect.deterministic.sast_adapter.shutil.which",
                         lambda _binary: "/usr/bin/semgrep")
-    monkeypatch.setattr("repoauditor.detect.deterministic.sast_adapter.subprocess.run",
-                        lambda *args, **kwargs: Completed())
+    calls = []
+
+    def run(command, **kwargs):
+        calls.append((command, kwargs))
+        report = Path(command[command.index("--json-output") + 1])
+        report.write_text(
+            json.dumps({"paths": {"scanned": [str(snapshot / "service.py")]}})
+        )
+        return Completed()
+
+    monkeypatch.setattr(
+        "repoauditor.detect.deterministic.sast_adapter.subprocess.run", run
+    )
 
     findings = SastAdapter(sarif_output_path=artifact).run(snapshot)
 
     assert len(findings) == 1
+    assert calls[0][0] == [
+        "semgrep",
+        "scan",
+        "--sarif",
+        "--quiet",
+        "--no-git-ignore",
+        "--project-root",
+        str(snapshot),
+        "--json-output",
+        calls[0][0][calls[0][0].index("--json-output") + 1],
+        "--config",
+        "auto",
+        str(snapshot),
+    ]
     assert artifact.read_text(encoding="utf-8") == _SARIF
     assert stat.S_IMODE(artifact.stat().st_mode) == 0o600
     assert not (snapshot / "semgrep.sarif").exists()
+
+
+def test_sast_adapter_fails_closed_when_semgrep_selects_zero_targets(
+    tmp_path, monkeypatch
+):
+    snapshot = tmp_path / "raw" / "ignored"
+    snapshot.mkdir(parents=True)
+    (snapshot / "service.py").write_text("dangerous(user_input)\n")
+    artifact = tmp_path / "artifacts" / "semgrep.sarif"
+
+    class Completed:
+        returncode = 0
+        stdout = _SARIF
+        stderr = ""
+
+    def run(command, **kwargs):
+        report = Path(command[command.index("--json-output") + 1])
+        report.write_text(json.dumps({"paths": {"scanned": []}}))
+        return Completed()
+
+    monkeypatch.setattr(
+        "repoauditor.detect.deterministic.sast_adapter.shutil.which",
+        lambda _binary: "/usr/bin/semgrep",
+    )
+    monkeypatch.setattr(
+        "repoauditor.detect.deterministic.sast_adapter.subprocess.run", run
+    )
+
+    adapter = SastAdapter(sarif_output_path=artifact)
+
+    assert adapter.run(snapshot) == []
+    assert adapter.run_status == "failed"
+    assert adapter.failure_detail == "Semgrep selected zero targets"
+    assert json.loads(artifact.read_text())["runs"][0]["results"] == []
 
 
 # --------------------------------------------------------------------------- #

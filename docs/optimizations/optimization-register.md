@@ -35,7 +35,18 @@ I. Evaluation and classifier maturity
       `../codecov-node-positive-acquisition-2026-07-29.json` and adds no labels. The
       materializer now supports an exact CVE-positive slug so future frozen pairs can be
       acquired without overwriting cached cohorts. Detector output still requires human
-      adjudication — DoD impact: none.
+      adjudication. Follow-up execution validation found that Semgrep's default Git-ignore
+      behavior excluded normal snapshots under the intentionally ignored `data/` tree while
+      returning success. Parent/default Semgrep ignore discovery also excluded materialized
+      corpus snapshots under `tests/fixtures`. The SAST adapter now passes both
+      `--no-git-ignore` and an explicit snapshot `--project-root`, with an invocation
+      regression test, so ingested source and corpus snapshots are actually scanned while
+      any ignore policy inside the target snapshot remains effective. A simultaneous JSON
+      target report now changes zero-target or malformed-target-report success into an
+      explicit failed scanner status rather than a clean empty result. The
+      [`execution audit`](../semgrep-execution-audit-2026-07-29.json) records the before/after
+      bounded UAT: all nine runs changed from empty to complete and produced 1,263 Semgrep
+      candidates, including the Juice Shop SQL-injection anchor — DoD impact: none.
 
    B. OPT-002 — Family-aware bootstrap ranges — deferred — owner: ML evaluation — source:
       `../triage-accuracy-roadmap.md` — activate after adequate held-out family breadth and
