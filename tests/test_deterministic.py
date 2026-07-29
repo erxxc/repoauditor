@@ -89,15 +89,74 @@ def test_sast_adapter_preserves_valid_sarif_outside_snapshot(tmp_path, monkeypat
 
     monkeypatch.setattr("repoauditor.detect.deterministic.sast_adapter.shutil.which",
                         lambda _binary: "/usr/bin/semgrep")
-    monkeypatch.setattr("repoauditor.detect.deterministic.sast_adapter.subprocess.run",
-                        lambda *args, **kwargs: Completed())
+    calls = []
+
+    def run(command, **kwargs):
+        calls.append((command, kwargs))
+        report = Path(command[command.index("--json-output") + 1])
+        report.write_text(
+            json.dumps({"paths": {"scanned": [str(snapshot / "service.py")]}})
+        )
+        return Completed()
+
+    monkeypatch.setattr(
+        "repoauditor.detect.deterministic.sast_adapter.subprocess.run", run
+    )
 
     findings = SastAdapter(sarif_output_path=artifact).run(snapshot)
 
     assert len(findings) == 1
+    assert calls[0][0] == [
+        "semgrep",
+        "scan",
+        "--sarif",
+        "--quiet",
+        "--no-git-ignore",
+        "--project-root",
+        str(snapshot),
+        "--json-output",
+        calls[0][0][calls[0][0].index("--json-output") + 1],
+        "--config",
+        "auto",
+        str(snapshot),
+    ]
     assert artifact.read_text(encoding="utf-8") == _SARIF
     assert stat.S_IMODE(artifact.stat().st_mode) == 0o600
     assert not (snapshot / "semgrep.sarif").exists()
+
+
+def test_sast_adapter_fails_closed_when_semgrep_selects_zero_targets(
+    tmp_path, monkeypatch
+):
+    snapshot = tmp_path / "raw" / "ignored"
+    snapshot.mkdir(parents=True)
+    (snapshot / "service.py").write_text("dangerous(user_input)\n")
+    artifact = tmp_path / "artifacts" / "semgrep.sarif"
+
+    class Completed:
+        returncode = 0
+        stdout = _SARIF
+        stderr = ""
+
+    def run(command, **kwargs):
+        report = Path(command[command.index("--json-output") + 1])
+        report.write_text(json.dumps({"paths": {"scanned": []}}))
+        return Completed()
+
+    monkeypatch.setattr(
+        "repoauditor.detect.deterministic.sast_adapter.shutil.which",
+        lambda _binary: "/usr/bin/semgrep",
+    )
+    monkeypatch.setattr(
+        "repoauditor.detect.deterministic.sast_adapter.subprocess.run", run
+    )
+
+    adapter = SastAdapter(sarif_output_path=artifact)
+
+    assert adapter.run(snapshot) == []
+    assert adapter.run_status == "failed"
+    assert adapter.failure_detail == "Semgrep selected zero targets"
+    assert json.loads(artifact.read_text())["runs"][0]["results"] == []
 
 
 # --------------------------------------------------------------------------- #
@@ -180,6 +239,16 @@ def test_sca_adapter_explicitly_scans_requirements_when_osv_recursive_discovery_
     assert len(findings) == 1
     assert findings[0].producer == "osv-scanner"
     assert findings[0].file == "requirements.txt"
+    assert commands[0] == [
+        "osv-scanner",
+        "scan",
+        "source",
+        "--format",
+        "json",
+        "--recursive",
+        "--no-ignore",
+        str(tmp_path),
+    ]
     assert commands[1][-2:] == [
         "--lockfile", str(requirement),
     ]
@@ -187,6 +256,57 @@ def test_sca_adapter_explicitly_scans_requirements_when_osv_recursive_discovery_
     assert "Other manifest types may be uncovered" in (
         adapter.failure_details["osv-scanner"]
     )
+
+
+def test_sca_adapter_marks_no_package_sources_not_applicable(tmp_path, monkeypatch):
+    monkeypatch.setattr(
+        "repoauditor.detect.deterministic.sca_adapter.shutil.which",
+        lambda binary: f"/usr/bin/{binary}",
+    )
+
+    class NoSources:
+        returncode = 128
+        stdout = ""
+        stderr = (
+            "Scanning template requirements\n"
+            + ("package discovery detail " * 30)
+            + "\nNo package sources found, --help for usage information."
+        )
+
+    monkeypatch.setattr(
+        "repoauditor.detect.deterministic.sca_adapter.subprocess.run",
+        lambda *args, **kwargs: NoSources(),
+    )
+    adapter = ScaAdapter()
+
+    assert adapter._run_osv_scanner(tmp_path) == []
+    assert adapter.run_statuses["osv-scanner"] == "not-applicable"
+    assert "osv-scanner" not in adapter.failure_details
+
+
+def test_sca_adapter_marks_empty_explicit_requirements_not_applicable(
+    tmp_path, monkeypatch
+):
+    (tmp_path / "requirements.txt").write_text("# template placeholder\n")
+    monkeypatch.setattr(
+        "repoauditor.detect.deterministic.sca_adapter.shutil.which",
+        lambda binary: f"/usr/bin/{binary}",
+    )
+
+    class NoSources:
+        returncode = 128
+        stdout = ""
+        stderr = "No package sources found, --help for usage information."
+
+    monkeypatch.setattr(
+        "repoauditor.detect.deterministic.sca_adapter.subprocess.run",
+        lambda *args, **kwargs: NoSources(),
+    )
+    adapter = ScaAdapter()
+
+    assert adapter._run_osv_scanner(tmp_path) == []
+    assert adapter.run_statuses["osv-scanner"] == "not-applicable"
+    assert "osv-scanner" not in adapter.failure_details
 
 
 def test_sca_adapter_records_pip_audit_execution_failure(tmp_path, monkeypatch):
@@ -246,6 +366,33 @@ def test_sca_adapter_falls_back_to_exact_direct_pins(tmp_path, monkeypatch):
     assert "without transitive resolution" in adapter.failure_details["pip-audit"]
 
 
+def test_sca_adapter_rejects_malformed_success_output(tmp_path, monkeypatch):
+    (tmp_path / "requirements.txt").write_text("requests==2.19.1\n")
+    monkeypatch.setattr(
+        "repoauditor.detect.deterministic.sca_adapter.shutil.which",
+        lambda binary: f"/usr/bin/{binary}",
+    )
+
+    class Malformed:
+        returncode = 0
+        stdout = "not-json"
+        stderr = ""
+
+    monkeypatch.setattr(
+        "repoauditor.detect.deterministic.sca_adapter.subprocess.run",
+        lambda *args, **kwargs: Malformed(),
+    )
+    adapter = ScaAdapter()
+
+    assert adapter._run_pip_audit(tmp_path) == []
+    assert adapter.run_statuses["pip-audit"] == "failed"
+    assert "malformed" in adapter.failure_details["pip-audit"]
+
+    assert adapter._run_osv_scanner(tmp_path) == []
+    assert adapter.run_statuses["osv-scanner"] == "failed"
+    assert "malformed" in adapter.failure_details["osv-scanner"]
+
+
 @pytest.mark.integration
 def test_sca_adapter_run_returns_a_list_without_raising(tmp_path):
     assert isinstance(ScaAdapter().run(tmp_path), list)
@@ -276,6 +423,42 @@ def test_secrets_adapter_parses_gitleaks_json_with_the_secret_redacted():
     assert "****" in c.citation_snippet
     assert "sk_live_SUPERSECRET0000" not in c.citation_snippet
     assert "sk_live_SUPERSECRET0000" not in (c.rationale or "")
+
+
+@pytest.mark.parametrize(
+    ("returncode", "report", "failure"),
+    [
+        (2, "[]", "exit code 2"),
+        (0, "not-json", "malformed or unsupported JSON"),
+    ],
+)
+def test_secrets_adapter_rejects_failed_or_malformed_runs(
+    tmp_path, monkeypatch, returncode, report, failure
+):
+    monkeypatch.setattr(
+        "repoauditor.detect.deterministic.secrets_adapter.shutil.which",
+        lambda _binary: "/usr/bin/gitleaks",
+    )
+
+    class Completed:
+        stderr = ""
+
+        def __init__(self):
+            self.returncode = returncode
+
+    def run(command, **kwargs):
+        report_path = Path(command[command.index("--report-path") + 1])
+        report_path.write_text(report)
+        return Completed()
+
+    monkeypatch.setattr(
+        "repoauditor.detect.deterministic.secrets_adapter.subprocess.run", run
+    )
+    adapter = SecretsAdapter()
+
+    assert adapter.run(tmp_path) == []
+    assert adapter.run_status == "failed"
+    assert failure in (adapter.failure_detail or "")
 
 
 @pytest.mark.integration

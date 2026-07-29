@@ -71,13 +71,28 @@ class SecretsAdapter:
                 self.run_status = "failed"
                 self.failure_detail = f"{type(exc).__name__}: {exc}"[:500]
                 return []
+            if proc.returncode != 0:
+                self.run_status = "failed"
+                self.failure_detail = (
+                    proc.stderr.strip() or f"exit code {proc.returncode}"
+                )[:500]
+                return []
             if not report.is_file():
                 self.run_status = "failed"
                 self.failure_detail = (
                     proc.stderr.strip() or "scanner did not write its JSON report"
                 )[:500]
                 return []
-            findings = self.parse(report.read_text(), snapshot_path)
+            raw_report = report.read_text()
+            try:
+                parsed_report = json.loads(raw_report)
+            except json.JSONDecodeError:
+                parsed_report = None
+            if not isinstance(parsed_report, list):
+                self.run_status = "failed"
+                self.failure_detail = "scanner returned malformed or unsupported JSON"
+                return []
+            findings = self.parse(raw_report, snapshot_path)
             self.run_status = "complete" if findings else "empty"
             return findings
 

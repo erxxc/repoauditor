@@ -4,15 +4,29 @@ Status: authoritative post-MVP work list as of 2026-07-29. POC acceptance is com
 
 Current execution priorities
 
-1. **OPT-001 — reviewed-label growth** is the active evidence workstream. Prioritize
-   non-CI positive-mechanism breadth; do not relax abstention, holdout, or
-   evaluation-family controls merely to reach the numeric target.
-2. **OPT-002 — family-aware bootstrap ranges** follows only after OPT-001 produces adequate
+1. **OPT-022 — first-class scanner execution contract** is the immediate reliability
+   prerequisite. Finish the common applicability, exit, target/manifest count, output-schema,
+   status, and failure-detail contract before treating any scanner zero as clean evidence.
+2. **OPT-023 — per-scanner deployment canaries** follows directly. Exercise positive and
+   clean controls through the same production adapter invocation without allowing canary
+   results into product findings.
+3. **OPT-024 — pinned scanner configuration and provenance** then makes successful execution
+   reproducible across rule/database changes.
+4. **OPT-025 — required scanner deployment gates** promotes the contract, canaries, and
+   provenance checks into fast CI; larger public-corpus measurement remains scheduled/manual.
+5. **OPT-001 — reviewed-label growth** resumes as the active evidence workstream only after
+   OPT-022 through OPT-025 establish trustworthy acquisition inputs. Prioritize non-CI
+   positive-mechanism breadth; do not relax abstention, holdout, or evaluation-family
+   controls merely to reach the numeric target.
+6. **OPT-026 — historical scanner remeasurement** follows the assurance gate so invalidated
+   historical zeros can be rerun without converting new candidates into automatic labels.
+7. **OPT-002 — family-aware bootstrap ranges** follows only after OPT-001 produces adequate
    held-out family breadth and both classes.
 
 OPT-003 through OPT-006 and OPT-008 through OPT-014 remain behind their documented evidence,
-budget, safety, or methodology gates. OPT-016 is routine dependency maintenance and does
-not displace the ordered work above.
+budget, safety, or methodology gates. OPT-016 is routine dependency maintenance. OPT-027
+through OPT-030 remain ordered capability/scale work behind the assurance and evidence gates
+above.
 
 I. Evaluation and classifier maturity
 
@@ -23,8 +37,34 @@ I. Evaluation and classifier maturity
       `triage-acquisition-plan` command and frozen 2026-07-29 tranche prioritize
       least-reviewed rule families without inferring mechanisms or candidate outcomes;
       `triage-review-packet` verifies frozen provenance and renders bounded source evidence
-      without recommending an outcome. Human adjudication remains outstanding — DoD
-      impact: none.
+      without recommending an outcome. The first 11-entry tranche was human-adjudicated,
+      bringing the usable manual cohort to 69 labels but adding no actionable positives;
+      the remaining local pool is dominated by repeated example/configuration negatives.
+      The next acquisition pair is therefore frozen before scanner execution in
+      `../../tests/fixtures/cve_positive_acquisition_cohort.json`: codecov-node
+      CVE-2020-15123 adds a direct JavaScript command-injection target and patched control
+      without entering an evaluation holdout. Its subsequent Semgrep Community run did not
+      recover the command-injection target and emitted only the same two CI findings in both
+      variants; the retained negative result is recorded in
+      `../codecov-node-positive-acquisition-2026-07-29.json` and adds no labels. The
+      materializer now supports an exact CVE-positive slug so future frozen pairs can be
+      acquired without overwriting cached cohorts. Detector output still requires human
+      adjudication. Follow-up execution validation found that Semgrep's default Git-ignore
+      behavior excluded normal snapshots under the intentionally ignored `data/` tree while
+      returning success. Parent/default Semgrep ignore discovery also excluded materialized
+      corpus snapshots under `tests/fixtures`. The SAST adapter now passes both
+      `--no-git-ignore` and an explicit snapshot `--project-root`, with an invocation
+      regression test, so ingested source and corpus snapshots are actually scanned while
+      any ignore policy inside the target snapshot remains effective. A simultaneous JSON
+      target report now changes zero-target or malformed-target-report success into an
+      explicit failed scanner status rather than a clean empty result. The
+      [`execution audit`](../semgrep-execution-audit-2026-07-29.json) records the before/after
+      bounded UAT: all nine runs changed from empty to complete and produced 1,263 Semgrep
+      candidates, including the Juice Shop SQL-injection anchor. The broader
+      [`deterministic-tool deployment audit`](../deterministic-tool-deployment-audit-2026-07-29.json)
+      also corrected OSV-Scanner v2 invocation, hardened malformed-output and exit handling
+      across SCA/secrets adapters, and exposes every scanner status. Its final nine-fixture
+      matrix has no failed, partial, unavailable, or unexplained-zero run — DoD impact: none.
 
    B. OPT-002 — Family-aware bootstrap ranges — deferred — owner: ML evaluation — source:
       `../triage-accuracy-roadmap.md` — activate after adequate held-out family breadth and
@@ -180,5 +220,98 @@ V. Intake
       relationship and entity inventories remain intact, with focused presentation and CLI
       regressions — DoD impact: none.
 
-   H. Add the next proposed improvement as `OPT-022`; do not place it directly into the MVP
+VI. Deterministic scanner assurance and capability
+
+   A. OPT-022 — First-class scanner execution contract — highest/immediate — owner:
+      reliability engineering — source:
+      `../deterministic-tool-deployment-audit-2026-07-29.json` — define one durable contract
+      across Semgrep, gitleaks, pip-audit, and OSV-Scanner covering applicability, exact
+      invocation/version, process exit, targets or manifests scanned, output-schema
+      validation, finding count, skipped-target reasons, partial coverage, status, and
+      attributable failure detail. A zero is clean only when execution is complete,
+      applicable targets were actually scanned, and validated output contains no findings;
+      otherwise report `not-applicable`, `partial`, `unavailable`, or `failed`. PR #64
+      implements the first corrections: Semgrep target verification, OSV-Scanner v2
+      invocation, producer-specific JSON validation, and all-tool bounded-UAT status
+      visibility. Activation: complete the common persisted/reportable contract and
+      regressions before new acquisition evidence is interpreted — DoD impact: none.
+
+   B. OPT-023 — Per-scanner deployment canaries — highest/next — owner: reliability and
+      detection engineering — source:
+      `../deterministic-tool-deployment-audit-2026-07-29.json` — pass a small positive and
+      clean/not-applicable control through each production adapter invocation: a
+      language-appropriate Semgrep syntax/rule control, a synthetic gitleaks credential, a
+      pinned vulnerable and clean pip-audit manifest, and vulnerable/clean OSV lockfiles.
+      Canary results are execution-health evidence only and must never enter the product
+      finding store, classifier labels, evaluation metrics, or human-review acquisition.
+      Activation: after OPT-022 fixes the status contract — DoD impact: none.
+
+   C. OPT-024 — Pin scanner configuration and retain provenance — high — owner: detection
+      release engineering — source:
+      `../semgrep-execution-audit-2026-07-29.json` — replace mutable Semgrep `--config auto`
+      as the production evidence baseline with a reviewed, versioned ruleset reference or
+      retained digest; record binary version, rule count/digest, registry resolution
+      outcome, and applicable advisory-database timestamp/version for every scanner run.
+      Evaluate upgrades separately against frozen controls before promotion and preserve
+      offline/stale behavior. Activation: after OPT-022 and before historical
+      remeasurement — DoD impact: none.
+
+   D. OPT-025 — Required scanner deployment gates — high — owner: CI/reliability engineering
+      — source:
+      `../deterministic-tool-deployment-audit-2026-07-29.json` — add a fast required CI lane
+      that asserts scanner startup, canary outcomes, nonzero applicable target counts,
+      parseable output schemas, version/config provenance, and absence of unexplained zeros.
+      Keep the larger public-corpus scan scheduled/manual because it is slower and
+      registry/network dependent; publish its complete per-tool status matrix and retain raw
+      artifacts. Activation: after OPT-022 through OPT-024 — DoD impact: none.
+
+   E. OPT-026 — Rerun and qualify historical scanner evidence — high/evidence repair —
+      owner: detection evaluation — source:
+      `../deterministic-tool-deployment-audit-2026-07-29.json` — mark the three identified
+      historical zero-result Semgrep artifacts coverage-invalid without deleting them, then
+      rerun material historical snapshots through the pinned, canary-qualified adapters.
+      Report candidate and status deltas; do not retroactively turn newly emitted candidates
+      into labels, ground truth, or evaluation positives. Activation: after OPT-025 — DoD
+      impact: none.
+
+   F. OPT-027 — RepoAuditor-owned supplemental Semgrep pack — medium/high,
+      evidence-gated — owner: AppSec detection engineering — source:
+      `../codecov-node-positive-acquisition-2026-07-29.json` — add a narrow reviewed pack for
+      high-value sinks the public rules demonstrably miss, beginning with variable or
+      concatenated shell execution and paired vulnerable/patched controls; consider direct
+      SQL construction, URL-fetch SSRF, unsafe archive extraction, and filesystem traversal
+      only with equally defensible controls. Supplemental matches remain review candidates,
+      not automatic actionable findings. Activation: after OPT-024 pins the baseline and
+      OPT-026 establishes corrected historical behavior — DoD impact: none.
+
+   G. OPT-028 — Advisory-target pre/post differential checks — medium — owner: detection
+      evaluation — source:
+      `../codecov-node-positive-acquisition-2026-07-29.json` and
+      `../semgrep-execution-audit-2026-07-29.json` — classify each frozen target as
+      vulnerable-only recovery, stable pre/post mechanism signal, patched-only signal, or
+      complete miss. Never count a signal that persists after the isolated patch as precise
+      target recovery merely because its file/citation overlaps; preserve unrelated
+      candidates as unadjudicated. Activation: alongside OPT-027 rule qualification — DoD
+      impact: none.
+
+   H. OPT-029 — Candidate explosion and repetition controls — medium/scale-gated — owner:
+      AppSec workflow engineering — source:
+      `../deterministic-tool-deployment-audit-2026-07-29.json` — the corrected bounded run
+      produced 1,941 raw candidates. Add disclosed, deterministic collapse by exact pre/post
+      identity, rule/normalized sink/location deduplication, repeated-family caps per
+      engagement, and explicit generated/vendor/docs/example path policy. Preserve raw
+      artifacts and publish every suppression count; never suppress by predicted outcome or
+      hidden answer key. Activation: before producing the next large human-review packet —
+      DoD impact: none.
+
+   I. OPT-030 — Per-tool capability and applicability matrix — medium/documentation —
+      owner: detection architecture — source:
+      `../deterministic-tool-deployment-audit-2026-07-29.json` — publish the mechanisms,
+      ecosystems, manifest/source prerequisites, expected strengths, known blind spots, and
+      meaning of `complete`, `empty`, and `not-applicable` for every deterministic tool.
+      Keep deployment health separate from recall/precision claims and link each capability
+      statement to a control or retained measurement. Activation: draft with OPT-022 and
+      finalize after OPT-026/OPT-028 evidence — DoD impact: none.
+
+   J. Add the next proposed improvement as `OPT-031`; do not place it directly into the MVP
       recovery plan unless the project owner explicitly changes the DoD.

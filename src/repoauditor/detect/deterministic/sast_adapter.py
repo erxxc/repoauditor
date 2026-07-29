@@ -91,17 +91,39 @@ class SastAdapter:
             logger.info("semgrep not installed; SAST adapter contributes no findings")
             self.write_empty_artifact("unavailable")
             return []
+        target_report: Path | None = None
         try:
-            proc = subprocess.run(
-                [_BINARY, "scan", "--sarif", "--quiet", "--config", "auto",
-                 str(snapshot_path)],
-                capture_output=True, text=True, timeout=self.timeout_seconds,
-            )
+            with tempfile.NamedTemporaryFile(
+                suffix=".json", delete=False
+            ) as handle:
+                target_report = Path(handle.name)
+            proc = subprocess.run([
+                _BINARY,
+                "scan",
+                "--sarif",
+                "--quiet",
+                "--no-git-ignore",
+                "--project-root",
+                str(snapshot_path),
+                "--json-output",
+                str(target_report),
+                "--config",
+                "auto",
+                str(snapshot_path),
+            ], capture_output=True, text=True, timeout=self.timeout_seconds)
         except (subprocess.TimeoutExpired, OSError) as exc:
             logger.warning("semgrep run failed (%s); no SAST findings", exc)
             self.failure_detail = f"{type(exc).__name__}: {exc}"[:500]
             self.write_empty_artifact("failed")
             return []
+        finally:
+            target_payload = (
+                target_report.read_text()
+                if target_report is not None and target_report.is_file()
+                else ""
+            )
+            if target_report is not None:
+                target_report.unlink(missing_ok=True)
         if not proc.stdout.strip():
             status = "failed" if getattr(proc, "returncode", 0) else "empty"
             if status == "failed":
@@ -109,6 +131,16 @@ class SastAdapter:
                     proc.stderr.strip() or f"exit code {proc.returncode}"
                 )[:500]
             self.write_empty_artifact(status)
+            return []
+        try:
+            scanned_paths = json.loads(target_payload)["paths"]["scanned"]
+        except (json.JSONDecodeError, KeyError, TypeError):
+            self.failure_detail = "Semgrep target report is missing or malformed"
+            self.write_empty_artifact("failed")
+            return []
+        if not scanned_paths:
+            self.failure_detail = "Semgrep selected zero targets"
+            self.write_empty_artifact("failed")
             return []
         findings = self.parse(proc.stdout, snapshot_path)
         # Preserve only valid SARIF.  The generated artifact lives outside the raw

@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-29",
+  "scope": "deterministic scanner execution health",
+  "semgrep": {
+    "version": "1.170.0",
+    "configuration": "auto",
+    "root_cause": [
+      "Normal ingested snapshots live below the parent repository's Git-ignored data directory, so Semgrep's default Git-ignore behavior selected zero files.",
+      "Materialized corpus snapshots below tests/fixtures were also excluded by parent/default Semgrep ignore discovery."
+    ],
+    "old_failure_mode": "Semgrep returned a successful zero-result SARIF document after selecting zero targets, and the adapter reported the run as empty.",
+    "correction": [
+      "Pass --no-git-ignore because snapshots are intentionally local and ignored by RepoAuditor.",
+      "Pass each snapshot as --project-root so outer-repository ignore policy cannot define target selection.",
+      "Request simultaneous JSON output and report zero scanned paths or malformed target metadata as failed."
+    ],
+    "controls": {
+      "normal_ingested_snapshot": {
+        "path_class": "data/raw",
+        "status": "complete",
+        "finding_count": 7,
+        "finding_file_count": 4
+      },
+      "exact_codecov_syntax": {
+        "pattern": "execSync($X)",
+        "target_file": "lib/codecov.js",
+        "finding_count": 3,
+        "advisory_sink_line_recovered": true
+      },
+      "codecov_public_nodejs_pack": {
+        "rule_count": 36,
+        "finding_count": 0,
+        "interpretation": "Ruleset coverage miss: the public pack does not model this library API input as an untrusted source."
+      }
+    }
+  },
+  "bounded_uat": {
+    "fixture_count": 9,
+    "before": {
+      "semgrep_run_statuses": {"empty": 9},
+      "semgrep_candidate_count": 0,
+      "raw_candidate_count": 68
+    },
+    "after": {
+      "semgrep_run_statuses": {"complete": 9},
+      "semgrep_candidate_count": 1263,
+      "gitleaks_candidate_count": 68,
+      "raw_candidate_count": 1331,
+      "pre_fix_targets_detected": 1,
+      "pre_fix_target_count": 4,
+      "post_fix_target_persistence_count": 1
+    },
+    "positive_controls": [
+      {
+        "project": "OWASP Juice Shop",
+        "mechanism": "SQL injection",
+        "file": "routes/login.ts",
+        "recovered": true
+      },
+      {
+        "project": "Lodash",
+        "mechanism": "prototype pollution",
+        "file": "lodash.js",
+        "recovered": true,
+        "patched_signal_persisted": true
+      }
+    ],
+    "interpretation": "Scanner execution is restored and observable. Low advisory-target recall and the patched Lodash signal are detector coverage/precision limitations, not evidence that Semgrep failed to run."
+  },
+  "other_scanners": {
+    "gitleaks": {
+      "version": "8.30.1",
+      "bounded_uat_candidate_count": 68,
+      "execution_confirmed": true
+    },
+    "pip_audit": {
+      "version": "2.10.1",
+      "execution_confirmed": true
+    },
+    "osv_scanner": {
+      "version": "2.4.0",
+      "execution_confirmed": true,
+      "note": "The subsequent all-tool audit corrected the adapter from pre-v2 syntax to `scan source`; see deterministic-tool-deployment-audit-2026-07-29.json."
+    }
+  },
+  "limitations": [
+    "Binary presence alone is not execution health; per-run status and target selection must remain visible.",
+    "A complete scan does not imply adequate vulnerability-family recall.",
+    "The bounded corpus has advisory-derived targets rather than exhaustive labels, so unmatched candidates remain unadjudicated."
+  ]
+}
