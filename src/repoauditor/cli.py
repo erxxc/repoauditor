@@ -95,8 +95,10 @@ from .store.models import (
 )
 from .triage import (
     assess_finding,
+    build_review_acquisition_plan,
     collection_status,
     render_collection_status,
+    render_review_acquisition_plan,
     render_threshold_stats,
     threshold_stats,
     triage_repo,
@@ -1399,6 +1401,30 @@ def triage_collection_command(
     config = get_config()
     db.init_db(config)
     typer.echo(render_collection_status(collection_status(repo_id, config)))
+
+
+@app.command(name="triage-acquisition-plan")
+@_clean_errors("triage-acquisition-plan")
+def triage_acquisition_plan_command(
+    limit: int = typer.Option(32, min=1, help="Maximum findings in the review tranche."),
+    max_per_engagement: int = typer.Option(
+        4, min=1, help="Maximum selected findings from one engagement."
+    ),
+    max_prior_labels_per_rule: int = typer.Option(
+        5,
+        min=0,
+        help="Exclude rule families with more prior human labels than this.",
+    ),
+) -> None:
+    """Build a stable, rule-diverse human-review acquisition plan as JSON."""
+    config = get_config()
+    db.init_db(config)
+    typer.echo(render_review_acquisition_plan(build_review_acquisition_plan(
+        config,
+        limit=limit,
+        max_per_engagement=max_per_engagement,
+        max_prior_human_labels_per_rule=max_prior_labels_per_rule,
+    )), nl=False)
 
 
 @app.command(name="triage-stats")

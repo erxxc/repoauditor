@@ -377,6 +377,7 @@ uv run repoauditor triage-stats <repo-id>   # one engagement
 uv run repoauditor triage-stats --label-source derived  # automation-derived cohort
 uv run repoauditor triage-stats --run-id <triage-run-id> # one compatible score cohort
 uv run repoauditor triage-collection        # label gate, dual verdict views, review QA
+uv run repoauditor triage-acquisition-plan  # stable next human-review tranche as JSON
 uv run repoauditor quant-audit <repo-id>    # read-only prior/double-counting audit
 ```
 
@@ -422,6 +423,13 @@ These values are declared, not guessed from a scanner rule name. The controlled 
 floor remains 40 usable human/manual-or-review binary labels across eight distinct source
 repositories; automation-derived falsification labels do not advance that gate. The preferred
 maturity target is 100–200 labels with both classes represented.
+
+`triage-acquisition-plan` supports that maturity work without treating model predictions as
+ground truth. It round-robins across engagements, prioritizes least-reviewed scanner rule
+families with stable hashes, and excludes families above a configurable prior-human-label
+cap. Scores, predicted classes, severity, falsification verdicts, and code outcomes never
+enter selection. The result is adaptive training acquisition—not an evaluation holdout—and
+rule-family diversity must not be presented as analyst-verified mechanism diversity.
 
 The quantitative model separates four concepts that should not be collapsed into one score:
 
