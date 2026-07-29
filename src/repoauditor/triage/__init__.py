@@ -16,7 +16,9 @@ from .acquisition import (
     ReviewAcquisitionCandidate,
     ReviewAcquisitionPlan,
     build_review_acquisition_plan,
+    load_review_acquisition_plan,
     render_review_acquisition_plan,
+    render_review_packet,
 )
 from .collection import CollectionStatus, collection_status, render_collection_status
 from .features import FEATURE_NAMES, SarifFinding, extract_feature_vector, load_sarif
@@ -40,8 +42,10 @@ __all__ = [
     "extract_feature_vector",
     "label_finding",
     "load_sarif",
+    "load_review_acquisition_plan",
     "render_collection_status",
     "render_review_acquisition_plan",
+    "render_review_packet",
     "render_threshold_stats",
     "threshold_stats",
     "triage_repo",

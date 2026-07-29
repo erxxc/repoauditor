@@ -103,6 +103,9 @@ It selects least-reviewed rule families across engagements with stable hashes, e
 families above the disclosed prior-label cap, and never uses candidate scores, predicted
 classes, severity, verdicts, or code outcomes. It is not evaluation-eligible. Analysts must
 review the cited code, retain abstentions, and declare coverage dimensions themselves.
+`triage-review-packet` fails closed unless each frozen entry still matches its stored
+finding/feature identity and resolves to exactly one immutable snapshot, then renders
+bounded source context and a disposition-neutral command template.
 
 ## Phase 4 — Validation maturity
 

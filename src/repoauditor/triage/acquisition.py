@@ -6,6 +6,7 @@ import hashlib
 import json
 from collections import Counter, defaultdict
 from dataclasses import asdict, dataclass
+from pathlib import Path
 
 from ..config import Config, get_config
 from ..store import db
@@ -186,6 +187,122 @@ def build_review_acquisition_plan(
 def render_review_acquisition_plan(plan: ReviewAcquisitionPlan) -> str:
     """Return stable, human-readable JSON suitable for freezing before review."""
     return json.dumps(asdict(plan), indent=2, sort_keys=True) + "\n"
+
+
+def load_review_acquisition_plan(path: Path) -> ReviewAcquisitionPlan:
+    """Load one frozen acquisition plan, rejecting incompatible schemas."""
+    payload = json.loads(Path(path).read_text(encoding="utf-8"))
+    if payload.get("schema_version") != "triage-review-acquisition-v1":
+        raise ValueError("unsupported triage review acquisition schema")
+    try:
+        entries = tuple(
+            ReviewAcquisitionCandidate(**entry) for entry in payload.pop("entries")
+        )
+        payload["limitations"] = tuple(payload["limitations"])
+        return ReviewAcquisitionPlan(entries=entries, **payload)
+    except (KeyError, TypeError) as exc:
+        raise ValueError("invalid triage review acquisition plan") from exc
+
+
+def render_review_packet(
+    plan: ReviewAcquisitionPlan,
+    config: Config | None = None,
+    *,
+    context_lines: int = 8,
+) -> str:
+    """Render bounded source evidence without proposing analyst dispositions."""
+    if context_lines < 0:
+        raise ValueError("context_lines cannot be negative")
+    config = config or get_config()
+    findings = {
+        finding.id: finding
+        for finding in db.list_findings(config=config)
+        if finding.id is not None
+    }
+    features = {
+        feature.finding_id: feature
+        for feature in db.list_triage_features(config)
+    }
+    snapshots: dict[str, list] = defaultdict(list)
+    for repo in db.list_ingested_repos(config, all_snapshots=True):
+        snapshots[repo.repo_id].append(repo)
+    lines = [
+        "# Triage review packet",
+        "",
+        f"Schema: `{plan.schema_version}`",
+        f"Candidates: {len(plan.entries)}",
+        "",
+        "This packet supplies bounded source evidence only. It does not recommend a",
+        "disposition, infer a coverage dimension, or make this training tranche eligible",
+        "for evaluation. Review the surrounding repository evidence before deciding.",
+        "",
+    ]
+    for index, candidate in enumerate(plan.entries, start=1):
+        finding = findings.get(candidate.finding_id)
+        feature = features.get(candidate.finding_id)
+        if (
+            finding is None
+            or feature is None
+            or finding.repo_id != candidate.engagement
+            or finding.file != candidate.file
+            or finding.line_start != candidate.line
+            or feature.engagement != candidate.engagement
+            or feature.rule_id != candidate.rule_id
+            or feature.fingerprint != candidate.fingerprint
+        ):
+            raise ValueError(
+                f"frozen candidate #{candidate.finding_id} differs from stored evidence"
+            )
+        repo_snapshots = snapshots.get(candidate.engagement, [])
+        if len(repo_snapshots) != 1:
+            raise ValueError(
+                f"engagement {candidate.engagement} resolves to "
+                f"{len(repo_snapshots)} snapshots; exact snapshot required"
+            )
+        repo = repo_snapshots[0]
+        root = config.paths.data_dir / "raw" / repo.repo_id / repo.commit_hash
+        source = (root / candidate.file).resolve()
+        if not source.is_relative_to(root.resolve()) or not source.is_file():
+            raise ValueError(
+                f"frozen source is unavailable for finding #{candidate.finding_id}"
+            )
+        source_lines = source.read_text(errors="replace").splitlines()
+        if candidate.line < 1 or candidate.line > len(source_lines):
+            raise ValueError(
+                f"frozen line is unavailable for finding #{candidate.finding_id}"
+            )
+        start = max(1, candidate.line - context_lines)
+        end = min(len(source_lines), candidate.line + context_lines)
+        width = len(str(end))
+        excerpt = "\n".join(
+            f"{line_no:>{width}}  {source_lines[line_no - 1]}"
+            for line_no in range(start, end + 1)
+        )
+        lines.extend([
+            f"## {index}. Finding #{candidate.finding_id}",
+            "",
+            f"- Engagement: `{candidate.engagement}`",
+            f"- Snapshot: `{repo.commit_hash}`",
+            f"- Rule: `{candidate.rule_id}`",
+            f"- Prior human labels for rule: {candidate.prior_human_labels_for_rule}",
+            f"- Source: `{candidate.file}:{candidate.line}`",
+            "",
+            "````text",
+            excerpt,
+            "````",
+            "",
+            "Record the reviewed result with:",
+            "",
+            "```sh",
+            f"uv run repoauditor triage-label {candidate.finding_id} \\",
+            "  --disposition <detailed-disposition> \\",
+            '  --rationale "<evidence-based rationale>"',
+            "```",
+            "",
+            "Add repeatable `--dimension` values only after verifying them from evidence.",
+            "",
+        ])
+    return "\n".join(lines)
 
 
 def _digest(kind: str, *values: str) -> str:

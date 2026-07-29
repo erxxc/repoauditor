@@ -97,8 +97,10 @@ from .triage import (
     assess_finding,
     build_review_acquisition_plan,
     collection_status,
+    load_review_acquisition_plan,
     render_collection_status,
     render_review_acquisition_plan,
+    render_review_packet,
     render_threshold_stats,
     threshold_stats,
     triage_repo,
@@ -1425,6 +1427,24 @@ def triage_acquisition_plan_command(
         max_per_engagement=max_per_engagement,
         max_prior_human_labels_per_rule=max_prior_labels_per_rule,
     )), nl=False)
+
+
+@app.command(name="triage-review-packet")
+@_clean_errors("triage-review-packet")
+def triage_review_packet_command(
+    plan: Path = typer.Argument(..., exists=True, dir_okay=False),
+    context_lines: int = typer.Option(
+        8, min=0, help="Source lines shown before and after each cited line."
+    ),
+) -> None:
+    """Render bounded source evidence for a frozen human-review tranche."""
+    config = get_config()
+    db.init_db(config)
+    typer.echo(render_review_packet(
+        load_review_acquisition_plan(plan),
+        config,
+        context_lines=context_lines,
+    ))
 
 
 @app.command(name="triage-stats")

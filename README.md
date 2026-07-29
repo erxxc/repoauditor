@@ -378,6 +378,7 @@ uv run repoauditor triage-stats --label-source derived  # automation-derived coh
 uv run repoauditor triage-stats --run-id <triage-run-id> # one compatible score cohort
 uv run repoauditor triage-collection        # label gate, dual verdict views, review QA
 uv run repoauditor triage-acquisition-plan  # stable next human-review tranche as JSON
+uv run repoauditor triage-review-packet docs/triage-review-acquisition-2026-07-29.json
 uv run repoauditor quant-audit <repo-id>    # read-only prior/double-counting audit
 ```
 
@@ -430,6 +431,10 @@ families with stable hashes, and excludes families above a configurable prior-hu
 cap. Scores, predicted classes, severity, falsification verdicts, and code outcomes never
 enter selection. The result is adaptive training acquisition—not an evaluation holdout—and
 rule-family diversity must not be presented as analyst-verified mechanism diversity.
+`triage-review-packet` then verifies every frozen entry against its stored feature/finding
+identity and exactly one immutable snapshot before showing bounded, line-numbered source
+context. It supplies an adjudication command template but never proposes the disposition,
+rationale, materiality, or coverage dimensions.
 
 The quantitative model separates four concepts that should not be collapsed into one score:
 
