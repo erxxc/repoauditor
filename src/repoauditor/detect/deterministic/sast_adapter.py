@@ -29,6 +29,7 @@ from ...triage.features import (
 )
 from ..ensemble import CandidateFinding
 from ._common import relativize
+from .execution import ScannerExecution
 
 logger = logging.getLogger(__name__)
 
@@ -62,6 +63,10 @@ class SastAdapter:
         self.sarif_output_path = sarif_output_path
         self.run_status: str | None = None
         self.failure_detail: str | None = None
+        self.target_count = 0
+        self.output_valid = False
+        self.finding_count = 0
+        self.version: str | None = None
 
     def _write_artifact(self, raw_output: str) -> None:
         if self.sarif_output_path is None:
@@ -133,7 +138,9 @@ class SastAdapter:
             self.write_empty_artifact(status)
             return []
         try:
-            scanned_paths = json.loads(target_payload)["paths"]["scanned"]
+            target_doc = json.loads(target_payload)
+            scanned_paths = target_doc["paths"]["scanned"]
+            self.version = target_doc.get("version")
         except (json.JSONDecodeError, KeyError, TypeError):
             self.failure_detail = "Semgrep target report is missing or malformed"
             self.write_empty_artifact("failed")
@@ -142,17 +149,42 @@ class SastAdapter:
             self.failure_detail = "Semgrep selected zero targets"
             self.write_empty_artifact("failed")
             return []
+        self.target_count = len(scanned_paths)
         findings = self.parse(proc.stdout, snapshot_path)
         # Preserve only valid SARIF.  The generated artifact lives outside the raw
         # snapshot and is therefore safe to replace on a repeated detect run.
         try:
             load_sarif(proc.stdout)
-        except Exception:
-            self.write_empty_artifact("malformed")
+        except Exception as exc:
+            self.failure_detail = f"malformed SARIF: {type(exc).__name__}: {exc}"[:500]
+            self.write_empty_artifact("failed")
             return findings
+        self.output_valid = True
+        self.finding_count = len(findings)
         self.run_status = "complete" if findings else "empty"
         self._write_artifact(proc.stdout)
         return findings
+
+    def execution(self) -> ScannerExecution:
+        status = self.run_status or "failed"
+        detail = self.failure_detail
+        if status == "failed" and not detail:
+            detail = "scanner execution did not produce a terminal status"
+        return ScannerExecution(
+            scanner="semgrep",
+            status=status,
+            applicable=None if status in {"unavailable", "disabled"} else True,
+            output_valid=self.output_valid,
+            finding_count=self.finding_count,
+            target_count=self.target_count,
+            target_count_basis=(
+                status if status in {"unavailable", "disabled"}
+                else "scanner-reported-files"
+            ),
+            version=self.version,
+            configuration="auto",
+            failure_detail=detail,
+        )
 
     def parse(self, raw_output: str,
               snapshot_path: Path | None = None) -> list[CandidateFinding]:

@@ -9,5 +9,6 @@ findings when its binary is absent, so a partial toolchain never breaks a run.
 from .sast_adapter import SastAdapter
 from .sca_adapter import ScaAdapter
 from .secrets_adapter import SecretsAdapter
+from .execution import ScannerExecution
 
-__all__ = ["SastAdapter", "ScaAdapter", "SecretsAdapter"]
+__all__ = ["SastAdapter", "ScaAdapter", "SecretsAdapter", "ScannerExecution"]

@@ -392,6 +392,7 @@ def _detect_run_metadata(value, config, scanner_coverage=None):
         "semgrep_status": getattr(value, "semgrep_status", None),
         "scanner_statuses": getattr(value, "scanner_statuses", {}),
         "scanner_failures": getattr(value, "scanner_failures", {}),
+        "scanner_executions": getattr(value, "scanner_executions", []),
         "context_expansions": getattr(value, "context_expansions", []),
         "llm": {
             "provider": config.llm.provider,
@@ -655,6 +656,7 @@ def _detect_stage(repo_id: str, config):
             typer.echo(f"  semgrep-status={result.semgrep_status}; SARIF={result.sarif_path}")
     scanner_statuses = getattr(result, "scanner_statuses", {})
     scanner_failures = getattr(result, "scanner_failures", {})
+    scanner_executions = getattr(result, "scanner_executions", [])
     if scanner_statuses and not _quiet_enabled.get():
         typer.echo(
             "  scanner-execution: "
@@ -669,6 +671,16 @@ def _detect_stage(repo_id: str, config):
             fg=typer.colors.YELLOW,
             err=True,
         )
+    if scanner_executions and not _quiet_enabled.get():
+        for execution in scanner_executions:
+            typer.echo(
+                "  scanner evidence: "
+                f"{execution['scanner']}={execution['status']}; "
+                f"targets={execution['target_count']} "
+                f"({execution['target_count_basis']}); "
+                f"findings={execution['finding_count']}; "
+                f"output-valid={str(execution['output_valid']).lower()}"
+            )
     return result
 
 
@@ -1832,6 +1844,7 @@ def run(
             prior_detect.summary.get("semgrep_status"),
             scanner_statuses=prior_detect.summary.get("scanner_statuses", {}),
             scanner_failures=prior_detect.summary.get("scanner_failures", {}),
+            scanner_executions=prior_detect.summary.get("scanner_executions", []),
             context_expansions=prior_detect.summary.get("context_expansions", []),
         )
     if "triage" not in completed:

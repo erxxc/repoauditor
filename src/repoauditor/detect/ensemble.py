@@ -206,6 +206,7 @@ class DetectionRun(list[Finding]):
         skipped_completed_region_calls: int = 0,
         scanner_statuses: dict[str, str] | None = None,
         scanner_failures: dict[str, str] | None = None,
+        scanner_executions: list[dict] | None = None,
         context_expansions: list[dict] | None = None,
     ):
         super().__init__(findings)
@@ -218,6 +219,7 @@ class DetectionRun(list[Finding]):
         self.skipped_completed_region_calls = skipped_completed_region_calls
         self.scanner_statuses = scanner_statuses or {}
         self.scanner_failures = scanner_failures or {}
+        self.scanner_executions = scanner_executions or []
         self.context_expansions = context_expansions or []
 
 
@@ -250,6 +252,7 @@ def run_ensemble(
     tool_candidates: list[CandidateFinding] = []
     scanner_statuses: dict[str, str] = {}
     scanner_failures: dict[str, str] = {}
+    scanner_executions: list[dict] = []
     if config.detect.run_deterministic_tools:
         adapter_result = _run_deterministic_adapters(
             snapshot_path, config, artifact_path
@@ -259,6 +262,8 @@ def run_ensemble(
         tool_candidates, sarif_path, semgrep_status = adapter_result[:3]
         if len(adapter_result) >= 5:
             scanner_statuses, scanner_failures = adapter_result[3:5]
+        if len(adapter_result) >= 6:
+            scanner_executions = adapter_result[5]
         for cand in tool_candidates:
             persisted.append(_persist_tool_candidate(cand, repo_id, architecture, config))
     else:
@@ -271,6 +276,20 @@ def run_ensemble(
             name: "disabled"
             for name in ("semgrep", "pip-audit", "osv-scanner", "gitleaks")
         }
+        from .deterministic.execution import ScannerExecution
+
+        scanner_executions = [
+            ScannerExecution(
+                scanner=name,
+                status="disabled",
+                applicable=None,
+                output_valid=False,
+                finding_count=0,
+                target_count=0,
+                target_count_basis="disabled",
+            ).model_dump()
+            for name in ("semgrep", "pip-audit", "osv-scanner", "gitleaks")
+        ]
 
     projection = project_detection_work(
         snapshot_path, config, lens_count=len(LENSES)
@@ -386,6 +405,7 @@ def run_ensemble(
         skipped_completed_region_calls=skipped_completed_region_calls,
         scanner_statuses=scanner_statuses,
         scanner_failures=scanner_failures,
+        scanner_executions=scanner_executions,
         context_expansions=context_expansions,
     )
 
@@ -512,6 +532,7 @@ def _run_deterministic_adapters(
     str | None,
     dict[str, str],
     dict[str, str],
+    list[dict],
 ]:
     """Run the SAST / SCA / secret adapters over the snapshot, in parallel.
 
@@ -546,12 +567,18 @@ def _run_deterministic_adapters(
         }.items()
         if detail
     }
+    executions = [
+        sast.execution(),
+        *sca.executions(),
+        secrets.execution(),
+    ]
     return (
         candidates,
         sarif_output_path if sarif_output_path.is_file() else None,
         sast.run_status,
         statuses,
         failures,
+        [record.model_dump() for record in executions],
     )
 
 

@@ -26,6 +26,7 @@ from pathlib import Path
 from ...store.models import Severity
 from ..ensemble import CandidateFinding
 from ._common import relativize
+from .execution import ScannerExecution
 
 logger = logging.getLogger(__name__)
 
@@ -82,6 +83,9 @@ class ScaAdapter:
         self.timeout_seconds = timeout_seconds
         self.run_statuses = {"pip-audit": "not-run", "osv-scanner": "not-run"}
         self.failure_details: dict[str, str] = {}
+        self.target_counts = {"pip-audit": 0, "osv-scanner": 0}
+        self.output_valid = {"pip-audit": False, "osv-scanner": False}
+        self.finding_counts = {"pip-audit": 0, "osv-scanner": 0}
 
     def run(self, snapshot_path: Path) -> list[CandidateFinding]:
         candidates: list[CandidateFinding] = []
@@ -99,6 +103,7 @@ class ScaAdapter:
         if not reqs:
             self.run_statuses["pip-audit"] = "not-applicable"
             return []
+        self.target_counts["pip-audit"] = len(reqs)
         out: list[CandidateFinding] = []
         for req in reqs:
             try:
@@ -141,6 +146,7 @@ class ScaAdapter:
                             proc.stdout, relativize(str(req), snapshot_path)
                         )
                         self.run_statuses["pip-audit"] = "partial"
+                        self.output_valid["pip-audit"] = True
                         self.failure_details["pip-audit"] = (
                             "full dependency resolution failed; audited exact direct pins "
                             f"without transitive resolution. Primary detail: {primary_failure}"
@@ -164,6 +170,8 @@ class ScaAdapter:
                 self.failure_details["pip-audit"] = "scanner returned no JSON output"
         if self.run_statuses["pip-audit"] not in {"failed", "partial"}:
             self.run_statuses["pip-audit"] = "complete" if out else "empty"
+            self.output_valid["pip-audit"] = True
+        self.finding_counts["pip-audit"] = len(out)
         return out
 
     def parse_pip_audit(self, raw_output: str,
@@ -201,6 +209,7 @@ class ScaAdapter:
             logger.info("osv-scanner not installed; skipping")
             self.run_statuses["osv-scanner"] = "unavailable"
             return []
+        self.target_counts["osv-scanner"] = 1
         try:
             proc = subprocess.run(
                 [
@@ -284,6 +293,9 @@ class ScaAdapter:
                             else ""
                         )
                         self.run_statuses["osv-scanner"] = "partial"
+                        self.target_counts["osv-scanner"] = len(explicit)
+                        self.output_valid["osv-scanner"] = True
+                        self.finding_counts["osv-scanner"] = len(findings)
                         self.failure_details["osv-scanner"] = (
                             "recursive manifest discovery failed; explicitly scanned "
                             f"{len(explicit)} requirements file(s){bounded}. Other manifest types "
@@ -292,6 +304,7 @@ class ScaAdapter:
                         return findings
                     if fallback_failures and only_no_source_failures:
                         self.run_statuses["osv-scanner"] = "not-applicable"
+                        self.target_counts["osv-scanner"] = 0
                         return []
                     primary_failure += (
                         "; explicit requirements fallback failures: "
@@ -299,6 +312,7 @@ class ScaAdapter:
                     )[:150]
                 else:
                     self.run_statuses["osv-scanner"] = "not-applicable"
+                    self.target_counts["osv-scanner"] = 0
                     return []
             self.run_statuses["osv-scanner"] = "failed"
             self.failure_details["osv-scanner"] = primary_failure[:500]
@@ -314,8 +328,40 @@ class ScaAdapter:
             )
             return []
         findings = self.parse_osv(proc.stdout, snapshot_path)
+        self.output_valid["osv-scanner"] = True
+        self.finding_counts["osv-scanner"] = len(findings)
         self.run_statuses["osv-scanner"] = "complete" if findings else "empty"
         return findings
+
+    def executions(self) -> list[ScannerExecution]:
+        records = []
+        for scanner in ("pip-audit", "osv-scanner"):
+            status = self.run_statuses[scanner]
+            detail = self.failure_details.get(scanner)
+            if status == "not-run":
+                status = "failed"
+                detail = detail or "scanner execution did not run"
+            if status in {"not-applicable", "unavailable"}:
+                basis = status
+                applicable = False if status == "not-applicable" else None
+            else:
+                basis = (
+                    "submitted-manifests"
+                    if scanner == "pip-audit"
+                    else "submitted-root"
+                )
+                applicable = True
+            records.append(ScannerExecution(
+                scanner=scanner,
+                status=status,
+                applicable=applicable,
+                output_valid=self.output_valid[scanner],
+                finding_count=self.finding_counts[scanner],
+                target_count=self.target_counts[scanner],
+                target_count_basis=basis,
+                failure_detail=detail,
+            ))
+        return records
 
     def parse_osv(self, raw_output: str,
                   snapshot_path: Path | None = None) -> list[CandidateFinding]:

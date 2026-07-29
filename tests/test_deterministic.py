@@ -19,6 +19,7 @@ import repoauditor.detect.ensemble as ensemble_module
 from repoauditor.detect import run_ensemble
 from repoauditor.detect.ensemble import CandidateFinding
 from repoauditor.detect.deterministic import SastAdapter, ScaAdapter, SecretsAdapter
+from repoauditor.detect.deterministic.execution import ScannerExecution
 from repoauditor.detect.deterministic.secrets_adapter import _redact
 from repoauditor.ingest import ingest_repo
 from repoauditor.map import recover_architecture
@@ -103,7 +104,8 @@ def test_sast_adapter_preserves_valid_sarif_outside_snapshot(tmp_path, monkeypat
         "repoauditor.detect.deterministic.sast_adapter.subprocess.run", run
     )
 
-    findings = SastAdapter(sarif_output_path=artifact).run(snapshot)
+    adapter = SastAdapter(sarif_output_path=artifact)
+    findings = adapter.run(snapshot)
 
     assert len(findings) == 1
     assert calls[0][0] == [
@@ -123,6 +125,64 @@ def test_sast_adapter_preserves_valid_sarif_outside_snapshot(tmp_path, monkeypat
     assert artifact.read_text(encoding="utf-8") == _SARIF
     assert stat.S_IMODE(artifact.stat().st_mode) == 0o600
     assert not (snapshot / "semgrep.sarif").exists()
+    assert adapter.execution().model_dump(exclude_none=True) == {
+        "scanner": "semgrep",
+        "status": "complete",
+        "applicable": True,
+        "output_valid": True,
+        "finding_count": 1,
+        "target_count": 1,
+        "target_count_basis": "scanner-reported-files",
+        "configuration": "auto",
+    }
+
+
+def test_scanner_execution_rejects_unverified_empty_result():
+    with pytest.raises(ValueError, match="at least one target"):
+        ScannerExecution(
+            scanner="semgrep",
+            status="empty",
+            applicable=True,
+            output_valid=True,
+            finding_count=0,
+            target_count=0,
+            target_count_basis="scanner-reported-files",
+        )
+    with pytest.raises(ValueError, match="validated output"):
+        ScannerExecution(
+            scanner="gitleaks",
+            status="empty",
+            applicable=True,
+            output_valid=False,
+            finding_count=0,
+            target_count=1,
+            target_count_basis="submitted-root",
+        )
+
+
+def test_scanner_execution_serializes_clean_zero_evidence():
+    record = ScannerExecution(
+        scanner="gitleaks",
+        status="empty",
+        applicable=True,
+        output_valid=True,
+        finding_count=0,
+        target_count=1,
+        target_count_basis="submitted-root",
+    )
+
+    assert record.model_dump() == {
+        "scanner": "gitleaks",
+        "status": "empty",
+        "applicable": True,
+        "output_valid": True,
+        "finding_count": 0,
+        "target_count": 1,
+        "target_count_basis": "submitted-root",
+        "version": None,
+        "configuration": None,
+        "failure_detail": None,
+    }
 
 
 def test_sast_adapter_fails_closed_when_semgrep_selects_zero_targets(
@@ -256,6 +316,11 @@ def test_sca_adapter_explicitly_scans_requirements_when_osv_recursive_discovery_
     assert "Other manifest types may be uncovered" in (
         adapter.failure_details["osv-scanner"]
     )
+    execution = {item.scanner: item for item in adapter.executions()}["osv-scanner"]
+    assert execution.status == "partial"
+    assert execution.target_count == 1
+    assert execution.finding_count == 1
+    assert execution.output_valid is True
 
 
 def test_sca_adapter_marks_no_package_sources_not_applicable(tmp_path, monkeypatch):
@@ -282,6 +347,9 @@ def test_sca_adapter_marks_no_package_sources_not_applicable(tmp_path, monkeypat
     assert adapter._run_osv_scanner(tmp_path) == []
     assert adapter.run_statuses["osv-scanner"] == "not-applicable"
     assert "osv-scanner" not in adapter.failure_details
+    execution = {item.scanner: item for item in adapter.executions()}["osv-scanner"]
+    assert execution.applicable is False
+    assert execution.target_count_basis == "not-applicable"
 
 
 def test_sca_adapter_marks_empty_explicit_requirements_not_applicable(
@@ -459,6 +527,10 @@ def test_secrets_adapter_rejects_failed_or_malformed_runs(
     assert adapter.run(tmp_path) == []
     assert adapter.run_status == "failed"
     assert failure in (adapter.failure_detail or "")
+    execution = adapter.execution()
+    assert execution.status == "failed"
+    assert execution.output_valid is False
+    assert execution.failure_detail
 
 
 @pytest.mark.integration
