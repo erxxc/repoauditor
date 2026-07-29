@@ -133,6 +133,61 @@ def test_sca_adapter_parses_osv_scanner_json_and_auto_detects_format():
     assert "django" in c.citation_snippet and "GHSA-abcd" in c.citation_snippet
 
 
+def test_sca_adapter_explicitly_scans_requirements_when_osv_recursive_discovery_fails(
+        tmp_path, monkeypatch):
+    requirement = tmp_path / "requirements.txt"
+    requirement.write_text("requests==2.19.1\n")
+    monkeypatch.setattr(
+        "repoauditor.detect.deterministic.sca_adapter.shutil.which",
+        lambda binary: f"/usr/bin/{binary}",
+    )
+
+    class RecursiveFailure:
+        returncode = 128
+        stdout = ""
+        stderr = "No package sources found, --help for usage information."
+
+    class ExplicitSuccess:
+        returncode = 1
+        stderr = ""
+        stdout = json.dumps({"results": [{
+            "source": {"path": str(requirement), "type": "lockfile"},
+            "packages": [{
+                "package": {
+                    "name": "requests", "version": "2.19.1", "ecosystem": "PyPI",
+                },
+                "vulnerabilities": [{
+                    "id": "CVE-2018-18074", "summary": "Credential forwarding",
+                }],
+            }],
+        }]})
+
+    calls = iter([RecursiveFailure(), ExplicitSuccess()])
+    commands: list[list[str]] = []
+
+    def fake_run(command, **_kwargs):
+        commands.append(command)
+        return next(calls)
+
+    monkeypatch.setattr(
+        "repoauditor.detect.deterministic.sca_adapter.subprocess.run", fake_run,
+    )
+    adapter = ScaAdapter()
+
+    findings = adapter._run_osv_scanner(tmp_path)
+
+    assert len(findings) == 1
+    assert findings[0].producer == "osv-scanner"
+    assert findings[0].file == "requirements.txt"
+    assert commands[1][-2:] == [
+        "--lockfile", str(requirement),
+    ]
+    assert adapter.run_statuses["osv-scanner"] == "partial"
+    assert "Other manifest types may be uncovered" in (
+        adapter.failure_details["osv-scanner"]
+    )
+
+
 def test_sca_adapter_records_pip_audit_execution_failure(tmp_path, monkeypatch):
     (tmp_path / "requirements.txt").write_text("requests==2.19.1\n")
     monkeypatch.setattr(

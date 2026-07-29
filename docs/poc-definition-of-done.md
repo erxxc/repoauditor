@@ -1,6 +1,6 @@
 # POC Definition of Done
 
-Status: **authoritative**, confirmed by the project owner on 2026-07-28.
+Status: **complete**, acceptance signed off by project owner `erxxc` on 2026-07-28.
 
 I. Current statement
 
@@ -29,8 +29,10 @@ II. Acceptance evidence
          missing-key behavior, guided menu operation, review, and finalization.
       2. The lightweight UAT fixture supports the bounded guided demo and known
          positive/negative checks.
-      3. A final clean-environment walkthrough remains required before declaring the POC
-         complete.
+      3. Satisfied by the independent clean-environment walkthrough recorded in
+         [`poc-acceptance-walkthrough-2026-07-28.md`](poc-acceptance-walkthrough-2026-07-28.md).
+         Project owner `erxxc` explicitly accepted the independently operated reviewer-agent
+         walkthrough as meeting this criterion on 2026-07-28.
 
    B. Safety and transparency
 

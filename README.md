@@ -198,6 +198,11 @@ Recommended security scanners:
 - **pip-audit** checks Python dependency manifests for known vulnerabilities.
 - **OSV-Scanner** checks supported dependency manifests across multiple ecosystems.
 
+If OSV-Scanner's recursive mode cannot discover a bare `requirements*.txt`, RepoAuditor
+retries a bounded set of those files explicitly. That recovery is reported as **partial**
+coverage because other manifest types may still be undiscovered; it is never presented as a
+complete recursive scan.
+
 SQLite does not need a separate installation. `doctor` and `run` automatically create
 or upgrade `data/repoauditor.db`. All generated data is stored under the configured
 `data/` directory, which is ignored by Git.

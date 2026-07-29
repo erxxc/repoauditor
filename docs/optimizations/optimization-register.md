@@ -1,6 +1,6 @@
 # Optimization Register
 
-Status: authoritative list of post-MVP work as of 2026-07-28.
+Status: authoritative post-MVP work list as of 2026-07-28. POC acceptance is complete.
 
 I. Evaluation and classifier maturity
 
@@ -99,14 +99,55 @@ V. Intake
       correctness impact was observed — activation: routine dependency maintenance after
       MVP closure — DoD impact: none.
 
-   C. OPT-017 — Diagnose the UAT IDOR selection/detection miss — evidence-required/deferred
-      — owner: detection evaluation — source:
-      `../poc-acceptance-attempt-2026-07-28.md` — the OpenAI-compatible acceptance attempt
-      produced zero candidates for `storefront/orders.py`. First recover the stored detect
-      region plan to distinguish bounded planner omission from an in-context model miss;
-      do not tune a prompt or target path from the scorecard alone — activation: after the
-      offline acceptance corrections and before a paid rerun — DoD impact: none unless the
-      owner explicitly adds a fixture recovery threshold.
+   C. OPT-017 — Diagnose the UAT IDOR selection/detection miss — completed diagnosis —
+      owner: detection evaluation — source:
+      `../poc-acceptance-attempt-2026-07-28.md` and
+      `../poc-acceptance-walkthrough-2026-07-28.md` — the Anthropic rerun confirmed that
+      `storefront/orders.py` was omitted by the bounded primary region plan while cross-file
+      context still recovered and validly cited the IDOR. This is evidence that selected
+      region scope and retrieval/citation scope differ, not grounds for target-path tuning.
+      Feed the generalizable planner evidence into OPT-007 — DoD impact: none.
 
-   D. Add the next proposed improvement as `OPT-018`; do not place it directly into the MVP
+   D. OPT-018 — Support explicit requirements files in OSV-Scanner integration —
+      implemented in the first post-MVP optimization PR — owner: deterministic detection —
+      source: `../poc-acceptance-walkthrough-2026-07-28.md` — OSV-Scanner 2.4.0 returned
+      “No package sources found” for recursive directory scanning even though a root
+      `requirements.txt` existed; an explicit lockfile check parsed it successfully. Add a
+      bounded manifest-discovery path with adapter regression coverage, preserving
+      failure/partial-coverage disclosure. The adapter now retries a bounded set of explicit
+      `requirements*.txt` files only after the attributable recursive-discovery failure and
+      labels successful fallback coverage partial — DoD impact: none because pip-audit
+      completed and the original degradation was disclosed.
+
+   E. OPT-019 — Persist and expose rich per-stage summaries for demo/resume runs —
+      newly surfaced/evidence-ready — owner: CLI/store observability — source:
+      `../poc-acceptance-walkthrough-2026-07-28.md` — the region plan existed in
+      `detection_region_run` but `runs show` did not expose it for the demo lineage, forcing
+      a direct store query. Reuse the existing run/stage summary interface so demo,
+      standalone commands, and `run` provide equivalent durable coverage metadata —
+      activation: offline optimization workstream — DoD impact: none; live coverage was
+      disclosed during acceptance.
+
+   F. OPT-020 — Document and test bounded-plan versus cross-file retrieval scope —
+      newly surfaced/evidence-ready — owner: detection architecture — source:
+      `../poc-acceptance-walkthrough-2026-07-28.md` — a valid IDOR citation referenced
+      `storefront/orders.py` although that file was absent from the six selected primary
+      regions. Specify which persisted caller/callee or architecture context may expand a
+      selected region, retain provenance for that expansion, and add a path-blind regression
+      test. Do not turn the observed target path into a selection rule — activation: after
+      OPT-019 makes the provenance visible — DoD impact: none.
+
+   G. OPT-021 — Generate a box-drawing/graphical architecture layout — newly
+      surfaced/evidence-ready — owner: mapping presentation — source:
+      `../poc-acceptance-walkthrough-2026-07-28.md` and the retained acceptance architecture
+      artifact — the current text schematic is accurate and useful but renders each flow as
+      a separate linear sentence. Add a deterministic, terminal-safe box-drawing projection
+      that makes shared trust boundaries, entry points, datastores, and integrations
+      visually scannable. Preserve the existing plain-text inventory and explicit
+      “not recovered” limitations; do not infer new edges merely to improve layout. Consider
+      an optional graphical format only if it can be generated offline without expanding
+      mapping business logic — activation: after OPT-018 through OPT-020 or as an isolated
+      presentation-only change — DoD impact: none.
+
+   H. Add the next proposed improvement as `OPT-022`; do not place it directly into the MVP
       recovery plan unless the project owner explicitly changes the DoD.

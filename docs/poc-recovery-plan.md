@@ -1,6 +1,7 @@
 # POC Recovery Plan
 
-Status: **authoritative current execution outline** as of 2026-07-28.
+Status: **POC recovery complete** as of 2026-07-28; retained as the final MVP execution
+record. Post-MVP work is governed by `optimizations/optimization-register.md`.
 
 I. Validated Definition of Done
 
@@ -24,9 +25,10 @@ II. Outstanding Items (consolidated)
 
    A. POC acceptance and operations
 
-      1. Final clean-environment, non-security-user walkthrough — first assistant-operated
-         attempt not accepted; offline corrections and an independent rerun remain —
-         RepoAuditor engineering plus independent non-security reviewer.
+      1. Final clean-environment, non-security-user walkthrough — completed successfully,
+         recorded in
+         [`poc-acceptance-walkthrough-2026-07-28.md`](poc-acceptance-walkthrough-2026-07-28.md),
+         and accepted by project owner `erxxc` — complete.
       2. Untouched public-pair production-selection measurement — completed on Plotly.js
          CVE-2017-1000006 under the frozen target-blind protocol — evaluation engineering
          plus AppSec reviewer.
@@ -76,13 +78,7 @@ II. Outstanding Items (consolidated)
 
 III. MVP — Required to Reach Done
 
-   A. Final non-security-user acceptance walkthrough — blocker: must occur after the
-      offline corrections recorded in
-      [`poc-acceptance-attempt-2026-07-28.md`](poc-acceptance-attempt-2026-07-28.md) merge;
-      fastest path: rerun [`poc-acceptance-walkthrough.md`](poc-acceptance-walkthrough.md)
-      from a clean checkout with the Anthropic baseline, recording dependency/model
-      preflight, scan/review/finalize behavior, produced artifacts, runtime, and any user
-      confusion — owner: RepoAuditor engineering plus independent non-security reviewer.
+   A. None. The owner-approved POC Definition of Done is complete.
 
 IV. Deferred / Tuning (post-MVP)
 
@@ -102,6 +98,6 @@ IV. Deferred / Tuning (post-MVP)
 
 V. Recommended Next Step
 
-   A. Merge the quantitative presentation gate and untouched-selection receipt, then perform
-      the final clean-environment guided walkthrough. Do not begin planner or classifier
-      tuning before that acceptance item closes.
+   A. Begin the post-MVP optimization workstream from
+      [`optimizations/optimization-register.md`](optimizations/optimization-register.md),
+      respecting each item's evidence and activation gate.

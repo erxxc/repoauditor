@@ -24,7 +24,10 @@ III. Evidence and historical execution
       evidence ledger; superseded as the current priority authority by the recovery plan.
    B. Dated JSON plans, diagnostics, qualification receipts, and baselines are immutable
       evidence for their named runs.
-   C. Methodology documents describe implemented boundaries or deferred research; they do
+   C. [`poc-acceptance-walkthrough-2026-07-28.md`](poc-acceptance-walkthrough-2026-07-28.md)
+      — sanitized evidence from the independent clean-environment POC walkthrough; raw
+      operational evidence remains local and gitignored.
+   D. Methodology documents describe implemented boundaries or deferred research; they do
       not silently expand the POC DoD.
 
 IV. Documentation rule
