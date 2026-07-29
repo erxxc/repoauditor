@@ -22,7 +22,9 @@ I. Evaluation and classifier maturity
       items are closed; preserve abstentions and frozen holdouts. The reusable
       `triage-acquisition-plan` command and frozen 2026-07-29 tranche prioritize
       least-reviewed rule families without inferring mechanisms or candidate outcomes;
-      human adjudication remains outstanding — DoD impact: none.
+      `triage-review-packet` verifies frozen provenance and renders bounded source evidence
+      without recommending an outcome. Human adjudication remains outstanding — DoD
+      impact: none.
 
    B. OPT-002 — Family-aware bootstrap ranges — deferred — owner: ML evaluation — source:
       `../triage-accuracy-roadmap.md` — activate after adequate held-out family breadth and

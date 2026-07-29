@@ -4,16 +4,23 @@ from __future__ import annotations
 
 import json
 
+import pytest
+
 from repoauditor.store.models import (
     Finding,
+    IngestedRepo,
     TriageAssessment,
     TriageAssessmentOutcome,
     TriageFeatureRecord,
     TriageLabel,
 )
 from repoauditor.triage.acquisition import (
+    ReviewAcquisitionCandidate,
+    ReviewAcquisitionPlan,
     build_review_acquisition_plan,
+    load_review_acquisition_plan,
     render_review_acquisition_plan,
+    render_review_packet,
 )
 
 
@@ -186,3 +193,93 @@ def test_acquisition_excludes_saturated_rule_families(tmp_config, monkeypatch):
     assert [item.rule_id for item in plan.entries] == ["new-rule"]
     assert plan.available_unassessed == 2
     assert plan.eligible_after_rule_cap == 1
+
+
+def test_review_packet_anchors_frozen_candidate_to_exact_snapshot(
+    tmp_config, monkeypatch, tmp_path,
+):
+    feature = _feature(1, "repo", "rule")
+    finding = _finding(1, "repo")
+    commit = "abc123"
+    source = tmp_config.paths.data_dir / "raw" / "repo" / commit / finding.file
+    source.parent.mkdir(parents=True)
+    source.write_text("\n".join(f"line {index}" for index in range(1, 12)) + "\n")
+    monkeypatch.setattr(
+        "repoauditor.triage.acquisition.db.list_triage_features",
+        lambda config=None: [feature],
+    )
+    monkeypatch.setattr(
+        "repoauditor.triage.acquisition.db.list_triage_labels",
+        lambda config=None: [],
+    )
+    monkeypatch.setattr(
+        "repoauditor.triage.acquisition.db.list_triage_assessments",
+        lambda repo_id=None, config=None: [],
+    )
+    monkeypatch.setattr(
+        "repoauditor.triage.acquisition.db.list_findings",
+        lambda repo_id=None, config=None: [finding],
+    )
+    monkeypatch.setattr(
+        "repoauditor.triage.acquisition.db.list_ingested_repos",
+        lambda config=None, all_snapshots=False: [
+            IngestedRepo(repo_id="repo", source="fixture", commit_hash=commit)
+        ],
+    )
+    plan = build_review_acquisition_plan(tmp_config, limit=1)
+    plan_path = tmp_path / "plan.json"
+    plan_path.write_text(render_review_acquisition_plan(plan))
+
+    loaded = load_review_acquisition_plan(plan_path)
+    rendered = render_review_packet(loaded, tmp_config, context_lines=1)
+
+    assert loaded == plan
+    assert "## 1. Finding #1" in rendered
+    assert f"- Snapshot: `{commit}`" in rendered
+    assert f"- Source: `{finding.file}:1`" in rendered
+    assert "1  line 1\n2  line 2" in rendered
+    assert "--disposition <detailed-disposition>" in rendered
+    assert "does not recommend a" in rendered
+
+
+def test_review_packet_rejects_changed_frozen_evidence(tmp_config, monkeypatch):
+    feature = _feature(1, "repo", "rule")
+    finding = _finding(1, "repo")
+    monkeypatch.setattr(
+        "repoauditor.triage.acquisition.db.list_triage_features",
+        lambda config=None: [feature],
+    )
+    monkeypatch.setattr(
+        "repoauditor.triage.acquisition.db.list_findings",
+        lambda repo_id=None, config=None: [finding.model_copy(update={"file": "changed.py"})],
+    )
+    monkeypatch.setattr(
+        "repoauditor.triage.acquisition.db.list_ingested_repos",
+        lambda config=None, all_snapshots=False: [],
+    )
+    packet_plan = ReviewAcquisitionPlan(
+        schema_version="triage-review-acquisition-v1",
+        selection_policy="test",
+        evaluation_eligible=False,
+        requested_limit=1,
+        max_per_engagement=1,
+        max_prior_human_labels_per_rule=5,
+        existing_human_labels=0,
+        available_unassessed=1,
+        eligible_after_rule_cap=1,
+        entries=(ReviewAcquisitionCandidate(
+            finding_id=1,
+            engagement="repo",
+            rule_id="rule",
+            fingerprint="fingerprint-1",
+            title="candidate 1",
+            file="module_1.py",
+            line=1,
+            prior_human_labels_for_rule=0,
+            selection_hash="hash",
+        ),),
+        limitations=(),
+    )
+
+    with pytest.raises(ValueError, match="differs from stored evidence"):
+        render_review_packet(packet_plan, tmp_config)
