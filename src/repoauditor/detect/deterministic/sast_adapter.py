@@ -35,6 +35,7 @@ from .execution import ScannerExecution
 from .provenance import (
     SEMGREP_CONFIGURATION,
     SEMGREP_RULESET_SHA256,
+    canonical_semgrep_rule_id,
     pinned_semgrep_configuration,
     tool_version,
 )
@@ -43,6 +44,85 @@ logger = logging.getLogger(__name__)
 
 TOOL_NAME = "sast"
 _BINARY = "semgrep"
+
+
+def _normalized_sarif(raw_output: str, snapshot_path: Path) -> str:
+    """Canonicalize vendored rule ids and repository paths before retaining SARIF."""
+    document = json.loads(raw_output)
+
+    def normalize_locations(value) -> None:
+        if isinstance(value, dict):
+            artifact = value.get("artifactLocation")
+            if isinstance(artifact, dict) and isinstance(artifact.get("uri"), str):
+                artifact["uri"] = relativize(artifact["uri"], snapshot_path)
+            for child in value.values():
+                normalize_locations(child)
+        elif isinstance(value, list):
+            for child in value:
+                normalize_locations(child)
+
+    def normalize_rule_metadata(value, original: str, canonical: str) -> None:
+        if isinstance(value, dict):
+            for key, child in value.items():
+                if isinstance(child, str):
+                    value[key] = child.replace(original, canonical)
+                else:
+                    normalize_rule_metadata(child, original, canonical)
+        elif isinstance(value, list):
+            for index, child in enumerate(value):
+                if isinstance(child, str):
+                    value[index] = child.replace(original, canonical)
+                else:
+                    normalize_rule_metadata(child, original, canonical)
+
+    def normalize_snapshot_references(value) -> None:
+        snapshot_prefix = f"{snapshot_path.resolve()}{os.sep}"
+        if isinstance(value, dict):
+            for key, child in value.items():
+                if isinstance(child, str):
+                    value[key] = child.replace(snapshot_prefix, "")
+                else:
+                    normalize_snapshot_references(child)
+        elif isinstance(value, list):
+            for index, child in enumerate(value):
+                if isinstance(child, str):
+                    value[index] = child.replace(snapshot_prefix, "")
+                else:
+                    normalize_snapshot_references(child)
+
+    for run in document.get("runs", []):
+        driver = run.get("tool", {}).get("driver", {})
+        rule_ids: dict[str, str] = {}
+        for rule in driver.get("rules", []):
+            if isinstance(rule.get("id"), str):
+                original = rule["id"]
+                canonical = canonical_semgrep_rule_id(original)
+                help_uri = rule.get("helpUri")
+                if (
+                    canonical == original
+                    and isinstance(help_uri, str)
+                    and help_uri.startswith("https://semgrep.dev/r/")
+                ):
+                    documented = help_uri.removeprefix("https://semgrep.dev/r/")
+                    if original.endswith(f".{documented}"):
+                        canonical = documented
+                rule_ids[original] = canonical
+                normalize_rule_metadata(rule, original, canonical)
+            if isinstance(rule.get("name"), str):
+                rule["name"] = canonical_semgrep_rule_id(rule["name"])
+        for result in run.get("results", []):
+            if isinstance(result.get("ruleId"), str):
+                result["ruleId"] = rule_ids.get(
+                    result["ruleId"], canonical_semgrep_rule_id(result["ruleId"])
+                )
+            nested_rule = result.get("rule")
+            if isinstance(nested_rule, dict) and isinstance(nested_rule.get("id"), str):
+                nested_rule["id"] = rule_ids.get(
+                    nested_rule["id"], canonical_semgrep_rule_id(nested_rule["id"])
+                )
+        normalize_locations(run)
+        normalize_snapshot_references(run)
+    return json.dumps(document)
 
 
 def _empty_sarif(status: str) -> str:
@@ -222,11 +302,17 @@ class SastAdapter:
             self.write_empty_artifact("failed")
             return []
         self.target_count = len(scanned_paths)
-        findings = self.parse(proc.stdout, snapshot_path)
+        try:
+            normalized_sarif = _normalized_sarif(proc.stdout, snapshot_path)
+        except (json.JSONDecodeError, TypeError) as exc:
+            self.failure_detail = f"malformed SARIF JSON: {type(exc).__name__}: {exc}"[:500]
+            self.write_empty_artifact("failed")
+            return []
+        findings = self.parse(normalized_sarif, snapshot_path)
         # Preserve only valid SARIF.  The generated artifact lives outside the raw
         # snapshot and is therefore safe to replace on a repeated detect run.
         try:
-            load_sarif(proc.stdout)
+            load_sarif(normalized_sarif)
         except Exception as exc:
             self.failure_detail = f"malformed SARIF: {type(exc).__name__}: {exc}"[:500]
             self.write_empty_artifact("failed")
@@ -234,7 +320,7 @@ class SastAdapter:
         self.output_valid = True
         self.finding_count = len(findings)
         self.run_status = "complete" if findings else "empty"
-        self._write_artifact(proc.stdout)
+        self._write_artifact(normalized_sarif)
         return findings
 
     def execution(self) -> ScannerExecution:

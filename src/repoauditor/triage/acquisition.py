@@ -24,6 +24,7 @@ class ReviewAcquisitionCandidate:
     line: int
     prior_human_labels_for_rule: int
     selection_hash: str
+    surface: str = "production"
 
 
 @dataclass(frozen=True)
@@ -113,16 +114,20 @@ def build_review_acquisition_plan(
                 line=finding.line_start,
                 prior_human_labels_for_rule=human_labels_by_rule[feature.rule_id],
                 selection_hash=selection_hash,
+                surface=_review_surface(finding.file),
             )
         )
 
     queues: dict[str, list[ReviewAcquisitionCandidate]] = {}
     for engagement, by_rule in candidates_by_engagement.items():
         for rule_candidates in by_rule.values():
-            rule_candidates.sort(key=lambda item: item.selection_hash)
+            rule_candidates.sort(
+                key=lambda item: (_surface_rank(item.surface), item.selection_hash)
+            )
         ordered_rules = sorted(
             by_rule,
             key=lambda rule: (
+                min(_surface_rank(item.surface) for item in by_rule[rule]),
                 human_labels_by_rule[rule],
                 _digest("rule", engagement, rule),
             ),
@@ -139,31 +144,35 @@ def build_review_acquisition_plan(
 
     selected: list[ReviewAcquisitionCandidate] = []
     engagement_counts: Counter[str] = Counter()
-    engagements = sorted(queues, key=lambda name: _digest("engagement", name))
-    depth = 0
     while len(selected) < limit:
-        added = False
-        for engagement in engagements:
-            if engagement_counts[engagement] >= max_per_engagement:
-                continue
-            queue = queues[engagement]
-            if depth >= len(queue):
-                continue
-            selected.append(queue[depth])
-            engagement_counts[engagement] += 1
-            added = True
-            if len(selected) >= limit:
-                break
-        if not added:
+        available_options = [
+            (engagement, queue[0])
+            for engagement, queue in queues.items()
+            if queue and engagement_counts[engagement] < max_per_engagement
+        ]
+        if not available_options:
             break
-        depth += 1
+        engagement, candidate = min(
+            available_options,
+            key=lambda item: (
+                _surface_rank(item[1].surface),
+                engagement_counts[item[0]],
+                _digest("engagement", item[0]),
+                item[1].selection_hash,
+            ),
+        )
+        selected.append(candidate)
+        engagement_counts[engagement] += 1
+        queues[engagement].pop(0)
 
     return ReviewAcquisitionPlan(
-        schema_version="triage-review-acquisition-v1",
+        schema_version="triage-review-acquisition-v2",
         selection_policy=(
-            "Round-robin across engagements; within each engagement, least-reviewed rule "
-            "families first with stable SHA-256 tie-breaking, taking one candidate per rule "
-            "before repeats. Rules above the disclosed prior-human-label cap are excluded. "
+            "Production source is selected before deployment/configuration source and "
+            "supporting examples, documentation, tests, or CI. Within each surface class, "
+            "selection balances engagements; within each engagement, least-reviewed rule "
+            "families and one candidate per rule precede repeats, with stable SHA-256 "
+            "tie-breaking. Rules above the disclosed prior-human-label cap are excluded. "
             "Candidate scores, predicted classes, severity, verdicts, and code outcomes "
             "are excluded."
         ),
@@ -178,6 +187,7 @@ def build_review_acquisition_plan(
         limitations=(
             "Training acquisition only; adaptive rule-coverage selection is not an evaluation holdout.",
             "Rule identifiers diversify scanner families but do not establish vulnerability mechanisms.",
+            "Path classes prioritize review effort but do not predict finding validity.",
             "Coverage dimensions must be declared by the analyst after reviewing code evidence.",
             "Uncertain cases must remain explicit abstentions.",
         ),
@@ -192,7 +202,10 @@ def render_review_acquisition_plan(plan: ReviewAcquisitionPlan) -> str:
 def load_review_acquisition_plan(path: Path) -> ReviewAcquisitionPlan:
     """Load one frozen acquisition plan, rejecting incompatible schemas."""
     payload = json.loads(Path(path).read_text(encoding="utf-8"))
-    if payload.get("schema_version") != "triage-review-acquisition-v1":
+    if payload.get("schema_version") not in {
+        "triage-review-acquisition-v1",
+        "triage-review-acquisition-v2",
+    }:
         raise ValueError("unsupported triage review acquisition schema")
     try:
         entries = tuple(
@@ -202,6 +215,34 @@ def load_review_acquisition_plan(path: Path) -> ReviewAcquisitionPlan:
         return ReviewAcquisitionPlan(entries=entries, **payload)
     except (KeyError, TypeError) as exc:
         raise ValueError("invalid triage review acquisition plan") from exc
+
+
+def _review_surface(file: str) -> str:
+    normalized = file.replace("\\", "/").lower()
+    while normalized.startswith("./"):
+        normalized = normalized[2:]
+    parts = normalized.split("/")
+    name = parts[-1]
+    if (
+        normalized.startswith(".github/")
+        or any(part in {"doc", "docs", "example", "examples", "test", "tests", "spec"}
+               for part in parts[:-1])
+        or any(part.endswith("-test") or part.endswith("_test") for part in parts[:-1])
+        or name.startswith(("readme", "changelog"))
+    ):
+        return "supporting"
+    if (
+        name in {"dockerfile", "compose.yml", "compose.yaml", "docker-compose.yml",
+                 "docker-compose.yaml"}
+        or name.endswith((".yml", ".yaml", ".toml", ".ini", ".cfg", ".properties"))
+        or name.startswith(".yarnrc")
+    ):
+        return "deployment"
+    return "production"
+
+
+def _surface_rank(surface: str) -> int:
+    return {"production": 0, "deployment": 1, "supporting": 2}.get(surface, 3)
 
 
 def render_review_packet(
@@ -285,6 +326,7 @@ def render_review_packet(
             f"- Snapshot: `{repo.commit_hash}`",
             f"- Rule: `{candidate.rule_id}`",
             f"- Prior human labels for rule: {candidate.prior_human_labels_for_rule}",
+            f"- Review surface: `{candidate.surface}`",
             f"- Source: `{candidate.file}:{candidate.line}`",
             "",
             "````text",

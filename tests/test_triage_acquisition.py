@@ -39,6 +39,10 @@ def _finding(finding_id: int, repo_id: str) -> Finding:
     )
 
 
+def _finding_at(finding_id: int, repo_id: str, file: str) -> Finding:
+    return _finding(finding_id, repo_id).model_copy(update={"file": file})
+
+
 def _feature(
     finding_id: int,
     engagement: str,
@@ -147,6 +151,7 @@ def test_acquisition_json_exposes_policy_and_not_candidate_scores(
 
     assert payload["entries"][0]["finding_id"] == 1
     assert payload["entries"][0]["selection_hash"]
+    assert payload["entries"][0]["surface"] == "production"
     assert "score" not in payload["entries"][0]
     assert payload["evaluation_eligible"] is False
 
@@ -193,6 +198,44 @@ def test_acquisition_excludes_saturated_rule_families(tmp_config, monkeypatch):
     assert [item.rule_id for item in plan.entries] == ["new-rule"]
     assert plan.available_unassessed == 2
     assert plan.eligible_after_rule_cap == 1
+
+
+def test_acquisition_prioritizes_production_without_using_outcomes(
+    tmp_config, monkeypatch
+):
+    monkeypatch.setattr(
+        "repoauditor.triage.acquisition.db.list_triage_features",
+        lambda config=None: [
+            _feature(1, "repo-a", "ci-rule"),
+            _feature(2, "repo-b", "production-rule"),
+            _feature(3, "repo-b", "deployment-rule"),
+        ],
+    )
+    monkeypatch.setattr(
+        "repoauditor.triage.acquisition.db.list_triage_labels",
+        lambda config=None: [],
+    )
+    monkeypatch.setattr(
+        "repoauditor.triage.acquisition.db.list_triage_assessments",
+        lambda repo_id=None, config=None: [],
+    )
+    monkeypatch.setattr(
+        "repoauditor.triage.acquisition.db.list_findings",
+        lambda repo_id=None, config=None: [
+            _finding_at(1, "repo-a", ".github/workflows/test.yml"),
+            _finding_at(2, "repo-b", "src/service.py"),
+            _finding_at(3, "repo-b", "Dockerfile"),
+        ],
+    )
+
+    plan = build_review_acquisition_plan(
+        tmp_config, limit=3, max_per_engagement=3
+    )
+
+    assert [item.surface for item in plan.entries] == [
+        "production", "deployment", "supporting",
+    ]
+    assert [item.finding_id for item in plan.entries] == [2, 3, 1]
 
 
 def test_review_packet_anchors_frozen_candidate_to_exact_snapshot(

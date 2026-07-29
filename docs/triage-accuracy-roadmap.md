@@ -107,6 +107,16 @@ review the cited code, retain abstentions, and declare coverage dimensions thems
 finding/feature identity and resolves to exactly one immutable snapshot, then renders
 bounded source context and a disposition-neutral command template.
 
+The verified-scanner OPT-001 continuation is frozen separately in
+[`triage-review-acquisition-2026-07-29-v2.json`](triage-review-acquisition-2026-07-29-v2.json).
+It expands the unassessed pool with five previously selected CVE-positive vulnerable
+snapshots, then prioritizes production source ahead of deployment/configuration and
+supporting surfaces. The selected 11-entry tranche contains eight production and three
+deployment candidates. Path class controls review order only; it is not a validity feature,
+and scanner/advisory evidence still never becomes an automatic label. The corresponding
+scanner receipt is
+[`cve-positive-semgrep-acquisition-2026-07-29-v2.json`](cve-positive-semgrep-acquisition-2026-07-29-v2.json).
+
 ## Phase 4 — Validation maturity
 
 At 40 labels, enable descriptive threshold tables. At 40 labels and 8 evaluation families,
