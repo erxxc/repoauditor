@@ -133,6 +133,16 @@ reviewable target label. The negative result and SARIF digest are retained in
 `docs/codecov-node-positive-acquisition-2026-07-29.json`; the entry was not removed or
 replaced after observing the miss.
 
+After the deterministic-scanner deployment gate was corrected, five already-frozen
+vulnerable snapshots were rescanned through the production SAST adapter with the verified
+pinned Semgrep configuration. The adapter's retained SARIF boundary canonicalizes rule IDs
+and names and rewrites artifact URIs relative to each immutable snapshot; temporary
+configuration paths and host paths are not acquisition identities. The five complete runs
+scanned 826 targets and ingested 79 unassessed candidates. Exact commits, counts, scanner
+configuration, and SARIF digests are recorded in
+`docs/cve-positive-semgrep-acquisition-2026-07-29-v2.json`. This is training acquisition,
+not evaluation evidence or ground truth, and it added no automatic labels.
+
 CI materializes these snapshots in the scheduled/manual `public corpus cache` workflow. The
 cache key hashes this materializer and all acquisition metadata; an exact hit is reused and a
 miss reacquires every pinned commit. No fallback key is used, acquired code is never executed,

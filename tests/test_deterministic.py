@@ -20,6 +20,7 @@ from repoauditor.detect import run_ensemble
 from repoauditor.detect.ensemble import CandidateFinding
 from repoauditor.detect.deterministic import SastAdapter, ScaAdapter, SecretsAdapter
 from repoauditor.detect.deterministic.execution import ScannerExecution
+from repoauditor.detect.deterministic.sast_adapter import _normalized_sarif
 from repoauditor.detect.deterministic.secrets_adapter import _redact
 from repoauditor.ingest import ingest_repo
 from repoauditor.map import recover_architecture
@@ -61,6 +62,63 @@ def test_sast_adapter_parses_semgrep_sarif_into_candidates():
     assert c.severity is Severity.HIGH          # security-severity 8.5 -> high
     assert "os.popen" in c.citation_snippet
     assert "CWE-78" in (c.rationale or "")
+
+
+def test_semgrep_artifact_normalizes_config_prefix_and_absolute_paths(tmp_path):
+    snapshot = tmp_path / "snapshot"
+    source = snapshot / "jwt" / "client.py"
+    source.parent.mkdir(parents=True)
+    source.write_text("fetch(url)\n")
+    canonical = (
+        "python.lang.security.audit.dynamic-urllib-use-detected."
+        "dynamic-urllib-use-detected"
+    )
+    prefixed = f"private.var.folders.temporary.{canonical}"
+    documented = "terraform.aws.security.synthetic-rule.synthetic-rule"
+    documented_prefixed = f"private.var.folders.temporary.{documented}"
+    document = {
+        "runs": [{
+            "tool": {"driver": {
+                "name": "semgrep",
+                "rules": [{
+                    "id": prefixed,
+                    "name": prefixed,
+                    "shortDescription": {"text": f"Semgrep Finding: {prefixed}"},
+                }, {
+                    "id": documented_prefixed,
+                    "name": documented_prefixed,
+                    "helpUri": f"https://semgrep.dev/r/{documented}",
+                }],
+            }},
+            "results": [{
+                "ruleId": prefixed,
+                "locations": [{"physicalLocation": {
+                    "artifactLocation": {"uri": str(source)},
+                }}],
+                "message": {"text": f"Syntax note for {source}"},
+            }, {
+                "ruleId": documented_prefixed,
+            }],
+        }],
+    }
+
+    normalized = json.loads(_normalized_sarif(json.dumps(document), snapshot))
+
+    assert normalized["runs"][0]["tool"]["driver"]["rules"][0]["id"] == canonical
+    assert normalized["runs"][0]["tool"]["driver"]["rules"][0]["name"] == canonical
+    assert normalized["runs"][0]["tool"]["driver"]["rules"][0]["shortDescription"] == {
+        "text": f"Semgrep Finding: {canonical}"
+    }
+    assert normalized["runs"][0]["tool"]["driver"]["rules"][1]["id"] == documented
+    assert normalized["runs"][0]["tool"]["driver"]["rules"][1]["name"] == documented
+    result = normalized["runs"][0]["results"][0]
+    assert result["ruleId"] == canonical
+    assert result["message"]["text"] == "Syntax note for jwt/client.py"
+    assert (
+        result["locations"][0]["physicalLocation"]["artifactLocation"]["uri"]
+        == "jwt/client.py"
+    )
+    assert normalized["runs"][0]["results"][1]["ruleId"] == documented
 
 
 @pytest.mark.integration

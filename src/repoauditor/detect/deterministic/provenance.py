@@ -9,6 +9,7 @@ import subprocess
 import tempfile
 from contextlib import contextmanager
 from datetime import UTC, datetime
+from functools import lru_cache
 from pathlib import Path
 from typing import Iterator
 
@@ -46,6 +47,22 @@ def tool_version(binary: str, *arguments: str, timeout_seconds: int = 10) -> str
     return value[0][:200] if value else None
 
 
+@lru_cache(maxsize=1)
+def pinned_semgrep_rule_ids() -> tuple[str, ...]:
+    """Return longest-first canonical ids from the vendored ruleset."""
+    with gzip.open(SEMGREP_RULESET_ARCHIVE, "rt", encoding="utf-8") as source:
+        ids = re.findall(r"(?m)^\s*- id:\s*(\S+)\s*$", source.read())
+    return tuple(sorted(set(ids), key=lambda value: (-len(value), value)))
+
+
+def canonical_semgrep_rule_id(rule_id: str) -> str:
+    """Remove Semgrep's host/config-path prefix from a vendored registry rule id."""
+    for canonical in pinned_semgrep_rule_ids():
+        if rule_id == canonical or rule_id.endswith(f".{canonical}"):
+            return canonical
+    return rule_id
+
+
 @contextmanager
 def pinned_semgrep_configuration(_timeout_seconds: int) -> Iterator[tuple[Path, int]]:
     """Materialize the vendored registry payload and reject package corruption."""
@@ -60,8 +77,7 @@ def pinned_semgrep_configuration(_timeout_seconds: int) -> Iterator[tuple[Path, 
             "Semgrep ruleset digest changed: "
             f"expected {SEMGREP_RULESET_SHA256}, received {digest}"
         )
-    text = payload.decode("utf-8")
-    rule_count = len(re.findall(r"(?m)^\s*- id:", text))
+    rule_count = len(re.findall(rb"(?m)^\s*- id:", payload))
     if rule_count < 1:
         raise RuntimeError("pinned Semgrep ruleset contains no rules")
     with tempfile.NamedTemporaryFile(suffix=".yml") as handle:

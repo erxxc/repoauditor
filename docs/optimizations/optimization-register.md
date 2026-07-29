@@ -55,6 +55,18 @@ I. Evaluation and classifier maturity
       also corrected OSV-Scanner v2 invocation, hardened malformed-output and exit handling
       across SCA/secrets adapters, and exposes every scanner status. Its final nine-fixture
       matrix has no failed, partial, unavailable, or unexplained-zero run — DoD impact: none.
+      OPT-001 execution has now resumed against five already-frozen vulnerable snapshots.
+      The verified pinned Semgrep run scanned 826 targets and ingested 79 unassessed
+      candidates; its immutable receipt is
+      [`cve-positive-semgrep-acquisition-2026-07-29-v2.json`](../cve-positive-semgrep-acquisition-2026-07-29-v2.json).
+      The adapter now normalizes retained SARIF rule IDs, rule names, and artifact URIs at
+      the ingestion boundary so temporary configuration prefixes and host paths cannot
+      fragment priors or leak into review artifacts. The v2 acquisition selector prioritizes
+      production source, then deployment/configuration source, before supporting examples,
+      docs, tests, and CI without using scores or outcomes. Its frozen
+      [`11-entry review tranche`](../triage-review-acquisition-2026-07-29-v2.json) contains
+      eight production and three deployment candidates. Human adjudication remains the next
+      gate; no automatic labels were added — DoD impact: none.
 
    B. OPT-002 — Family-aware bootstrap ranges — deferred — owner: ML evaluation — source:
       `../triage-accuracy-roadmap.md` — activate after adequate held-out family breadth and
