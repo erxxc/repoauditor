@@ -1,0 +1,30 @@
+{
+  "available_unassessed": 66,
+  "eligible_after_rule_cap": 47,
+  "entries": [
+    {"engagement":"snapshot-0dd9803e","file":"examples/session/index.js","finding_id":98,"fingerprint":"bb6bfdcf3bf8a53c","line":19,"prior_human_labels_for_rule":0,"rule_id":"javascript.express.security.audit.express-session-hardcoded-secret.express-session-hardcoded-secret","selection_hash":"587443b66630f37fd958a4c450a348e3bf278b8218457eba73ec42765264d4ce","title":"javascript.express.security.audit.express-session-hardcoded-secret.express-session-hardcoded-secret"},
+    {"engagement":"snapshot-1fe44ac8","file":".github/dependabot.yml","finding_id":146,"fingerprint":"a0c407f48faad440","line":3,"prior_human_labels_for_rule":0,"rule_id":"package_managers.dependabot.dependabot-missing-cooldown.dependabot-missing-cooldown","selection_hash":"805dc7de19f0e633b8637657614b855187301ac44f422c5ed7b0288ac3b2bd55","title":"package_managers.dependabot.dependabot-missing-cooldown.dependabot-missing-cooldown"},
+    {"engagement":"snapshot-46bcd84b","file":"pyproject.toml","finding_id":68,"fingerprint":"2506f477c4b9f4a7","line":103,"prior_human_labels_for_rule":0,"rule_id":"package_managers.uv.uv-missing-dependency-cooldown.uv-missing-dependency-cooldown","selection_hash":"a230295a42f3676a1492783dc7d9b6febd05ebb8e4aa0ff98783d54b4d21b757","title":"package_managers.uv.uv-missing-dependency-cooldown.uv-missing-dependency-cooldown"},
+    {"engagement":"snapshot-0dd9803e","file":"examples/search/index.js","finding_id":97,"fingerprint":"6055de659069c9a4","line":57,"prior_human_labels_for_rule":0,"rule_id":"javascript.lang.security.audit.unsafe-formatstring.unsafe-formatstring","selection_hash":"49cb0453ca348be5ee7afa38f5478fb39e54a489688ddae6c6fa35a014570498","title":"javascript.lang.security.audit.unsafe-formatstring.unsafe-formatstring"},
+    {"engagement":"snapshot-1fe44ac8","file":"javalin/src/main/java/io/javalin/http/Cookie.kt","finding_id":160,"fingerprint":"f38063fd37de45ef","line":80,"prior_human_labels_for_rule":1,"rule_id":"kotlin.lang.security.cookie-missing-secure-flag.cookie-missing-secure-flag","selection_hash":"214e87eeeed0fd92b021eefa9bf3ee92350b65e2ea5bd3ff7b7dd1d4399786c7","title":"kotlin.lang.security.cookie-missing-secure-flag.cookie-missing-secure-flag"},
+    {"engagement":"snapshot-46bcd84b","file":"examples/javascript/js_example/templates/jquery.html","finding_id":81,"fingerprint":"2b0bc4b0c10b027a","line":10,"prior_human_labels_for_rule":2,"rule_id":"html.security.audit.missing-integrity.missing-integrity","selection_hash":"125707d0b0b7066f94fc96fefefd0ef8db25428f2c8b33916e11f876d4fca9a3","title":"html.security.audit.missing-integrity.missing-integrity"},
+    {"engagement":"snapshot-0dd9803e","file":"examples/session/index.js","finding_id":115,"fingerprint":"b209b04ff5aaac39","line":16,"prior_human_labels_for_rule":0,"rule_id":"javascript.express.security.audit.express-cookie-settings.express-cookie-session-no-httponly","selection_hash":"5cb5aae6e816606d3ace6b8f55904ffb5bdf8b72aa282d3b998bf1d69d8cfafd","title":"javascript.express.security.audit.express-cookie-settings.express-cookie-session-no-httponly"},
+    {"engagement":"snapshot-1fe44ac8","file":".github/dependabot.yml","finding_id":147,"fingerprint":"2431bf83607d3c5b","line":20,"prior_human_labels_for_rule":0,"rule_id":"package_managers.dependabot.dependabot-missing-cooldown.dependabot-missing-cooldown","selection_hash":"f1b843eabbee6d0800791f2af9e5719f016ab8ba6906f2e555c2e02cad3fe125","title":"package_managers.dependabot.dependabot-missing-cooldown.dependabot-missing-cooldown"},
+    {"engagement":"snapshot-46bcd84b","file":"examples/tutorial/flaskr/templates/blog/update.html","finding_id":77,"fingerprint":"fce80061508460b5","line":8,"prior_human_labels_for_rule":2,"rule_id":"python.django.security.django-no-csrf-token.django-no-csrf-token","selection_hash":"4a6fe0ef31641e57db5bcd1623f93a668e09013a6490dde6a6bfd0889ae56dfb","title":"python.django.security.django-no-csrf-token.django-no-csrf-token"},
+    {"engagement":"snapshot-0dd9803e","file":"examples/cookie-sessions/index.js","finding_id":122,"fingerprint":"cff2c115046a67e6","line":13,"prior_human_labels_for_rule":0,"rule_id":"javascript.express.security.audit.express-cookie-settings.express-cookie-session-no-expires","selection_hash":"16e81743c2a21ebe2ca8ef4aae767a7d55ad6c894fa22025690356da08af81fe","title":"javascript.express.security.audit.express-cookie-settings.express-cookie-session-no-expires"},
+    {"engagement":"snapshot-46bcd84b","file":"examples/tutorial/flaskr/templates/auth/register.html","finding_id":74,"fingerprint":"c13b06552f0c6f3d","line":8,"prior_human_labels_for_rule":2,"rule_id":"python.django.security.django-no-csrf-token.django-no-csrf-token","selection_hash":"4fb2d96d77e78f21f6834091bd2b36911d0645b40dab8264aeb8820c64932dac","title":"python.django.security.django-no-csrf-token.django-no-csrf-token"}
+  ],
+  "evaluation_eligible": false,
+  "existing_human_labels": 58,
+  "limitations": [
+    "Training acquisition only; adaptive rule-coverage selection is not an evaluation holdout.",
+    "Rule identifiers diversify scanner families but do not establish vulnerability mechanisms.",
+    "Coverage dimensions must be declared by the analyst after reviewing code evidence.",
+    "Uncertain cases must remain explicit abstentions."
+  ],
+  "max_per_engagement": 4,
+  "max_prior_human_labels_per_rule": 5,
+  "requested_limit": 32,
+  "schema_version": "triage-review-acquisition-v1",
+  "selection_policy": "Round-robin across engagements; within each engagement, least-reviewed rule families first with stable SHA-256 tie-breaking, taking one candidate per rule before repeats. Rules above the disclosed prior-human-label cap are excluded. Candidate scores, predicted classes, severity, verdicts, and code outcomes are excluded."
+}

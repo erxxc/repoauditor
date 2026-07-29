@@ -12,6 +12,12 @@ Bayesian shrinkage for per-rule cold-start P(actionable).
 """
 
 from .classifier import TriageClassifier, TriageOutcome, triage_repo
+from .acquisition import (
+    ReviewAcquisitionCandidate,
+    ReviewAcquisitionPlan,
+    build_review_acquisition_plan,
+    render_review_acquisition_plan,
+)
 from .collection import CollectionStatus, collection_status, render_collection_status
 from .features import FEATURE_NAMES, SarifFinding, extract_feature_vector, load_sarif
 from .labels import DerivedLabelSummary, assess_finding, derive_labels, label_finding
@@ -21,17 +27,21 @@ __all__ = [
     "CollectionStatus",
     "DerivedLabelSummary",
     "FEATURE_NAMES",
+    "ReviewAcquisitionCandidate",
+    "ReviewAcquisitionPlan",
     "SarifFinding",
     "TriageClassifier",
     "TriageOutcome",
     "ThresholdStats",
     "assess_finding",
+    "build_review_acquisition_plan",
     "collection_status",
     "derive_labels",
     "extract_feature_vector",
     "label_finding",
     "load_sarif",
     "render_collection_status",
+    "render_review_acquisition_plan",
     "render_threshold_stats",
     "threshold_stats",
     "triage_repo",

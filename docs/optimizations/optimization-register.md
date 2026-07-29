@@ -19,7 +19,10 @@ I. Evaluation and classifier maturity
    A. OPT-001 — Grow the reviewed label cohort to 100–200 with broader positive mechanisms
       — in progress/evidence-gated — owner: AppSec adjudication — source:
       `../triage-accuracy-roadmap.md` and `../project-priorities.md` — activate after MVP
-      items are closed; preserve abstentions and frozen holdouts — DoD impact: none.
+      items are closed; preserve abstentions and frozen holdouts. The reusable
+      `triage-acquisition-plan` command and frozen 2026-07-29 tranche prioritize
+      least-reviewed rule families without inferring mechanisms or candidate outcomes;
+      human adjudication remains outstanding — DoD impact: none.
 
    B. OPT-002 — Family-aware bootstrap ranges — deferred — owner: ML evaluation — source:
       `../triage-accuracy-roadmap.md` — activate after adequate held-out family breadth and

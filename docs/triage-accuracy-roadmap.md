@@ -97,6 +97,12 @@ Collection mechanism now available:
 The activation floor was later met through 58 usable manual labels across eight genuine
 engagements. Positive breadth remains narrow and does not establish broad classifier
 generalization. The preferred 100–200-label maturity target is OPT-001, not a POC blocker.
+The next training-acquisition tranche is frozen in
+[`triage-review-acquisition-2026-07-29.json`](triage-review-acquisition-2026-07-29.json).
+It selects least-reviewed rule families across engagements with stable hashes, excludes
+families above the disclosed prior-label cap, and never uses candidate scores, predicted
+classes, severity, verdicts, or code outcomes. It is not evaluation-eligible. Analysts must
+review the cited code, retain abstentions, and declare coverage dimensions themselves.
 
 ## Phase 4 — Validation maturity
 
