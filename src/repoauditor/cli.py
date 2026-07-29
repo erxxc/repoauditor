@@ -278,11 +278,41 @@ def _progress(label: str):
         stream.flush()
 
 
-def _run_step(stage: str, fn):
+def _run_step(
+    stage: str,
+    fn,
+    *,
+    pipeline_id: int | None = None,
+    config=None,
+    metadata=lambda value: ({}, []),
+):
     """Run one orchestrated stage and turn its exception into an attributable CLI error."""
+    if pipeline_id is not None:
+        db.start_stage_run(pipeline_id, stage, config)
     try:
-        return fn()
+        value = fn()
+        if pipeline_id is not None:
+            summary, artifacts = metadata(value)
+            usage = db.summarize_model_usage(pipeline_id, config, stage=stage)
+            summary["model_usage"] = usage if usage["calls"] else "not recorded"
+            db.finish_stage_run(
+                pipeline_id,
+                stage,
+                RunStatus.COMPLETED,
+                summary=summary,
+                artifacts=artifacts,
+                config=config,
+            )
+        return value
     except typer.Exit as exc:
+        if pipeline_id is not None:
+            db.finish_stage_run(
+                pipeline_id,
+                stage,
+                RunStatus.FAILED,
+                failure_detail=f"stage exited with code {exc.exit_code}",
+                config=config,
+            )
         typer.secho(
             f"pipeline failed at {stage}: stage exited with code {exc.exit_code}",
             fg=typer.colors.RED,
@@ -290,6 +320,14 @@ def _run_step(stage: str, fn):
         )
         raise
     except Exception as exc:
+        if pipeline_id is not None:
+            db.finish_stage_run(
+                pipeline_id,
+                stage,
+                RunStatus.FAILED,
+                failure_detail=f"{type(exc).__name__}: {exc}"[:4000],
+                config=config,
+            )
         if _debug_enabled.get():
             raise
         typer.secho(
@@ -298,6 +336,141 @@ def _run_step(stage: str, fn):
             err=True,
         )
         raise typer.Exit(code=1) from exc
+
+
+def _ingest_run_metadata(value):
+    return (
+        {"repo_id": value.repo_id, "commit_hash": value.commit},
+        [str(value.snapshot_path)],
+    )
+
+
+def _map_run_metadata(value, config):
+    repo_id = getattr(value, "repo_id", None)
+    commit = getattr(value, "commit", None)
+    artifact = (
+        architecture_artifact_path(config.paths.data_dir, repo_id, commit)
+        if repo_id and commit
+        else None
+    )
+    return (
+        {
+            "entry_points": len(getattr(value, "entry_points", []) or []),
+            "trust_boundaries": len(getattr(value, "trust_boundaries", []) or []),
+            "data_stores": len(getattr(value, "data_stores", []) or []),
+            "integrations": len(getattr(value, "integrations", []) or []),
+            "llm": {
+                "provider": config.llm.provider,
+                "model": config.model.name,
+                "prompt_versions": {"map": MAP_PROMPT_VERSION},
+            },
+            "artifact": str(artifact) if artifact else None,
+        },
+        [str(artifact)] if artifact else [],
+    )
+
+
+def _detect_run_metadata(value, config, scanner_coverage=None):
+    projection = getattr(value, "projection", None)
+    source_counts = getattr(value, "source_counts", {}) or {}
+    summary = {
+        **detection_metrics(value, source_counts),
+        "region_plan": ({
+            "source_files": projection.source_files,
+            "unbounded_base_calls": projection.unbounded_base_calls,
+            "planned_regions": projection.planned_regions,
+            "planned_base_calls": projection.planned_base_calls,
+            "omitted_regions": projection.omitted_regions,
+            "selected": value.selected_regions,
+            "completed_calls": value.completed_region_calls,
+            "reused_completed_calls": value.skipped_completed_region_calls,
+        } if projection is not None else None),
+        "semgrep_status": getattr(value, "semgrep_status", None),
+        "scanner_statuses": getattr(value, "scanner_statuses", {}),
+        "scanner_failures": getattr(value, "scanner_failures", {}),
+        "llm": {
+            "provider": config.llm.provider,
+            "model": config.model.name,
+            "prompt_versions": {
+                **LENS_PROMPT_VERSIONS,
+                "citation_integrity": CITATION_INTEGRITY_VERSION,
+            },
+        },
+    }
+    if scanner_coverage is not None:
+        summary["scanner_coverage"] = scanner_coverage
+    sarif_path = getattr(value, "sarif_path", None)
+    return summary, [str(sarif_path)] if sarif_path else []
+
+
+def _triage_run_metadata(value):
+    return ({
+        "real_labels": getattr(value, "n_real_labels", None),
+        "ranked": len(getattr(value, "ranked", []) or []),
+        "action_threshold": getattr(value, "action_threshold", None),
+        "synthetic_share": getattr(value, "synthetic_share", None),
+        "synthetic_dropped": getattr(value, "synthetic_dropped", None),
+        "suppressed": getattr(value, "n_suppressed", None),
+        "model": getattr(value, "model_name", None),
+        "evaluations": [
+            {
+                "model": evaluation.model_name,
+                "eval_on": evaluation.eval_on,
+                "brier": evaluation.brier,
+                "average_precision": evaluation.average_precision,
+                "n_eval": evaluation.n_eval,
+                "split_strategy": evaluation.split_strategy,
+                "split_detail": evaluation.split_detail,
+            }
+            for evaluation in (getattr(value, "evaluations", None) or [])
+        ],
+    }, [])
+
+
+def _falsify_run_metadata(value, config, *, backlog_before: int | None = None):
+    summary = {
+        **falsification_metrics(value, getattr(value, "deferred_count", 0)),
+        "llm": {
+            "provider": config.llm.provider,
+            "model": config.model.name,
+            "prompt_versions": {
+                "falsify": FALSIFY_PROMPT_VERSION,
+                "falsify_critique": CRITIQUE_PROMPT_VERSION,
+                "falsify_context": FALSIFY_CONTEXT_VERSION,
+            },
+        },
+    }
+    if backlog_before is not None:
+        summary["backlog_before"] = backlog_before
+    return summary, []
+
+
+def _normalize_run_metadata(value, config):
+    return ({
+        **normalization_metrics(value),
+        "llm": {
+            "provider": config.llm.provider,
+            "model": config.model.name,
+            "prompt_versions": {"normalize": NORMALIZE_PROMPT_VERSION},
+        },
+    }, [])
+
+
+def _quantify_run_metadata(value, *, trials: int, seed: int, record_audit: bool):
+    path, scenario_count = value
+    return ({
+        "scenario_count": scenario_count,
+        "trials": trials,
+        "seed": seed,
+        "record_audit": record_audit,
+    }, [str(path)])
+
+
+def _report_run_metadata(value, *, mode: ReportMode):
+    return ({
+        "mode": mode.value,
+        "output_paths": [str(path) for path in value],
+    }, [str(path) for path in value])
 
 
 def _metered_operation(
@@ -310,6 +483,7 @@ def _metered_operation(
     commit_hash: str | None = None,
     success=lambda value: True,
     failure_detail=lambda value: None,
+    metadata=lambda value: ({}, []),
 ):
     """Run one standalone paid operation inside a durable, fresh usage budget."""
     db.init_db(config)
@@ -322,6 +496,9 @@ def _metered_operation(
     try:
         with model_usage_scope(pipeline.id):
             value = fn()
+        usage = db.summarize_model_usage(pipeline.id, config, stage=stage)
+        summary, artifacts = metadata(value)
+        summary["model_usage"] = usage if usage["calls"] else "not recorded"
     except BaseException as exc:
         detail = f"{type(exc).__name__}: {exc}"[:4000]
         db.finish_stage_run(
@@ -334,20 +511,19 @@ def _metered_operation(
         )
         raise
 
-    usage = db.summarize_model_usage(pipeline.id, config, stage=stage)
-    summary = {"model_usage": usage if usage["calls"] else "not recorded"}
     if success(value):
         db.finish_stage_run(
-            pipeline.id, stage, RunStatus.COMPLETED, summary=summary, config=config
+            pipeline.id, stage, RunStatus.COMPLETED, summary=summary,
+            artifacts=artifacts, config=config,
         )
         db.finish_pipeline_run(
-            pipeline.id, RunStatus.COMPLETED, config=config
+            pipeline.id, RunStatus.COMPLETED, artifacts=artifacts, config=config
         )
     else:
         detail = str(failure_detail(value) or "operation reported failure")[:4000]
         db.finish_stage_run(
             pipeline.id, stage, RunStatus.FAILED, summary=summary,
-            failure_detail=detail, config=config,
+            artifacts=artifacts, failure_detail=detail, config=config,
         )
         db.finish_pipeline_run(
             pipeline.id, RunStatus.FAILED, failed_stage=stage,
@@ -356,7 +532,10 @@ def _metered_operation(
     return value, pipeline
 
 
-def _metered_repo_stage(repo_id: str, stage: str, fn, config):
+def _metered_repo_stage(
+    repo_id: str, stage: str, fn, config,
+    *, metadata=lambda value: ({}, []),
+):
     """Resolve immutable repo provenance, then meter one standalone stage."""
     db.init_db(config)
     repo = db.get_latest_ingested_repo(repo_id, config)
@@ -368,6 +547,7 @@ def _metered_repo_stage(repo_id: str, stage: str, fn, config):
     return _metered_operation(
         repo.source, stage, fn, config,
         repo_id=repo.repo_id, commit_hash=repo.commit_hash,
+        metadata=metadata,
     )
 
 
@@ -799,11 +979,12 @@ def demo(
         with model_usage_scope(pipeline.id):
             if continue_existing:
                 artifacts, identity = _continue_demo(
-                    config, expectations, trials, seed, non_interactive
+                    config, expectations, trials, seed, non_interactive, pipeline.id
                 )
             else:
                 artifacts, identity = _execute_demo(
-                    config, snapshot, expectations, trials, seed, non_interactive
+                    config, snapshot, expectations, trials, seed, non_interactive,
+                    pipeline.id,
                 )
         if identity is not None:
             db.update_pipeline_run_identity(
@@ -829,7 +1010,7 @@ def demo(
 
 def _execute_demo(
     config, snapshot: Path, expectations: Path, trials: int, seed: int,
-    non_interactive: bool,
+    non_interactive: bool, pipeline_id: int,
 ) -> tuple[list[str], object | None]:
     """Execute the guided workflow inside demo's durable model-usage scope."""
     typer.echo(
@@ -843,23 +1024,55 @@ def _execute_demo(
         raise typer.Exit(code=1)
     typer.echo(f"Model ready: {probe.provider}/{probe.model}")
 
-    with _stage_timing("ingest") as timing, _progress("ingest"):
-        ingested = ingest_repo(str(snapshot), config, repo_id=_DEMO_REPO_ID)
-        manifests = snapshot_manifests(
-            ingested.snapshot_path, ingested.repo_id, ingested.commit
+    def ingest_demo():
+        with _stage_timing("ingest") as timing, _progress("ingest"):
+            result = ingest_repo(str(snapshot), config, repo_id=_DEMO_REPO_ID)
+            manifests = snapshot_manifests(
+                result.snapshot_path, result.repo_id, result.commit
+            )
+        _stage_summary(
+            f"ingested demo. repo-id: {result.repo_id}; commit: {result.commit}; "
+            f"manifests={len(manifests.manifests)}", timing,
         )
-    _stage_summary(
-        f"ingested demo. repo-id: {ingested.repo_id}; commit: {ingested.commit}; "
-        f"manifests={len(manifests.manifests)}", timing,
+        return result
+
+    ingested = _run_step(
+        "ingest",
+        ingest_demo,
+        pipeline_id=pipeline_id,
+        config=config,
+        metadata=_ingest_run_metadata,
     )
-    _run_step("map", lambda: _map_stage(_DEMO_REPO_ID, config))
-    detection = _run_step("detect", lambda: _detect_stage(_DEMO_REPO_ID, config))
+    db.update_pipeline_run_identity(
+        pipeline_id, ingested.repo_id, ingested.commit, config
+    )
+    _run_step(
+        "map",
+        lambda: _map_stage(_DEMO_REPO_ID, config),
+        pipeline_id=pipeline_id,
+        config=config,
+        metadata=lambda value: _map_run_metadata(value, config),
+    )
+    detection = _run_step(
+        "detect",
+        lambda: _detect_stage(_DEMO_REPO_ID, config),
+        pipeline_id=pipeline_id,
+        config=config,
+        metadata=lambda value: _detect_run_metadata(value, config),
+    )
     _run_step(
         "triage",
         lambda: _triage_stage(_DEMO_REPO_ID, config, sarif=detection.sarif_path),
+        pipeline_id=pipeline_id,
+        config=config,
+        metadata=_triage_run_metadata,
     )
     falsification = _run_step(
-        "falsify", lambda: _falsify_stage(_DEMO_REPO_ID, config)
+        "falsify",
+        lambda: _falsify_stage(_DEMO_REPO_ID, config),
+        pipeline_id=pipeline_id,
+        config=config,
+        metadata=lambda value: _falsify_run_metadata(value, config),
     )
     if falsification.deferred_count:
         typer.echo(
@@ -869,14 +1082,21 @@ def _execute_demo(
             "`repoauditor demo --continue` to complete review, reports, and scorecards."
         )
         return [str(ingested.snapshot_path)], ingested
-    _run_step("normalize", lambda: _normalize_stage(_DEMO_REPO_ID, config))
+    _run_step(
+        "normalize",
+        lambda: _normalize_stage(_DEMO_REPO_ID, config),
+        pipeline_id=pipeline_id,
+        config=config,
+        metadata=lambda value: _normalize_run_metadata(value, config),
+    )
     return _finish_demo(
-        config, expectations, trials, seed, non_interactive, ingested
+        config, expectations, trials, seed, non_interactive, ingested, pipeline_id
     )
 
 
 def _continue_demo(
     config, expectations: Path, trials: int, seed: int, non_interactive: bool,
+    pipeline_id: int,
 ) -> tuple[list[str], object | None]:
     """Continue only the demo checkpoint/artifact path; never repeat map or detect."""
     repo = db.get_latest_ingested_repo(_DEMO_REPO_ID, config)
@@ -897,16 +1117,27 @@ def _continue_demo(
     )
     typer.echo("Continuing the existing demo without repeating ingest, map, or detect.")
     return _finish_demo(
-        config, expectations, trials, seed, non_interactive, identity
+        config, expectations, trials, seed, non_interactive, identity, pipeline_id
     )
 
 
 def _finish_demo(
     config, expectations: Path, trials: int, seed: int, non_interactive: bool,
-    identity,
+    identity, pipeline_id: int,
 ) -> tuple[list[str], object | None]:
     """Handle the review checkpoint and generate every final demo artifact."""
-    _run_step("review checkpoint", lambda: raise_review_requests(_DEMO_REPO_ID, config))
+    _run_step(
+        "review checkpoint",
+        lambda: raise_review_requests(
+            _DEMO_REPO_ID, config, sampling_run_id=pipeline_id
+        ),
+        pipeline_id=pipeline_id,
+        config=config,
+        metadata=lambda value: ({
+            "requests_raised_or_refreshed": len(value),
+            "open_requests": len(open_review_requests(_DEMO_REPO_ID, config)),
+        }, []),
+    )
     requests = open_review_requests(_DEMO_REPO_ID, config)
     if requests:
         typer.echo(render_open_requests(_DEMO_REPO_ID, config))
@@ -936,11 +1167,21 @@ def _finish_demo(
         lambda: _quantify_stage(
             _DEMO_REPO_ID, config, trials=trials, seed=seed, record_audit=True
         ),
+        pipeline_id=pipeline_id,
+        config=config,
+        metadata=lambda value: _quantify_run_metadata(
+            value, trials=trials, seed=seed, record_audit=True
+        ),
     )
     engineering = _run_step(
         "engineering report",
         lambda: _report_stage(
             _DEMO_REPO_ID, config, ReportMode.ENGINEERING, print_report=False
+        ),
+        pipeline_id=pipeline_id,
+        config=config,
+        metadata=lambda value: _report_run_metadata(
+            value, mode=ReportMode.ENGINEERING
         ),
     )
     memo = _run_step(
@@ -948,6 +1189,11 @@ def _finish_demo(
         lambda: _report_stage(
             _DEMO_REPO_ID, config, ReportMode.MEMO,
             quantification=quantification, print_report=False,
+        ),
+        pipeline_id=pipeline_id,
+        config=config,
+        metadata=lambda value: _report_run_metadata(
+            value, mode=ReportMode.MEMO
         ),
     )
     scorecard = score_demo(_DEMO_REPO_ID, expectations, config)
@@ -1024,7 +1270,8 @@ def map(repo_id: str = typer.Argument(..., help="Ingested repo id.")) -> None:
     """Recover the architecture/trust-boundary map (runs before detection)."""
     config = get_config()
     _metered_repo_stage(
-        repo_id, "map", lambda: _map_stage(repo_id, config), config
+        repo_id, "map", lambda: _map_stage(repo_id, config), config,
+        metadata=lambda value: _map_run_metadata(value, config),
     )
 
 
@@ -1034,7 +1281,8 @@ def detect(repo_id: str = typer.Argument(..., help="Ingested + mapped repo id.")
     """Run the multi-lens detection ensemble + deterministic tools."""
     config = get_config()
     _metered_repo_stage(
-        repo_id, "detect", lambda: _detect_stage(repo_id, config), config
+        repo_id, "detect", lambda: _detect_stage(repo_id, config), config,
+        metadata=lambda value: _detect_run_metadata(value, config),
     )
 
 
@@ -1205,7 +1453,8 @@ def falsify(repo_id: str = typer.Argument(..., help="Repo id with candidate find
     """Run the falsification pass over candidate findings."""
     config = get_config()
     result, _ = _metered_repo_stage(
-        repo_id, "falsify", lambda: _falsify_stage(repo_id, config), config
+        repo_id, "falsify", lambda: _falsify_stage(repo_id, config), config,
+        metadata=lambda value: _falsify_run_metadata(value, config),
     )
     if result.deferred_count:
         typer.echo(
@@ -1373,7 +1622,8 @@ def normalize(repo_id: str = typer.Argument(..., help="Repo id with falsified fi
     """Adjudicate conflicting severities and route unresolved findings to review."""
     config = get_config()
     _metered_repo_stage(
-        repo_id, "normalize", lambda: _normalize_stage(repo_id, config), config
+        repo_id, "normalize", lambda: _normalize_stage(repo_id, config), config,
+        metadata=lambda value: _normalize_run_metadata(value, config),
     )
 
 
@@ -1485,10 +1735,7 @@ def run(
     if "ingest" not in completed or not pipeline.repo_id:
         result = step(
             "ingest", lambda: _ingest_stage(source, config),
-            lambda value: (
-                {"repo_id": value.repo_id, "commit_hash": value.commit},
-                [str(value.snapshot_path)],
-            ),
+            _ingest_run_metadata,
         )
         repo_id, commit = result.repo_id, result.commit
         db.update_pipeline_run_identity(pipeline.id, repo_id, commit, config)
@@ -1514,52 +1761,19 @@ def run(
         step(
             "map",
             lambda: _map_stage(repo_id, config),
-            lambda _value: (
-                {
-                    "llm": {
-                        "provider": config.llm.provider,
-                        "model": config.model.name,
-                        "prompt_versions": {"map": MAP_PROMPT_VERSION},
-                    },
-                    "artifact": str(map_artifact),
-                },
-                [str(map_artifact)],
-            ),
+            lambda value: _map_run_metadata(value, config),
         )
 
     if "detect" not in completed:
         detection = step(
             "detect", lambda: _detect_stage(repo_id, config),
-            lambda value: (
-                {
-                    **detection_metrics(value, value.source_counts),
-                    "region_plan": ({
-                        "source_files": value.projection.source_files,
-                        "unbounded_base_calls": value.projection.unbounded_base_calls,
-                        "planned_regions": value.projection.planned_regions,
-                        "planned_base_calls": value.projection.planned_base_calls,
-                        "omitted_regions": value.projection.omitted_regions,
-                        "selected": value.selected_regions,
-                        "completed_calls": value.completed_region_calls,
-                        "reused_completed_calls": value.skipped_completed_region_calls,
-                    } if getattr(value, "projection", None) is not None else None),
-                    "semgrep_status": value.semgrep_status,
-                    "scanner_statuses": getattr(value, "scanner_statuses", {}),
-                    "scanner_failures": getattr(value, "scanner_failures", {}),
-                    "scanner_coverage": {
-                        "checked": preflight.scanners_checked,
-                        "missing": preflight.missing_scanners,
-                    },
-                    "llm": {
-                        "provider": config.llm.provider,
-                        "model": config.model.name,
-                        "prompt_versions": {
-                            **LENS_PROMPT_VERSIONS,
-                            "citation_integrity": CITATION_INTEGRITY_VERSION,
-                        },
-                    },
+            lambda value: _detect_run_metadata(
+                value,
+                config,
+                scanner_coverage={
+                    "checked": preflight.scanners_checked,
+                    "missing": preflight.missing_scanners,
                 },
-                [str(value.sarif_path)] if value.sarif_path else [],
             ),
         )
     else:
@@ -1575,43 +1789,12 @@ def run(
     if "triage" not in completed:
         step(
             "triage", lambda: _triage_stage(repo_id, config, sarif=detection.sarif_path),
-            lambda value: ({
-                "real_labels": getattr(value, "n_real_labels", None),
-                "ranked": len(getattr(value, "ranked", []) or []),
-                "action_threshold": getattr(value, "action_threshold", None),
-                "synthetic_share": getattr(value, "synthetic_share", None),
-                "synthetic_dropped": getattr(value, "synthetic_dropped", None),
-                "suppressed": getattr(value, "n_suppressed", None),
-                "model": getattr(value, "model_name", None),
-                "evaluations": [
-                    {
-                        "model": evaluation.model_name,
-                        "eval_on": evaluation.eval_on,
-                        "brier": evaluation.brier,
-                        "average_precision": evaluation.average_precision,
-                        "n_eval": evaluation.n_eval,
-                        "split_strategy": evaluation.split_strategy,
-                        "split_detail": evaluation.split_detail,
-                    }
-                    for evaluation in (getattr(value, "evaluations", None) or [])
-                ],
-            }, []),
+            _triage_run_metadata,
         )
     if "falsify" not in completed:
         falsification = step(
             "falsify", lambda: _falsify_stage(repo_id, config),
-            lambda value: ({
-                **falsification_metrics(value, getattr(value, "deferred_count", 0)),
-                "llm": {
-                    "provider": config.llm.provider,
-                    "model": config.model.name,
-                    "prompt_versions": {
-                        "falsify": FALSIFY_PROMPT_VERSION,
-                        "falsify_critique": CRITIQUE_PROMPT_VERSION,
-                        "falsify_context": FALSIFY_CONTEXT_VERSION,
-                    },
-                }
-            }, []),
+            lambda value: _falsify_run_metadata(value, config),
         )
         deferred_after_falsify = getattr(falsification, "deferred_count", 0)
     else:
@@ -1623,14 +1806,7 @@ def run(
     if not deferred_after_falsify and "normalize" not in completed:
         step(
             "normalize", lambda: _normalize_stage(repo_id, config),
-            lambda value: ({
-                **normalization_metrics(value),
-                "llm": {
-                    "provider": config.llm.provider,
-                    "model": config.model.name,
-                    "prompt_versions": {"normalize": NORMALIZE_PROMPT_VERSION},
-                }
-            }, []),
+            lambda value: _normalize_run_metadata(value, config),
         )
     if not deferred_after_falsify and "review checkpoint" not in completed:
         step(
@@ -1828,19 +2004,9 @@ def resume(
     if deferred_before:
         step(
             "falsify", lambda: _falsify_stage(repo_id, config),
-            lambda value: ({
-                **falsification_metrics(value, getattr(value, "deferred_count", 0)),
-                "backlog_before": len(deferred_before),
-                "llm": {
-                    "provider": config.llm.provider,
-                    "model": config.model.name,
-                    "prompt_versions": {
-                        "falsify": FALSIFY_PROMPT_VERSION,
-                        "falsify_critique": CRITIQUE_PROMPT_VERSION,
-                        "falsify_context": FALSIFY_CONTEXT_VERSION,
-                    },
-                },
-            }, []),
+            lambda value: _falsify_run_metadata(
+                value, config, backlog_before=len(deferred_before)
+            ),
         )
 
     deferred = db.list_deferred_findings(repo_id, config)
@@ -1848,14 +2014,7 @@ def resume(
     if not deferred:
         step(
             "normalize", lambda: _normalize_stage(repo_id, config),
-            lambda value: ({
-                **normalization_metrics(value),
-                "llm": {
-                    "provider": config.llm.provider,
-                    "model": config.model.name,
-                    "prompt_versions": {"normalize": NORMALIZE_PROMPT_VERSION},
-                },
-            }, []),
+            lambda value: _normalize_run_metadata(value, config),
         )
         step(
             "review checkpoint",

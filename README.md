@@ -552,6 +552,9 @@ rerun without duplicating its persisted records. Existing downstream finding ver
 preserved. Run history records stage status, timing, artifacts, attributable failures, and
 the raw-to-review funnel: raw/unique candidates, duplicate amplification, triage suppression
 context, falsification outcomes, normalization abstentions, and review-request counts.
+Demo and direct stage runs use the same summaries: `runs show` retains the selected detection
+regions, scanner execution status/failure detail, model/prompt provenance, and generated
+artifacts without requiring a direct SQLite query.
 Successful provider responses record authoritative input, output, cache, and latency
 metadata per attempt. `repoauditor runs show <run-id>` reports the run totals. If a provider
 failure does not expose usage metadata, the attempt is still counted and is explicitly
@@ -584,8 +587,9 @@ a fresh, separately recorded budget while reusing the immutable snapshot and com
 map/detect/triage evidence. Continuation records are linked as one logical scan, and
 `finalize` refuses to exclude unexamined work silently.
 
-Direct `map`, `detect`, `falsify`, and `normalize` commands also create a durable run record
-and fresh budget, as do `doctor --check-model`, `falsify-convergence`, and
+Direct `map`, `detect`, `falsify`, and `normalize` commands also create a durable run record,
+fresh budget, and the same applicable stage summary used by `run`, as do
+`doctor --check-model`, `falsify-convergence`, and
 `qualify-instrument`. Expert and diagnostic entry points therefore cannot bypass the safety
 boundary used by `run`, `resume`, and `demo`; inspect their usage and attributable failures
 with `runs list` and `runs show`.
