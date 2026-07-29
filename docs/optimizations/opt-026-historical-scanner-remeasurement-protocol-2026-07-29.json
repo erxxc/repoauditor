@@ -1,0 +1,133 @@
+{
+  "schema_version": 1,
+  "frozen_at": "2026-07-29",
+  "optimization": "OPT-026",
+  "status": "frozen-before-rerun",
+  "objective": "Replace ambiguous historical Semgrep zero-result evidence with pinned, canary-qualified remeasurements while preserving the original artifacts and preventing evidence repair from changing classifier ground truth.",
+  "approval": {
+    "decision": "project-owner-approved",
+    "selected_options": ["1A", "2A", "3A", "4A", "5A", "6A"]
+  },
+  "historical_evidence_policy": {
+    "disposition": "coverage_invalid",
+    "reason": "Each SARIF document reports successful execution and zero results but predates target-count verification and was created while parent/default Git-ignore discovery could select zero snapshot files.",
+    "delete_or_rewrite_originals": false,
+    "interpret_as_clean_scan": false,
+    "shared_historical_sarif_sha256": "c43f18b5919092938507ece33888f73dc25edd51fdf4064d565a0ad1d5881a3e",
+    "historical_sarif_size_bytes": 2112576,
+    "historical_rule_count": 1074
+  },
+  "frozen_rerun_cohort": [
+    {
+      "repo_id": "snapshot-a9f8daec",
+      "commit": "094e2176d4a7",
+      "source_identity": "tests/fixtures/independent_django_pre/snapshot",
+      "retained_snapshot": "data/raw/snapshot-a9f8daec/094e2176d4a7",
+      "snapshot_file_count": 6140,
+      "snapshot_tree_sha256": "5a6f7ed8650037d4e2d3d6be907d4b7ae77ac6b032600229b615f510c137817f",
+      "historical_artifact": "data/artifacts/snapshot-a9f8daec/094e2176d4a7/detect/semgrep.sarif",
+      "historical_status": "empty",
+      "historical_finding_count": 0,
+      "evidence_disposition": "coverage_invalid"
+    },
+    {
+      "repo_id": "snapshot",
+      "commit": "af70f27b266f",
+      "source_identity": "tests/fixtures/uat_lightweight_app/snapshot",
+      "retained_snapshot": "data/raw/snapshot/af70f27b266f",
+      "snapshot_file_count": 14,
+      "snapshot_tree_sha256": "af350cb5452e1963189a2b52295c29e6a7afcabe75f173588f8a86761340d41b",
+      "historical_artifact": "data/artifacts/snapshot/af70f27b266f/detect/semgrep.sarif",
+      "historical_status": "empty",
+      "historical_finding_count": 0,
+      "evidence_disposition": "coverage_invalid"
+    },
+    {
+      "repo_id": "uat_lightweight_app",
+      "commit": "e471aa12db5b",
+      "source_identity": "tests/fixtures/uat_lightweight_app/snapshot",
+      "retained_snapshot": "data/raw/uat_lightweight_app/e471aa12db5b",
+      "snapshot_file_count": 14,
+      "snapshot_tree_sha256": "127450b525d021eaae94c6f29048e3db089c3160eeb6389c00183f6d01a06689",
+      "historical_artifact": "data/artifacts/uat_lightweight_app/e471aa12db5b/detect/semgrep.sarif",
+      "historical_status": "empty",
+      "historical_finding_count": 0,
+      "evidence_disposition": "coverage_invalid"
+    }
+  ],
+  "snapshot_tree_digest": {
+    "algorithm": "sha256",
+    "construction": "SHA-256 of the byte stream produced by sorting snapshot-relative file names, excluding __pycache__ files, and hashing each file with shasum -a 256.",
+    "purpose": "Fail closed if a retained snapshot changes before remeasurement."
+  },
+  "execution_protocol": {
+    "pr_sequence": [
+      "Freeze this inventory and protocol before observing corrected results.",
+      "Execute and report the remeasurements in a separate PR."
+    ],
+    "precondition": "The full production scanner-canaries command must pass immediately before the historical reruns.",
+    "scanner_scope": ["semgrep"],
+    "adapter": "RepoAuditor production SAST adapter",
+    "expected_binary_version": "1.170.0",
+    "expected_configuration": "p/default@sha256:e1fb774d43b23f8265ae07566a5e325763244df9ba6eb8cbefe51e3ce05540c4",
+    "expected_configuration_digest": "e1fb774d43b23f8265ae07566a5e325763244df9ba6eb8cbefe51e3ce05540c4",
+    "expected_rule_count": 1073,
+    "required_invocation_controls": [
+      "--no-git-ignore",
+      "--project-root set to the exact retained snapshot",
+      "simultaneous validated JSON target report",
+      "validated SARIF output"
+    ],
+    "rerun_order": [
+      "snapshot-a9f8daec/094e2176d4a7",
+      "snapshot/af70f27b266f",
+      "uat_lightweight_app/e471aa12db5b"
+    ],
+    "replacement_or_selective_reruns": false
+  },
+  "result_contract": {
+    "per_run_required_fields": [
+      "repo_id",
+      "commit",
+      "snapshot_tree_sha256",
+      "status",
+      "output_valid",
+      "targets_scanned",
+      "target_count_basis",
+      "finding_count",
+      "binary_version",
+      "configuration",
+      "configuration_digest",
+      "rule_count",
+      "configuration_resolution",
+      "normalized_invocation",
+      "sarif_sha256",
+      "target_report_sha256",
+      "failure_detail"
+    ],
+    "required_deltas": [
+      "historical status to corrected status",
+      "historical target count unknown to corrected target count",
+      "historical finding count to corrected finding count"
+    ],
+    "raw_retention": "Retain raw SARIF and target-report output in the Git-ignored artifact store and commit their SHA-256 digests in the result receipt.",
+    "failure_policy": "Retain and report any failed, partial, unavailable, malformed-output, or zero-target result; do not replace it or narrow the cohort after observing results."
+  },
+  "isolation": {
+    "automatic_labels": false,
+    "ground_truth_mutation": false,
+    "classifier_scoring_mutation": false,
+    "review_pool_ingestion": false,
+    "review_acquisition": false,
+    "unmatched_candidates": "Report counts and preserve raw output only.",
+    "evaluation_claim": "Execution remeasurement only; no recall, precision, or vulnerability-prevalence claim."
+  },
+  "success_criteria": [
+    "All three original artifacts remain byte-for-byte unchanged and visibly classified as coverage-invalid.",
+    "Every retained snapshot matches its frozen tree digest before scanning.",
+    "The production deployment canary passes before any rerun.",
+    "Every rerun uses the pinned configuration and exposes a verified nonzero target count or an attributable non-clean status.",
+    "The committed result receipt reports all statuses and candidate deltas, including failures and zeros.",
+    "No rerun candidate enters labels, ground truth, classifier scoring, or the human-review pool."
+  ]
+}
