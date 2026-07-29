@@ -23,8 +23,19 @@ I. Evaluation and classifier maturity
       `triage-acquisition-plan` command and frozen 2026-07-29 tranche prioritize
       least-reviewed rule families without inferring mechanisms or candidate outcomes;
       `triage-review-packet` verifies frozen provenance and renders bounded source evidence
-      without recommending an outcome. Human adjudication remains outstanding — DoD
-      impact: none.
+      without recommending an outcome. The first 11-entry tranche was human-adjudicated,
+      bringing the usable manual cohort to 69 labels but adding no actionable positives;
+      the remaining local pool is dominated by repeated example/configuration negatives.
+      The next acquisition pair is therefore frozen before scanner execution in
+      `../../tests/fixtures/cve_positive_acquisition_cohort.json`: codecov-node
+      CVE-2020-15123 adds a direct JavaScript command-injection target and patched control
+      without entering an evaluation holdout. Its subsequent Semgrep Community run did not
+      recover the command-injection target and emitted only the same two CI findings in both
+      variants; the retained negative result is recorded in
+      `../codecov-node-positive-acquisition-2026-07-29.json` and adds no labels. The
+      materializer now supports an exact CVE-positive slug so future frozen pairs can be
+      acquired without overwriting cached cohorts. Detector output still requires human
+      adjudication — DoD impact: none.
 
    B. OPT-002 — Family-aware bootstrap ranges — deferred — owner: ML evaluation — source:
       `../triage-accuracy-roadmap.md` — activate after adequate held-out family breadth and

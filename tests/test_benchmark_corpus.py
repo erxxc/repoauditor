@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import json
 import os
+import runpy
 import shutil
 from collections import Counter
 from datetime import datetime, timezone
@@ -288,7 +289,7 @@ def test_offline_corpus_readiness_is_metadata_complete_and_network_free():
     assert report["summary"]["protected_holdout_count"] == 2
     assert report["summary"]["calibration_fixture_count"] == 1
     assert report["summary"]["training_acquisition_count"] == 8
-    assert report["summary"]["cve_positive_acquisition_count"] == 5
+    assert report["summary"]["cve_positive_acquisition_count"] == 6
     assert all(
         record["evaluation_eligible"] is False
         for record in report["training_acquisition"]
@@ -307,7 +308,7 @@ def test_offline_corpus_readiness_is_metadata_complete_and_network_free():
     )
     assert {
         record["language"] for record in report["cve_positive_acquisition"]
-    } == {"Python", "TypeScript", "Kotlin", "Ruby"}
+    } == {"Python", "JavaScript", "TypeScript", "Kotlin", "Ruby"}
     assert all(
         record["vulnerable_commit"] != record["fixed_commit"]
         for record in report["cve_positive_acquisition"]
@@ -317,6 +318,19 @@ def test_offline_corpus_readiness_is_metadata_complete_and_network_free():
     assert report["online_execution_ready"] is (
         report["summary"]["protected_holdout_materialized_count"] == 2
     )
+
+
+def test_cve_positive_materializer_selects_exact_requested_slugs():
+    module = runpy.run_path(str(FIXTURES_DIR / "materialize_public_corpus.py"))
+    select_cve_projects = module["select_cve_projects"]
+    projects = [{"slug": "first"}, {"slug": "second"}, {"slug": "third"}]
+
+    assert select_cve_projects(projects, ["third", "first"]) == [
+        {"slug": "first"},
+        {"slug": "third"},
+    ]
+    with pytest.raises(ValueError, match=r"unknown CVE-positive slug\(s\): missing"):
+        select_cve_projects(projects, ["missing"])
 
 
 @pytest.mark.integration

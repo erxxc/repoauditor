@@ -119,6 +119,29 @@
         "line_end": 647,
         "citation_contains": "self._directory.joinpath(filename).resolve()"
       }
+    },
+    {
+      "slug": "codecov_node_cve_2020_15123",
+      "project": "codecov-node",
+      "language": "JavaScript",
+      "repository": "https://github.com/codecov/codecov-node.git",
+      "vulnerable_commit": "5f6cc62d4f83bf3a75c973868259798814cd231e",
+      "fixed_commit": "c0711c656686e902af2cd92d6aecc8074de4d83d",
+      "license": "MIT",
+      "license_file": "LICENSE",
+      "cve_ids": ["CVE-2020-15123"],
+      "ghsa_ids": ["GHSA-xp63-6vf5-xf3v"],
+      "cwe_ids": ["CWE-78"],
+      "mechanism": "OS command injection through caller-controlled gcov options interpolated into a shell command",
+      "advisory": "https://github.com/codecov/codecov-node/security/advisories/GHSA-xp63-6vf5-xf3v",
+      "patch_scope": "One production module plus tests and release metadata; the target covers the non-Windows gcov execution path",
+      "target": {
+        "title": "Command injection through caller-controlled gcov executable and arguments",
+        "file": "lib/codecov.js",
+        "line_start": 386,
+        "line_end": 417,
+        "citation_contains": "execSync(gcov)"
+      }
     }
   ]
 }

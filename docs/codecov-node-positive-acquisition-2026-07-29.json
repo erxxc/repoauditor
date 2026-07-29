@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-29",
+  "scope": "training-acquisition-only",
+  "evaluation_eligible": false,
+  "project": "codecov-node",
+  "manifest_slug": "codecov_node_cve_2020_15123",
+  "advisory": "https://github.com/codecov/codecov-node/security/advisories/GHSA-xp63-6vf5-xf3v",
+  "target": {
+    "cve_ids": ["CVE-2020-15123"],
+    "cwe_ids": ["CWE-78"],
+    "mechanism": "OS command injection through caller-controlled gcov options interpolated into a shell command",
+    "file": "lib/codecov.js",
+    "citation_contains": "execSync(gcov)"
+  },
+  "selection_integrity": {
+    "frozen_before_scanner_execution": true,
+    "scanner_output_used_for_selection": false,
+    "replacement_after_result": false,
+    "human_adjudication_required": true
+  },
+  "scanner": {
+    "name": "Semgrep Community",
+    "version": "1.170.0",
+    "configuration": "auto",
+    "resolved_code_rules": 1074,
+    "executed_rules_per_variant": 237
+  },
+  "variants": [
+    {
+      "name": "pre",
+      "commit": "5f6cc62d4f83bf3a75c973868259798814cd231e",
+      "targets_scanned": 40,
+      "finding_count": 2,
+      "target_recovered": false
+    },
+    {
+      "name": "post",
+      "commit": "c0711c656686e902af2cd92d6aecc8074de4d83d",
+      "targets_scanned": 41,
+      "finding_count": 2,
+      "target_recovered": false
+    }
+  ],
+  "observed_findings": {
+    "same_in_both_variants": true,
+    "sarif_sha256": "0c9e2c00f15e53eafb6a25265e55d3c5abc74c93b1aef617260abb2c7fa8d483",
+    "entries": [
+      {
+        "rule_id": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+        "file": ".github/workflows/nodejs.yml",
+        "line": 15
+      },
+      {
+        "rule_id": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+        "file": ".github/workflows/nodejs.yml",
+        "line": 17
+      }
+    ]
+  },
+  "interpretation": "The advisory-backed pre-fix mechanism remains valid source evidence, but this detector run produced no candidate at the target. The pair therefore adds no reviewable command-injection label and no classifier evidence. The two unrelated CI findings are not treated as target ground truth or automatically labelled.",
+  "next_step": "Retain the pair and the negative acquisition result. Select any future tranche under a newly frozen, scanner-blind protocol; do not replace this entry based on its observed detector miss."
+}

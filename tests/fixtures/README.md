@@ -113,6 +113,26 @@ eligible only for the frozen OWASP-v3 semantic question under separately attribu
 inclusion. The evidence boundary and prohibited claims are recorded in
 `docs/aiohttp-owasp-v3-validation-plan-2026-07-28.json`.
 
+On 2026-07-29 the manifest was extended again, before scanner execution, with
+codecov-node CVE-2020-15123 and its exact MIT-licensed vulnerable/fixed commits. This sixth
+pair targets a direct JavaScript command-injection mechanism in production code: the
+vulnerable snapshot interpolates caller-controlled gcov options into a command passed to
+`execSync`, while the isolated fix replaces that shell sink with `execFileSync`. It is
+training acquisition only, does not alter any evaluation holdout, and detector output still
+requires human adjudication. Materialize only this newly added pair without touching cached
+pairs:
+
+```console
+python tests/fixtures/materialize_public_corpus.py /path/to/clones --fetch \
+  --cve-positive-slug codecov_node_cve_2020_15123
+```
+
+The frozen Semgrep Community 1.170.0 run did not recover the command-injection target. Both
+variants emitted only the same two mutable-GitHub-Actions findings, so this pair added no
+reviewable target label. The negative result and SARIF digest are retained in
+`docs/codecov-node-positive-acquisition-2026-07-29.json`; the entry was not removed or
+replaced after observing the miss.
+
 CI materializes these snapshots in the scheduled/manual `public corpus cache` workflow. The
 cache key hashes this materializer and all acquisition metadata; an exact hit is reused and a
 miss reacquires every pinned commit. No fallback key is used, acquired code is never executed,

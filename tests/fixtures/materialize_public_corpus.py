@@ -81,6 +81,22 @@ ANCHORS = [
 ]
 
 
+def select_cve_projects(projects: list[dict], requested_slugs: list[str]) -> list[dict]:
+    if not requested_slugs:
+        return projects
+    requested = set(requested_slugs)
+    available = {project["slug"] for project in projects}
+    unknown = sorted(requested - available)
+    if unknown:
+        raise ValueError(
+            "unknown CVE-positive slug(s): "
+            + ", ".join(unknown)
+            + "; available: "
+            + ", ".join(sorted(available))
+        )
+    return [project for project in projects if project["slug"] in requested]
+
+
 def archive(repo: Path, commit: str, destination: Path) -> None:
     payload = subprocess.run(
         ["git", "-C", str(repo), "archive", "--format=tar", commit],
@@ -139,10 +155,21 @@ def main() -> None:
         help="Materialize only the non-evaluation CVE-backed positive training cohort.",
     )
     parser.add_argument(
+        "--cve-positive-slug",
+        action="append",
+        default=[],
+        help=(
+            "Materialize only the named CVE-positive project; repeat for multiple entries. "
+            "Implies --cve-positive-acquisition-only."
+        ),
+    )
+    parser.add_argument(
         "--fetch", action="store_true",
         help="Explicitly allow network clones/fetches for missing pinned commits.",
     )
     args = parser.parse_args()
+    if args.cve_positive_slug:
+        args.cve_positive_acquisition_only = True
     if not args.training_acquisition_only and not args.cve_positive_acquisition_only:
         for project in PROJECTS:
             clone = ensure_clone(
@@ -189,7 +216,13 @@ def main() -> None:
         manifest = json.loads(manifest_path.read_text())
         if manifest.get("evaluation_eligible") is not False:
             raise SystemExit("CVE-positive acquisition manifest must be evaluation_eligible=false")
-        for project in manifest["projects"]:
+        try:
+            projects = select_cve_projects(
+                manifest["projects"], args.cve_positive_slug
+            )
+        except ValueError as exc:
+            raise SystemExit(str(exc)) from exc
+        for project in projects:
             clone = ensure_clone(
                 args.clone_root,
                 project["slug"],
