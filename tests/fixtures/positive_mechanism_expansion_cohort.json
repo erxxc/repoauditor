@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "frozen_at": "2026-07-29",
+  "purpose": "OPT-001 production-mechanism classifier-training acquisition",
+  "evaluation_eligible": false,
+  "selection_basis": "Existing human-reviewed, deliberately vulnerable production sinks in pinned public benchmark anchors; selected before this expansion's scanner execution.",
+  "selection_prohibitions": [
+    "Do not use independent evaluation pairs or protected holdouts.",
+    "Do not infer labels from scanner output.",
+    "Do not replace an anchor because a scanner misses its target.",
+    "Do not treat unmatched scanner candidates as false positives."
+  ],
+  "targets": [
+    {
+      "fixture": "anchor_owasp_juice_shop",
+      "project": "OWASP Juice Shop",
+      "pinned_commit": "33518f5a0911e25d9df747b1e70fb7af279a755c",
+      "license": "MIT",
+      "mechanism": "sql-injection",
+      "cwe": "CWE-89",
+      "file": "routes/login.ts",
+      "line": 34,
+      "citation_contains": "SELECT * FROM Users WHERE email = '${req.body.email"
+    },
+    {
+      "fixture": "anchor_owasp_webgoat",
+      "project": "OWASP WebGoat",
+      "pinned_commit": "5142935bf7c279882c3b0fc0ecec42c447de6fd5",
+      "license": "GPL-2.0-or-later",
+      "mechanism": "sql-injection",
+      "cwe": "CWE-89",
+      "file": "src/main/java/org/owasp/webgoat/lessons/sqlinjection/introduction/SqlInjectionLesson2.java",
+      "line": 49,
+      "citation_contains": "statement.executeQuery(query)"
+    },
+    {
+      "fixture": "anchor_owasp_railsgoat",
+      "project": "OWASP RailsGoat",
+      "pinned_commit": "0222f7da3406ba3ab637bc6d24ae9366b5f0a680",
+      "license": "MIT",
+      "mechanism": "unsafe-deserialization",
+      "cwe": "CWE-502",
+      "file": "app/controllers/password_resets_controller.rb",
+      "line": 6,
+      "citation_contains": "Marshal.load(Base64.decode64(params[:user]))"
+    }
+  ],
+  "review_policy": "A detector hit becomes an unassessed review candidate. Human adjudication must independently confirm reachability, attacker control, mitigation, and operational actionability before any classifier label is recorded."
+}

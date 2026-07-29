@@ -333,6 +333,23 @@ def test_cve_positive_materializer_selects_exact_requested_slugs():
         select_cve_projects(projects, ["missing"])
 
 
+def test_materializer_selects_exact_requested_anchors():
+    module = runpy.run_path(str(FIXTURES_DIR / "materialize_public_corpus.py"))
+    select_anchors = module["select_anchors"]
+    anchors = [
+        {"fixture": "first"},
+        {"fixture": "second"},
+        {"fixture": "third"},
+    ]
+
+    assert select_anchors(anchors, ["third", "first"]) == [
+        anchors[0],
+        anchors[2],
+    ]
+    with pytest.raises(ValueError, match="unknown anchor fixture"):
+        select_anchors(anchors, ["missing"])
+
+
 @pytest.mark.integration
 def test_materialized_juice_shop_retrieval_index_builds():
     """Cache-backed native-parser smoke test; never calls scanners or a model."""
