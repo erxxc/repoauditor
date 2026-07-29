@@ -4,17 +4,15 @@ Status: authoritative post-MVP work list as of 2026-07-29. POC acceptance is com
 
 Current execution priorities
 
-1. **OPT-007 — production-region selection** is the next engineering iteration. Start with
-   a frozen, path-blind design and replay it against the existing untouched-production
-   artifacts before considering any live or paid validation.
-2. **OPT-001 — reviewed-label growth** continues in parallel as an AppSec adjudication
-   workstream. Prioritize non-CI positive-mechanism breadth; do not relax abstention,
-   holdout, or evaluation-family controls merely to reach the numeric target.
+1. **OPT-001 — reviewed-label growth** is the active evidence workstream. Prioritize
+   non-CI positive-mechanism breadth; do not relax abstention, holdout, or
+   evaluation-family controls merely to reach the numeric target.
+2. **OPT-002 — family-aware bootstrap ranges** follows only after OPT-001 produces adequate
+   held-out family breadth and both classes.
 
-OPT-002 remains gated on the family breadth produced by OPT-001. OPT-003 through OPT-006
-and OPT-008 through OPT-014 remain behind their documented evidence, budget, safety, or
-methodology gates. OPT-016 is routine dependency maintenance and does not displace the
-ordered work above.
+OPT-003 through OPT-006 and OPT-008 through OPT-014 remain behind their documented evidence,
+budget, safety, or methodology gates. OPT-016 is routine dependency maintenance and does
+not displace the ordered work above.
 
 I. Evaluation and classifier maturity
 
@@ -49,16 +47,21 @@ II. Operations and cost
 
 III. Detection and falsification depth
 
-   A. OPT-007 — Improve production-region selection — evidence-ready/queued after OPT-021
+   A. OPT-007 — Improve production-region selection — implemented offline
       — owner: detection engineering — source:
       `../untouched-production-selection-plan-2026-07-28.json` and
       `../plotly-untouched-production-selection-2026-07-28.json` — the untouched Plotly.js
       measurement omitted the reviewed target in both variants, consistent with prior
       development-only aiohttp/Rack omissions. Begin only with a frozen, general path-blind
       design and offline replay against retained artifacts; never tune to any revealed
-      target path. Live or paid validation requires a separately approved protocol and
-      budget — DoD impact: none because the current DoD requires measurement, not a passing
-      selection outcome.
+      target path. The frozen
+      [`v2 protocol`](opt-007-production-region-selection-v2.md) reserves one existing
+      region for syntactic caller/callee neighbors of exact architecture-map locations
+      while preserving the total cap and stable blind sampling. Generic regressions and the
+      [`offline replay`](opt-007-offline-replay-2026-07-29.json) exercised both neighbor
+      bases without target metadata or provider calls. Live or paid validation requires a
+      separately approved protocol and budget — DoD impact: none because the current DoD
+      requires measurement, not a passing selection outcome.
 
    B. OPT-008 — Expand slicing and deterministic certificates across additional clients,
       frameworks, languages, and cross-file flows — deferred/evidence-gated — owner: AppSec

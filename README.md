@@ -611,13 +611,14 @@ and other terminal 4xx failures stop immediately instead of spending the remaini
 Live detection is also bounded by `[detect].max_llm_regions_per_run` (six by default).
 Before map/detect spend, `run` prints the all-files × three-lenses base-call projection and
 the bounded plan. Region selection is ground-truth-blind: independently produced scanner
-and architecture-map locations are considered first, with a stable path-derived,
-directory-stratified sample reserved outside those signals. The sample is comparable
-across pre-fix/post-fix trees and limits conventional test paths to 25% when enough
-production paths exist. A selected primary file may receive up to three external
-caller/similar-pattern blocks from the syntactic retrieval index. `runs show` reports these
-separately as `context_expansions`; an expansion is not another selected region or proof of
-a runtime edge. See
+and architecture-map locations are considered first. One bounded slot is reserved for a
+syntactic caller or callee of an exact architecture-map location, and two stable
+path-derived, directory-stratified sample slots remain reserved outside those signals.
+The sample is comparable across pre-fix/post-fix trees and limits conventional test paths
+to 25% when enough production paths exist. A selected primary file may receive up to three
+external caller/similar-pattern blocks from the syntactic retrieval index. `runs show`
+reports these separately as `context_expansions`; a selected architecture neighbor or
+context expansion is syntactic name evidence, not proof of a runtime edge. See
 [`docs/detection-context-provenance.md`](docs/detection-context-provenance.md). This does not
 make six sampled regions representative of every file. The completion summary discloses
 selected and omitted regions; bounded coverage must not be represented as a full-repository

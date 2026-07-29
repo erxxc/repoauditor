@@ -20,6 +20,7 @@ from ..map import ArchitectureMap
 from ..sourcefiles import iter_source_files, select_diverse_source_files
 if TYPE_CHECKING:
     from .ensemble import CandidateFinding
+    from .retrieval import RetrievalIndex
 
 
 @dataclass(frozen=True)
@@ -86,6 +87,7 @@ def plan_detection_regions(
     commit: str,
     architecture: ArchitectureMap,
     tool_candidates: Iterable["CandidateFinding"],
+    index: "RetrievalIndex | None" = None,
 ) -> list[PlannedRegion]:
     """Select bounded regions without consulting vulnerability ground truth."""
     files = iter_source_files(snapshot_path)
@@ -109,8 +111,19 @@ def plan_detection_regions(
         if rel in by_rel:
             indicated.setdefault(rel, "architecture-map")
 
+    neighbors = _architecture_neighbors(
+        architecture,
+        by_rel,
+        index,
+    )
     sample_slots = min(config.detect.reserved_sample_regions, cap)
-    indicated_slots = cap - sample_slots
+    evidence_slots = cap - sample_slots
+    neighbor_slots = min(
+        config.detect.reserved_architecture_neighbor_regions,
+        evidence_slots,
+        len(neighbors),
+    )
+    indicated_slots = evidence_slots - neighbor_slots
     priority = {"deterministic": 0, "architecture-map": 1}
     ordered_indicated = sorted(
         indicated.items(),
@@ -124,6 +137,22 @@ def plan_detection_regions(
         for rel, basis in ordered_indicated[:indicated_slots]
     ]
     selected_names = {item.relative_path for item in selected}
+    selected_neighbors = 0
+    for rel, basis in neighbors:
+        if selected_neighbors >= neighbor_slots:
+            break
+        if rel in selected_names:
+            continue
+        selected.append(PlannedRegion(by_rel[rel], rel, basis))
+        selected_names.add(rel)
+        selected_neighbors += 1
+    # Return unused neighbor capacity to direct evidence before generic sampling.
+    for rel, basis in ordered_indicated[indicated_slots:]:
+        if len(selected) >= evidence_slots:
+            break
+        if rel not in selected_names:
+            selected.append(PlannedRegion(by_rel[rel], rel, basis))
+            selected_names.add(rel)
     # Path-only ordering keeps the instrument comparable across pre/post commits.
     # Directory stratification and a bounded test share avoid alphabetical/root and
     # test-suite dominance without consulting advisories or expected findings.
@@ -138,3 +167,49 @@ def plan_detection_regions(
         rel = path.relative_to(snapshot_path).as_posix()
         selected.append(PlannedRegion(path, rel, "stable-coverage-sample"))
     return selected
+
+
+def _architecture_neighbors(
+    architecture: ArchitectureMap,
+    by_rel: dict[str, Path],
+    index: "RetrievalIndex | None",
+) -> list[tuple[str, str]]:
+    """Return path-blind syntactic neighbors of exact architecture-map locations."""
+    if index is None:
+        return []
+    seeds = sorted({
+        rel
+        for entity in (
+            *architecture.entry_points,
+            *architecture.data_stores,
+            *architecture.integrations,
+        )
+        if (rel := _location_file(entity.location)) in by_rel
+    })
+    candidates: list[tuple[int, str, str, int, str]] = []
+    for seed in seeds:
+        definitions = index.functions_in_file(seed)
+        symbols = sorted({definition.symbol for definition in definitions})
+        for caller, _matched in index.find_callers_matching(symbols):
+            if caller.file != seed and caller.file in by_rel:
+                candidates.append((
+                    0,
+                    seed,
+                    caller.file,
+                    caller.line_start,
+                    "architecture-neighbor:call-name-match",
+                ))
+        for symbol in symbols:
+            for callee in index.find_callees(symbol):
+                if callee.file != seed and callee.file in by_rel:
+                    candidates.append((
+                        1,
+                        seed,
+                        callee.file,
+                        callee.line_start,
+                        "architecture-neighbor:callee-definition",
+                    ))
+    ordered: dict[str, str] = {}
+    for _relation, _seed, rel, _line, basis in sorted(candidates):
+        ordered.setdefault(rel, basis)
+    return list(ordered.items())

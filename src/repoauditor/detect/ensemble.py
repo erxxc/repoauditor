@@ -282,6 +282,7 @@ def run_ensemble(
         commit=commit,
         architecture=architecture,
         tool_candidates=tool_candidates,
+        index=index,
     )
     completed_region_calls = skipped_completed_region_calls = 0
     context_expansions: list[dict] = []

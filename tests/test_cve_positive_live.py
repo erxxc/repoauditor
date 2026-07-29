@@ -455,6 +455,7 @@ def _run_fresh_split_fixture(
             "run_deterministic_tools": False,
             "max_llm_regions_per_run": 1,
             "reserved_sample_regions": 1,
+            "reserved_architecture_neighbor_regions": 0,
         })
     })
 
@@ -799,6 +800,7 @@ def test_split_phase_planner_executes_production_screen_and_semantic_target(
         "detect": tmp_config.detect.model_copy(update={
             "max_llm_regions_per_run": 1,
             "reserved_sample_regions": 0,
+            "reserved_architecture_neighbor_regions": 0,
         })
     })
     plan, observations = _split_phase_planner(target, production_config)
@@ -838,6 +840,7 @@ def test_split_phase_planner_does_not_duplicate_a_production_selected_target(
         "detect": tmp_config.detect.model_copy(update={
             "max_llm_regions_per_run": 1,
             "reserved_sample_regions": 0,
+            "reserved_architecture_neighbor_regions": 0,
         })
     })
     plan, observations = _split_phase_planner(target, production_config)
