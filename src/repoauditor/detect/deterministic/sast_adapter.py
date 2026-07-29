@@ -90,9 +90,28 @@ def _normalized_sarif(raw_output: str, snapshot_path: Path) -> str:
                 else:
                     normalize_snapshot_references(child)
 
+    def normalize_rule_prefixes(value, prefixes: set[str]) -> None:
+        if isinstance(value, dict):
+            for key, child in value.items():
+                if isinstance(child, str):
+                    for prefix in prefixes:
+                        child = child.replace(prefix, "")
+                    value[key] = child
+                else:
+                    normalize_rule_prefixes(child, prefixes)
+        elif isinstance(value, list):
+            for index, child in enumerate(value):
+                if isinstance(child, str):
+                    for prefix in prefixes:
+                        child = child.replace(prefix, "")
+                    value[index] = child
+                else:
+                    normalize_rule_prefixes(child, prefixes)
+
     for run in document.get("runs", []):
         driver = run.get("tool", {}).get("driver", {})
         rule_ids: dict[str, str] = {}
+        rule_prefixes: set[str] = set()
         for rule in driver.get("rules", []):
             if isinstance(rule.get("id"), str):
                 original = rule["id"]
@@ -107,6 +126,8 @@ def _normalized_sarif(raw_output: str, snapshot_path: Path) -> str:
                     if original.endswith(f".{documented}"):
                         canonical = documented
                 rule_ids[original] = canonical
+                if canonical != original and original.endswith(canonical):
+                    rule_prefixes.add(original.removesuffix(canonical))
                 normalize_rule_metadata(rule, original, canonical)
             if isinstance(rule.get("name"), str):
                 rule["name"] = canonical_semgrep_rule_id(rule["name"])
@@ -122,6 +143,7 @@ def _normalized_sarif(raw_output: str, snapshot_path: Path) -> str:
                 )
         normalize_locations(run)
         normalize_snapshot_references(run)
+        normalize_rule_prefixes(run, rule_prefixes)
     return json.dumps(document)
 
 

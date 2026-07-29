@@ -97,6 +97,23 @@ def select_cve_projects(projects: list[dict], requested_slugs: list[str]) -> lis
     return [project for project in projects if project["slug"] in requested]
 
 
+def select_anchors(anchors: list[dict], requested_fixtures: list[str]) -> list[dict]:
+    """Preserve manifest order while validating a narrow anchor request."""
+    if not requested_fixtures:
+        return anchors
+    requested = set(requested_fixtures)
+    available = {anchor["fixture"] for anchor in anchors}
+    unknown = sorted(requested - available)
+    if unknown:
+        raise ValueError(
+            "unknown anchor fixture(s): "
+            + ", ".join(unknown)
+            + "; available: "
+            + ", ".join(sorted(available))
+        )
+    return [anchor for anchor in anchors if anchor["fixture"] in requested]
+
+
 def archive(repo: Path, commit: str, destination: Path) -> None:
     payload = subprocess.run(
         ["git", "-C", str(repo), "archive", "--format=tar", commit],
@@ -164,13 +181,33 @@ def main() -> None:
         ),
     )
     parser.add_argument(
+        "--anchors-only",
+        action="store_true",
+        help="Materialize only acquisition-only OWASP benchmark anchors.",
+    )
+    parser.add_argument(
+        "--anchor",
+        action="append",
+        default=[],
+        help=(
+            "Materialize only the named anchor fixture; repeat for multiple entries. "
+            "Implies --anchors-only."
+        ),
+    )
+    parser.add_argument(
         "--fetch", action="store_true",
         help="Explicitly allow network clones/fetches for missing pinned commits.",
     )
     args = parser.parse_args()
     if args.cve_positive_slug:
         args.cve_positive_acquisition_only = True
-    if not args.training_acquisition_only and not args.cve_positive_acquisition_only:
+    if args.anchor:
+        args.anchors_only = True
+    if (
+        not args.training_acquisition_only
+        and not args.cve_positive_acquisition_only
+        and not args.anchors_only
+    ):
         for project in PROJECTS:
             clone = ensure_clone(
                 args.clone_root, project.get("clone", project["slug"]),
@@ -187,6 +224,19 @@ def main() -> None:
                 )
                 archive(clone, commit, fixture / "snapshot")
         for anchor in ANCHORS:
+            fixture = args.output / anchor["fixture"]
+            if (fixture / "snapshot").exists():
+                raise SystemExit(f"refusing to overwrite {fixture / 'snapshot'}")
+            clone = ensure_clone(
+                args.clone_root, anchor["clone"], anchor["repo"], anchor["commit"], args.fetch
+            )
+            archive(clone, anchor["commit"], fixture / "snapshot")
+    if args.anchors_only:
+        try:
+            anchors = select_anchors(ANCHORS, args.anchor)
+        except ValueError as exc:
+            raise SystemExit(str(exc)) from exc
+        for anchor in anchors:
             fixture = args.output / anchor["fixture"]
             if (fixture / "snapshot").exists():
                 raise SystemExit(f"refusing to overwrite {fixture / 'snapshot'}")

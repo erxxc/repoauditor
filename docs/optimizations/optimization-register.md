@@ -66,7 +66,20 @@ I. Evaluation and classifier maturity
       docs, tests, and CI without using scores or outcomes. Its frozen
       [`11-entry review tranche`](../triage-review-acquisition-2026-07-29-v2.json) contains
       eight production and three deployment candidates. Human adjudication remains the next
-      gate; no automatic labels were added — DoD impact: none.
+      gate; no automatic labels were added. That tranche was subsequently adjudicated as
+      eleven negatives, bringing the usable cohort to 80 labels (18 positive, 62 negative)
+      across 12 engagements. Because the residual pool was low-yield supporting or repeated
+      hardening evidence, the next expansion was frozen before execution in
+      [`positive_mechanism_expansion_cohort.json`](../../tests/fixtures/positive_mechanism_expansion_cohort.json)
+      and its [`protocol`](../opt-001-positive-mechanism-expansion-protocol-2026-07-29.json).
+      The narrow anchors-only path excludes independent evaluation pairs. Three complete
+      verified scans covered 2,195 targets, ingested 302 unassessed candidates, and recovered
+      all three predeclared production targets: JavaScript and Java SQL injection plus Ruby
+      unsafe deserialization. The immutable
+      [`scan receipt`](../positive-mechanism-expansion-scan-2026-07-29.json) and frozen
+      [`12-entry review tranche`](../triage-review-acquisition-2026-07-29-v3.json) add no
+      automatic labels. Retained SARIF notification text is now canonicalized alongside
+      rule metadata and paths — DoD impact: none.
 
    B. OPT-002 — Family-aware bootstrap ranges — deferred — owner: ML evaluation — source:
       `../triage-accuracy-roadmap.md` — activate after adequate held-out family breadth and

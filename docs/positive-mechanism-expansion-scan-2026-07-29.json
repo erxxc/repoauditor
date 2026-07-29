@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-29",
+  "scope": "training-acquisition-only",
+  "evaluation_eligible": false,
+  "protocol": "opt-001-positive-mechanism-expansion-protocol-2026-07-29.json",
+  "manifest": "../tests/fixtures/positive_mechanism_expansion_cohort.json",
+  "scanner": {
+    "name": "Semgrep Community",
+    "version": "1.170.0",
+    "configuration": "p/default@sha256:e1fb774d43b23f8265ae07566a5e325763244df9ba6eb8cbefe51e3ce05540c4",
+    "configuration_digest": "e1fb774d43b23f8265ae07566a5e325763244df9ba6eb8cbefe51e3ce05540c4",
+    "rule_count": 1073,
+    "configuration_resolution": "pinned-verified"
+  },
+  "runs": [
+    {"fixture":"anchor_owasp_juice_shop","repo_id":"acquisition-anchor-owasp-juice-shop","pinned_commit":"33518f5a0911e25d9df747b1e70fb7af279a755c","snapshot_hash":"22f9c32fed78","status":"complete","output_valid":true,"targets_scanned":1002,"finding_count":51,"sarif_sha256":"33206e24b863fb24a6c59509593d1aae17b170853a8059c6230608db5f4ed545","declared_target":{"recovered":true,"finding_id":295,"rule_id":"javascript.sequelize.security.audit.sequelize-injection-express.express-sequelize-injection","file":"routes/login.ts","line":34}},
+    {"fixture":"anchor_owasp_webgoat","repo_id":"acquisition-anchor-owasp-webgoat","pinned_commit":"5142935bf7c279882c3b0fc0ecec42c447de6fd5","snapshot_hash":"277d5281d848","status":"complete","output_valid":true,"targets_scanned":974,"finding_count":207,"sarif_sha256":"de0d80c4d3b26127bec601c69dd7582f8232ccf33cf5f02a5a86657ca971a9f9","declared_target":{"recovered":true,"finding_id":395,"rule_id":"java.lang.security.audit.sqli.jdbc-sqli.jdbc-sqli","file":"src/main/java/org/owasp/webgoat/lessons/sqlinjection/introduction/SqlInjectionLesson2.java","line":49}},
+    {"fixture":"anchor_owasp_railsgoat","repo_id":"acquisition-anchor-owasp-railsgoat","pinned_commit":"0222f7da3406ba3ab637bc6d24ae9366b5f0a680","snapshot_hash":"cbd5b21a85c0","status":"complete","output_valid":true,"targets_scanned":219,"finding_count":44,"sarif_sha256":"3f8eb0b5242ffd22388848dfd40e1114ee7b04da8e180193911a85503add888b","declared_target":{"recovered":true,"finding_id":536,"rule_id":"ruby.lang.security.bad-deserialization.bad-deserialization","file":"app/controllers/password_resets_controller.rb","line":6}}
+  ],
+  "totals": {
+    "runs": 3,
+    "targets_scanned": 2195,
+    "findings_ingested": 302,
+    "declared_targets": 3,
+    "declared_targets_recovered": 3,
+    "automatic_labels_added": 0,
+    "usable_human_labels_before_review": 80
+  },
+  "artifact_boundary": {
+    "rule_ids_titles_and_notifications": "canonical identifiers without temporary configuration prefixes",
+    "file_uris_and_diagnostics": "snapshot-relative",
+    "host_paths_retained": false
+  },
+  "interpretation": "The verified scanner recovered all three predeclared targets and expanded the unassessed production pool. Recovery establishes review eligibility only; human adjudication remains required before classifier use."
+}

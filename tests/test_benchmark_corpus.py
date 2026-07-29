@@ -290,6 +290,11 @@ def test_offline_corpus_readiness_is_metadata_complete_and_network_free():
     assert report["summary"]["calibration_fixture_count"] == 1
     assert report["summary"]["training_acquisition_count"] == 8
     assert report["summary"]["cve_positive_acquisition_count"] == 6
+    assert report["summary"]["positive_mechanism_expansion_count"] == 3
+    assert all(
+        record["evaluation_eligible"] is False
+        for record in report["positive_mechanism_expansion"]
+    )
     assert all(
         record["evaluation_eligible"] is False
         for record in report["training_acquisition"]
@@ -331,6 +336,23 @@ def test_cve_positive_materializer_selects_exact_requested_slugs():
     ]
     with pytest.raises(ValueError, match=r"unknown CVE-positive slug\(s\): missing"):
         select_cve_projects(projects, ["missing"])
+
+
+def test_materializer_selects_exact_requested_anchors():
+    module = runpy.run_path(str(FIXTURES_DIR / "materialize_public_corpus.py"))
+    select_anchors = module["select_anchors"]
+    anchors = [
+        {"fixture": "first"},
+        {"fixture": "second"},
+        {"fixture": "third"},
+    ]
+
+    assert select_anchors(anchors, ["third", "first"]) == [
+        anchors[0],
+        anchors[2],
+    ]
+    with pytest.raises(ValueError, match="unknown anchor fixture"):
+        select_anchors(anchors, ["missing"])
 
 
 @pytest.mark.integration

@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "frozen_at": "2026-07-29",
+  "optimization": "OPT-001",
+  "status": "frozen-before-expansion-scan",
+  "objective": "Increase reviewed positive-mechanism breadth without consuming evaluation evidence or converting known-positive metadata into automatic labels.",
+  "input_manifest": "../tests/fixtures/positive_mechanism_expansion_cohort.json",
+  "eligible_inputs": [
+    "Pinned acquisition-only OWASP benchmark anchors",
+    "Human-reviewed target locations declared before this expansion scan",
+    "Fresh output from the verified pinned deterministic scanner"
+  ],
+  "ineligible_inputs": [
+    "Independent evaluation pairs",
+    "Protected prospective or serialize-javascript holdouts",
+    "Manufactured fixture labels presented as real-world evidence",
+    "Scanner severity, score, or predicted outcome as ground truth"
+  ],
+  "execution": {
+    "materialization": "Use --anchors-only with explicit --anchor values; do not materialize independent pairs.",
+    "scanner": "RepoAuditor SAST adapter with pinned verified Semgrep configuration and required deployment gate.",
+    "retention": "Canonical snapshot-relative SARIF with exact scanner execution receipt.",
+    "ingestion": "Use explicit acquisition repo IDs and evaluation_eligible=false.",
+    "target_matching": "Match declared file, bounded line neighborhood, mechanism-compatible rule, and citation evidence; report misses without replacement."
+  },
+  "review_tranche": {
+    "first_priority": "Recovered declared production targets across distinct mechanisms and languages.",
+    "second_priority": "Other production-surface candidates selected outcome-blind by the v2 acquisition policy.",
+    "excluded_from_immediate_review": "Examples, documentation, tests, CI, and repeated configuration-hardening families unless needed for a declared control.",
+    "automatic_labels": false,
+    "abstention_preserved": true
+  },
+  "success_criteria": [
+    "Every scanner run exposes status, target count, finding count, version, and configuration digest.",
+    "No evaluation-eligible repository is ingested.",
+    "Recovered targets and misses are both retained.",
+    "The frozen review packet contains source evidence and no recommended disposition.",
+    "Human decisions, not benchmark metadata, determine classifier labels."
+  ],
+  "limitations": [
+    "Benchmark anchors improve mechanism acquisition but are not independent generalization evidence.",
+    "Two targets exercise SQL injection; only RailsGoat adds unsafe-deserialization breadth.",
+    "A scanner miss is a detector coverage result, not evidence that the declared vulnerability is absent."
+  ]
+}

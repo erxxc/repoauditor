@@ -78,6 +78,11 @@ def test_semgrep_artifact_normalizes_config_prefix_and_absolute_paths(tmp_path):
     documented_prefixed = f"private.var.folders.temporary.{documented}"
     document = {
         "runs": [{
+            "invocations": [{
+                "toolExecutionNotifications": [{
+                    "message": {"text": f"Timeout in rule '{prefixed}'"},
+                }],
+            }],
             "tool": {"driver": {
                 "name": "semgrep",
                 "rules": [{
@@ -119,6 +124,11 @@ def test_semgrep_artifact_normalizes_config_prefix_and_absolute_paths(tmp_path):
         == "jwt/client.py"
     )
     assert normalized["runs"][0]["results"][1]["ruleId"] == documented
+    assert (
+        normalized["runs"][0]["invocations"][0]["toolExecutionNotifications"][0]
+        ["message"]["text"]
+        == f"Timeout in rule '{canonical}'"
+    )
 
 
 @pytest.mark.integration
