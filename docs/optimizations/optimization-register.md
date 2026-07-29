@@ -4,14 +4,12 @@ Status: authoritative post-MVP work list as of 2026-07-29. POC acceptance is com
 
 Current execution priorities
 
-1. **OPT-001 — reviewed-label growth** resumes as the active evidence workstream now that
-   scanner acquisition inputs have a required deployment gate. Prioritize non-CI
-   positive-mechanism breadth; do not relax abstention, holdout, or evaluation-family
-   controls merely to reach the numeric target.
-2. **OPT-026 — historical scanner remeasurement** follows the assurance gate so invalidated
-   historical zeros can be rerun without converting new candidates into automatic labels.
-3. **OPT-002 — family-aware bootstrap ranges** follows only after OPT-001 produces adequate
-   held-out family breadth and both classes.
+1. **OPT-026 — historical scanner remeasurement** is the active evidence-repair workstream
+   now that the scanner deployment gate is required and OPT-001 reached its maturity floor.
+2. **OPT-002 — family-aware bootstrap ranges** remains held until the evaluation-compatible
+   scored cohort reaches its existing floor with adequate held-out family breadth.
+3. **OPT-001 — reviewed-label growth** is complete at its lower maturity bound; further
+   acquisition is optional and must preserve abstention, holdout, and family controls.
 
 OPT-022 through OPT-025 are implemented. OPT-003 through OPT-006 and OPT-008 through OPT-014
 remain behind their documented evidence, budget, safety, or methodology gates. OPT-016 is
@@ -21,7 +19,7 @@ behind the assurance and evidence gates above.
 I. Evaluation and classifier maturity
 
    A. OPT-001 — Grow the reviewed label cohort to 100–200 with broader positive mechanisms
-      — in progress/evidence-gated — owner: AppSec adjudication — source:
+      — implemented at lower maturity bound — owner: AppSec adjudication — source:
       `../triage-accuracy-roadmap.md` and `../project-priorities.md` — activate after MVP
       items are closed; preserve abstentions and frozen holdouts. The reusable
       `triage-acquisition-plan` command and frozen 2026-07-29 tranche prioritize
@@ -84,9 +82,12 @@ I. Evaluation and classifier maturity
       negative) across 15 engagements. The final
       [`12-entry production tranche`](../triage-review-acquisition-2026-07-29-v4.json)
       targets authorization, path/file handling, redirects, token secrets, and template
-      output while excluding documentation, vendor bundles, CI, and package hygiene. It is
-      expected to cross the 100-label maturity floor without relaxing any evidence boundary
-      — DoD impact: none.
+      output while excluding documentation, vendor bundles, CI, and package hygiene. Human
+      review added ten actionable positives and two negatives. OPT-001 therefore closes at
+      104 usable manual labels (37 positive, 67 negative) across 15 engagements, with three
+      abstentions preserved. The evaluation-compatible scored subset remains 36 labels and
+      does not activate OPT-002; benchmark acquisition is not reclassified as held-out
+      evidence — DoD impact: none.
 
    B. OPT-002 — Family-aware bootstrap ranges — deferred — owner: ML evaluation — source:
       `../triage-accuracy-roadmap.md` — activate after adequate held-out family breadth and
