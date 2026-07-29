@@ -4,29 +4,24 @@ Status: authoritative post-MVP work list as of 2026-07-29. POC acceptance is com
 
 Current execution priorities
 
-1. **OPT-022 — first-class scanner execution contract** is the immediate reliability
-   prerequisite. Finish the common applicability, exit, target/manifest count, output-schema,
-   status, and failure-detail contract before treating any scanner zero as clean evidence.
-2. **OPT-023 — per-scanner deployment canaries** follows directly. Exercise positive and
-   clean controls through the same production adapter invocation without allowing canary
-   results into product findings.
-3. **OPT-024 — pinned scanner configuration and provenance** then makes successful execution
-   reproducible across rule/database changes.
-4. **OPT-025 — required scanner deployment gates** promotes the contract, canaries, and
-   provenance checks into fast CI; larger public-corpus measurement remains scheduled/manual.
-5. **OPT-001 — reviewed-label growth** resumes as the active evidence workstream only after
-   OPT-022 through OPT-025 establish trustworthy acquisition inputs. Prioritize non-CI
+1. **OPT-024 — pinned scanner configuration and provenance** is the next reliability
+   priority. Make successful execution reproducible across rule/database changes.
+2. **OPT-025 — required scanner deployment gates** then promotes the execution contract,
+   canaries, and provenance checks into fast CI; larger public-corpus measurement remains
+   scheduled/manual.
+3. **OPT-001 — reviewed-label growth** resumes as the active evidence workstream only after
+   OPT-024 and OPT-025 establish trustworthy acquisition inputs. Prioritize non-CI
    positive-mechanism breadth; do not relax abstention, holdout, or evaluation-family
    controls merely to reach the numeric target.
-6. **OPT-026 — historical scanner remeasurement** follows the assurance gate so invalidated
+4. **OPT-026 — historical scanner remeasurement** follows the assurance gate so invalidated
    historical zeros can be rerun without converting new candidates into automatic labels.
-7. **OPT-002 — family-aware bootstrap ranges** follows only after OPT-001 produces adequate
+5. **OPT-002 — family-aware bootstrap ranges** follows only after OPT-001 produces adequate
    held-out family breadth and both classes.
 
-OPT-003 through OPT-006 and OPT-008 through OPT-014 remain behind their documented evidence,
-budget, safety, or methodology gates. OPT-016 is routine dependency maintenance. OPT-027
-through OPT-030 remain ordered capability/scale work behind the assurance and evidence gates
-above.
+OPT-022 and OPT-023 are implemented. OPT-003 through OPT-006 and OPT-008 through OPT-014
+remain behind their documented evidence, budget, safety, or methodology gates. OPT-016 is
+routine dependency maintenance. OPT-027 through OPT-030 remain ordered capability/scale work
+behind the assurance and evidence gates above.
 
 I. Evaluation and classifier maturity
 
@@ -241,15 +236,21 @@ VI. Deterministic scanner assurance and capability
       OPT-024 add canaries and complete provenance before new acquisition evidence is
       interpreted — DoD impact: none.
 
-   B. OPT-023 — Per-scanner deployment canaries — highest/next — owner: reliability and
+   B. OPT-023 — Per-scanner deployment canaries — implemented — owner: reliability and
       detection engineering — source:
-      `../deterministic-tool-deployment-audit-2026-07-29.json` — pass a small positive and
+      `../deterministic-tool-deployment-audit-2026-07-29.json` and
+      `../scanner-deployment-canaries.md` — pass a small positive and
       clean/not-applicable control through each production adapter invocation: a
       language-appropriate Semgrep syntax/rule control, a synthetic gitleaks credential, a
       pinned vulnerable and clean pip-audit manifest, and vulnerable/clean OSV lockfiles.
       Canary results are execution-health evidence only and must never enter the product
       finding store, classifier labels, evaluation metrics, or human-review acquisition.
-      Activation: after OPT-022 fixes the status contract — DoD impact: none.
+      The `scanner-canaries` command now exercises all four adapter subprocess/parser paths,
+      fails closed on either control, reports the typed execution contract, deletes temporary
+      inputs, and cannot persist findings. The OSV clean-side control intentionally asserts
+      `not-applicable` for a root without a supported manifest so it cannot be confused with
+      a scanned clean zero. Activation: satisfied after OPT-022; OPT-024 remains responsible
+      for production ruleset and advisory-database provenance — DoD impact: none.
 
    C. OPT-024 — Pin scanner configuration and retain provenance — high — owner: detection
       release engineering — source:

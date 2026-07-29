@@ -40,6 +40,7 @@ from .detect import (
     validate_detection_projection,
 )
 from .detect.ensemble import CITATION_INTEGRITY_VERSION, LENS_PROMPT_VERSIONS
+from .detect.deterministic import render_scanner_canaries, run_scanner_canaries
 from .eval import (
     build_usage_calibration,
     evaluate_archive_detection_sentinels,
@@ -1257,6 +1258,27 @@ def doctor(
             f"model check passed: provider={probe.provider}; model={probe.model}; "
             f"structured-output={probe.response_format}"
         )
+
+
+@app.command("scanner-canaries")
+@_clean_errors("scanner canaries")
+def scanner_canaries(
+    output: Path | None = typer.Option(
+        None,
+        "--output",
+        help="Optionally retain the JSON execution-health report at this path.",
+    ),
+) -> None:
+    """Run isolated positive and clean deterministic-scanner controls."""
+    config = get_config()
+    report = run_scanner_canaries(config.detect.tool_timeout_seconds)
+    payload = render_scanner_canaries(report)
+    if output is not None:
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(payload)
+    typer.echo(payload, nl=False)
+    if not report.passed:
+        raise typer.Exit(code=1)
 
 
 @app.command()
