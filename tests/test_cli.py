@@ -669,6 +669,18 @@ def test_standalone_detect_persists_region_plan_and_scanner_coverage(
         scanner_failures={
             "osv-scanner": "recursive discovery failed; explicit fallback used",
         },
+        scanner_executions=[{
+            "scanner": "semgrep",
+            "status": "empty",
+            "applicable": True,
+            "output_valid": True,
+            "finding_count": 0,
+            "target_count": 12,
+            "target_count_basis": "scanner-reported-files",
+            "version": "1.170.0",
+            "configuration": "pinned-test",
+            "failure_detail": None,
+        }],
         context_expansions=[{
             "primary_file": "storefront/account.py",
             "related": [{
@@ -693,6 +705,8 @@ def test_standalone_detect_persists_region_plan_and_scanner_coverage(
     assert stage.summary["region_plan"]["planned_regions"] == 6
     assert stage.summary["scanner_statuses"]["osv-scanner"] == "partial"
     assert "explicit fallback" in stage.summary["scanner_failures"]["osv-scanner"]
+    assert stage.summary["scanner_executions"][0]["target_count"] == 12
+    assert stage.summary["scanner_executions"][0]["output_valid"] is True
     assert stage.summary["context_expansions"][0]["related"][0]["file"] == (
         "storefront/component_b.py"
     )
@@ -701,6 +715,7 @@ def test_standalone_detect_persists_region_plan_and_scanner_coverage(
     assert '"planned_regions": 6' in detail.stdout
     assert "storefront/account.py" in detail.stdout
     assert "storefront/component_b.py" in detail.stdout
+    assert '"target_count": 12' in detail.stdout
 
 
 def test_standalone_falsify_is_metered_and_points_to_resume(

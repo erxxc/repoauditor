@@ -1,0 +1,35 @@
+# Scanner execution contract
+
+Status: OPT-022 implementation contract as of 2026-07-29.
+
+Every production deterministic adapter emits one typed execution record in the detect-stage
+summary. The record is evidence about scanner deployment and coverage; it is not a
+vulnerability finding and never enters triage, classifier labels, or evaluation ground truth.
+
+Fields:
+
+- `scanner`, `status`, and `applicable` identify the tool and whether the snapshot contains
+  input the adapter can evaluate.
+- `output_valid` means the producer-specific JSON or SARIF schema was successfully validated.
+- `finding_count` is the number of normalized candidates returned by that producer.
+- `target_count` and `target_count_basis` disclose what was actually counted. Semgrep reports
+  selected files; pip-audit reports submitted manifests; OSV-Scanner and gitleaks currently
+  report the submitted snapshot root.
+- `version` and `configuration` retain provenance already available from scanner output.
+  Completing reproducible configuration/database provenance is OPT-024.
+- `failure_detail` is mandatory for `failed` records.
+
+The model rejects a clean `empty` or `complete` status unless the run was applicable, output
+was valid, and at least one target was scanned or submitted. `complete` requires at least one
+finding; `empty` requires zero findings. `not-applicable` requires zero applicable targets.
+`partial`, `unavailable`, `failed`, and `disabled` remain explicit rather than collapsing to
+an empty result.
+
+The records are persisted through the existing versioned stage-summary JSON and restored
+when a pipeline resumes after detect. This avoids a database migration while preserving the
+evidence in `runs show`, audit records, and downstream report projections. Historical
+summaries without `scanner_executions` remain readable; absence is unavailable historical
+evidence, never reconstructed as a clean scan.
+
+OPT-023 will add isolated positive and clean deployment canaries that exercise this same
+adapter path. Canary results must not enter product findings.

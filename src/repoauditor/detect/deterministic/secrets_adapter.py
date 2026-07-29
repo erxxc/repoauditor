@@ -22,6 +22,7 @@ from pathlib import Path
 from ...store.models import Severity
 from ..ensemble import CandidateFinding
 from ._common import relativize
+from .execution import ScannerExecution
 
 logger = logging.getLogger(__name__)
 
@@ -51,12 +52,16 @@ class SecretsAdapter:
         self.timeout_seconds = timeout_seconds
         self.run_status = "not-run"
         self.failure_detail: str | None = None
+        self.output_valid = False
+        self.finding_count = 0
+        self.target_count = 0
 
     def run(self, snapshot_path: Path) -> list[CandidateFinding]:
         if shutil.which(_BINARY) is None:
             logger.info("gitleaks not installed; secrets adapter contributes no findings")
             self.run_status = "unavailable"
             return []
+        self.target_count = 1
         with tempfile.TemporaryDirectory() as tmp:
             report = Path(tmp) / "gitleaks.json"
             try:
@@ -93,8 +98,29 @@ class SecretsAdapter:
                 self.failure_detail = "scanner returned malformed or unsupported JSON"
                 return []
             findings = self.parse(raw_report, snapshot_path)
+            self.output_valid = True
+            self.finding_count = len(findings)
             self.run_status = "complete" if findings else "empty"
             return findings
+
+    def execution(self) -> ScannerExecution:
+        status = self.run_status
+        detail = self.failure_detail
+        if status == "not-run":
+            status = "failed"
+            detail = detail or "scanner execution did not run"
+        return ScannerExecution(
+            scanner="gitleaks",
+            status=status,
+            applicable=None if status == "unavailable" else True,
+            output_valid=self.output_valid,
+            finding_count=self.finding_count,
+            target_count=self.target_count,
+            target_count_basis=(
+                "unavailable" if status == "unavailable" else "submitted-root"
+            ),
+            failure_detail=detail,
+        )
 
     def parse(self, raw_output: str,
               snapshot_path: Path | None = None) -> list[CandidateFinding]:

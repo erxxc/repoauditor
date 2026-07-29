@@ -224,7 +224,8 @@ VI. Deterministic scanner assurance and capability
 
    A. OPT-022 — First-class scanner execution contract — highest/immediate — owner:
       reliability engineering — source:
-      `../deterministic-tool-deployment-audit-2026-07-29.json` — define one durable contract
+      `../deterministic-tool-deployment-audit-2026-07-29.json` and
+      `../scanner-execution-contract.md` — define one durable contract
       across Semgrep, gitleaks, pip-audit, and OSV-Scanner covering applicability, exact
       invocation/version, process exit, targets or manifests scanned, output-schema
       validation, finding count, skipped-target reasons, partial coverage, status, and
@@ -233,8 +234,12 @@ VI. Deterministic scanner assurance and capability
       otherwise report `not-applicable`, `partial`, `unavailable`, or `failed`. PR #64
       implements the first corrections: Semgrep target verification, OSV-Scanner v2
       invocation, producer-specific JSON validation, and all-tool bounded-UAT status
-      visibility. Activation: complete the common persisted/reportable contract and
-      regressions before new acquisition evidence is interpreted — DoD impact: none.
+      visibility. The typed contract now rejects unverified clean zeros and persists
+      applicability, validated-output state, findings, target/manifest count and count basis,
+      available version/configuration provenance, and failure detail through detect summaries
+      and resume reconstruction. Activation: satisfied for the common contract; OPT-023 and
+      OPT-024 add canaries and complete provenance before new acquisition evidence is
+      interpreted — DoD impact: none.
 
    B. OPT-023 — Per-scanner deployment canaries — highest/next — owner: reliability and
       detection engineering — source:
