@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-29",
+  "policy": "Every zero-result run requires an explicit complete, empty, not-applicable, partial, unavailable, or failed status supported by execution evidence. A zero without target or output validation is not a clean scan.",
+  "historical_review": {
+    "invalidated_semgrep_artifacts": [
+      "data/artifacts/snapshot-a9f8daec/094e2176d4a7/detect/semgrep.sarif",
+      "data/artifacts/snapshot/af70f27b266f/detect/semgrep.sarif",
+      "data/artifacts/uat_lightweight_app/e471aa12db5b/detect/semgrep.sarif"
+    ],
+    "reason": "Each artifact has zero results and a successful SARIF invocation, but predates target-count verification and was produced while outer ignore policy could select zero files. They are not valid clean-scan evidence.",
+    "valid_nonzero_acquisition_artifacts": {
+      "count": 10,
+      "finding_counts": {
+        "iterative-testing/juice-shop": 51,
+        "iterative-testing/uat-lightweight": 7,
+        "training-acquisition/express": 45,
+        "training-acquisition/flask": 16,
+        "training-acquisition/hanami": 12,
+        "training-acquisition/javalin": 22,
+        "training-acquisition/koa": 7,
+        "training-acquisition/sinatra": 15,
+        "training-acquisition/spark": 7,
+        "training-acquisition/starlette": 3
+      }
+    },
+    "retained_positive_outputs": {
+      "gitleaks": 1,
+      "pip_audit": 24,
+      "osv_scanner": 40
+    }
+  },
+  "defects_found": [
+    {
+      "tool": "Semgrep",
+      "severity": "execution-blocking",
+      "defect": "Outer Git/default Semgrep ignore discovery selected zero snapshot files while the process returned success.",
+      "fix": "Use --no-git-ignore, set the snapshot as --project-root, request simultaneous JSON output, and fail when scanned paths are empty or malformed."
+    },
+    {
+      "tool": "OSV-Scanner",
+      "severity": "execution-blocking",
+      "defect": "The adapter used pre-v2 CLI syntax against OSV-Scanner 2.4.0, walking one inode and missing non-Python lockfiles.",
+      "fix": "Use `osv-scanner scan source --format json --recursive --no-ignore <snapshot>` and retain the explicit requirements fallback."
+    },
+    {
+      "tool": "OSV-Scanner",
+      "severity": "status-integrity",
+      "defect": "No-package-source output and long stderr could be misclassified as failed or bypass fallback classification.",
+      "fix": "Classify verified absence of supported package sources as not-applicable using untruncated process output."
+    },
+    {
+      "tool": "gitleaks",
+      "severity": "status-integrity",
+      "defect": "A nonzero process exit or malformed report could be interpreted as an empty result when a report file existed.",
+      "fix": "Require exit code zero and a JSON array before classifying an empty report."
+    },
+    {
+      "tool": "pip-audit and OSV-Scanner",
+      "severity": "status-integrity",
+      "defect": "Malformed or unsupported JSON could parse to zero candidates and be reported as empty.",
+      "fix": "Validate producer-specific JSON structure before parsing candidates; malformed output is failed."
+    },
+    {
+      "tool": "bounded scanner UAT",
+      "severity": "observability",
+      "defect": "Only Semgrep status was published, leaving zero results from the other scanners ambiguous.",
+      "fix": "Publish per-fixture status and failure detail for Semgrep, gitleaks, pip-audit, and OSV-Scanner."
+    }
+  ],
+  "positive_controls": [
+    {
+      "snapshot": "data/raw/uat_lightweight_app/e471aa12db5b",
+      "results": {
+        "semgrep": {"status": "complete", "findings": 7},
+        "pip-audit": {"status": "complete", "findings": 24},
+        "osv-scanner": {"status": "complete", "findings": 40},
+        "gitleaks": {"status": "complete", "findings": 1}
+      }
+    },
+    {
+      "snapshot": "tests/fixtures/independent_serialize_javascript_pre/snapshot",
+      "results": {
+        "semgrep": {"status": "empty", "findings": 0},
+        "pip-audit": {"status": "not-applicable", "findings": 0},
+        "osv-scanner": {"status": "complete", "findings": 53},
+        "gitleaks": {"status": "empty", "findings": 0}
+      },
+      "zero_review": "Semgrep JSON confirmed scanned files but the public rules emitted no findings; gitleaks wrote a valid empty array with exit code zero; pip-audit has no Python requirements manifest."
+    }
+  ],
+  "final_bounded_uat": {
+    "fixture_count": 9,
+    "raw_candidate_count": 1941,
+    "scanner_run_statuses": {
+      "semgrep": {"complete": 9},
+      "gitleaks": {"complete": 3, "empty": 6},
+      "pip-audit": {"not-applicable": 9},
+      "osv-scanner": {"complete": 4, "not-applicable": 5}
+    },
+    "failed": 0,
+    "partial": 0,
+    "unavailable": 0,
+    "unexplained_zero": 0
+  },
+  "remaining_tool_limitations": [
+    "Semgrep's public ruleset still misses several advisory targets even when execution and target selection are verified.",
+    "A scanner-complete result establishes execution, not exhaustive vulnerability recall.",
+    "pip-audit is intentionally applicable only when a root requirements*.txt, poetry.lock, Pipfile.lock, or pdm.lock is present.",
+    "OSV-Scanner not-applicable means no supported package source was found; it is distinct from an empty vulnerability result."
+  ]
+}

@@ -138,14 +138,27 @@ def run_fixture(
         lambda: SecretsAdapter(timeout_seconds),
     )
     candidates: list[CandidateFinding] = []
-    semgrep_run_status = "not-observed"
+    scanner_run_statuses: dict[str, str] = {}
+    scanner_failure_details: dict[str, str] = {}
     for factory in factories:
         adapter = factory()
         candidates.extend(adapter.run(snapshot))
-        if getattr(adapter, "tool_name", None) == "sast":
-            semgrep_run_status = getattr(adapter, "run_status", None) or "unknown"
+        tool_name = getattr(adapter, "tool_name", "unknown")
+        if tool_name == "sca":
+            scanner_run_statuses.update(adapter.run_statuses)
+            scanner_failure_details.update(adapter.failure_details)
+        else:
+            producer = "semgrep" if tool_name == "sast" else "gitleaks"
+            scanner_run_statuses[producer] = (
+                getattr(adapter, "run_status", None) or "unknown"
+            )
+            failure = getattr(adapter, "failure_detail", None)
+            if failure:
+                scanner_failure_details[producer] = failure
     result = evaluate_candidates(repo_id=repo_id, expected=expected, candidates=candidates)
-    result["semgrep_run_status"] = semgrep_run_status
+    result["semgrep_run_status"] = scanner_run_statuses.get("semgrep", "not-observed")
+    result["scanner_run_statuses"] = dict(sorted(scanner_run_statuses.items()))
+    result["scanner_failure_details"] = dict(sorted(scanner_failure_details.items()))
     return result
 
 
@@ -230,6 +243,13 @@ def main() -> None:
             "semgrep_run_statuses": dict(sorted(Counter(
                 row["semgrep_run_status"] for row in results
             ).items())),
+            "scanner_run_statuses": {
+                scanner: dict(sorted(Counter(
+                    row["scanner_run_statuses"].get(scanner, "not-observed")
+                    for row in results
+                ).items()))
+                for scanner in ("semgrep", "gitleaks", "pip-audit", "osv-scanner")
+            },
         },
         "pair_deltas": pair_deltas,
         "results": results,

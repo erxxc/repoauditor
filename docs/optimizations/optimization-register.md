@@ -46,7 +46,11 @@ I. Evaluation and classifier maturity
       explicit failed scanner status rather than a clean empty result. The
       [`execution audit`](../semgrep-execution-audit-2026-07-29.json) records the before/after
       bounded UAT: all nine runs changed from empty to complete and produced 1,263 Semgrep
-      candidates, including the Juice Shop SQL-injection anchor — DoD impact: none.
+      candidates, including the Juice Shop SQL-injection anchor. The broader
+      [`deterministic-tool deployment audit`](../deterministic-tool-deployment-audit-2026-07-29.json)
+      also corrected OSV-Scanner v2 invocation, hardened malformed-output and exit handling
+      across SCA/secrets adapters, and exposes every scanner status. Its final nine-fixture
+      matrix has no failed, partial, unavailable, or unexplained-zero run — DoD impact: none.
 
    B. OPT-002 — Family-aware bootstrap ranges — deferred — owner: ML evaluation — source:
       `../triage-accuracy-roadmap.md` — activate after adequate held-out family breadth and

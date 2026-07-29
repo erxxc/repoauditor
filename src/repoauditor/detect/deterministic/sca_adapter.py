@@ -40,6 +40,23 @@ _EXACT_REQUIREMENT = re.compile(
 )
 
 
+def _valid_pip_audit_json(raw_output: str) -> bool:
+    try:
+        doc = json.loads(raw_output)
+    except json.JSONDecodeError:
+        return False
+    dependencies = doc.get("dependencies") if isinstance(doc, dict) else doc
+    return isinstance(dependencies, list)
+
+
+def _valid_osv_json(raw_output: str) -> bool:
+    try:
+        doc = json.loads(raw_output)
+    except json.JSONDecodeError:
+        return False
+    return isinstance(doc, dict) and isinstance(doc.get("results"), list)
+
+
 def _identity(ecosystem: str, package: str, version: str, advisory_id: str) -> str:
     """Canonical natural key for one affected dependency/advisory tuple."""
     parts = (ecosystem, package, version, advisory_id)
@@ -114,7 +131,12 @@ class ScaAdapter:
                         fallback_failure = (
                             proc.stderr.strip() or f"exit code {proc.returncode}"
                         )
-                    if proc is not None and proc.returncode in {0, 1} and proc.stdout.strip():
+                    if (
+                        proc is not None
+                        and proc.returncode in {0, 1}
+                        and proc.stdout.strip()
+                        and _valid_pip_audit_json(proc.stdout)
+                    ):
                         out += self.parse_pip_audit(
                             proc.stdout, relativize(str(req), snapshot_path)
                         )
@@ -129,6 +151,12 @@ class ScaAdapter:
                 self.failure_details["pip-audit"] = primary_failure[:500]
                 continue
             if proc.stdout.strip():
+                if not _valid_pip_audit_json(proc.stdout):
+                    self.run_statuses["pip-audit"] = "failed"
+                    self.failure_details["pip-audit"] = (
+                        "scanner returned malformed or unsupported JSON"
+                    )
+                    continue
                 out += self.parse_pip_audit(
                     proc.stdout, relativize(str(req), snapshot_path))
             else:
@@ -175,7 +203,16 @@ class ScaAdapter:
             return []
         try:
             proc = subprocess.run(
-                ["osv-scanner", "--format", "json", "-r", str(snapshot_path)],
+                [
+                    "osv-scanner",
+                    "scan",
+                    "source",
+                    "--format",
+                    "json",
+                    "--recursive",
+                    "--no-ignore",
+                    str(snapshot_path),
+                ],
                 capture_output=True, text=True, timeout=self.timeout_seconds,
             )
         except (subprocess.TimeoutExpired, OSError) as exc:
@@ -184,10 +221,9 @@ class ScaAdapter:
             self.failure_details["osv-scanner"] = f"{type(exc).__name__}: {exc}"[:500]
             return []
         if proc.returncode not in {0, 1}:
-            primary_failure = (
-                proc.stderr.strip() or f"exit code {proc.returncode}"
-            )[:350]
-            if "no package sources found" in primary_failure.lower():
+            primary_detail = proc.stderr.strip() or f"exit code {proc.returncode}"
+            primary_failure = primary_detail[:350]
+            if "no package sources found" in primary_detail.lower():
                 discovered = sorted({
                     path
                     for path in snapshot_path.rglob("requirements*.txt")
@@ -197,6 +233,7 @@ class ScaAdapter:
                 if explicit:
                     findings: list[CandidateFinding] = []
                     fallback_failures: list[str] = []
+                    only_no_source_failures = True
                     for requirement in explicit:
                         try:
                             fallback = subprocess.run(
@@ -209,6 +246,7 @@ class ScaAdapter:
                                 timeout=self.timeout_seconds,
                             )
                         except (subprocess.TimeoutExpired, OSError) as exc:
+                            only_no_source_failures = False
                             fallback_failures.append(
                                 f"{requirement.name}: {type(exc).__name__}: {exc}"
                             )
@@ -217,13 +255,22 @@ class ScaAdapter:
                             detail = fallback.stderr.strip() or (
                                 f"exit code {fallback.returncode}"
                             )
+                            if "no package sources found" not in detail.lower():
+                                only_no_source_failures = False
                             fallback_failures.append(
                                 f"{requirement.name}: {detail[:120]}"
                             )
                             continue
                         if not fallback.stdout.strip():
+                            only_no_source_failures = False
                             fallback_failures.append(
                                 f"{requirement.name}: scanner returned no JSON output"
+                            )
+                            continue
+                        if not _valid_osv_json(fallback.stdout):
+                            only_no_source_failures = False
+                            fallback_failures.append(
+                                f"{requirement.name}: malformed or unsupported JSON"
                             )
                             continue
                         findings += self.parse_osv(
@@ -243,15 +290,28 @@ class ScaAdapter:
                             f"may be uncovered. Primary detail: {primary_failure}"
                         )[:500]
                         return findings
+                    if fallback_failures and only_no_source_failures:
+                        self.run_statuses["osv-scanner"] = "not-applicable"
+                        return []
                     primary_failure += (
                         "; explicit requirements fallback failures: "
                         + "; ".join(fallback_failures)
                     )[:150]
+                else:
+                    self.run_statuses["osv-scanner"] = "not-applicable"
+                    return []
             self.run_statuses["osv-scanner"] = "failed"
             self.failure_details["osv-scanner"] = primary_failure[:500]
             return []
         if not proc.stdout.strip():
-            self.run_statuses["osv-scanner"] = "empty"
+            self.run_statuses["osv-scanner"] = "failed"
+            self.failure_details["osv-scanner"] = "scanner returned no JSON output"
+            return []
+        if not _valid_osv_json(proc.stdout):
+            self.run_statuses["osv-scanner"] = "failed"
+            self.failure_details["osv-scanner"] = (
+                "scanner returned malformed or unsupported JSON"
+            )
             return []
         findings = self.parse_osv(proc.stdout, snapshot_path)
         self.run_statuses["osv-scanner"] = "complete" if findings else "empty"

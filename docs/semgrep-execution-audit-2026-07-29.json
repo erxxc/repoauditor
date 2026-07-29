@@ -80,7 +80,8 @@
     },
     "osv_scanner": {
       "version": "2.4.0",
-      "execution_confirmed": true
+      "execution_confirmed": true,
+      "note": "The subsequent all-tool audit corrected the adapter from pre-v2 syntax to `scan source`; see deterministic-tool-deployment-audit-2026-07-29.json."
     }
   },
   "limitations": [
