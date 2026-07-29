@@ -4,19 +4,16 @@ Status: authoritative post-MVP work list as of 2026-07-29. POC acceptance is com
 
 Current execution priorities
 
-1. **OPT-025 — required scanner deployment gates** is the next reliability priority. Promote
-   the execution contract, canaries, and provenance checks into fast CI; larger public-corpus
-   measurement remains scheduled/manual.
-2. **OPT-001 — reviewed-label growth** resumes as the active evidence workstream after
-   OPT-025 establishes trustworthy acquisition inputs. Prioritize non-CI
+1. **OPT-001 — reviewed-label growth** resumes as the active evidence workstream now that
+   scanner acquisition inputs have a required deployment gate. Prioritize non-CI
    positive-mechanism breadth; do not relax abstention, holdout, or evaluation-family
    controls merely to reach the numeric target.
-3. **OPT-026 — historical scanner remeasurement** follows the assurance gate so invalidated
+2. **OPT-026 — historical scanner remeasurement** follows the assurance gate so invalidated
    historical zeros can be rerun without converting new candidates into automatic labels.
-4. **OPT-002 — family-aware bootstrap ranges** follows only after OPT-001 produces adequate
+3. **OPT-002 — family-aware bootstrap ranges** follows only after OPT-001 produces adequate
    held-out family breadth and both classes.
 
-OPT-022 through OPT-024 are implemented. OPT-003 through OPT-006 and OPT-008 through OPT-014
+OPT-022 through OPT-025 are implemented. OPT-003 through OPT-006 and OPT-008 through OPT-014
 remain behind their documented evidence, budget, safety, or methodology gates. OPT-016 is
 routine dependency maintenance. OPT-027 through OPT-030 remain ordered capability/scale work
 behind the assurance and evidence gates above.
@@ -268,14 +265,21 @@ VI. Deterministic scanner assurance and capability
       responses, so version remains explicitly null rather than inferred. Activation:
       satisfied after OPT-022; OPT-025 promotes these assertions to CI — DoD impact: none.
 
-   D. OPT-025 — Required scanner deployment gates — high — owner: CI/reliability engineering
+   D. OPT-025 — Required scanner deployment gates — implemented — owner: CI/reliability engineering
       — source:
-      `../deterministic-tool-deployment-audit-2026-07-29.json` — add a fast required CI lane
+      `../deterministic-tool-deployment-audit-2026-07-29.json` and
+      `../scanner-deployment-gate.md` — add a fast required CI lane
       that asserts scanner startup, canary outcomes, nonzero applicable target counts,
       parseable output schemas, version/config provenance, and absence of unexplained zeros.
       Keep the larger public-corpus scan scheduled/manual because it is slower and
       registry/network dependent; publish its complete per-tool status matrix and retain raw
-      artifacts. Activation: after OPT-022 through OPT-024 — DoD impact: none.
+      artifacts. The stable `scanner deployment / required` job now runs for pull requests,
+      main pushes, and manual test dispatches with exact scanner versions. Canary schema v2
+      fails closed on positive/negative execution or scanner-specific provenance, publishes
+      the report to the step summary, and retains raw JSON and version evidence for 30 days.
+      The larger corpus matrix remains manual. Activation: satisfied after OPT-022 through
+      OPT-024; repository branch protection should require the stable job name — DoD impact:
+      none.
 
    E. OPT-026 — Rerun and qualify historical scanner evidence — high/evidence repair —
       owner: detection evaluation — source:

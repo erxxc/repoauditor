@@ -39,8 +39,9 @@ configuration and advisory provenance is tracked separately in OPT-024.
 
 ## Report interpretation
 
-The JSON report uses schema version 1 and includes one result per scanner. `passed` is
-fail-closed at both scanner and report level. Each probe embeds the common
+The JSON report uses schema version 2 and includes one result per scanner. `passed` is
+fail-closed at both scanner and report level, and `provenance_passed` discloses the
+scanner-specific OPT-024 check. Each probe embeds the common
 `ScannerExecution` evidence: status, applicability, output validity, finding and target
 counts, count basis, available version/configuration, and attributable failure detail.
 

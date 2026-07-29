@@ -28,6 +28,7 @@ class ScannerCanaryResult(BaseModel):
 
     scanner: str
     passed: bool
+    provenance_passed: bool
     positive: CanaryProbe
     clean: CanaryProbe
 
@@ -35,7 +36,7 @@ class ScannerCanaryResult(BaseModel):
 class ScannerCanaryReport(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
-    schema_version: Literal[1] = 1
+    schema_version: Literal[2] = 2
     passed: bool
     results: list[ScannerCanaryResult]
     persisted_findings: Literal[0] = 0
@@ -81,6 +82,44 @@ def _clean_probe(
     )
 
 
+def _provenance_passed(
+    scanner: str, positive: CanaryProbe, clean: CanaryProbe
+) -> bool:
+    executions = (positive.execution, clean.execution)
+    if not all(item.version and item.invocation for item in executions):
+        return False
+    if scanner == "semgrep":
+        return all(
+            item.configuration_resolution == "pinned-verified"
+            and item.configuration_digest
+            and item.rule_count is not None
+            and item.rule_count > 0
+            for item in executions
+        )
+    if scanner == "gitleaks":
+        return all(
+            item.configuration_resolution == "embedded-default"
+            and item.configuration == "gitleaks embedded default"
+            for item in executions
+        )
+    if scanner == "pip-audit":
+        return all(
+            item.configuration_resolution == "live-service"
+            and item.advisory_database == "PyPI Advisory Database"
+            and item.advisory_database_checked_at is not None
+            for item in executions
+        )
+    if scanner == "osv-scanner":
+        return (
+            positive.execution.configuration_resolution == "live-service"
+            and positive.execution.advisory_database == "OSV.dev"
+            and positive.execution.advisory_database_checked_at is not None
+            and clean.execution.configuration_resolution == "not-applicable"
+            and clean.execution.advisory_database == "OSV.dev"
+        )
+    return False
+
+
 def _semgrep_canary(root: Path, timeout_seconds: int) -> ScannerCanaryResult:
     rules = root / "semgrep-canary.yml"
     rules.write_text(
@@ -114,9 +153,11 @@ def _semgrep_canary(root: Path, timeout_seconds: int) -> ScannerCanaryResult:
     clean = _clean_probe(clean_adapter.execution().model_copy(
         update={"configuration": "repoauditor-semgrep-canary-v1"}
     ))
+    provenance_passed = _provenance_passed("semgrep", positive, clean)
     return ScannerCanaryResult(
         scanner="semgrep",
-        passed=positive.passed and clean.passed,
+        passed=positive.passed and clean.passed and provenance_passed,
+        provenance_passed=provenance_passed,
         positive=positive,
         clean=clean,
     )
@@ -137,9 +178,11 @@ def _gitleaks_canary(root: Path, timeout_seconds: int) -> ScannerCanaryResult:
     clean_adapter.run(clean_root)
     positive = _positive_probe(positive_adapter.execution())
     clean = _clean_probe(clean_adapter.execution())
+    provenance_passed = _provenance_passed("gitleaks", positive, clean)
     return ScannerCanaryResult(
         scanner="gitleaks",
-        passed=positive.passed and clean.passed,
+        passed=positive.passed and clean.passed and provenance_passed,
+        provenance_passed=provenance_passed,
         positive=positive,
         clean=clean,
     )
@@ -162,9 +205,11 @@ def _pip_audit_canary(root: Path, timeout_seconds: int) -> ScannerCanaryResult:
     }["pip-audit"]
     positive = _positive_probe(positive_execution)
     clean = _clean_probe(clean_execution)
+    provenance_passed = _provenance_passed("pip-audit", positive, clean)
     return ScannerCanaryResult(
         scanner="pip-audit",
-        passed=positive.passed and clean.passed,
+        passed=positive.passed and clean.passed and provenance_passed,
+        provenance_passed=provenance_passed,
         positive=positive,
         clean=clean,
     )
@@ -187,9 +232,11 @@ def _osv_canary(root: Path, timeout_seconds: int) -> ScannerCanaryResult:
     }["osv-scanner"]
     positive = _positive_probe(positive_execution)
     clean = _clean_probe(clean_execution, allow_not_applicable=True)
+    provenance_passed = _provenance_passed("osv-scanner", positive, clean)
     return ScannerCanaryResult(
         scanner="osv-scanner",
-        passed=positive.passed and clean.passed,
+        passed=positive.passed and clean.passed and provenance_passed,
+        provenance_passed=provenance_passed,
         positive=positive,
         clean=clean,
     )

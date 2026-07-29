@@ -30,6 +30,7 @@ def _result(scanner: str) -> canaries.ScannerCanaryResult:
     return canaries.ScannerCanaryResult(
         scanner=scanner,
         passed=True,
+        provenance_passed=True,
         positive=positive,
         clean=clean,
     )
@@ -49,6 +50,33 @@ def test_canary_probes_require_positive_and_clean_evidence():
         _execution("osv-scanner", "not-applicable", 0, 0),
         allow_not_applicable=True,
     ).passed is True
+
+
+def test_canary_provenance_is_scanner_specific():
+    base = _execution("semgrep", "complete", 1, 1)
+    semgrep = base.model_copy(update={
+        "version": "1.170.1",
+        "invocation": ("semgrep", "scan"),
+        "configuration": "repoauditor-semgrep-canary-v1",
+        "configuration_digest": "abc",
+        "rule_count": 1,
+        "configuration_resolution": "pinned-verified",
+    })
+    clean = semgrep.model_copy(update={
+        "status": "empty",
+        "finding_count": 0,
+    })
+
+    assert canaries._provenance_passed(
+        "semgrep",
+        canaries._positive_probe(semgrep),
+        canaries._clean_probe(clean),
+    )
+    assert not canaries._provenance_passed(
+        "semgrep",
+        canaries._positive_probe(semgrep.model_copy(update={"rule_count": 0})),
+        canaries._clean_probe(clean),
+    )
 
 
 def test_canary_orchestrator_never_persists_findings(monkeypatch):
@@ -75,7 +103,9 @@ def test_canary_orchestrator_never_persists_findings(monkeypatch):
 
     assert report.passed is True
     assert report.persisted_findings == 0
+    assert rendered["schema_version"] == 2
     assert rendered["persisted_findings"] == 0
+    assert all(item["provenance_passed"] for item in rendered["results"])
     assert {item["scanner"] for item in rendered["results"]} == {
         "semgrep", "gitleaks", "pip-audit", "osv-scanner",
     }
