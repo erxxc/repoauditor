@@ -182,6 +182,8 @@ class DetectionRun(list[Finding]):
         selected_regions: list[dict[str, str]] | None = None,
         completed_region_calls: int = 0,
         skipped_completed_region_calls: int = 0,
+        scanner_statuses: dict[str, str] | None = None,
+        scanner_failures: dict[str, str] | None = None,
     ):
         super().__init__(findings)
         self.source_counts = source_counts
@@ -191,6 +193,8 @@ class DetectionRun(list[Finding]):
         self.selected_regions = selected_regions or []
         self.completed_region_calls = completed_region_calls
         self.skipped_completed_region_calls = skipped_completed_region_calls
+        self.scanner_statuses = scanner_statuses or {}
+        self.scanner_failures = scanner_failures or {}
 
 
 def run_ensemble(
@@ -220,10 +224,17 @@ def run_ensemble(
     sarif_path = None
     semgrep_status = None
     tool_candidates: list[CandidateFinding] = []
+    scanner_statuses: dict[str, str] = {}
+    scanner_failures: dict[str, str] = {}
     if config.detect.run_deterministic_tools:
-        tool_candidates, sarif_path, semgrep_status = _run_deterministic_adapters(
+        adapter_result = _run_deterministic_adapters(
             snapshot_path, config, artifact_path
         )
+        # Test/scripted adapters historically returned the three-field public contract.
+        # Preserve that seam while production adapters attach execution diagnostics.
+        tool_candidates, sarif_path, semgrep_status = adapter_result[:3]
+        if len(adapter_result) >= 5:
+            scanner_statuses, scanner_failures = adapter_result[3:5]
         for cand in tool_candidates:
             persisted.append(_persist_tool_candidate(cand, repo_id, architecture, config))
     else:
@@ -232,6 +243,10 @@ def run_ensemble(
         sast = SastAdapter(sarif_output_path=artifact_path)
         sast.write_empty_artifact("disabled")
         sarif_path, semgrep_status = artifact_path, sast.run_status
+        scanner_statuses = {
+            name: "disabled"
+            for name in ("semgrep", "pip-audit", "osv-scanner", "gitleaks")
+        }
 
     projection = project_detection_work(
         snapshot_path, config, lens_count=len(LENSES)
@@ -335,6 +350,8 @@ def run_ensemble(
         ],
         completed_region_calls=completed_region_calls,
         skipped_completed_region_calls=skipped_completed_region_calls,
+        scanner_statuses=scanner_statuses,
+        scanner_failures=scanner_failures,
     )
 
 
@@ -454,7 +471,13 @@ def _canonicalize_citation(
 
 def _run_deterministic_adapters(
     snapshot_path: Path, config: Config, sarif_output_path: Path,
-) -> tuple[list[CandidateFinding], Path | None, str | None]:
+) -> tuple[
+    list[CandidateFinding],
+    Path | None,
+    str | None,
+    dict[str, str],
+    dict[str, str],
+]:
     """Run the SAST / SCA / secret adapters over the snapshot, in parallel.
 
     Each adapter shells out to an external scanner and already degrades to no findings
@@ -465,17 +488,35 @@ def _run_deterministic_adapters(
 
     timeout = config.detect.tool_timeout_seconds
     sast = SastAdapter(timeout, sarif_output_path=sarif_output_path)
-    adapters = [sast, ScaAdapter(timeout), SecretsAdapter(timeout)]
+    sca = ScaAdapter(timeout)
+    secrets = SecretsAdapter(timeout)
+    adapters = [sast, sca, secrets]
     candidates: list[CandidateFinding] = []
     with ThreadPoolExecutor(max_workers=len(adapters)) as pool:
         for cands in pool.map(lambda a: _safe_run(a, snapshot_path), adapters):
             candidates.extend(cands)
     if not sarif_output_path.is_file():
         sast.write_empty_artifact(sast.run_status or "failed")
+    statuses = {
+        "semgrep": sast.run_status or "failed",
+        **sca.run_statuses,
+        "gitleaks": secrets.run_status,
+    }
+    failures = {
+        name: detail
+        for name, detail in {
+            "semgrep": sast.failure_detail,
+            **sca.failure_details,
+            "gitleaks": secrets.failure_detail,
+        }.items()
+        if detail
+    }
     return (
         candidates,
         sarif_output_path if sarif_output_path.is_file() else None,
         sast.run_status,
+        statuses,
+        failures,
     )
 
 
@@ -484,6 +525,15 @@ def _safe_run(adapter, snapshot_path: Path) -> list[CandidateFinding]:
         return adapter.run(snapshot_path)
     except Exception as exc:  # an adapter must never break the detect run
         logger.warning("deterministic adapter %s failed: %s", adapter.tool_name, exc)
+        detail = f"{type(exc).__name__}: {exc}"[:500]
+        if hasattr(adapter, "run_status"):
+            adapter.run_status = "failed"
+        if hasattr(adapter, "failure_detail"):
+            adapter.failure_detail = detail
+        for name, status in getattr(adapter, "run_statuses", {}).items():
+            if status == "not-run":
+                adapter.run_statuses[name] = "failed"
+                adapter.failure_details[name] = detail
         return []
 
 

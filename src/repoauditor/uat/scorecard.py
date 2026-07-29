@@ -22,6 +22,8 @@ class CaseResult:
     name: str
     passed: bool
     detail: str
+    mechanism_exercised: bool
+    coverage: str
 
 
 @dataclass(frozen=True)
@@ -63,6 +65,8 @@ def score_demo(
         results.append(CaseResult(
             item["case"], item["title"], passed,
             f"{len(matches)} matching stored finding(s); confirmed={passed}",
+            bool(matches),
+            "complete" if matches else "missing",
         ))
 
     store_ok = any(
@@ -73,31 +77,44 @@ def score_demo(
     results.append(CaseResult(
         6, "Production-like customer datastore", store_ok,
         "customer datastore recovered by map" if store_ok else "customer datastore not recovered",
+        store_ok,
+        "complete" if store_ok else "missing",
     ))
 
     for item in expected["expected_killed"]:
         matches = [f for f in findings if _file_matches(f.file, item["file"])]
         killed = [f for f in matches if f.falsification_status is FalsificationStatus.KILLED]
-        passed = bool(killed)
-        detail = f"{len(matches)} matching candidate(s); killed={passed}"
+        countable_matches = [
+            finding for finding in countable
+            if _file_matches(finding.file, item["file"])
+        ]
+        # A negative control's security outcome passes when it does not survive into the
+        # countable set. Candidate creation and falsification are coverage measurements,
+        # not prerequisites for a safe final disposition.
+        passed = not countable_matches
+        detail = (
+            f"{len(matches)} matching candidate(s); killed={bool(killed)}; "
+            f"countable={len(countable_matches)}"
+        )
         planted = planted_by_case.get(item["case"], {})
-        if planted.get("counts_as_findings") == 0:
-            sources = {
-                (finding.source_tool or finding.source_lens or "unknown")
-                for finding in killed
-            }
-            countable_matches = [
-                finding for finding in countable
-                if _file_matches(finding.file, item["file"])
-            ]
-            passed = passed and len(sources) >= 2 and not countable_matches
-            detail += (
-                f"; killed_sources={len(sources)}; "
-                f"countable={len(countable_matches)}"
-            )
+        sources = {
+            (finding.source_tool or finding.source_lens or "unknown")
+            for finding in matches
+        }
+        expected_sources = {
+            source["name"] for source in planted.get("expected_sources", [])
+        }
+        coverage = (
+            "not-exercised" if not matches
+            else "complete" if len(sources) >= len(expected_sources)
+            else "partial"
+        )
+        detail += f"; observed_sources={len(sources)}/{len(expected_sources)}"
         results.append(CaseResult(
             item["case"], f"Killed: {item['kill_basis']}", passed,
             detail,
+            bool(matches),
+            coverage,
         ))
 
     for item in expected.get("expected_unresolved", []):
@@ -106,6 +123,8 @@ def score_demo(
         results.append(CaseResult(
             item["case"], "Unresolved finding routed to review", reviewed,
             f"{len(matches)} matching candidate(s); review request created={reviewed}",
+            bool(matches),
+            "complete" if reviewed else "missing",
         ))
     results.sort(key=lambda result: result.case)
 
@@ -117,18 +136,32 @@ def score_demo(
         "repo_id": repo_id,
         "passed": sum(result.passed for result in results),
         "total": len(results),
+        "outcome_passed": sum(result.passed for result in results),
+        "mechanisms_exercised": sum(
+            result.mechanism_exercised for result in results
+        ),
         "cases": [result.__dict__ for result in results],
     }
     json_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     lines = [
         f"# UAT Demo Scorecard — {repo_id}", "",
-        f"**{payload['passed']}/{payload['total']} expected behaviors passed.**", "",
-        "| Case | Result | Behavior | Evidence |", "|---:|---|---|---|",
+        f"**{payload['outcome_passed']}/{payload['total']} final security outcomes passed.**",
+        "",
+        f"**{payload['mechanisms_exercised']}/{payload['total']} expected mechanisms were "
+        "exercised.**",
+        "",
+        "A negative control passes when it does not survive into the countable finding set. "
+        "Whether detection raised it and falsification exercised the expected mechanism is "
+        "reported separately as coverage.",
+        "",
+        "| Case | Outcome | Mechanism | Coverage | Behavior | Evidence |",
+        "|---:|---|---|---|---|---|",
     ]
     for result in results:
         lines.append(
             f"| {result.case} | {'PASS' if result.passed else 'MISS'} | "
-            f"{result.name} | {result.detail} |"
+            f"{'exercised' if result.mechanism_exercised else 'not exercised'} | "
+            f"{result.coverage} | {result.name} | {result.detail} |"
         )
     markdown_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return DemoScorecard(repo_id, tuple(results), markdown_path, json_path)

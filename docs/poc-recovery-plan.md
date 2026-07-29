@@ -24,8 +24,9 @@ II. Outstanding Items (consolidated)
 
    A. POC acceptance and operations
 
-      1. Final clean-environment, non-security-user walkthrough — not started — RepoAuditor
-         engineering plus independent non-security reviewer.
+      1. Final clean-environment, non-security-user walkthrough — first assistant-operated
+         attempt not accepted; offline corrections and an independent rerun remain —
+         RepoAuditor engineering plus independent non-security reviewer.
       2. Untouched public-pair production-selection measurement — completed on Plotly.js
          CVE-2017-1000006 under the frozen target-blind protocol — evaluation engineering
          plus AppSec reviewer.
@@ -76,11 +77,12 @@ II. Outstanding Items (consolidated)
 III. MVP — Required to Reach Done
 
    A. Final non-security-user acceptance walkthrough — blocker: must occur after the
-      quantitative presentation gate is reflected in main; fastest path: use a clean
-      checkout and [`poc-acceptance-walkthrough.md`](poc-acceptance-walkthrough.md) with the
-      README’s guided demo, recording dependency/model preflight, scan/review/finalize
-      behavior, produced artifacts, runtime, and any user confusion — owner: RepoAuditor
-      engineering plus independent non-security reviewer.
+      offline corrections recorded in
+      [`poc-acceptance-attempt-2026-07-28.md`](poc-acceptance-attempt-2026-07-28.md) merge;
+      fastest path: rerun [`poc-acceptance-walkthrough.md`](poc-acceptance-walkthrough.md)
+      from a clean checkout with the Anthropic baseline, recording dependency/model
+      preflight, scan/review/finalize behavior, produced artifacts, runtime, and any user
+      confusion — owner: RepoAuditor engineering plus independent non-security reviewer.
 
 IV. Deferred / Tuning (post-MVP)
 

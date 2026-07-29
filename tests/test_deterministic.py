@@ -133,6 +133,63 @@ def test_sca_adapter_parses_osv_scanner_json_and_auto_detects_format():
     assert "django" in c.citation_snippet and "GHSA-abcd" in c.citation_snippet
 
 
+def test_sca_adapter_records_pip_audit_execution_failure(tmp_path, monkeypatch):
+    (tmp_path / "requirements.txt").write_text("requests==2.19.1\n")
+    monkeypatch.setattr(
+        "repoauditor.detect.deterministic.sca_adapter.shutil.which",
+        lambda binary: f"/usr/bin/{binary}",
+    )
+
+    class Failed:
+        returncode = 2
+        stdout = ""
+        stderr = "failed to prepare isolated environment"
+
+    monkeypatch.setattr(
+        "repoauditor.detect.deterministic.sca_adapter.subprocess.run",
+        lambda *args, **kwargs: Failed(),
+    )
+    adapter = ScaAdapter()
+
+    assert adapter._run_pip_audit(tmp_path) == []
+    assert adapter.run_statuses["pip-audit"] == "failed"
+    assert "isolated environment" in adapter.failure_details["pip-audit"]
+
+
+def test_sca_adapter_falls_back_to_exact_direct_pins(tmp_path, monkeypatch):
+    (tmp_path / "requirements.txt").write_text("requests==2.19.1\n")
+    monkeypatch.setattr(
+        "repoauditor.detect.deterministic.sca_adapter.shutil.which",
+        lambda binary: f"/usr/bin/{binary}",
+    )
+
+    class Failed:
+        returncode = 2
+        stdout = ""
+        stderr = "failed to prepare isolated environment"
+
+    class Direct:
+        returncode = 1
+        stderr = ""
+        stdout = json.dumps({"dependencies": [{
+            "name": "requests", "version": "2.19.1",
+            "vulns": [{"id": "CVE-2018-18074", "fix_versions": ["2.20.0"]}],
+        }]})
+
+    calls = iter([Failed(), Direct()])
+    monkeypatch.setattr(
+        "repoauditor.detect.deterministic.sca_adapter.subprocess.run",
+        lambda *args, **kwargs: next(calls),
+    )
+    adapter = ScaAdapter()
+
+    findings = adapter._run_pip_audit(tmp_path)
+
+    assert any("CVE-2018-18074" in finding.title for finding in findings)
+    assert adapter.run_statuses["pip-audit"] == "partial"
+    assert "without transitive resolution" in adapter.failure_details["pip-audit"]
+
+
 @pytest.mark.integration
 def test_sca_adapter_run_returns_a_list_without_raising(tmp_path):
     assert isinstance(ScaAdapter().run(tmp_path), list)
@@ -275,7 +332,18 @@ def test_fake_adapter_candidate_persists_through_ensemble_fast_lane(
             trust_boundary_ref="public HTTP edge",
             rationale="Fixed adapter fixture.",
         )
-        return [candidate], sarif_path, "complete"
+        return (
+            [candidate],
+            sarif_path,
+            "complete",
+            {
+                "semgrep": "complete",
+                "pip-audit": "empty",
+                "osv-scanner": "empty",
+                "gitleaks": "empty",
+            },
+            {},
+        )
 
     monkeypatch.setattr(
         "repoauditor.detect.ensemble._run_deterministic_adapters", fake_adapters
@@ -290,3 +358,6 @@ def test_fake_adapter_candidate_persists_through_ensemble_fast_lane(
     assert persisted[0].source_tool == "sast"
     assert persisted[0].trust_boundary_id is not None
     assert result.source_counts["semgrep"] == 1
+    assert result.scanner_statuses["semgrep"] == "complete"
+    assert result.scanner_statuses["pip-audit"] == "empty"
+    assert result.scanner_failures == {}

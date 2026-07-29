@@ -156,12 +156,18 @@ def _as_of_lines(
     detect = stages.get("detect", {})
     coverage = detect.get("scanner_coverage")
     semgrep_status = detect.get("semgrep_status")
+    scanner_statuses = detect.get("scanner_statuses") or {}
     if coverage is None:
         coverage_text = "not recorded for this run"
     elif not coverage.get("checked"):
         coverage_text = "deterministic scanners disabled by configuration"
     elif coverage.get("missing"):
         coverage_text = "incomplete; unavailable: " + ", ".join(coverage["missing"])
+    elif any(status in {"failed", "partial"} for status in scanner_statuses.values()):
+        coverage_text = "incomplete; degraded: " + ", ".join(
+            f"{name}={status}" for name, status in sorted(scanner_statuses.items())
+            if status in {"failed", "partial"}
+        )
     elif semgrep_status not in (None, "complete", "empty"):
         coverage_text = f"incomplete; Semgrep status={semgrep_status}"
     else:
