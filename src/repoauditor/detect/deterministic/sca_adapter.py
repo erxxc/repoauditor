@@ -31,6 +31,7 @@ logger = logging.getLogger(__name__)
 
 TOOL_NAME = "sca"
 _MANIFEST_GLOBS = ("requirements*.txt", "poetry.lock", "Pipfile.lock", "pdm.lock")
+_MAX_EXPLICIT_OSV_REQUIREMENTS = 100
 # SCA confirms a *known* CVE match against a declared dependency — the existence is
 # reliable, but exploitability in this codebase is not, so a moderate confidence.
 _SCA_CONFIDENCE = 0.6
@@ -183,10 +184,71 @@ class ScaAdapter:
             self.failure_details["osv-scanner"] = f"{type(exc).__name__}: {exc}"[:500]
             return []
         if proc.returncode not in {0, 1}:
-            self.run_statuses["osv-scanner"] = "failed"
-            self.failure_details["osv-scanner"] = (
+            primary_failure = (
                 proc.stderr.strip() or f"exit code {proc.returncode}"
-            )[:500]
+            )[:350]
+            if "no package sources found" in primary_failure.lower():
+                discovered = sorted({
+                    path
+                    for path in snapshot_path.rglob("requirements*.txt")
+                    if path.is_file()
+                })
+                explicit = discovered[:_MAX_EXPLICIT_OSV_REQUIREMENTS]
+                if explicit:
+                    findings: list[CandidateFinding] = []
+                    fallback_failures: list[str] = []
+                    for requirement in explicit:
+                        try:
+                            fallback = subprocess.run(
+                                [
+                                    "osv-scanner", "scan", "source", "--format", "json",
+                                    "--lockfile", str(requirement),
+                                ],
+                                capture_output=True,
+                                text=True,
+                                timeout=self.timeout_seconds,
+                            )
+                        except (subprocess.TimeoutExpired, OSError) as exc:
+                            fallback_failures.append(
+                                f"{requirement.name}: {type(exc).__name__}: {exc}"
+                            )
+                            continue
+                        if fallback.returncode not in {0, 1}:
+                            detail = fallback.stderr.strip() or (
+                                f"exit code {fallback.returncode}"
+                            )
+                            fallback_failures.append(
+                                f"{requirement.name}: {detail[:120]}"
+                            )
+                            continue
+                        if not fallback.stdout.strip():
+                            fallback_failures.append(
+                                f"{requirement.name}: scanner returned no JSON output"
+                            )
+                            continue
+                        findings += self.parse_osv(
+                            fallback.stdout, snapshot_path
+                        )
+                    if not fallback_failures:
+                        bounded = (
+                            f" (bounded to {_MAX_EXPLICIT_OSV_REQUIREMENTS} of "
+                            f"{len(discovered)})"
+                            if len(discovered) > len(explicit)
+                            else ""
+                        )
+                        self.run_statuses["osv-scanner"] = "partial"
+                        self.failure_details["osv-scanner"] = (
+                            "recursive manifest discovery failed; explicitly scanned "
+                            f"{len(explicit)} requirements file(s){bounded}. Other manifest types "
+                            f"may be uncovered. Primary detail: {primary_failure}"
+                        )[:500]
+                        return findings
+                    primary_failure += (
+                        "; explicit requirements fallback failures: "
+                        + "; ".join(fallback_failures)
+                    )[:150]
+            self.run_statuses["osv-scanner"] = "failed"
+            self.failure_details["osv-scanner"] = primary_failure[:500]
             return []
         if not proc.stdout.strip():
             self.run_statuses["osv-scanner"] = "empty"
