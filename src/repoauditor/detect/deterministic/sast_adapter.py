@@ -13,9 +13,11 @@ must never break a detect run.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import logging
 import os
+import re
 import shutil
 import subprocess
 import tempfile
@@ -30,6 +32,12 @@ from ...triage.features import (
 from ..ensemble import CandidateFinding
 from ._common import relativize
 from .execution import ScannerExecution
+from .provenance import (
+    SEMGREP_CONFIGURATION,
+    SEMGREP_RULESET_SHA256,
+    pinned_semgrep_configuration,
+    tool_version,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +68,7 @@ class SastAdapter:
         self,
         timeout_seconds: int = 180,
         sarif_output_path: Path | None = None,
-        configuration: str = "auto",
+        configuration: str = SEMGREP_CONFIGURATION,
     ) -> None:
         self.timeout_seconds = timeout_seconds
         self.sarif_output_path = sarif_output_path
@@ -71,6 +79,11 @@ class SastAdapter:
         self.output_valid = False
         self.finding_count = 0
         self.version: str | None = None
+        self.configuration_digest: str | None = None
+        self.rule_count: int | None = None
+        self.configuration_resolution: str | None = None
+        self.invocation: tuple[str, ...] = ()
+        self._resolved_configuration: str | None = None
 
     def _write_artifact(self, raw_output: str) -> None:
         if self.sarif_output_path is None:
@@ -98,8 +111,63 @@ class SastAdapter:
     def run(self, snapshot_path: Path) -> list[CandidateFinding]:
         if shutil.which(_BINARY) is None:
             logger.info("semgrep not installed; SAST adapter contributes no findings")
+            self.configuration_resolution = "unavailable"
             self.write_empty_artifact("unavailable")
             return []
+        if self.version is None:
+            self.version = tool_version(
+                _BINARY, "--version", timeout_seconds=self.timeout_seconds
+            )
+        if (
+            self.configuration == SEMGREP_CONFIGURATION
+            and self._resolved_configuration is None
+        ):
+            try:
+                with pinned_semgrep_configuration(self.timeout_seconds) as (
+                    resolved,
+                    rule_count,
+                ):
+                    self._resolved_configuration = str(resolved)
+                    self.configuration_digest = SEMGREP_RULESET_SHA256
+                    self.rule_count = rule_count
+                    self.configuration_resolution = "pinned-verified"
+                    return self.run(snapshot_path)
+            except RuntimeError as exc:
+                self.failure_detail = str(exc)[:500]
+                self.configuration_resolution = "failed"
+                self.write_empty_artifact("failed")
+                return []
+            finally:
+                self._resolved_configuration = None
+        resolved_configuration = self._resolved_configuration or self.configuration
+        if self.configuration != SEMGREP_CONFIGURATION:
+            configuration_path = Path(resolved_configuration)
+            if configuration_path.is_file():
+                payload = configuration_path.read_bytes()
+                self.configuration_digest = hashlib.sha256(payload).hexdigest()
+                self.rule_count = len(re.findall(rb"(?m)^\s*- id:", payload))
+                self.configuration_resolution = "pinned-verified"
+            else:
+                self.configuration_resolution = "live-service"
+        configuration_placeholder = (
+            "$VERIFIED_CONFIG"
+            if self.configuration_resolution == "pinned-verified"
+            else "$CONFIG"
+        )
+        self.invocation = (
+            "semgrep",
+            "scan",
+            "--sarif",
+            "--quiet",
+            "--no-git-ignore",
+            "--project-root",
+            "$SNAPSHOT",
+            "--json-output",
+            "$TARGET_REPORT",
+            "--config",
+            configuration_placeholder,
+            "$SNAPSHOT",
+        )
         target_report: Path | None = None
         try:
             with tempfile.NamedTemporaryFile(
@@ -117,7 +185,7 @@ class SastAdapter:
                 "--json-output",
                 str(target_report),
                 "--config",
-                self.configuration,
+                resolved_configuration,
                 str(snapshot_path),
             ], capture_output=True, text=True, timeout=self.timeout_seconds)
         except (subprocess.TimeoutExpired, OSError) as exc:
@@ -144,7 +212,7 @@ class SastAdapter:
         try:
             target_doc = json.loads(target_payload)
             scanned_paths = target_doc["paths"]["scanned"]
-            self.version = target_doc.get("version")
+            self.version = target_doc.get("version") or self.version
         except (json.JSONDecodeError, KeyError, TypeError):
             self.failure_detail = "Semgrep target report is missing or malformed"
             self.write_empty_artifact("failed")
@@ -187,6 +255,10 @@ class SastAdapter:
             ),
             version=self.version,
             configuration=self.configuration,
+            invocation=self.invocation,
+            configuration_digest=self.configuration_digest,
+            rule_count=self.rule_count,
+            configuration_resolution=self.configuration_resolution,
             failure_detail=detail,
         )
 

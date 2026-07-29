@@ -4,21 +4,19 @@ Status: authoritative post-MVP work list as of 2026-07-29. POC acceptance is com
 
 Current execution priorities
 
-1. **OPT-024 — pinned scanner configuration and provenance** is the next reliability
-   priority. Make successful execution reproducible across rule/database changes.
-2. **OPT-025 — required scanner deployment gates** then promotes the execution contract,
-   canaries, and provenance checks into fast CI; larger public-corpus measurement remains
-   scheduled/manual.
-3. **OPT-001 — reviewed-label growth** resumes as the active evidence workstream only after
-   OPT-024 and OPT-025 establish trustworthy acquisition inputs. Prioritize non-CI
+1. **OPT-025 — required scanner deployment gates** is the next reliability priority. Promote
+   the execution contract, canaries, and provenance checks into fast CI; larger public-corpus
+   measurement remains scheduled/manual.
+2. **OPT-001 — reviewed-label growth** resumes as the active evidence workstream after
+   OPT-025 establishes trustworthy acquisition inputs. Prioritize non-CI
    positive-mechanism breadth; do not relax abstention, holdout, or evaluation-family
    controls merely to reach the numeric target.
-4. **OPT-026 — historical scanner remeasurement** follows the assurance gate so invalidated
+3. **OPT-026 — historical scanner remeasurement** follows the assurance gate so invalidated
    historical zeros can be rerun without converting new candidates into automatic labels.
-5. **OPT-002 — family-aware bootstrap ranges** follows only after OPT-001 produces adequate
+4. **OPT-002 — family-aware bootstrap ranges** follows only after OPT-001 produces adequate
    held-out family breadth and both classes.
 
-OPT-022 and OPT-023 are implemented. OPT-003 through OPT-006 and OPT-008 through OPT-014
+OPT-022 through OPT-024 are implemented. OPT-003 through OPT-006 and OPT-008 through OPT-014
 remain behind their documented evidence, budget, safety, or methodology gates. OPT-016 is
 routine dependency maintenance. OPT-027 through OPT-030 remain ordered capability/scale work
 behind the assurance and evidence gates above.
@@ -252,15 +250,23 @@ VI. Deterministic scanner assurance and capability
       a scanned clean zero. Activation: satisfied after OPT-022; OPT-024 remains responsible
       for production ruleset and advisory-database provenance — DoD impact: none.
 
-   C. OPT-024 — Pin scanner configuration and retain provenance — high — owner: detection
+   C. OPT-024 — Pin scanner configuration and retain provenance — implemented — owner: detection
       release engineering — source:
-      `../semgrep-execution-audit-2026-07-29.json` — replace mutable Semgrep `--config auto`
+      `../semgrep-execution-audit-2026-07-29.json` and
+      `../scanner-provenance.md` — replace mutable Semgrep `--config auto`
       as the production evidence baseline with a reviewed, versioned ruleset reference or
       retained digest; record binary version, rule count/digest, registry resolution
       outcome, and applicable advisory-database timestamp/version for every scanner run.
       Evaluate upgrades separately against frozen controls before promotion and preserve
-      offline/stale behavior. Activation: after OPT-022 and before historical
-      remeasurement — DoD impact: none.
+      offline/stale behavior. Semgrep now verifies a vendored snapshot and retained digest
+      of the official default registry payload before invoking the scanner, supporting
+      offline execution and failing closed on package corruption. All adapters retain
+      normalized invocation and available binary
+      version; Semgrep retains digest/rule count/resolution, gitleaks identifies its
+      binary-embedded default, and SCA retains authoritative advisory-source identity and
+      UTC query time. PyPI and OSV do not expose an immutable database release in these
+      responses, so version remains explicitly null rather than inferred. Activation:
+      satisfied after OPT-022; OPT-025 promotes these assertions to CI — DoD impact: none.
 
    D. OPT-025 — Required scanner deployment gates — high — owner: CI/reliability engineering
       — source:

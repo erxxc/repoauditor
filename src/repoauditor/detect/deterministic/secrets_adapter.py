@@ -23,6 +23,7 @@ from ...store.models import Severity
 from ..ensemble import CandidateFinding
 from ._common import relativize
 from .execution import ScannerExecution
+from .provenance import tool_version
 
 logger = logging.getLogger(__name__)
 
@@ -55,13 +56,23 @@ class SecretsAdapter:
         self.output_valid = False
         self.finding_count = 0
         self.target_count = 0
+        self.version: str | None = None
+        self.invocation: tuple[str, ...] = ()
 
     def run(self, snapshot_path: Path) -> list[CandidateFinding]:
         if shutil.which(_BINARY) is None:
             logger.info("gitleaks not installed; secrets adapter contributes no findings")
             self.run_status = "unavailable"
             return []
+        self.version = tool_version(
+            _BINARY, "version", timeout_seconds=self.timeout_seconds
+        )
         self.target_count = 1
+        self.invocation = (
+            "gitleaks", "detect", "--source", "$SNAPSHOT", "--no-git",
+            "--report-format", "json", "--report-path", "$REPORT",
+            "--no-banner", "--exit-code", "0",
+        )
         with tempfile.TemporaryDirectory() as tmp:
             report = Path(tmp) / "gitleaks.json"
             try:
@@ -118,6 +129,12 @@ class SecretsAdapter:
             target_count=self.target_count,
             target_count_basis=(
                 "unavailable" if status == "unavailable" else "submitted-root"
+            ),
+            version=self.version,
+            configuration="gitleaks embedded default",
+            invocation=self.invocation,
+            configuration_resolution=(
+                "unavailable" if status == "unavailable" else "embedded-default"
             ),
             failure_detail=detail,
         )
