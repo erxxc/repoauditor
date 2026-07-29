@@ -1,6 +1,20 @@
 # Optimization Register
 
-Status: authoritative post-MVP work list as of 2026-07-28. POC acceptance is complete.
+Status: authoritative post-MVP work list as of 2026-07-29. POC acceptance is complete.
+
+Current execution priorities
+
+1. **OPT-007 — production-region selection** is the next engineering iteration. Start with
+   a frozen, path-blind design and replay it against the existing untouched-production
+   artifacts before considering any live or paid validation.
+2. **OPT-001 — reviewed-label growth** continues in parallel as an AppSec adjudication
+   workstream. Prioritize non-CI positive-mechanism breadth; do not relax abstention,
+   holdout, or evaluation-family controls merely to reach the numeric target.
+
+OPT-002 remains gated on the family breadth produced by OPT-001. OPT-003 through OPT-006
+and OPT-008 through OPT-014 remain behind their documented evidence, budget, safety, or
+methodology gates. OPT-016 is routine dependency maintenance and does not displace the
+ordered work above.
 
 I. Evaluation and classifier maturity
 
@@ -35,14 +49,16 @@ II. Operations and cost
 
 III. Detection and falsification depth
 
-   A. OPT-007 — Improve production-region selection — evidence-ready, held until remaining
-      MVP closure — owner: detection engineering — source:
+   A. OPT-007 — Improve production-region selection — evidence-ready/queued after OPT-021
+      — owner: detection engineering — source:
       `../untouched-production-selection-plan-2026-07-28.json` and
       `../plotly-untouched-production-selection-2026-07-28.json` — the untouched Plotly.js
       measurement omitted the reviewed target in both variants, consistent with prior
-      development-only aiohttp/Rack omissions. Activate only through a general path-blind
-      design; never tune to any revealed target path — DoD impact: none because the current
-      DoD requires measurement, not a passing selection outcome.
+      development-only aiohttp/Rack omissions. Begin only with a frozen, general path-blind
+      design and offline replay against retained artifacts; never tune to any revealed
+      target path. Live or paid validation requires a separately approved protocol and
+      budget — DoD impact: none because the current DoD requires measurement, not a passing
+      selection outcome.
 
    B. OPT-008 — Expand slicing and deterministic certificates across additional clients,
       frameworks, languages, and cross-file flows — deferred/evidence-gated — owner: AppSec
@@ -130,7 +146,7 @@ V. Intake
       impact: none; live coverage was disclosed during acceptance.
 
    F. OPT-020 — Document and test bounded-plan versus cross-file retrieval scope —
-      implemented — owner: detection architecture — source:
+      implemented in PR #59 (merge commit `5e07c58`) — owner: detection architecture — source:
       `../poc-acceptance-walkthrough-2026-07-28.md` — a valid IDOR citation referenced
       `storefront/orders.py` although that file was absent from the six selected primary
       regions. `../detection-context-provenance.md` now distinguishes architecture-based
@@ -140,8 +156,8 @@ V. Intake
       regressions protect the behavior; no observed target path became a selection rule —
       DoD impact: none.
 
-   G. OPT-021 — Generate a box-drawing/graphical architecture layout — newly
-      surfaced/evidence-ready — owner: mapping presentation — source:
+   G. OPT-021 — Generate a box-drawing/graphical architecture layout — implemented
+      — owner: mapping presentation — source:
       `../poc-acceptance-walkthrough-2026-07-28.md` and the retained acceptance architecture
       artifact — the current text schematic is accurate and useful but renders each flow as
       a separate linear sentence. Add a deterministic, terminal-safe box-drawing projection
@@ -149,8 +165,12 @@ V. Intake
       visually scannable. Preserve the existing plain-text inventory and explicit
       “not recovered” limitations; do not infer new edges merely to improve layout. Consider
       an optional graphical format only if it can be generated offline without expanding
-      mapping business logic — activation: after OPT-018 through OPT-020 or as an isolated
-      presentation-only change — DoD impact: none.
+      mapping business logic — activation: satisfied by the merged OPT-018 through OPT-020
+      sequence. The architecture artifact now opens with a deterministic terminal-safe
+      projection that groups entry points under shared recovered trust boundaries, renders
+      integration direction, and leaves datastores visibly unconnected. The original
+      relationship and entity inventories remain intact, with focused presentation and CLI
+      regressions — DoD impact: none.
 
    H. Add the next proposed improvement as `OPT-022`; do not place it directly into the MVP
       recovery plan unless the project owner explicitly changes the DoD.

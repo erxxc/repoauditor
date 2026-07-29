@@ -76,6 +76,10 @@ def test_architecture_ascii_renders_only_recovered_relationships_in_stable_order
         ],
         entry_points=[
             EntryPoint(
+                name="GET /orders", location="orders.py:10",
+                trust_boundary="Public HTTP",
+            ),
+            EntryPoint(
                 name="POST /orders", location="orders.py:20",
                 trust_boundary="Public HTTP",
             ),
@@ -93,6 +97,20 @@ def test_architecture_ascii_renders_only_recovered_relationships_in_stable_order
     rendered = architecture_ascii(architecture)
 
     assert (
+        "  ├─ {trust boundary: Public HTTP}\n"
+        "  │  ├─ [GET /orders @ orders.py:10]\n"
+        "  │  └─ [POST /orders @ orders.py:20]\n"
+        "  │     crosses ─▶ [repository: shop]\n"
+        "  └─ [nightly job @ jobs.py:4] ── boundary not recovered ─▶ [repository: shop]"
+    ) in rendered
+    assert (
+        "  ├─ [repository: shop] ── outbound ─▶ [Stripe @ payments.py:9]\n"
+        "  └─ [Webhook @ hooks.py:3] ── inbound ─▶ [repository: shop]"
+    ) in rendered
+    assert "DATA STORES (INVENTORY; NO RECOVERED FLOW EDGE)" in rendered
+    assert "└─ [data store: customers]" in rendered
+    assert "[data store: customers] ─" not in rendered
+    assert (
         "[POST /orders @ orders.py:20] --crosses--> "
         "{trust boundary: Public HTTP} --> [repository: shop]"
     ) in rendered
@@ -107,10 +125,26 @@ def test_architecture_ascii_renders_only_recovered_relationships_in_stable_order
     ) == Path("data/artifacts/shop/architecture-abcdef123456.txt")
 
 
+def test_architecture_layout_preserves_named_association_without_boundary_record():
+    architecture = ArchitectureMap(
+        repo_id="worker",
+        commit="abc",
+        entry_points=[EntryPoint(name="consumer", trust_boundary="Queue edge")],
+    )
+
+    rendered = architecture_ascii(architecture)
+
+    assert "{trust boundary: Queue edge}" in rendered
+    assert "[consumer]" in rendered
+    assert "crosses ─▶ [repository: worker]" in rendered
+
+
 def test_empty_architecture_ascii_discloses_missing_recovery():
     rendered = architecture_ascii(ArchitectureMap(repo_id="empty", commit="abc"))
 
-    assert rendered.count("(none recovered)") == 3
+    assert rendered.count("└─ (none recovered)") == 2
+    assert "└─ (no entry points recovered)" in rendered
+    assert rendered.count("(none recovered)") == 5
     assert "(no entry points recovered)" in rendered
     assert "Missing nodes or edges mean 'not recovered'" in rendered
 

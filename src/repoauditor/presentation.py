@@ -65,7 +65,7 @@ def architecture_artifact_path(data_dir: Path, repo_id: str, commit: str) -> Pat
 
 
 def architecture_ascii(architecture: ArchitectureMap) -> str:
-    """Render only relationships present in the recovered architecture map.
+    """Render a terminal-safe layout of the recovered architecture map.
 
     Entry-point to trust-boundary association and integration direction are explicit map
     fields. Data stores have no recovered flow edge in the current schema, so they remain
@@ -95,7 +95,11 @@ def architecture_ascii(architecture: ArchitectureMap) -> str:
         f"repo-id: {architecture.repo_id}",
         f"commit: {architecture.commit}",
         "",
-        "SCHEMATIC",
+        "BOX-DRAWING LAYOUT",
+        "  Recovered associations only; data stores remain unconnected inventory.",
+        *_architecture_layout(architecture, boundaries, entries, stores, integrations),
+        "",
+        "RELATIONSHIP INVENTORY",
         "  Arrows show only recovered entry-boundary associations or integration direction.",
     ]
     if entries:
@@ -170,6 +174,88 @@ def architecture_ascii(architecture: ArchitectureMap) -> str:
         "",
     ])
     return "\n".join(lines)
+
+
+def _architecture_layout(
+    architecture: ArchitectureMap,
+    boundaries: list,
+    entries: list,
+    stores: list,
+    integrations: list,
+) -> list[str]:
+    """Build a compact visual projection without manufacturing map relationships."""
+    repo = f"[repository: {architecture.repo_id}]"
+    lines = ["  ENTRY POINTS AND TRUST BOUNDARIES"]
+    entries_by_boundary = {
+        boundary.name: [
+            entry for entry in entries if entry.trust_boundary == boundary.name
+        ]
+        for boundary in boundaries
+    }
+    linked_names = {
+        entry.trust_boundary for entry in entries if entry.trust_boundary
+    }
+    groups: list[tuple[str, list]] = [
+        (name, grouped) for name, grouped in entries_by_boundary.items() if grouped
+    ]
+    # Preserve associations whose named boundary was not recovered as a boundary record.
+    groups.extend(
+        (
+            name,
+            [entry for entry in entries if entry.trust_boundary == name],
+        )
+        for name in sorted(linked_names - set(entries_by_boundary), key=str.casefold)
+    )
+    for group_index, (boundary_name, grouped) in enumerate(groups):
+        branch = "└─" if group_index == len(groups) - 1 and not _unlinked(entries) else "├─"
+        lines.append(f"  {branch} {{trust boundary: {boundary_name}}}")
+        continuation = "     " if branch == "└─" else "  │  "
+        for entry_index, entry in enumerate(grouped):
+            entry_branch = "└─" if entry_index == len(grouped) - 1 else "├─"
+            lines.append(f"{continuation}{entry_branch} {_node(entry.name, entry.location)}")
+        lines.append(f"{continuation}   crosses ─▶ {repo}")
+    unlinked = _unlinked(entries)
+    for index, entry in enumerate(unlinked):
+        branch = "└─" if index == len(unlinked) - 1 else "├─"
+        lines.append(
+            f"  {branch} {_node(entry.name, entry.location)} "
+            f"── boundary not recovered ─▶ {repo}"
+        )
+    if not entries:
+        lines.append("  └─ (no entry points recovered)")
+
+    lines.append("  EXTERNAL INTEGRATIONS")
+    if integrations:
+        for index, integration in enumerate(integrations):
+            branch = "└─" if index == len(integrations) - 1 else "├─"
+            target = _node(integration.name, integration.location)
+            direction = (integration.direction or "").strip().lower()
+            if direction == "inbound":
+                relation = f"{target} ── inbound ─▶ {repo}"
+            elif direction == "outbound":
+                relation = f"{repo} ── outbound ─▶ {target}"
+            elif direction == "bidirectional":
+                relation = f"{repo} ◀─ bidirectional ─▶ {target}"
+            elif direction:
+                relation = f"{repo} ── direction: {integration.direction} ─▶ {target}"
+            else:
+                relation = f"{repo} ── direction not recovered ── {target}"
+            lines.append(f"  {branch} {relation}")
+    else:
+        lines.append("  └─ (none recovered)")
+
+    lines.append("  DATA STORES (INVENTORY; NO RECOVERED FLOW EDGE)")
+    if stores:
+        for index, store in enumerate(stores):
+            branch = "└─" if index == len(stores) - 1 else "├─"
+            lines.append(f"  {branch} [data store: {store.name}]")
+    else:
+        lines.append("  └─ (none recovered)")
+    return lines
+
+
+def _unlinked(entries: list) -> list:
+    return [entry for entry in entries if not entry.trust_boundary]
 
 
 def _node(name: str, location: str | None) -> str:

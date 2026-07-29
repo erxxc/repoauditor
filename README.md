@@ -311,12 +311,13 @@ for an ingested repository with:
 uv run repoauditor map <repo-id>
 ```
 
-The schematic draws only relationships carried by the recovered map: entry points crossing
-named trust boundaries and the recorded direction of external integrations. Data stores are
-listed as an inventory because the current schema does not establish component-to-store
-flow edges. A missing node or edge means “not recovered,” not proof that it does not exist.
-This makes the file useful as an initial architecture-review aid without presenting inferred
-data flows as observed facts.
+The artifact opens with a deterministic box-drawing layout that groups entry points by
+their recovered trust boundary and shows the recorded direction of external integrations.
+It retains the complete plain-text relationship and entity inventories below that layout.
+Data stores are visibly unconnected inventory because the current schema does not establish
+component-to-store flow edges. A missing node or edge means “not recovered,” not proof that
+it does not exist. This makes the file useful as an initial architecture-review aid without
+presenting inferred data flows as observed facts.
 
 ## How the decision engine works
 
