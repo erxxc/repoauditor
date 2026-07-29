@@ -139,6 +139,15 @@ redirects, token secrets, and template output, while explicitly excluding docume
 bundled vendor code, CI, and package hygiene. Completing this tranche should cross OPT-001's
 100-label maturity floor; it does not itself satisfy OPT-002's held-out family requirements.
 
+The final tranche added ten actionable positives and two negatives. OPT-001 therefore
+reached its lower maturity bound with 104 usable manual labels (37 positive and 67 negative)
+across 15 engagements; three explicit abstentions remain excluded from training. This closes
+the reviewed-label growth optimization without claiming held-out generalization. Only 36
+real labels currently have compatible stored triage scores, below the existing 40-label
+threshold-curve gate, and the benchmark acquisitions are not evaluation families. OPT-002
+remains deferred pending additional evaluation-compatible scored evidence and adequate
+held-out family breadth.
+
 ## Phase 4 — Validation maturity
 
 At 40 labels, enable descriptive threshold tables. At 40 labels and 8 evaluation families,

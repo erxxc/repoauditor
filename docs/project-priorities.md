@@ -62,8 +62,9 @@ priorities here.
 
 - [x] Complete the minimum triage roadmap Phase 3 activation floor: on 2026-07-27 the
   training-acquisition cohort reached 40 usable manual labels (11 positive, 29 negative)
-  across eight genuinely distinct engagements, plus two explicit abstentions. The preferred
-  100–200-label maturity target remains open.
+  across eight genuinely distinct engagements, plus two explicit abstentions. OPT-001 later
+  reached its lower maturity bound at 104 usable labels (37 positive, 67 negative) across
+  15 engagements, with three abstentions preserved.
 - [~] Review high-ranked, reserved novel, and sampled low-ranked findings. The first
   ground-truth-blind tranche covered all eight engagements and retained
   `insufficient_evidence` as abstention. Coverage is not yet mature: nine of eleven positives
@@ -191,10 +192,10 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
 
 ### B — evidence/data gated
 
-1. [~] The minimum collection gate is met: 40 usable human labels, both classes, across
-   eight genuine source repositories. Continue toward 100–200 with mechanism and positive
-   diversity; review reserved-novel and sampled-low-ranked findings while retaining
-   abstentions.
+1. [x] The collection maturity floor is met: 104 usable human labels, both classes, across
+   15 engagements, with expanded production mechanisms and three retained abstentions.
+   Further acquisition is optional; it must not substitute benchmark anchors for held-out
+   evaluation-family evidence.
    - [x] Freeze a ground-truth-blind acquisition cohort before scanning: two independently
      authored projects each in Python, JavaScript, Java, and Ruby, pinned at exact commits
      with verified permissive licenses. It is explicitly excluded from evaluation and has
