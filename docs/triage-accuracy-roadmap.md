@@ -117,6 +117,19 @@ and scanner/advisory evidence still never becomes an automatic label. The corres
 scanner receipt is
 [`cve-positive-semgrep-acquisition-2026-07-29-v2.json`](cve-positive-semgrep-acquisition-2026-07-29-v2.json).
 
+Human review of that tranche produced eleven additional negatives, bringing the usable
+cohort to 80 labels (18 positive and 62 negative) across 12 engagements. The residual pool
+was dominated by repeated controls and supporting surfaces, so the next OPT-001 expansion
+was frozen before scanning in
+[`opt-001-positive-mechanism-expansion-protocol-2026-07-29.json`](opt-001-positive-mechanism-expansion-protocol-2026-07-29.json).
+Its acquisition-only OWASP anchors do not enter evaluation. The verified scan recovered all
+three predeclared targets across JavaScript, Java, and Ruby; exact execution evidence is in
+[`positive-mechanism-expansion-scan-2026-07-29.json`](positive-mechanism-expansion-scan-2026-07-29.json).
+The resulting
+[`12-entry review tranche`](triage-review-acquisition-2026-07-29-v3.json) starts with those
+three declared production targets, then adds nine outcome-blind production candidates.
+Benchmark metadata remains context rather than a label, and abstention remains available.
+
 ## Phase 4 — Validation maturity
 
 At 40 labels, enable descriptive threshold tables. At 40 labels and 8 evaluation families,

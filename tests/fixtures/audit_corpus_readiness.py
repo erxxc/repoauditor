@@ -144,6 +144,46 @@ def build_corpus_readiness(fixtures_root: Path) -> dict:
                 "evaluation_eligible": False,
                 "materialized_variants": variants,
             })
+    expansion_path = fixtures_root / "positive_mechanism_expansion_cohort.json"
+    positive_expansion: list[dict] = []
+    if expansion_path.is_file():
+        manifest = json.loads(expansion_path.read_text())
+        if manifest.get("evaluation_eligible") is not False:
+            issues.append("positive mechanism expansion must be evaluation_eligible=false")
+        if not manifest.get("selection_basis") or not manifest.get("review_policy"):
+            issues.append("positive mechanism expansion lacks selection/review policy")
+        for target in manifest.get("targets", []):
+            missing = [
+                field for field in (
+                    "fixture", "project", "pinned_commit", "license", "mechanism",
+                    "cwe", "file", "line", "citation_contains",
+                )
+                if target.get(field) in (None, "")
+            ]
+            if missing:
+                issues.append(
+                    f"positive mechanism target missing {', '.join(missing)}"
+                )
+                continue
+            expected_path = fixtures_root / target["fixture"] / "expected_findings.json"
+            if not expected_path.is_file():
+                issues.append(
+                    f"positive mechanism target missing fixture {target['fixture']}"
+                )
+                continue
+            expected = json.loads(expected_path.read_text())
+            if expected.get("source", {}).get("pinned_commit") != target["pinned_commit"]:
+                issues.append(
+                    f"positive mechanism target commit mismatch for {target['fixture']}"
+                )
+                continue
+            positive_expansion.append({
+                **target,
+                "evaluation_eligible": False,
+                "materialized": (
+                    fixtures_root / target["fixture"] / "snapshot"
+                ).is_dir(),
+            })
     return {
         "schema_version": 1,
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -183,10 +223,15 @@ def build_corpus_readiness(fixtures_root: Path) -> dict:
                 all(record["materialized_variants"].values())
                 for record in cve_acquisition
             ),
+            "positive_mechanism_expansion_count": len(positive_expansion),
+            "positive_mechanism_expansion_materialized_count": sum(
+                record["materialized"] for record in positive_expansion
+            ),
         },
         "protected_holdout": protected,
         "training_acquisition": acquisition,
         "cve_positive_acquisition": cve_acquisition,
+        "positive_mechanism_expansion": positive_expansion,
         "records": records,
     }
 

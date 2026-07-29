@@ -166,6 +166,12 @@ OWASP Juice Shop, WebGoat, and RailsGoat are pinned acquisition-only known-posit
 They are `benchmark`, not independent evidence. Juice Shop and RailsGoat are MIT; WebGoat is
 GPL-2.0-or-later. None of their source trees is redistributed in this repository.
 
+OPT-001's positive-mechanism expansion freezes the three existing human-reviewed targets in
+`positive_mechanism_expansion_cohort.json`. The materializer's `--anchors-only` and
+repeatable `--anchor` options acquire only those benchmark snapshots; they do not materialize
+independent pairs. Fresh scanner output remains unassessed until human review, and unmatched
+candidates are never inferred negatives.
+
 Every fixture's `expected_findings.json` carries a `source` block with the upstream repo,
 pinned commit/version, and advisory IDs (verified via `https://api.osv.dev`), so nothing
 here is an unsourced or fabricated vulnerability. These are **not** scripted — they are
