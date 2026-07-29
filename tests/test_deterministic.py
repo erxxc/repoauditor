@@ -15,6 +15,7 @@ from pathlib import Path
 
 import pytest
 
+import repoauditor.detect.ensemble as ensemble_module
 from repoauditor.detect import run_ensemble
 from repoauditor.detect.ensemble import CandidateFinding
 from repoauditor.detect.deterministic import SastAdapter, ScaAdapter, SecretsAdapter
@@ -362,6 +363,39 @@ def test_completed_detection_regions_are_reused_without_model_calls(
         repo_id, commit, cfg
     )
     assert regions and all(region.status.value == "completed" for region in regions)
+
+
+def test_detection_run_retains_cross_file_context_provenance(
+    tmp_config, scripted_llm, monkeypatch
+):
+    db.init_db(tmp_config)
+    cfg = tmp_config.model_copy(
+        update={"detect": tmp_config.detect.model_copy(
+            update={"run_deterministic_tools": False})})
+    repo_id = _ingest_and_map(cfg, scripted_llm)
+
+    def fixed_context(_index, primary_file, _file_text, *, limit=3):
+        assert limit == 3
+        return "", [{
+            "basis": "call-name-match",
+            "file": f"related/{Path(primary_file).name}",
+            "line_start": 7,
+            "symbol": "dispatch",
+        }]
+
+    monkeypatch.setattr(
+        ensemble_module, "_retrieval_context_with_provenance", fixed_context
+    )
+
+    result = run_ensemble(repo_id, cfg, llm=scripted_llm)
+
+    assert result.context_expansions
+    assert len(result.context_expansions) == len(result.selected_regions)
+    for expansion in result.context_expansions:
+        assert expansion["primary_file"] in {
+            selected["file"] for selected in result.selected_regions
+        }
+        assert expansion["related"][0]["file"].startswith("related/")
 
 
 def test_fake_adapter_candidate_persists_through_ensemble_fast_lane(

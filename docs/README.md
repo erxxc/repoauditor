@@ -17,6 +17,8 @@ II. Architecture and operating rules
       evaluation operations.
    D. [`adjudication-taxonomy.md`](adjudication-taxonomy.md) — evidence labels and evaluation
       denominators.
+   E. [`detection-context-provenance.md`](detection-context-provenance.md) — distinction
+      between bounded primary-region selection and external caller/similarity context.
 
 III. Evidence and historical execution
 

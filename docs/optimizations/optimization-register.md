@@ -130,13 +130,15 @@ V. Intake
       impact: none; live coverage was disclosed during acceptance.
 
    F. OPT-020 — Document and test bounded-plan versus cross-file retrieval scope —
-      newly surfaced/evidence-ready — owner: detection architecture — source:
+      implemented — owner: detection architecture — source:
       `../poc-acceptance-walkthrough-2026-07-28.md` — a valid IDOR citation referenced
       `storefront/orders.py` although that file was absent from the six selected primary
-      regions. Specify which persisted caller/callee or architecture context may expand a
-      selected region, retain provenance for that expansion, and add a path-blind regression
-      test. Do not turn the observed target path into a selection rule — activation: after
-      OPT-019 makes the provenance visible — DoD impact: none.
+      regions. `../detection-context-provenance.md` now distinguishes architecture-based
+      primary selection from the bounded syntactic caller/similarity context that may append
+      an external file. Detection results and stage summaries retain only the expansions
+      actually appended, with basis/file/line/symbol provenance. Generic path-blind
+      regressions protect the behavior; no observed target path became a selection rule —
+      DoD impact: none.
 
    G. OPT-021 — Generate a box-drawing/graphical architecture layout — newly
       surfaced/evidence-ready — owner: mapping presentation — source:

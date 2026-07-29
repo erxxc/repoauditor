@@ -669,6 +669,15 @@ def test_standalone_detect_persists_region_plan_and_scanner_coverage(
         scanner_failures={
             "osv-scanner": "recursive discovery failed; explicit fallback used",
         },
+        context_expansions=[{
+            "primary_file": "storefront/account.py",
+            "related": [{
+                "basis": "call-name-match",
+                "file": "storefront/component_b.py",
+                "line_start": 30,
+                "symbol": "dispatch",
+            }],
+        }],
     )
     monkeypatch.setattr(cli, "_detect_stage", lambda repo_id, config: detection)
 
@@ -684,10 +693,14 @@ def test_standalone_detect_persists_region_plan_and_scanner_coverage(
     assert stage.summary["region_plan"]["planned_regions"] == 6
     assert stage.summary["scanner_statuses"]["osv-scanner"] == "partial"
     assert "explicit fallback" in stage.summary["scanner_failures"]["osv-scanner"]
+    assert stage.summary["context_expansions"][0]["related"][0]["file"] == (
+        "storefront/component_b.py"
+    )
     detail = runner.invoke(cli.app, ["runs", "show", str(pipeline.id)])
     assert detail.exit_code == 0, detail.output
     assert '"planned_regions": 6' in detail.stdout
     assert "storefront/account.py" in detail.stdout
+    assert "storefront/component_b.py" in detail.stdout
 
 
 def test_standalone_falsify_is_metered_and_points_to_resume(

@@ -115,16 +115,17 @@ class CandidateFinding(BaseModel):
     rationale: str | None = None
 
 
-def _retrieval_context(
+def _retrieval_context_with_provenance(
     index: RetrievalIndex, relative_file: str, file_text: str, *, limit: int = 3
-) -> str:
+) -> tuple[str, list[dict[str, str | int]]]:
     """Bounded external call-name context for a region (may be empty).
 
     Direct external callers of functions defined in the primary file carry more semantic
     information than whole-file call-token similarity. The index is syntactic rather than
     type-resolved, so these blocks are explicitly labelled call-name matches. External
     similar-pattern blocks fill any remaining slots; same-file blocks are redundant because
-    the complete primary file is already present.
+    the complete primary file is already present. The returned provenance describes only
+    context that was actually appended; it neither changes selection nor infers an edge.
     """
     definitions = {
         definition.symbol for definition in index.functions_in_file(relative_file)
@@ -155,13 +156,34 @@ def _retrieval_context(
         related.append(("SIMILAR PATTERN", similar, 0))
     selected = related[:limit]
     if not selected:
-        return ""
+        return "", []
     blocks = [
         f"# RELATED {basis}: {info.symbol} ({info.file}:{info.line_start})\n"
         f"{info.source}"
         for basis, info, _score in selected
     ]
-    return "\n\n# --- external retrieval context ---\n" + "\n\n".join(blocks)
+    provenance = [
+        {
+            "basis": basis.lower().replace(" ", "-"),
+            "file": info.file,
+            "line_start": info.line_start,
+            "symbol": info.symbol,
+        }
+        for basis, info, _score in selected
+    ]
+    return (
+        "\n\n# --- external retrieval context ---\n" + "\n\n".join(blocks),
+        provenance,
+    )
+
+
+def _retrieval_context(
+    index: RetrievalIndex, relative_file: str, file_text: str, *, limit: int = 3
+) -> str:
+    """Backward-compatible text projection for callers that do not need provenance."""
+    return _retrieval_context_with_provenance(
+        index, relative_file, file_text, limit=limit
+    )[0]
 
 
 def _is_test_path(path: str) -> bool:
@@ -184,6 +206,7 @@ class DetectionRun(list[Finding]):
         skipped_completed_region_calls: int = 0,
         scanner_statuses: dict[str, str] | None = None,
         scanner_failures: dict[str, str] | None = None,
+        context_expansions: list[dict] | None = None,
     ):
         super().__init__(findings)
         self.source_counts = source_counts
@@ -195,6 +218,7 @@ class DetectionRun(list[Finding]):
         self.skipped_completed_region_calls = skipped_completed_region_calls
         self.scanner_statuses = scanner_statuses or {}
         self.scanner_failures = scanner_failures or {}
+        self.context_expansions = context_expansions or []
 
 
 def run_ensemble(
@@ -260,13 +284,22 @@ def run_ensemble(
         tool_candidates=tool_candidates,
     )
     completed_region_calls = skipped_completed_region_calls = 0
+    context_expansions: list[dict] = []
     for planned_region in planned:
         path = planned_region.path
         rel = planned_region.relative_path
         file_text = read_numbered(path)
+        retrieval_text, retrieval_provenance = _retrieval_context_with_provenance(
+            index, rel, path.read_text(errors="replace")
+        )
+        if retrieval_provenance:
+            context_expansions.append({
+                "primary_file": rel,
+                "related": retrieval_provenance,
+            })
         region = (
             f"# FILE: {rel}\n{file_text}"
-            f"{_retrieval_context(index, rel, path.read_text(errors='replace'))}"
+            f"{retrieval_text}"
         )
 
         for lens in _LENS_PROMPTS:
@@ -352,6 +385,7 @@ def run_ensemble(
         skipped_completed_region_calls=skipped_completed_region_calls,
         scanner_statuses=scanner_statuses,
         scanner_failures=scanner_failures,
+        context_expansions=context_expansions,
     )
 
 

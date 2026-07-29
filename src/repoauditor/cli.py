@@ -388,6 +388,7 @@ def _detect_run_metadata(value, config, scanner_coverage=None):
         "semgrep_status": getattr(value, "semgrep_status", None),
         "scanner_statuses": getattr(value, "scanner_statuses", {}),
         "scanner_failures": getattr(value, "scanner_failures", {}),
+        "context_expansions": getattr(value, "context_expansions", []),
         "llm": {
             "provider": config.llm.provider,
             "model": config.model.name,
@@ -1785,6 +1786,7 @@ def run(
             prior_detect.summary.get("semgrep_status"),
             scanner_statuses=prior_detect.summary.get("scanner_statuses", {}),
             scanner_failures=prior_detect.summary.get("scanner_failures", {}),
+            context_expansions=prior_detect.summary.get("context_expansions", []),
         )
     if "triage" not in completed:
         step(

@@ -613,9 +613,14 @@ the bounded plan. Region selection is ground-truth-blind: independently produced
 and architecture-map locations are considered first, with a stable path-derived,
 directory-stratified sample reserved outside those signals. The sample is comparable
 across pre-fix/post-fix trees and limits conventional test paths to 25% when enough
-production paths exist. It does not make six sampled regions representative of every
-file. The completion summary discloses selected and omitted regions; bounded coverage
-must not be represented as a full-repository LLM review.
+production paths exist. A selected primary file may receive up to three external
+caller/similar-pattern blocks from the syntactic retrieval index. `runs show` reports these
+separately as `context_expansions`; an expansion is not another selected region or proof of
+a runtime edge. See
+[`docs/detection-context-provenance.md`](docs/detection-context-provenance.md). This does not
+make six sampled regions representative of every file. The completion summary discloses
+selected and omitted regions; bounded coverage must not be represented as a full-repository
+LLM review.
 
 Each selected file+lens unit is checkpointed in SQLite. If detection stops, rerun the
 standalone `repoauditor detect <repo-id>` command to receive a fresh usage budget; completed
