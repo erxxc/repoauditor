@@ -68,6 +68,9 @@ def capture_production_selection(
         "instrument": {
             "max_llm_regions_per_run": config.detect.max_llm_regions_per_run,
             "reserved_sample_regions": config.detect.reserved_sample_regions,
+            "reserved_architecture_neighbor_regions": (
+                config.detect.reserved_architecture_neighbor_regions
+            ),
             "architecture_entry_points": len(architecture.entry_points),
             "architecture_data_stores": len(architecture.data_stores),
             "architecture_integrations": len(architecture.integrations),
@@ -165,7 +168,11 @@ def adjudicate_pair_selection(
     target_file: str,
 ) -> dict:
     """Reveal one target after both comparable variant captures already exist."""
-    config_fields = ("max_llm_regions_per_run", "reserved_sample_regions")
+    config_fields = (
+        "max_llm_regions_per_run",
+        "reserved_sample_regions",
+        "reserved_architecture_neighbor_regions",
+    )
     pre_instrument = pre_capture.get("instrument", {})
     post_instrument = post_capture.get("instrument", {})
     if any(

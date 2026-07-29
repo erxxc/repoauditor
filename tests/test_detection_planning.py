@@ -17,7 +17,7 @@ from repoauditor.detect.planning import (
     project_detection_work,
     validate_detection_projection,
 )
-from repoauditor.map import ArchitectureMap, EntryPoint
+from repoauditor.map import ArchitectureMap, EntryPoint, Integration
 from repoauditor.map.domain_map import _build_context
 from repoauditor.sourcefiles import (
     is_test_source,
@@ -234,6 +234,84 @@ def test_region_plan_prefers_independent_signals_and_reserves_stable_sample(
         item.selection_basis == "stable-coverage-sample" for item in first
     ) >= 2
     assert len(first) == tmp_config.detect.max_llm_regions_per_run
+
+
+def test_region_plan_reserves_architecture_caller_neighbor(tmp_config, tmp_path):
+    (tmp_path / "mapped.py").write_text(
+        "def dispatch(value):\n"
+        "    return value\n"
+    )
+    (tmp_path / "caller.py").write_text(
+        "from mapped import dispatch\n\n"
+        "def handle(payload):\n"
+        "    return dispatch(payload)\n"
+    )
+    _sources(tmp_path, 6)
+    detect = tmp_config.detect.model_copy(update={
+        "max_llm_regions_per_run": 4,
+        "reserved_sample_regions": 1,
+        "reserved_architecture_neighbor_regions": 1,
+    })
+    config = tmp_config.model_copy(update={"detect": detect})
+    architecture = ArchitectureMap(
+        repo_id="repo",
+        commit="commit",
+        entry_points=[EntryPoint(name="dispatch", location="mapped.py:1")],
+    )
+
+    plan = plan_detection_regions(
+        tmp_path,
+        config,
+        commit="commit",
+        architecture=architecture,
+        tool_candidates=[],
+        index=RetrievalIndex().build(tmp_path),
+    )
+
+    by_file = {item.relative_path: item.selection_basis for item in plan}
+    assert by_file["mapped.py"] == "architecture-map"
+    assert by_file["caller.py"] == "architecture-neighbor:call-name-match"
+    assert sum(item.selection_basis == "stable-coverage-sample" for item in plan) >= 1
+    assert len(plan) == 4
+
+
+def test_region_plan_uses_architecture_callee_when_no_external_caller(
+    tmp_config, tmp_path,
+):
+    (tmp_path / "mapped.py").write_text(
+        "from control import authorize\n\n"
+        "def dispatch(value):\n"
+        "    return authorize(value)\n"
+    )
+    (tmp_path / "control.py").write_text(
+        "def authorize(value):\n"
+        "    return bool(value)\n"
+    )
+    _sources(tmp_path, 6)
+    detect = tmp_config.detect.model_copy(update={
+        "max_llm_regions_per_run": 4,
+        "reserved_sample_regions": 1,
+        "reserved_architecture_neighbor_regions": 1,
+    })
+    config = tmp_config.model_copy(update={"detect": detect})
+    architecture = ArchitectureMap(
+        repo_id="repo",
+        commit="commit",
+        integrations=[Integration(name="control", location="mapped.py:1")],
+    )
+
+    plan = plan_detection_regions(
+        tmp_path,
+        config,
+        commit="commit",
+        architecture=architecture,
+        tool_candidates=[],
+        index=RetrievalIndex().build(tmp_path),
+    )
+
+    by_file = {item.relative_path: item.selection_basis for item in plan}
+    assert by_file["control.py"] == "architecture-neighbor:callee-definition"
+    assert len(plan) == 4
 
 
 def test_source_selection_is_directory_diverse_and_bounds_test_share(tmp_path):

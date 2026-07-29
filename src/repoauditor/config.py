@@ -112,6 +112,9 @@ class DetectConfig(BaseModel):
     # Preserve generic coverage outside deterministic/map-indicated files. Selection is
     # stable by relative path across pre/post snapshots and never consults an answer key.
     reserved_sample_regions: int = Field(default=2, ge=0)
+    # Reserve bounded primary coverage for syntactic callers/callees of exact
+    # architecture-map locations. This is path-blind name evidence, not runtime reachability.
+    reserved_architecture_neighbor_regions: int = Field(default=1, ge=0)
 
     @model_validator(mode="after")
     def _sample_fits_region_cap(self) -> "DetectConfig":

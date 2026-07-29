@@ -1,0 +1,88 @@
+{
+  "schema_version": "opt-007-offline-replay-v1",
+  "recorded_at": "2026-07-29",
+  "protocol": "docs/optimizations/opt-007-production-region-selection-v2.md",
+  "mode": "offline_no_provider_calls",
+  "target_metadata_used": false,
+  "inputs": {
+    "planner_region_cap": 6,
+    "stable_sample_regions": 2,
+    "architecture_neighbor_regions": 1,
+    "deterministic_candidates": "excluded to isolate architecture-neighbor behavior",
+    "architecture": "persisted map records loaded through the production store API",
+    "retrieval": "production RetrievalIndex built from retained immutable snapshots"
+  },
+  "replays": [
+    {
+      "repo_id": "snapshot-a9f8daec",
+      "commit": "094e2176d4a7",
+      "source": "independent Django pre-fix development snapshot",
+      "architecture_entry_points": 4,
+      "v1_selected": [
+        "django/__init__.py",
+        "django/__main__.py",
+        "django/bin/django-admin.py",
+        "django/conf/global_settings.py",
+        "django/core/management/commands/sendtestemail.py",
+        "django/template/loaders/base.py"
+      ],
+      "v2_selected_neighbor": {
+        "file": "django/core/management/__init__.py",
+        "basis": "architecture-neighbor:call-name-match"
+      },
+      "stable_sample_count": 2,
+      "selected_count": 6
+    },
+    {
+      "repo_id": "snapshot",
+      "commit": "af70f27b266f",
+      "source": "UAT lightweight development snapshot",
+      "architecture_entry_points": 9,
+      "v1_selected": [
+        "storefront/account.py",
+        "storefront/catalog.py",
+        "storefront/integrations.py",
+        "storefront/invoices.py",
+        "storefront/__init__.py",
+        "wsgi.py"
+      ],
+      "v2_selected_neighbor": {
+        "file": "storefront/db.py",
+        "basis": "architecture-neighbor:callee-definition"
+      },
+      "stable_sample_count": 2,
+      "selected_count": 6
+    },
+    {
+      "repo_id": "uat_lightweight_app",
+      "commit": "e471aa12db5b",
+      "source": "UAT acceptance snapshot",
+      "architecture_entry_points": 8,
+      "v1_selected": [
+        "storefront/account.py",
+        "storefront/catalog.py",
+        "storefront/integrations.py",
+        "storefront/invoices.py",
+        "storefront/__init__.py",
+        "wsgi.py"
+      ],
+      "v2_selected_neighbor": {
+        "file": "storefront/db.py",
+        "basis": "architecture-neighbor:callee-definition"
+      },
+      "stable_sample_count": 2,
+      "selected_count": 6
+    }
+  ],
+  "interpretation": {
+    "result": "The frozen v2 planner exercised both supported neighbor bases without increasing selected-region count or consuming the two stable-sample slots.",
+    "tradeoff": "At the six-region cap, the reserved neighbor replaces the lowest-ordered direct evidence region when direct evidence already fills all non-sample capacity.",
+    "claim_boundary": "This is structural selection evidence only. It does not establish vulnerability recovery, population recall, or runtime reachability.",
+    "untouched_receipts": "Historical receipts without retained snapshots and architecture/retrieval inputs were not reconstructed from disclosed target metadata.",
+    "paid_validation": "Not run; requires a separately frozen protocol and approved budget."
+  },
+  "verification": {
+    "focused": "21 passed",
+    "full_offline": "500 passed, 27 skipped live tests, 3 tracked SHAP/Matplotlib warnings"
+  }
+}

@@ -45,9 +45,11 @@ run_deterministic_tools = true
 # Per-tool subprocess timeout (seconds).
 tool_timeout_seconds = 180
 # Bound live-lens work independently of repository size. Selection is deterministic and
-# ground-truth-blind: scanner/map-indicated files first, plus a stable coverage sample.
+# ground-truth-blind: scanner/map evidence, one syntactic architecture neighbor, and a
+# stable coverage sample share this unchanged cap.
 max_llm_regions_per_run = 6
 reserved_sample_regions = 2
+reserved_architecture_neighbor_regions = 1
 
 [falsify]
 # Falsification challenger loop (src/repoauditor/falsify/challenger.py).
