@@ -6,7 +6,11 @@ from pathlib import Path
 
 import pytest
 
-from repoauditor.detect.ensemble import CandidateFinding, _retrieval_context
+from repoauditor.detect.ensemble import (
+    CandidateFinding,
+    _retrieval_context,
+    _retrieval_context_with_provenance,
+)
 from repoauditor.detect.retrieval import RetrievalIndex
 from repoauditor.detect.planning import (
     plan_detection_regions,
@@ -68,6 +72,34 @@ def test_detection_context_prioritizes_external_callers_over_same_file_similarit
     assert "return prepare(untrusted)" in context
     assert "RELATED CALL-NAME MATCH: helper" not in context
     assert "RELATED SIMILAR PATTERN: helper" not in context
+
+
+def test_cross_file_context_records_path_blind_expansion_provenance(tmp_path):
+    """A related file stays distinct from the primary selection; no target name is used."""
+    (tmp_path / "component_a.py").write_text(
+        "def transform(value):\n"
+        "    return normalize(value)\n"
+    )
+    (tmp_path / "component_b.py").write_text(
+        "from component_a import transform\n\n"
+        "def dispatch(payload):\n"
+        "    return transform(payload)\n"
+    )
+    index = RetrievalIndex().build(tmp_path)
+    primary = (tmp_path / "component_a.py").read_text()
+
+    context, provenance = _retrieval_context_with_provenance(
+        index, "component_a.py", primary
+    )
+
+    assert context == _retrieval_context(index, "component_a.py", primary)
+    assert provenance == [{
+        "basis": "call-name-match",
+        "file": "component_b.py",
+        "line_start": 3,
+        "symbol": "dispatch",
+    }]
+    assert all(item["file"] != "component_a.py" for item in provenance)
 
 
 def test_projection_reports_unbounded_and_bounded_work(tmp_config, tmp_path):
