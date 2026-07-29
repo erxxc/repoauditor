@@ -110,8 +110,11 @@ def test_demo_executes_inside_a_durable_usage_budget_scope(tmp_config, monkeypat
     monkeypatch.setattr(cli, "_preflight", lambda config: cli.PreflightResult())
     observed = {}
 
-    def execute(config, snapshot, expectations, trials, seed, non_interactive):
+    def execute(
+        config, snapshot, expectations, trials, seed, non_interactive, pipeline_id
+    ):
         observed["remaining"] = remaining_pipeline_call_capacity(config)
+        observed["pipeline_id"] = pipeline_id
         return [str(snapshot)], SimpleNamespace(
             repo_id="uat_lightweight_app", commit="fixture-commit"
         )
@@ -134,12 +137,15 @@ def test_demo_continue_uses_artifact_path_without_repeating_pipeline(
     monkeypatch.setattr(cli, "_preflight", lambda config: cli.PreflightResult())
     observed = {}
 
-    def continue_demo(config, expectations, trials, seed, non_interactive):
+    def continue_demo(
+        config, expectations, trials, seed, non_interactive, pipeline_id
+    ):
         observed.update({
             "expectations": expectations.name,
             "trials": trials,
             "seed": seed,
             "non_interactive": non_interactive,
+            "pipeline_id": pipeline_id,
         })
         return [], SimpleNamespace(
             repo_id="uat_lightweight_app", commit="existing-commit"
@@ -159,9 +165,115 @@ def test_demo_continue_uses_artifact_path_without_repeating_pipeline(
     )
 
     assert result.exit_code == 0, result.output
-    assert observed == {
-        "expectations": "expected_findings.json",
-        "trials": 123,
-        "seed": 7,
-        "non_interactive": True,
+    assert observed["expectations"] == "expected_findings.json"
+    assert observed["trials"] == 123
+    assert observed["seed"] == 7
+    assert observed["non_interactive"] is True
+    assert isinstance(observed["pipeline_id"], int)
+
+
+def test_demo_persists_rich_detect_summary_for_runs_show(tmp_config, monkeypatch):
+    cfg = tmp_config.model_copy(update={"root": REPO_ROOT})
+    fixture = REPO_ROOT / "tests" / "fixtures" / "uat_lightweight_app" / "snapshot"
+    monkeypatch.setattr(cli, "get_config", lambda: cfg)
+    monkeypatch.setattr(cli, "_preflight", lambda config: cli.PreflightResult())
+    monkeypatch.setattr(
+        cli,
+        "check_model",
+        lambda config: SimpleNamespace(
+            ready=True, provider="anthropic", model="test-model", error=None
+        ),
+    )
+    monkeypatch.setattr(
+        cli,
+        "ingest_repo",
+        lambda source, config, repo_id: SimpleNamespace(
+            repo_id=repo_id,
+            commit="fixture-commit",
+            snapshot_path=fixture,
+        ),
+    )
+    monkeypatch.setattr(
+        cli,
+        "snapshot_manifests",
+        lambda *args: SimpleNamespace(manifests=[]),
+    )
+    monkeypatch.setattr(
+        cli,
+        "_map_stage",
+        lambda repo_id, config: SimpleNamespace(
+            repo_id=repo_id,
+            commit="fixture-commit",
+            entry_points=[],
+            trust_boundaries=[],
+            data_stores=[],
+            integrations=[],
+        ),
+    )
+    projection = SimpleNamespace(
+        source_files=12,
+        unbounded_base_calls=36,
+        planned_regions=6,
+        planned_base_calls=18,
+        omitted_regions=6,
+    )
+    monkeypatch.setattr(
+        cli,
+        "_detect_stage",
+        lambda repo_id, config: cli.DetectionRun(
+            [],
+            {
+                "semgrep": 0, "gitleaks": 1, "pip-audit": 2,
+                "osv-scanner": 0, "llm-ensemble": 3,
+            },
+            projection=projection,
+            selected_regions=[{
+                "file": "storefront/account.py",
+                "selection_basis": "architecture-map",
+            }],
+            completed_region_calls=18,
+            scanner_statuses={"osv-scanner": "partial"},
+            scanner_failures={"osv-scanner": "explicit requirements fallback"},
+        ),
+    )
+    monkeypatch.setattr(
+        cli,
+        "_triage_stage",
+        lambda *args, **kwargs: SimpleNamespace(
+            ranked=[],
+            n_suppressed=0,
+            n_real_labels=0,
+            action_threshold=0.5,
+            synthetic_share=1.0,
+            synthetic_dropped=False,
+            model_name="random_forest",
+            evaluations=[],
+        ),
+    )
+
+    class DeferredBatch(list):
+        deferred_count = 1
+
+    monkeypatch.setattr(
+        cli, "_falsify_stage", lambda repo_id, config: DeferredBatch()
+    )
+
+    result = runner.invoke(cli.app, ["demo", "--non-interactive"])
+
+    assert result.exit_code == 0, result.output
+    pipeline = db.list_pipeline_runs(cfg, repo_id="uat_lightweight_app")[0]
+    summaries = {
+        stage.stage: stage.summary
+        for stage in db.list_stage_runs(pipeline.id, cfg)
     }
+    assert set(summaries) == {"ingest", "map", "detect", "triage", "falsify"}
+    assert summaries["detect"]["region_plan"]["planned_regions"] == 6
+    assert summaries["detect"]["region_plan"]["selected"][0]["file"] == (
+        "storefront/account.py"
+    )
+    assert summaries["detect"]["scanner_failures"]["osv-scanner"] == (
+        "explicit requirements fallback"
+    )
+    detail = runner.invoke(cli.app, ["runs", "show", str(pipeline.id)])
+    assert detail.exit_code == 0, detail.output
+    assert "storefront/account.py" in detail.stdout

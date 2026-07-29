@@ -120,13 +120,14 @@ V. Intake
       completed and the original degradation was disclosed.
 
    E. OPT-019 — Persist and expose rich per-stage summaries for demo/resume runs —
-      newly surfaced/evidence-ready — owner: CLI/store observability — source:
+      implemented — owner: CLI/store observability — source:
       `../poc-acceptance-walkthrough-2026-07-28.md` — the region plan existed in
       `detection_region_run` but `runs show` did not expose it for the demo lineage, forcing
-      a direct store query. Reuse the existing run/stage summary interface so demo,
-      standalone commands, and `run` provide equivalent durable coverage metadata —
-      activation: offline optimization workstream — DoD impact: none; live coverage was
-      disclosed during acceptance.
+      a direct store query. Demo now records each executed stage, while `run`, `resume`, and
+      direct map/detect/falsify/normalize commands share the same applicable summary
+      projections. `runs show` exposes selected regions, scanner status/failure detail,
+      model/prompt provenance, counts, and artifacts without a direct store query — DoD
+      impact: none; live coverage was disclosed during acceptance.
 
    F. OPT-020 — Document and test bounded-plan versus cross-file retrieval scope —
       newly surfaced/evidence-ready — owner: detection architecture — source:

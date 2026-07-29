@@ -637,6 +637,59 @@ def test_standalone_model_stage_has_fresh_durable_budget(
     ]
 
 
+def test_standalone_detect_persists_region_plan_and_scanner_coverage(
+    tmp_config, monkeypatch
+):
+    _resume_fixture(tmp_config, monkeypatch, count=0)
+    projection = SimpleNamespace(
+        source_files=12,
+        unbounded_base_calls=36,
+        planned_regions=6,
+        planned_base_calls=18,
+        omitted_regions=6,
+    )
+    detection = cli.DetectionRun(
+        [],
+        {
+            "semgrep": 0, "gitleaks": 1, "pip-audit": 2,
+            "osv-scanner": 0, "llm-ensemble": 3,
+        },
+        Path("scan.sarif"),
+        "empty",
+        projection=projection,
+        selected_regions=[{
+            "file": "storefront/account.py",
+            "selection_basis": "architecture-map",
+        }],
+        completed_region_calls=18,
+        scanner_statuses={
+            "semgrep": "empty", "gitleaks": "complete",
+            "pip-audit": "complete", "osv-scanner": "partial",
+        },
+        scanner_failures={
+            "osv-scanner": "recursive discovery failed; explicit fallback used",
+        },
+    )
+    monkeypatch.setattr(cli, "_detect_stage", lambda repo_id, config: detection)
+
+    result = runner.invoke(cli.app, ["detect", "acme"])
+
+    assert result.exit_code == 0, result.output
+    pipeline = db.list_pipeline_runs(tmp_config, repo_id="acme")[0]
+    stage = db.list_stage_runs(pipeline.id, tmp_config)[0]
+    assert stage.summary["region_plan"]["selected"] == [{
+        "file": "storefront/account.py",
+        "selection_basis": "architecture-map",
+    }]
+    assert stage.summary["region_plan"]["planned_regions"] == 6
+    assert stage.summary["scanner_statuses"]["osv-scanner"] == "partial"
+    assert "explicit fallback" in stage.summary["scanner_failures"]["osv-scanner"]
+    detail = runner.invoke(cli.app, ["runs", "show", str(pipeline.id)])
+    assert detail.exit_code == 0, detail.output
+    assert '"planned_regions": 6' in detail.stdout
+    assert "storefront/account.py" in detail.stdout
+
+
 def test_standalone_falsify_is_metered_and_points_to_resume(
     tmp_config, monkeypatch
 ):
