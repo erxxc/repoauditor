@@ -143,6 +143,23 @@ command needed. It never writes the key to configuration, SQLite, reports, or th
 Advanced automation may use `./demo --non-interactive`; that mode stops successfully at an
 open review request instead of making a decision for the user.
 
+If the bounded falsification budget pauses the demo, continue exactly as printed:
+
+```sh
+uv run repoauditor resume uat_lightweight_app
+uv run repoauditor demo --continue
+```
+
+Repeat `resume` only while it reports deferred findings. `demo --continue` never repeats
+ingest, map, or detect; it completes the review checkpoint, both reports, the quantitative
+appendix, and the scorecards.
+
+The scorecard distinguishes the final security outcome from test-instrument coverage. A
+negative control passes when it never becomes a countable finding, whether it was detected
+and killed or never raised. Candidate creation, falsification exercise, and expected-source
+coverage remain visible separately so a safe non-finding is not misreported as a security
+failure.
+
 ## Linux or an existing development environment
 
 You need Git and `uv`; `uv` can install the correct Python version itself. Install Git

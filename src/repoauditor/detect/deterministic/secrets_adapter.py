@@ -49,15 +49,18 @@ class SecretsAdapter:
 
     def __init__(self, timeout_seconds: int = 180) -> None:
         self.timeout_seconds = timeout_seconds
+        self.run_status = "not-run"
+        self.failure_detail: str | None = None
 
     def run(self, snapshot_path: Path) -> list[CandidateFinding]:
         if shutil.which(_BINARY) is None:
             logger.info("gitleaks not installed; secrets adapter contributes no findings")
+            self.run_status = "unavailable"
             return []
         with tempfile.TemporaryDirectory() as tmp:
             report = Path(tmp) / "gitleaks.json"
             try:
-                subprocess.run(
+                proc = subprocess.run(
                     [_BINARY, "detect", "--source", str(snapshot_path), "--no-git",
                      "--report-format", "json", "--report-path", str(report),
                      "--no-banner", "--exit-code", "0"],
@@ -65,10 +68,18 @@ class SecretsAdapter:
                 )
             except (subprocess.TimeoutExpired, OSError) as exc:
                 logger.warning("gitleaks run failed (%s); no secret findings", exc)
+                self.run_status = "failed"
+                self.failure_detail = f"{type(exc).__name__}: {exc}"[:500]
                 return []
             if not report.is_file():
+                self.run_status = "failed"
+                self.failure_detail = (
+                    proc.stderr.strip() or "scanner did not write its JSON report"
+                )[:500]
                 return []
-            return self.parse(report.read_text(), snapshot_path)
+            findings = self.parse(report.read_text(), snapshot_path)
+            self.run_status = "complete" if findings else "empty"
+            return findings
 
     def parse(self, raw_output: str,
               snapshot_path: Path | None = None) -> list[CandidateFinding]:

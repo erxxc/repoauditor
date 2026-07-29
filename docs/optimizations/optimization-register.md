@@ -81,13 +81,16 @@ IV. Quantitative enrichment
 
 V. Intake
 
-   A. OPT-015 — Preserve deterministic scanner failure detail — newly surfaced/deferred —
+   A. OPT-015 — Preserve deterministic scanner failure detail — implemented as an MVP
+      acceptance correction —
       owner: reliability engineering — source: the Plotly.js blind capture initially
       produced `semgrep_status=failed` when `--config auto` could not resolve through the
       restricted network sandbox, but the adapter artifact retained no root cause. Improve
-      diagnostics without changing graceful degradation or scanner results — activation:
-      after remaining MVP closure — DoD impact: none; the successful measurement reran the
-      exact scanner with approved ruleset access and retained its SARIF digest.
+      diagnostics without changing graceful degradation. The failed POC walkthrough then
+      demonstrated direct DoD impact: installed `pip-audit` failed at execution while
+      preflight called the toolchain ready. Scanner execution status and attributable detail
+      are now retained; an exact-direct-pin fallback is visibly partial rather than full
+      transitive coverage.
 
    B. OPT-016 — Remove SHAP/Matplotlib pending-deprecation noise — newly surfaced/deferred
       — owner: test infrastructure — source: the 2026-07-28 fast-lane run completed with
@@ -96,5 +99,14 @@ V. Intake
       correctness impact was observed — activation: routine dependency maintenance after
       MVP closure — DoD impact: none.
 
-   C. Add the next proposed improvement as `OPT-017`; do not place it directly into the MVP
+   C. OPT-017 — Diagnose the UAT IDOR selection/detection miss — evidence-required/deferred
+      — owner: detection evaluation — source:
+      `../poc-acceptance-attempt-2026-07-28.md` — the OpenAI-compatible acceptance attempt
+      produced zero candidates for `storefront/orders.py`. First recover the stored detect
+      region plan to distinguish bounded planner omission from an in-context model miss;
+      do not tune a prompt or target path from the scorecard alone — activation: after the
+      offline acceptance corrections and before a paid rerun — DoD impact: none unless the
+      owner explicitly adds a fixture recovery threshold.
+
+   D. Add the next proposed improvement as `OPT-018`; do not place it directly into the MVP
       recovery plan unless the project owner explicitly changes the DoD.

@@ -19,6 +19,7 @@ from contextvars import ContextVar
 from datetime import datetime
 from enum import StrEnum
 from functools import wraps
+from types import SimpleNamespace
 
 import typer
 
@@ -405,7 +406,10 @@ def _render_preflight(result: PreflightResult) -> None:
             err=True,
         )
     elif not result.missing_packages and not _quiet_enabled.get():
-        typer.echo("preflight: optional scanner toolchain is ready")
+        typer.echo(
+            "preflight: optional scanner executables are installed "
+            "(execution health is verified during detect)"
+        )
 
 
 def _preflight(config) -> PreflightResult:
@@ -464,6 +468,22 @@ def _detect_stage(repo_id: str, config):
     if result.sarif_path is not None:
         if not _quiet_enabled.get():
             typer.echo(f"  semgrep-status={result.semgrep_status}; SARIF={result.sarif_path}")
+    scanner_statuses = getattr(result, "scanner_statuses", {})
+    scanner_failures = getattr(result, "scanner_failures", {})
+    if scanner_statuses and not _quiet_enabled.get():
+        typer.echo(
+            "  scanner-execution: "
+            + ", ".join(
+                f"{name}={status}"
+                for name, status in sorted(scanner_statuses.items())
+            )
+        )
+    for name, detail in sorted(scanner_failures.items()):
+        typer.secho(
+            f"  scanner detail: {name}: {detail}",
+            fg=typer.colors.YELLOW,
+            err=True,
+        )
     return result
 
 
@@ -739,6 +759,10 @@ def demo(
         False, "--non-interactive",
         help="Stop at review instead of prompting for a human decision.",
     ),
+    continue_existing: bool = typer.Option(
+        False, "--continue",
+        help="Finish review, reports, and scorecards after a bounded demo resume.",
+    ),
 ) -> None:
     """Run the safe, intentionally vulnerable UAT storefront as a guided demo."""
     config = get_config()
@@ -773,9 +797,14 @@ def demo(
     pipeline = db.start_pipeline_run(str(snapshot), config)
     try:
         with model_usage_scope(pipeline.id):
-            artifacts, identity = _execute_demo(
-                config, snapshot, expectations, trials, seed, non_interactive
-            )
+            if continue_existing:
+                artifacts, identity = _continue_demo(
+                    config, expectations, trials, seed, non_interactive
+                )
+            else:
+                artifacts, identity = _execute_demo(
+                    config, snapshot, expectations, trials, seed, non_interactive
+                )
         if identity is not None:
             db.update_pipeline_run_identity(
                 pipeline.id, identity.repo_id, identity.commit, config
@@ -836,21 +865,57 @@ def _execute_demo(
         typer.echo(
             f"Demo paused safely with {falsification.deferred_count} deferred finding(s); "
             f"run `repoauditor resume {_DEMO_REPO_ID}` to continue the bounded queue "
-            "without repeating map/detect."
+            "without repeating map/detect. When the backlog is clear, run "
+            "`repoauditor demo --continue` to complete review, reports, and scorecards."
         )
         return [str(ingested.snapshot_path)], ingested
     _run_step("normalize", lambda: _normalize_stage(_DEMO_REPO_ID, config))
-    _run_step("review checkpoint", lambda: raise_review_requests(_DEMO_REPO_ID, config))
+    return _finish_demo(
+        config, expectations, trials, seed, non_interactive, ingested
+    )
 
+
+def _continue_demo(
+    config, expectations: Path, trials: int, seed: int, non_interactive: bool,
+) -> tuple[list[str], object | None]:
+    """Continue only the demo checkpoint/artifact path; never repeat map or detect."""
+    repo = db.get_latest_ingested_repo(_DEMO_REPO_ID, config)
+    if repo is None:
+        typer.secho("No prior demo scan exists; run `repoauditor demo` first.", err=True)
+        raise typer.Exit(code=1)
+    deferred = db.list_deferred_findings(_DEMO_REPO_ID, config)
+    if deferred:
+        typer.secho(
+            f"Demo still has {len(deferred)} deferred finding(s). Continue with "
+            f"`repoauditor resume {_DEMO_REPO_ID}` first.",
+            err=True,
+        )
+        raise typer.Exit(code=1)
+    snapshot_path, commit = latest_snapshot(config, _DEMO_REPO_ID)
+    identity = SimpleNamespace(
+        repo_id=_DEMO_REPO_ID, commit=commit, snapshot_path=snapshot_path
+    )
+    typer.echo("Continuing the existing demo without repeating ingest, map, or detect.")
+    return _finish_demo(
+        config, expectations, trials, seed, non_interactive, identity
+    )
+
+
+def _finish_demo(
+    config, expectations: Path, trials: int, seed: int, non_interactive: bool,
+    identity,
+) -> tuple[list[str], object | None]:
+    """Handle the review checkpoint and generate every final demo artifact."""
+    _run_step("review checkpoint", lambda: raise_review_requests(_DEMO_REPO_ID, config))
     requests = open_review_requests(_DEMO_REPO_ID, config)
     if requests:
         typer.echo(render_open_requests(_DEMO_REPO_ID, config))
         if non_interactive:
             typer.echo(
                 f"Demo paused successfully. Decide requests with `repoauditor review decide "
-                f"{_DEMO_REPO_ID} ...`, then rerun the demo."
+                f"{_DEMO_REPO_ID} ...`, then run `repoauditor demo --continue`."
             )
-            return [str(ingested.snapshot_path)], ingested
+            return [str(identity.snapshot_path)], identity
         reviewer = typer.prompt("Reviewer name", default=getpass.getuser())
         for request in requests:
             disposition = typer.prompt(
@@ -887,13 +952,15 @@ def _execute_demo(
     )
     scorecard = score_demo(_DEMO_REPO_ID, expectations, config)
     typer.echo(
-        f"Demo complete: {scorecard.passed}/{scorecard.total} expected behaviors passed."
+        f"Demo complete: {scorecard.passed}/{scorecard.total} final security outcomes passed; "
+        f"{sum(case.mechanism_exercised for case in scorecard.cases)}/"
+        f"{scorecard.total} expected mechanisms exercised."
     )
     typer.echo("Artifacts:")
     artifacts = [*engineering, *memo, scorecard.markdown_path, scorecard.json_path]
     for path in artifacts:
         typer.echo(f"  {path}")
-    return [str(path) for path in artifacts], ingested
+    return [str(path) for path in artifacts], identity
 
 
 @app.command()
@@ -1477,6 +1544,8 @@ def run(
                         "reused_completed_calls": value.skipped_completed_region_calls,
                     } if getattr(value, "projection", None) is not None else None),
                     "semgrep_status": value.semgrep_status,
+                    "scanner_statuses": getattr(value, "scanner_statuses", {}),
+                    "scanner_failures": getattr(value, "scanner_failures", {}),
                     "scanner_coverage": {
                         "checked": preflight.scanners_checked,
                         "missing": preflight.missing_scanners,
@@ -1500,6 +1569,8 @@ def run(
             [], prior_detect.summary.get("source_counts", {}),
             Path(paths[0]) if paths else None,
             prior_detect.summary.get("semgrep_status"),
+            scanner_statuses=prior_detect.summary.get("scanner_statuses", {}),
+            scanner_failures=prior_detect.summary.get("scanner_failures", {}),
         )
     if "triage" not in completed:
         step(
@@ -1579,6 +1650,22 @@ def run(
         typer.secho(
             f"coverage notice: Semgrep status is {detection.semgrep_status}; "
             "the run completed without full SAST coverage.",
+            fg=typer.colors.YELLOW,
+            err=True,
+        )
+    degraded_scanners = {
+        name: status
+        for name, status in getattr(detection, "scanner_statuses", {}).items()
+        if status in {"failed", "partial"}
+    }
+    if degraded_scanners:
+        typer.secho(
+            "coverage notice: deterministic scanner coverage is incomplete: "
+            + ", ".join(
+                f"{name}={status}" for name, status in sorted(degraded_scanners.items())
+            )
+            + "; inspect `repoauditor runs show "
+            + f"{pipeline.id}` for attributable detail.",
             fg=typer.colors.YELLOW,
             err=True,
         )
@@ -1789,7 +1876,8 @@ def resume(
     next_command = (
         f"repoauditor resume {repo_id}" if deferred
         else (
-            f"repoauditor review list {repo_id}" if requests
+            "repoauditor demo --continue" if repo_id == _DEMO_REPO_ID
+            else f"repoauditor review list {repo_id}" if requests
             else f"repoauditor finalize {repo_id}"
         )
     )

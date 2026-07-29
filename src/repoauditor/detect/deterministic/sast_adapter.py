@@ -61,6 +61,7 @@ class SastAdapter:
         self.timeout_seconds = timeout_seconds
         self.sarif_output_path = sarif_output_path
         self.run_status: str | None = None
+        self.failure_detail: str | None = None
 
     def _write_artifact(self, raw_output: str) -> None:
         if self.sarif_output_path is None:
@@ -98,10 +99,15 @@ class SastAdapter:
             )
         except (subprocess.TimeoutExpired, OSError) as exc:
             logger.warning("semgrep run failed (%s); no SAST findings", exc)
+            self.failure_detail = f"{type(exc).__name__}: {exc}"[:500]
             self.write_empty_artifact("failed")
             return []
         if not proc.stdout.strip():
             status = "failed" if getattr(proc, "returncode", 0) else "empty"
+            if status == "failed":
+                self.failure_detail = (
+                    proc.stderr.strip() or f"exit code {proc.returncode}"
+                )[:500]
             self.write_empty_artifact(status)
             return []
         findings = self.parse(proc.stdout, snapshot_path)

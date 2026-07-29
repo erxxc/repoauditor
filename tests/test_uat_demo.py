@@ -64,6 +64,27 @@ def test_scorecard_covers_all_ten_behaviors(tmp_config, tmp_path):
     assert json.loads(scorecard.json_path.read_text())["passed"] == 10
 
 
+def test_scorecard_separates_safe_negative_outcome_from_mechanism_coverage(
+    tmp_config, tmp_path,
+):
+    db.init_db(tmp_config)
+
+    scorecard = score_demo(
+        "uat_lightweight_app",
+        REPO_ROOT / "tests/fixtures/uat_lightweight_app/expected_findings.json",
+        tmp_config,
+        out_dir=tmp_path / "score",
+    )
+
+    negative = {case.case: case for case in scorecard.cases if case.case in {4, 7, 8, 9, 10}}
+    assert all(case.passed for case in negative.values())
+    assert all(not case.mechanism_exercised for case in negative.values())
+    assert all(case.coverage == "not-exercised" for case in negative.values())
+    text = scorecard.markdown_path.read_text()
+    assert "Whether detection raised it" in text
+    assert "not exercised" in text
+
+
 def test_demo_missing_key_message_is_explicit(tmp_config, monkeypatch):
     cfg = tmp_config.model_copy(update={"root": REPO_ROOT})
     monkeypatch.setattr(cli, "get_config", lambda: cfg)
@@ -103,3 +124,44 @@ def test_demo_executes_inside_a_durable_usage_budget_scope(tmp_config, monkeypat
     pipeline = db.list_pipeline_runs(cfg, repo_id="uat_lightweight_app")[0]
     assert pipeline.status.value == "completed"
     assert pipeline.commit_hash == "fixture-commit"
+
+
+def test_demo_continue_uses_artifact_path_without_repeating_pipeline(
+    tmp_config, monkeypatch,
+):
+    cfg = tmp_config.model_copy(update={"root": REPO_ROOT})
+    monkeypatch.setattr(cli, "get_config", lambda: cfg)
+    monkeypatch.setattr(cli, "_preflight", lambda config: cli.PreflightResult())
+    observed = {}
+
+    def continue_demo(config, expectations, trials, seed, non_interactive):
+        observed.update({
+            "expectations": expectations.name,
+            "trials": trials,
+            "seed": seed,
+            "non_interactive": non_interactive,
+        })
+        return [], SimpleNamespace(
+            repo_id="uat_lightweight_app", commit="existing-commit"
+        )
+
+    monkeypatch.setattr(cli, "_continue_demo", continue_demo)
+    monkeypatch.setattr(
+        cli, "_execute_demo",
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            AssertionError("full demo pipeline must not repeat")
+        ),
+    )
+
+    result = runner.invoke(
+        cli.app,
+        ["demo", "--continue", "--trials", "123", "--seed", "7", "--non-interactive"],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert observed == {
+        "expectations": "expected_findings.json",
+        "trials": 123,
+        "seed": 7,
+        "non_interactive": True,
+    }

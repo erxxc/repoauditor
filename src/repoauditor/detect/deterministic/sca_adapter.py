@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -33,12 +34,25 @@ _MANIFEST_GLOBS = ("requirements*.txt", "poetry.lock", "Pipfile.lock", "pdm.lock
 # SCA confirms a *known* CVE match against a declared dependency — the existence is
 # reliable, but exploitability in this codebase is not, so a moderate confidence.
 _SCA_CONFIDENCE = 0.6
+_EXACT_REQUIREMENT = re.compile(
+    r"^[A-Za-z0-9_.-]+(?:\[[^\]]+\])?==[^;\s]+(?:\s*;.*)?$"
+)
 
 
 def _identity(ecosystem: str, package: str, version: str, advisory_id: str) -> str:
     """Canonical natural key for one affected dependency/advisory tuple."""
     parts = (ecosystem, package, version, advisory_id)
     return "sca:" + ":".join(str(part).strip().lower() for part in parts)
+
+
+def _direct_pins_only(path: Path) -> bool:
+    """Whether pip-audit can safely use its no-pip, direct-dependency fallback."""
+    requirements = [
+        line.strip()
+        for line in path.read_text(errors="replace").splitlines()
+        if line.strip() and not line.lstrip().startswith("#")
+    ]
+    return bool(requirements) and all(_EXACT_REQUIREMENT.match(line) for line in requirements)
 
 
 class ScaAdapter:
@@ -48,6 +62,8 @@ class ScaAdapter:
 
     def __init__(self, timeout_seconds: int = 180) -> None:
         self.timeout_seconds = timeout_seconds
+        self.run_statuses = {"pip-audit": "not-run", "osv-scanner": "not-run"}
+        self.failure_details: dict[str, str] = {}
 
     def run(self, snapshot_path: Path) -> list[CandidateFinding]:
         candidates: list[CandidateFinding] = []
@@ -59,9 +75,11 @@ class ScaAdapter:
     def _run_pip_audit(self, snapshot_path: Path) -> list[CandidateFinding]:
         if shutil.which("pip-audit") is None:
             logger.info("pip-audit not installed; skipping")
+            self.run_statuses["pip-audit"] = "unavailable"
             return []
         reqs = sorted(snapshot_path.glob("requirements*.txt"))
         if not reqs:
+            self.run_statuses["pip-audit"] = "not-applicable"
             return []
         out: list[CandidateFinding] = []
         for req in reqs:
@@ -72,10 +90,51 @@ class ScaAdapter:
                 )
             except (subprocess.TimeoutExpired, OSError) as exc:
                 logger.warning("pip-audit run failed (%s); skipping %s", exc, req.name)
+                self.run_statuses["pip-audit"] = "failed"
+                self.failure_details["pip-audit"] = f"{type(exc).__name__}: {exc}"[:500]
+                continue
+            if proc.returncode not in {0, 1}:
+                primary_failure = (
+                    proc.stderr.strip() or f"exit code {proc.returncode}"
+                )[:350]
+                if _direct_pins_only(req):
+                    try:
+                        proc = subprocess.run(
+                            [
+                                "pip-audit", "-r", str(req), "-f", "json",
+                                "--progress-spinner", "off", "--disable-pip", "--no-deps",
+                            ],
+                            capture_output=True, text=True, timeout=self.timeout_seconds,
+                        )
+                    except (subprocess.TimeoutExpired, OSError) as exc:
+                        proc = None
+                        fallback_failure = f"{type(exc).__name__}: {exc}"
+                    else:
+                        fallback_failure = (
+                            proc.stderr.strip() or f"exit code {proc.returncode}"
+                        )
+                    if proc is not None and proc.returncode in {0, 1} and proc.stdout.strip():
+                        out += self.parse_pip_audit(
+                            proc.stdout, relativize(str(req), snapshot_path)
+                        )
+                        self.run_statuses["pip-audit"] = "partial"
+                        self.failure_details["pip-audit"] = (
+                            "full dependency resolution failed; audited exact direct pins "
+                            f"without transitive resolution. Primary detail: {primary_failure}"
+                        )[:500]
+                        continue
+                    primary_failure += f"; direct-pin fallback failed: {fallback_failure[:120]}"
+                self.run_statuses["pip-audit"] = "failed"
+                self.failure_details["pip-audit"] = primary_failure[:500]
                 continue
             if proc.stdout.strip():
                 out += self.parse_pip_audit(
                     proc.stdout, relativize(str(req), snapshot_path))
+            else:
+                self.run_statuses["pip-audit"] = "failed"
+                self.failure_details["pip-audit"] = "scanner returned no JSON output"
+        if self.run_statuses["pip-audit"] not in {"failed", "partial"}:
+            self.run_statuses["pip-audit"] = "complete" if out else "empty"
         return out
 
     def parse_pip_audit(self, raw_output: str,
@@ -111,6 +170,7 @@ class ScaAdapter:
     def _run_osv_scanner(self, snapshot_path: Path) -> list[CandidateFinding]:
         if shutil.which("osv-scanner") is None:
             logger.info("osv-scanner not installed; skipping")
+            self.run_statuses["osv-scanner"] = "unavailable"
             return []
         try:
             proc = subprocess.run(
@@ -119,10 +179,21 @@ class ScaAdapter:
             )
         except (subprocess.TimeoutExpired, OSError) as exc:
             logger.warning("osv-scanner run failed (%s); skipping", exc)
+            self.run_statuses["osv-scanner"] = "failed"
+            self.failure_details["osv-scanner"] = f"{type(exc).__name__}: {exc}"[:500]
+            return []
+        if proc.returncode not in {0, 1}:
+            self.run_statuses["osv-scanner"] = "failed"
+            self.failure_details["osv-scanner"] = (
+                proc.stderr.strip() or f"exit code {proc.returncode}"
+            )[:500]
             return []
         if not proc.stdout.strip():
+            self.run_statuses["osv-scanner"] = "empty"
             return []
-        return self.parse_osv(proc.stdout, snapshot_path)
+        findings = self.parse_osv(proc.stdout, snapshot_path)
+        self.run_statuses["osv-scanner"] = "complete" if findings else "empty"
+        return findings
 
     def parse_osv(self, raw_output: str,
                   snapshot_path: Path | None = None) -> list[CandidateFinding]:
