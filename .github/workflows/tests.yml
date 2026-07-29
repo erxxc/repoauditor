@@ -24,6 +24,74 @@ jobs:
       - run: uv sync --frozen --dev
       - run: uv run pytest -m "not integration and not live"
 
+  scanner-deployment:
+    name: scanner deployment / required
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "stable"
+          cache: false
+      - run: uv sync --frozen --dev
+      - name: Install pinned scanner binaries
+        run: |
+          uv tool install semgrep==1.170.1
+          uv tool install pip-audit==2.10.1
+          go install github.com/zricethezav/gitleaks/v8@v8.30.1
+          go install github.com/google/osv-scanner/v2/cmd/osv-scanner@v2.3.8
+      - name: Record scanner binary versions
+        run: |
+          {
+            semgrep --version
+            pip-audit --version
+            gitleaks version
+            osv-scanner --version
+          } | tee scanner-versions.txt
+      - name: Require scanner controls and provenance
+        run: >-
+          uv run repoauditor scanner-canaries
+          --output scanner-canaries.json
+      - name: Publish scanner deployment evidence
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "## Required scanner deployment gate"
+            echo ""
+            echo "Positive, clean/not-applicable, target-count, output-schema,"
+            echo "binary-version, configuration, and advisory provenance controls"
+            echo "must all pass. Canary findings never enter product storage."
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [[ -f scanner-canaries.json ]]; then
+            echo '```json' >> "$GITHUB_STEP_SUMMARY"
+            cat scanner-canaries.json >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "No canary report was produced; the gate is disqualified." \
+              >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Retain scanner deployment evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scanner-deployment-${{ github.run_id }}
+          path: |
+            scanner-canaries.json
+            scanner-versions.txt
+          retention-days: 30
+          if-no-files-found: warn
+
   integration:
     name: integration / scanners-calibration-charts
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
