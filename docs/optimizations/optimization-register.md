@@ -79,7 +79,14 @@ I. Evaluation and classifier maturity
       [`scan receipt`](../positive-mechanism-expansion-scan-2026-07-29.json) and frozen
       [`12-entry review tranche`](../triage-review-acquisition-2026-07-29-v3.json) add no
       automatic labels. Retained SARIF notification text is now canonicalized alongside
-      rule metadata and paths — DoD impact: none.
+      rule metadata and paths. Human review of that tranche added nine actionable positives
+      and three negatives, bringing the cohort to 92 usable labels (27 positive, 65
+      negative) across 15 engagements. The final
+      [`12-entry production tranche`](../triage-review-acquisition-2026-07-29-v4.json)
+      targets authorization, path/file handling, redirects, token secrets, and template
+      output while excluding documentation, vendor bundles, CI, and package hygiene. It is
+      expected to cross the 100-label maturity floor without relaxing any evidence boundary
+      — DoD impact: none.
 
    B. OPT-002 — Family-aware bootstrap ranges — deferred — owner: ML evaluation — source:
       `../triage-accuracy-roadmap.md` — activate after adequate held-out family breadth and

@@ -130,6 +130,15 @@ The resulting
 three declared production targets, then adds nine outcome-blind production candidates.
 Benchmark metadata remains context rather than a label, and abstention remains available.
 
+The v3 review added nine actionable positives and three negatives, producing 92 usable
+labels (27 positive and 65 negative) across 15 engagements. A final production-only tranche
+is frozen in
+[`triage-review-acquisition-2026-07-29-v4.json`](triage-review-acquisition-2026-07-29-v4.json).
+It selects 12 unsaturated anchor candidates across authorization, path/file handling,
+redirects, token secrets, and template output, while explicitly excluding documentation,
+bundled vendor code, CI, and package hygiene. Completing this tranche should cross OPT-001's
+100-label maturity floor; it does not itself satisfy OPT-002's held-out family requirements.
+
 ## Phase 4 — Validation maturity
 
 At 40 labels, enable descriptive threshold tables. At 40 labels and 8 evaluation families,
