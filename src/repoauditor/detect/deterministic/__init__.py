@@ -10,5 +10,18 @@ from .sast_adapter import SastAdapter
 from .sca_adapter import ScaAdapter
 from .secrets_adapter import SecretsAdapter
 from .execution import ScannerExecution
+from .canaries import (
+    ScannerCanaryReport,
+    render_scanner_canaries,
+    run_scanner_canaries,
+)
 
-__all__ = ["SastAdapter", "ScaAdapter", "SecretsAdapter", "ScannerExecution"]
+__all__ = [
+    "SastAdapter",
+    "ScaAdapter",
+    "SecretsAdapter",
+    "ScannerExecution",
+    "ScannerCanaryReport",
+    "run_scanner_canaries",
+    "render_scanner_canaries",
+]

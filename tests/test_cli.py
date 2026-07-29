@@ -718,6 +718,39 @@ def test_standalone_detect_persists_region_plan_and_scanner_coverage(
     assert '"target_count": 12' in detail.stdout
 
 
+def test_scanner_canaries_cli_writes_report_and_fails_closed(
+    tmp_config, monkeypatch, tmp_path
+):
+    monkeypatch.setattr(cli, "get_config", lambda: tmp_config)
+    report_path = tmp_path / "scanner-canaries.json"
+    monkeypatch.setattr(
+        cli,
+        "run_scanner_canaries",
+        lambda timeout: SimpleNamespace(passed=True),
+    )
+    monkeypatch.setattr(
+        cli,
+        "render_scanner_canaries",
+        lambda report: '{"schema_version":1,"passed":true}\n',
+    )
+
+    passed = runner.invoke(
+        cli.app, ["scanner-canaries", "--output", str(report_path)]
+    )
+
+    assert passed.exit_code == 0, passed.output
+    assert report_path.read_text() == '{"schema_version":1,"passed":true}\n'
+
+    monkeypatch.setattr(
+        cli,
+        "run_scanner_canaries",
+        lambda timeout: SimpleNamespace(passed=False),
+    )
+    failed = runner.invoke(cli.app, ["scanner-canaries"])
+
+    assert failed.exit_code == 1
+
+
 def test_standalone_falsify_is_metered_and_points_to_resume(
     tmp_config, monkeypatch
 ):

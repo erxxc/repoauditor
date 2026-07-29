@@ -57,10 +57,14 @@ class SastAdapter:
     tool_name = TOOL_NAME
 
     def __init__(
-        self, timeout_seconds: int = 180, sarif_output_path: Path | None = None,
+        self,
+        timeout_seconds: int = 180,
+        sarif_output_path: Path | None = None,
+        configuration: str = "auto",
     ) -> None:
         self.timeout_seconds = timeout_seconds
         self.sarif_output_path = sarif_output_path
+        self.configuration = configuration
         self.run_status: str | None = None
         self.failure_detail: str | None = None
         self.target_count = 0
@@ -113,7 +117,7 @@ class SastAdapter:
                 "--json-output",
                 str(target_report),
                 "--config",
-                "auto",
+                self.configuration,
                 str(snapshot_path),
             ], capture_output=True, text=True, timeout=self.timeout_seconds)
         except (subprocess.TimeoutExpired, OSError) as exc:
@@ -182,7 +186,7 @@ class SastAdapter:
                 else "scanner-reported-files"
             ),
             version=self.version,
-            configuration="auto",
+            configuration=self.configuration,
             failure_detail=detail,
         )
 
