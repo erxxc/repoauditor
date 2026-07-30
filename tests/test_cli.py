@@ -940,6 +940,60 @@ def test_root_help_describes_two_phase_workflow():
     assert {"--debug", "--quiet", "--verbose"} <= root_options
 
 
+def test_triage_acquisition_plan_exposes_opt029_controls(tmp_config, monkeypatch):
+    captured = {}
+    monkeypatch.setattr(cli, "get_config", lambda: tmp_config)
+    monkeypatch.setattr(cli.db, "init_db", lambda config: None)
+
+    def build(config, **options):
+        captured.update(options)
+        return SimpleNamespace(options=options, entries=(), input_digest="digest")
+
+    monkeypatch.setattr(cli, "build_review_acquisition_plan", build)
+    monkeypatch.setattr(
+        cli,
+        "render_review_acquisition_plan",
+        lambda plan: json.dumps({"options": plan.options}, sort_keys=True) + "\n",
+    )
+
+    output = tmp_config.paths.data_dir / "acquisition-plan.json"
+    result = runner.invoke(cli.app, [
+        "triage-acquisition-plan",
+        "--limit", "12",
+        "--max-per-engagement", "5",
+        "--max-per-family", "2",
+        "--include-vendor-generated",
+        "--pre-post-pair", "repo-pre:repo-post",
+        "--output", str(output),
+    ])
+
+    assert result.exit_code == 0
+    assert captured == {
+        "limit": 12,
+        "max_per_engagement": 5,
+        "max_prior_human_labels_per_rule": 5,
+        "max_per_family_per_engagement": 2,
+        "include_vendor_generated": True,
+        "pre_post_pairs": (("repo-pre", "repo-post"),),
+    }
+    assert json.loads(output.read_text())["options"]["limit"] == 12
+
+
+def test_triage_acquisition_plan_rejects_malformed_pre_post_pair(
+    tmp_config, monkeypatch,
+):
+    monkeypatch.setattr(cli, "get_config", lambda: tmp_config)
+    monkeypatch.setattr(cli.db, "init_db", lambda config: None)
+
+    result = runner.invoke(cli.app, [
+        "triage-acquisition-plan",
+        "--pre-post-pair", "missing-separator",
+    ])
+
+    assert result.exit_code == 1
+    assert "expected PRE:POST" in result.output
+
+
 def test_run_stops_before_ingest_when_preflight_fails(tmp_config, monkeypatch):
     monkeypatch.setattr(cli, "get_config", lambda: tmp_config)
     monkeypatch.setattr(

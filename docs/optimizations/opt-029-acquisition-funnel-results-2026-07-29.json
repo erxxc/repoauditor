@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "measured_at": "2026-07-29",
+  "optimization": "OPT-029",
+  "status": "implemented-and-replayed",
+  "protocol": "opt-029-acquisition-funnel-protocol-2026-07-29.json",
+  "implementation": {
+    "plan_schema": "triage-review-acquisition-v3",
+    "module": "../../src/repoauditor/triage/acquisition.py",
+    "contract_primitives": "../../src/repoauditor/triage/acquisition_funnel.py",
+    "replay_tool": "../../tests/fixtures/measure_opt029_bounded_uat.py",
+    "production_behavior": [
+      "Preserve all raw scanner artifacts and stored findings.",
+      "Begin the OPT-029 funnel after the separately reported prior-human-label eligibility gate.",
+      "Collapse exact evidence repeated across explicitly declared pre/post pairs.",
+      "Collapse exact same-engagement producer/rule/file/location/sink duplicates.",
+      "Prioritize product/deployment paths, then supporting paths; defer vendor/generated paths unless explicitly requested.",
+      "Cap each normalized producer/rule/sink family at two candidates per engagement and take one from every family before a second.",
+      "Balance engagements and enforce the requested packet limit with stable SHA-256 ordering.",
+      "Persist the complete plan, input digest, path distribution, hashed family distribution, stage counts, deferred counts, and selected identities when --output is supplied."
+    ],
+    "forbidden_selection_inputs": [
+      "predicted outcome",
+      "actionability score",
+      "severity",
+      "falsification verdict",
+      "human disposition",
+      "hidden answer key",
+      "CVE target membership"
+    ],
+    "backward_compatible_plan_schemas": [
+      "triage-review-acquisition-v1",
+      "triage-review-acquisition-v2",
+      "triage-review-acquisition-v3"
+    ]
+  },
+  "bounded_replay": {
+    "raw_artifact": {
+      "path": "data/artifacts/opt029-acquisition-replay/bounded-uat-raw.json",
+      "bytes": 1087943,
+      "sha256": "cd3a1ba911df3d6d9cb65c7d37b122ce4d33d886e66ce223347b261dc447f448",
+      "retained_outside_git": true
+    },
+    "complete_funnel_artifact": {
+      "path": "data/artifacts/opt029-acquisition-replay/funnel-replay.json",
+      "bytes": 66085,
+      "sha256": "5d722717c22beb524f844e847f889a74ef016097de0e477762b6185a7edf9daf",
+      "retained_outside_git": true,
+      "contains_complete_hashed_family_distribution": true,
+      "contains_selected_identity_hashes": true
+    },
+    "input_digest": "55dca043782efdef9e3c1e55f4b2478771b4aadec94ddc83d694a22baf57a7f0",
+    "scanner_statuses": {
+      "semgrep": {"complete": 9},
+      "gitleaks": {"complete": 3, "empty": 6},
+      "pip-audit": {"not-applicable": 9},
+      "osv-scanner": {"complete": 4, "not-applicable": 5}
+    },
+    "funnel_counts": {
+      "raw": 1941,
+      "after_pre_post_collapse": 1033,
+      "after_exact_duplicate_collapse": 1026,
+      "after_path_policy": 1026,
+      "after_family_cap": 946,
+      "after_engagement_balance": 24,
+      "selected": 24
+    },
+    "deferred_by_stage": {
+      "pre_post_collapse": 908,
+      "exact_duplicate_collapse": 7,
+      "path_policy": 0,
+      "family_cap": 80,
+      "engagement_balance": 922,
+      "packet_limit": 0
+    },
+    "path_class_counts_after_exact_collapse": {
+      "production": 898,
+      "deployment": 3,
+      "ci": 29,
+      "test": 65,
+      "docs_examples": 31
+    },
+    "family_count_before_cap": 840,
+    "repeated_family_count_before_cap": 106,
+    "largest_family_count_before_cap": 27,
+    "ground_truth_used": false,
+    "candidate_outcomes_used": false,
+    "unadjudicated_candidates_preserved": true
+  },
+  "current_store_smoke_replay": {
+    "available_unassessed": 387,
+    "eligible_after_existing_prior_label_cap": 292,
+    "input_digest": "c22864c0a2821a5e92caee4066f4c110585f2c212b8cb8288b53615a990d35bc",
+    "after_family_cap": 282,
+    "after_engagement_balance": 29,
+    "selected": 29,
+    "interpretation": "This read-only smoke replay verifies production database and CLI integration. It is not a new human-review cohort and does not adjudicate its candidates."
+  },
+  "conclusion": "The exact 1,941-candidate aggregate is now backed by a retained detailed artifact and complete digestible funnel replay. OPT-029 is active for future human-review acquisitions without deleting, relabeling, or outcome-filtering raw findings."
+}

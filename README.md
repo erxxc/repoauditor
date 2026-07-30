@@ -378,6 +378,9 @@ uv run repoauditor triage-stats --label-source derived  # automation-derived coh
 uv run repoauditor triage-stats --run-id <triage-run-id> # one compatible score cohort
 uv run repoauditor triage-collection        # label gate, dual verdict views, review QA
 uv run repoauditor triage-acquisition-plan  # stable next human-review tranche as JSON
+uv run repoauditor triage-acquisition-plan \
+  --pre-post-pair repo-pre:repo-post \
+  --output docs/triage-review-acquisition.json
 uv run repoauditor triage-review-packet docs/triage-review-acquisition-2026-07-29.json
 uv run repoauditor quant-audit <repo-id>    # read-only prior/double-counting audit
 ```
@@ -426,11 +429,18 @@ repositories; automation-derived falsification labels do not advance that gate. 
 maturity target is 100–200 labels with both classes represented.
 
 `triage-acquisition-plan` supports that maturity work without treating model predictions as
-ground truth. It round-robins across engagements, prioritizes least-reviewed scanner rule
-families with stable hashes, and excludes families above a configurable prior-human-label
-cap. Scores, predicted classes, severity, falsification verdicts, and code outcomes never
-enter selection. The result is adaptive training acquisition—not an evaluation holdout—and
-rule-family diversity must not be presented as analyst-verified mechanism diversity.
+ground truth. Its OPT-029 funnel publishes the input digest plus retained and deferred counts
+for exact declared pre/post collapse, exact same-location deduplication, path policy,
+two-per-family-per-engagement normalized producer/rule/sink caps, engagement balancing, and the
+packet limit. Product and deployment paths precede CI/tests/docs/examples; vendor/generated
+paths remain retained but are deferred unless `--include-vendor-generated` is supplied.
+Declare only reviewed snapshot relationships with repeatable
+`--pre-post-pair PRE:POST`; no relationship is inferred from names. The pre-existing
+prior-human-label cap remains separately reported. `--output` persists the complete,
+replayable JSON plan. Scores, predicted classes, severity, falsification verdicts, code
+outcomes, and answer keys never enter selection. The result is adaptive training
+acquisition—not an evaluation holdout—and rule-family diversity must not be presented as
+analyst-verified mechanism diversity.
 `triage-review-packet` then verifies every frozen entry against its stored feature/finding
 identity and exactly one immutable snapshot before showing bounded, line-numbered source
 context. It supplies an adjudication command template but never proposes the disposition,

@@ -154,6 +154,170 @@ def test_acquisition_json_exposes_policy_and_not_candidate_scores(
     assert payload["entries"][0]["surface"] == "production"
     assert "score" not in payload["entries"][0]
     assert payload["evaluation_eligible"] is False
+    assert payload["schema_version"] == "triage-review-acquisition-v3"
+    assert payload["funnel"] == {
+        "after_engagement_balance": 1,
+        "after_exact_duplicate_collapse": 1,
+        "after_family_cap": 1,
+        "after_path_policy": 1,
+        "after_pre_post_collapse": 1,
+        "raw": 1,
+        "selected": 1,
+    }
+    assert payload["deferred_by_stage"] == {
+        "engagement_balance": 0,
+        "exact_duplicate_collapse": 0,
+        "family_cap": 0,
+        "packet_limit": 0,
+        "path_policy": 0,
+        "pre_post_collapse": 0,
+    }
+    assert payload["input_digest"]
+
+
+def test_acquisition_accounts_for_declared_pairs_duplicates_paths_and_family_cap(
+    tmp_config, monkeypatch,
+):
+    findings = [
+        _finding(1, "repo-pre").model_copy(update={
+            "file": "src/shared.py", "line_start": 10, "line_end": 10,
+            "citation_snippet": "dangerous(value)",
+        }),
+        _finding(2, "repo-post").model_copy(update={
+            "file": "src/shared.py", "line_start": 10, "line_end": 10,
+            "citation_snippet": "dangerous(value)",
+        }),
+        _finding(3, "repo-pre").model_copy(update={
+            "file": "src/shared.py", "line_start": 10, "line_end": 10,
+            "citation_snippet": "dangerous(value)",
+        }),
+        _finding_at(4, "repo-pre", "vendor/library.js"),
+        _finding(5, "repo-pre").model_copy(update={
+            "file": "src/a.py", "citation_snippet": "repeat(value)",
+        }),
+        _finding(6, "repo-pre").model_copy(update={
+            "file": "src/b.py", "citation_snippet": "repeat(value)",
+        }),
+        _finding(7, "repo-pre").model_copy(update={
+            "file": "src/c.py", "citation_snippet": "repeat(value)",
+        }),
+    ]
+    features = [
+        _feature(1, "repo-pre", "stable-rule"),
+        _feature(2, "repo-post", "stable-rule"),
+        _feature(3, "repo-pre", "stable-rule"),
+        _feature(4, "repo-pre", "vendor-rule"),
+        _feature(5, "repo-pre", "family-rule"),
+        _feature(6, "repo-pre", "family-rule"),
+        _feature(7, "repo-pre", "family-rule"),
+    ]
+    monkeypatch.setattr(
+        "repoauditor.triage.acquisition.db.list_triage_features",
+        lambda config=None: features,
+    )
+    monkeypatch.setattr(
+        "repoauditor.triage.acquisition.db.list_triage_labels",
+        lambda config=None: [],
+    )
+    monkeypatch.setattr(
+        "repoauditor.triage.acquisition.db.list_triage_assessments",
+        lambda repo_id=None, config=None: [],
+    )
+    monkeypatch.setattr(
+        "repoauditor.triage.acquisition.db.list_findings",
+        lambda repo_id=None, config=None: findings,
+    )
+
+    plan = build_review_acquisition_plan(
+        tmp_config,
+        limit=10,
+        max_per_engagement=10,
+        pre_post_pairs=(("repo-pre", "repo-post"),),
+    )
+
+    assert plan.funnel is not None
+    assert plan.funnel.raw == 7
+    assert plan.funnel.after_pre_post_collapse == 6
+    assert plan.funnel.after_exact_duplicate_collapse == 5
+    assert plan.funnel.after_path_policy == 4
+    assert plan.funnel.after_family_cap == 3
+    assert plan.funnel.after_engagement_balance == 3
+    assert plan.funnel.selected == 3
+    assert plan.deferred_by_stage == {
+        "pre_post_collapse": 1,
+        "exact_duplicate_collapse": 1,
+        "path_policy": 1,
+        "family_cap": 1,
+        "engagement_balance": 0,
+        "packet_limit": 0,
+    }
+    assert plan.path_class_counts == {"production": 4, "vendor_generated": 1}
+    assert len(plan.family_counts_before_cap or {}) == 2
+    assert all(item.finding_id not in {2, 3, 4} for item in plan.entries)
+    assert len({item.family_hash for item in plan.entries[:2]}) == 2
+
+
+def test_acquisition_is_stable_under_input_reordering(tmp_config, monkeypatch):
+    findings = [_finding(index, "repo") for index in range(1, 5)]
+    features = [_feature(index, "repo", f"rule-{index}") for index in range(1, 5)]
+    state = {"reversed": False}
+    monkeypatch.setattr(
+        "repoauditor.triage.acquisition.db.list_triage_features",
+        lambda config=None: list(reversed(features)) if state["reversed"] else features,
+    )
+    monkeypatch.setattr(
+        "repoauditor.triage.acquisition.db.list_triage_labels",
+        lambda config=None: [],
+    )
+    monkeypatch.setattr(
+        "repoauditor.triage.acquisition.db.list_triage_assessments",
+        lambda repo_id=None, config=None: [],
+    )
+    monkeypatch.setattr(
+        "repoauditor.triage.acquisition.db.list_findings",
+        lambda repo_id=None, config=None: (
+            list(reversed(findings)) if state["reversed"] else findings
+        ),
+    )
+
+    first = build_review_acquisition_plan(tmp_config, limit=3)
+    state["reversed"] = True
+    second = build_review_acquisition_plan(tmp_config, limit=3)
+
+    assert first == second
+
+
+def test_acquisition_vendor_generated_paths_are_explicitly_requestable(
+    tmp_config, monkeypatch,
+):
+    monkeypatch.setattr(
+        "repoauditor.triage.acquisition.db.list_triage_features",
+        lambda config=None: [_feature(1, "repo", "vendor-rule")],
+    )
+    monkeypatch.setattr(
+        "repoauditor.triage.acquisition.db.list_triage_labels",
+        lambda config=None: [],
+    )
+    monkeypatch.setattr(
+        "repoauditor.triage.acquisition.db.list_triage_assessments",
+        lambda repo_id=None, config=None: [],
+    )
+    monkeypatch.setattr(
+        "repoauditor.triage.acquisition.db.list_findings",
+        lambda repo_id=None, config=None: [
+            _finding_at(1, "repo", "vendor/library.js")
+        ],
+    )
+
+    default = build_review_acquisition_plan(tmp_config, limit=1)
+    included = build_review_acquisition_plan(
+        tmp_config, limit=1, include_vendor_generated=True
+    )
+
+    assert default.entries == ()
+    assert default.deferred_by_stage["path_policy"] == 1
+    assert [item.finding_id for item in included.entries] == [1]
+    assert "tier_3_vendor_generated" in included.included_path_tiers
 
 
 def test_acquisition_excludes_saturated_rule_families(tmp_config, monkeypatch):
