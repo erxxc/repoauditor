@@ -20,32 +20,52 @@ from .acquisition import (
     render_review_acquisition_plan,
     render_review_packet,
 )
+from .acquisition_funnel import (
+    AcquisitionFunnelCounts,
+    AcquisitionIdentityInput,
+    ReviewPathClass,
+    ReviewPathTier,
+    classify_review_path,
+    exact_location_identity,
+    pre_post_identity,
+    repeated_family_identity,
+    review_path_tier,
+)
 from .collection import CollectionStatus, collection_status, render_collection_status
 from .features import FEATURE_NAMES, SarifFinding, extract_feature_vector, load_sarif
 from .labels import DerivedLabelSummary, assess_finding, derive_labels, label_finding
 from .stats import ThresholdStats, render_threshold_stats, threshold_stats
 
 __all__ = [
+    "AcquisitionFunnelCounts",
+    "AcquisitionIdentityInput",
     "CollectionStatus",
     "DerivedLabelSummary",
     "FEATURE_NAMES",
     "ReviewAcquisitionCandidate",
     "ReviewAcquisitionPlan",
+    "ReviewPathClass",
+    "ReviewPathTier",
     "SarifFinding",
     "TriageClassifier",
     "TriageOutcome",
     "ThresholdStats",
     "assess_finding",
     "build_review_acquisition_plan",
+    "classify_review_path",
     "collection_status",
     "derive_labels",
     "extract_feature_vector",
+    "exact_location_identity",
     "label_finding",
     "load_sarif",
     "load_review_acquisition_plan",
+    "pre_post_identity",
+    "repeated_family_identity",
     "render_collection_status",
     "render_review_acquisition_plan",
     "render_review_packet",
+    "review_path_tier",
     "render_threshold_stats",
     "threshold_stats",
     "triage_repo",
