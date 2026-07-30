@@ -2,11 +2,11 @@
 
 Status: implemented for deterministic scanner execution evidence.
 
-Every Semgrep, gitleaks, pip-audit, and OSV-Scanner execution now retains the binary version
-when available, a normalized invocation, configuration identity and resolution outcome, and
-applicable ruleset or advisory-source metadata. Normalized invocations use placeholders such
-as `$SNAPSHOT`, `$MANIFEST`, and `$REPORT` so temporary host paths do not make otherwise
-equivalent evidence differ.
+Every official or supplemental Semgrep, gitleaks, pip-audit, and OSV-Scanner execution now
+retains the binary version when available, a normalized invocation, configuration identity
+and resolution outcome, and applicable ruleset or advisory-source metadata. Normalized
+invocations use placeholders such as `$SNAPSHOT`, `$MANIFEST`, and `$REPORT` so temporary
+host paths do not make otherwise equivalent evidence differ.
 
 ## Semgrep baseline
 
@@ -33,6 +33,19 @@ The execution record retains:
 
 Refreshing the vendored payload and retained digest is a scanner-rules release. It should be
 evaluated against the deployment canaries and frozen corpus controls before promotion.
+
+## RepoAuditor supplemental Semgrep pass
+
+The owned supplemental pack is a separate versioned YAML asset and is never concatenated
+with the official baseline. Production detection invokes it through a second `SastAdapter`
+pass and retains its own `repoauditor-supplemental@sha256:<digest>` configuration identity,
+rule count, execution status, SARIF artifact, and `semgrep-supplemental` candidate count.
+Language-inapplicable snapshots report `not-applicable` rather than a clean or failed zero.
+
+The initial pack contains one reviewed JavaScript/TypeScript dynamic shell-execution rule.
+Its matches are unadjudicated review candidates, not automatic command-injection findings.
+Every required deployment-gate run exercises the exact packaged rule against a positive
+variable-command control and a clean argument-vector control.
 
 ## Other scanners
 

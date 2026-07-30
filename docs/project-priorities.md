@@ -315,14 +315,20 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
   unadjudicated candidates with no failed or unexplained-zero result.
   Protocol: `docs/optimizations/opt-026-historical-scanner-remeasurement-protocol-2026-07-29.json`.
   Results: `docs/optimizations/opt-026-historical-scanner-remeasurement-results-2026-07-29.json`.
-- [~] Qualify the first RepoAuditor-owned supplemental Semgrep rule without merging its
+- [x] Qualify the first RepoAuditor-owned supplemental Semgrep rule without merging its
   evidence into the pinned official baseline. The approved OPT-027/028 protocol freezes a
   JavaScript/TypeScript dynamic shell-execution candidate rule, four manufactured controls,
   codecov-node as the declared pre/post target, and four observational acquisition pairs.
   The generic harness requires rule/file/citation/line agreement, classifies all four
-  pre/post outcomes, and retains unrelated candidate churn separately. Rule implementation,
-  qualification, and separately attributable production integration remain a second PR.
+  pre/post outcomes, and retains unrelated candidate churn separately. All four controls
+  passed and codecov-node classified `vulnerable_only_recovery`; three other pre-fix and one
+  post-fix codecov-node signals remain explicitly unrelated and unadjudicated. The preserved
+  first attempt exposed language-inapplicable Python/Ruby runs as failed; the corrected
+  adapter reports `not-applicable`, and the complete rerun passed. Production now invokes
+  the owned pack separately from the official baseline with its own digest, rule count,
+  SARIF, status, candidate count, and required deployment canary.
   Protocol: `docs/optimizations/opt-027-028-supplemental-differential-protocol-2026-07-29.json`.
+  Results: `docs/optimizations/opt-027-028-supplemental-differential-results-2026-07-29.json`.
 
 ### Current falsification tuning
 

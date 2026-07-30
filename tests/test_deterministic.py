@@ -131,6 +131,30 @@ def test_semgrep_artifact_normalizes_config_prefix_and_absolute_paths(tmp_path):
     )
 
 
+def test_semgrep_artifact_normalizes_owned_rule_identity(tmp_path):
+    snapshot = tmp_path / "snapshot"
+    snapshot.mkdir()
+    rule_id = "repoauditor.javascript.security.dynamic-shell-execution"
+    prefixed = f"private.tmp.rules.{rule_id}"
+    document = {
+        "runs": [{
+            "tool": {"driver": {"rules": [{
+                "id": prefixed,
+                "name": prefixed,
+            }]}},
+            "results": [{"ruleId": prefixed}],
+        }],
+    }
+
+    normalized = json.loads(
+        _normalized_sarif(json.dumps(document), snapshot, (rule_id,))
+    )
+
+    assert normalized["runs"][0]["tool"]["driver"]["rules"][0]["id"] == rule_id
+    assert normalized["runs"][0]["tool"]["driver"]["rules"][0]["name"] == rule_id
+    assert normalized["runs"][0]["results"][0]["ruleId"] == rule_id
+
+
 @pytest.mark.integration
 def test_sast_adapter_run_returns_a_list_without_raising(tmp_path):
     assert isinstance(SastAdapter().run(tmp_path), list)
@@ -310,6 +334,41 @@ def test_sast_adapter_fails_closed_when_semgrep_selects_zero_targets(
     assert adapter.run(snapshot) == []
     assert adapter.run_status == "failed"
     assert adapter.failure_detail == "Semgrep selected zero targets"
+    assert json.loads(artifact.read_text())["runs"][0]["results"] == []
+
+
+def test_supplemental_sast_reports_language_inapplicable_without_scanning(
+    tmp_path, monkeypatch
+):
+    snapshot = tmp_path / "snapshot"
+    snapshot.mkdir()
+    (snapshot / "service.py").write_text("print('not JavaScript')\n")
+    rules = tmp_path / "supplemental.yml"
+    rules.write_text("rules:\n  - id: owned.rule\n")
+    artifact = tmp_path / "semgrep-supplemental.sarif"
+
+    monkeypatch.setattr(
+        "repoauditor.detect.deterministic.sast_adapter.shutil.which",
+        lambda _binary: "/usr/bin/semgrep",
+    )
+    adapter = SastAdapter(
+        sarif_output_path=artifact,
+        configuration=str(rules),
+        configuration_label="owned@sha256:test",
+        scanner_name="semgrep-supplemental",
+        producer="semgrep-supplemental",
+        applicable_extensions=frozenset({".js", ".ts"}),
+    )
+    adapter.version = "1.170.0"
+
+    assert adapter.run(snapshot) == []
+    execution = adapter.execution()
+    assert execution.scanner == "semgrep-supplemental"
+    assert execution.status == "not-applicable"
+    assert execution.applicable is False
+    assert execution.target_count_basis == "not-applicable"
+    assert execution.configuration == "owned@sha256:test"
+    assert execution.configuration_resolution == "pinned-verified"
     assert json.loads(artifact.read_text())["runs"][0]["results"] == []
 
 
