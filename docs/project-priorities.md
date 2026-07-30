@@ -305,13 +305,16 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
   `docs/pyjwt-target-conditioned-baseline-2026-07-28.json`.
 - Target-conditioned simple-git receipt:
   `docs/simple-git-target-conditioned-baseline-2026-07-28.json`.
-- [~] Repair the three historical Semgrep zero-result records that predate verified target
+- [x] Repair the three historical Semgrep zero-result records that predate verified target
   counts. The project-owner-approved OPT-026 protocol freezes all three distinct retained
   snapshots, preserves the original SARIF as coverage-invalid, and requires a full scanner
   canary followed by pinned Semgrep-only reruns. Raw outputs remain outside Git with
   committed digests; candidate deltas cannot enter labels, ground truth, classifier
-  scoring, or review acquisition. The rerun and result receipt remain a separate PR.
+  scoring, or review acquisition. The canary passed with zero persisted findings; all three
+  snapshot digests matched, and the corrected runs scanned 3,862 targets and emitted 571
+  unadjudicated candidates with no failed or unexplained-zero result.
   Protocol: `docs/optimizations/opt-026-historical-scanner-remeasurement-protocol-2026-07-29.json`.
+  Results: `docs/optimizations/opt-026-historical-scanner-remeasurement-results-2026-07-29.json`.
 
 ### Current falsification tuning
 
