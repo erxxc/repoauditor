@@ -46,7 +46,11 @@ TOOL_NAME = "sast"
 _BINARY = "semgrep"
 
 
-def _normalized_sarif(raw_output: str, snapshot_path: Path) -> str:
+def _normalized_sarif(
+    raw_output: str,
+    snapshot_path: Path,
+    known_rule_ids: tuple[str, ...] = (),
+) -> str:
     """Canonicalize vendored rule ids and repository paths before retaining SARIF."""
     document = json.loads(raw_output)
 
@@ -108,6 +112,12 @@ def _normalized_sarif(raw_output: str, snapshot_path: Path) -> str:
                 else:
                     normalize_rule_prefixes(child, prefixes)
 
+    def canonicalize_rule_id(rule_id: str) -> str:
+        for known in known_rule_ids:
+            if rule_id == known or rule_id.endswith(f".{known}"):
+                return known
+        return canonical_semgrep_rule_id(rule_id)
+
     for run in document.get("runs", []):
         driver = run.get("tool", {}).get("driver", {})
         rule_ids: dict[str, str] = {}
@@ -115,7 +125,7 @@ def _normalized_sarif(raw_output: str, snapshot_path: Path) -> str:
         for rule in driver.get("rules", []):
             if isinstance(rule.get("id"), str):
                 original = rule["id"]
-                canonical = canonical_semgrep_rule_id(original)
+                canonical = canonicalize_rule_id(original)
                 help_uri = rule.get("helpUri")
                 if (
                     canonical == original
@@ -130,16 +140,16 @@ def _normalized_sarif(raw_output: str, snapshot_path: Path) -> str:
                     rule_prefixes.add(original.removesuffix(canonical))
                 normalize_rule_metadata(rule, original, canonical)
             if isinstance(rule.get("name"), str):
-                rule["name"] = canonical_semgrep_rule_id(rule["name"])
+                rule["name"] = canonicalize_rule_id(rule["name"])
         for result in run.get("results", []):
             if isinstance(result.get("ruleId"), str):
                 result["ruleId"] = rule_ids.get(
-                    result["ruleId"], canonical_semgrep_rule_id(result["ruleId"])
+                    result["ruleId"], canonicalize_rule_id(result["ruleId"])
                 )
             nested_rule = result.get("rule")
             if isinstance(nested_rule, dict) and isinstance(nested_rule.get("id"), str):
                 nested_rule["id"] = rule_ids.get(
-                    nested_rule["id"], canonical_semgrep_rule_id(nested_rule["id"])
+                    nested_rule["id"], canonicalize_rule_id(nested_rule["id"])
                 )
         normalize_locations(run)
         normalize_snapshot_references(run)
@@ -172,11 +182,19 @@ class SastAdapter:
         sarif_output_path: Path | None = None,
         target_report_output_path: Path | None = None,
         configuration: str = SEMGREP_CONFIGURATION,
+        configuration_label: str | None = None,
+        scanner_name: str = "semgrep",
+        producer: str = "semgrep",
+        applicable_extensions: frozenset[str] | None = None,
     ) -> None:
         self.timeout_seconds = timeout_seconds
         self.sarif_output_path = sarif_output_path
         self.target_report_output_path = target_report_output_path
         self.configuration = configuration
+        self.configuration_label = configuration_label or configuration
+        self.scanner_name = scanner_name
+        self.producer = producer
+        self.applicable_extensions = applicable_extensions
         self.run_status: str | None = None
         self.failure_detail: str | None = None
         self.target_count = 0
@@ -188,6 +206,7 @@ class SastAdapter:
         self.configuration_resolution: str | None = None
         self.invocation: tuple[str, ...] = ()
         self._resolved_configuration: str | None = None
+        self._configuration_rule_ids: tuple[str, ...] = ()
 
     def _write_artifact(self, raw_output: str) -> None:
         self._write_output(self.sarif_output_path, raw_output, ".semgrep-")
@@ -253,10 +272,22 @@ class SastAdapter:
             if configuration_path.is_file():
                 payload = configuration_path.read_bytes()
                 self.configuration_digest = hashlib.sha256(payload).hexdigest()
-                self.rule_count = len(re.findall(rb"(?m)^\s*- id:", payload))
+                self._configuration_rule_ids = tuple(
+                    match.decode()
+                    for match in re.findall(rb"(?m)^\s*- id:\s*(\S+)\s*$", payload)
+                )
+                self.rule_count = len(self._configuration_rule_ids)
                 self.configuration_resolution = "pinned-verified"
             else:
                 self.configuration_resolution = "live-service"
+        if self.applicable_extensions is not None and not any(
+            path.is_file()
+            and not path.is_symlink()
+            and path.suffix.lower() in self.applicable_extensions
+            for path in snapshot_path.rglob("*")
+        ):
+            self.write_empty_artifact("not-applicable")
+            return []
         configuration_placeholder = (
             "$VERIFIED_CONFIG"
             if self.configuration_resolution == "pinned-verified"
@@ -337,7 +368,11 @@ class SastAdapter:
             return []
         self.target_count = len(scanned_paths)
         try:
-            normalized_sarif = _normalized_sarif(proc.stdout, snapshot_path)
+            normalized_sarif = _normalized_sarif(
+                proc.stdout,
+                snapshot_path,
+                self._configuration_rule_ids,
+            )
         except (json.JSONDecodeError, TypeError) as exc:
             self.failure_detail = f"malformed SARIF JSON: {type(exc).__name__}: {exc}"[:500]
             self.write_empty_artifact("failed")
@@ -363,18 +398,22 @@ class SastAdapter:
         if status == "failed" and not detail:
             detail = "scanner execution did not produce a terminal status"
         return ScannerExecution(
-            scanner="semgrep",
+            scanner=self.scanner_name,
             status=status,
-            applicable=None if status in {"unavailable", "disabled"} else True,
+            applicable=(
+                False
+                if status == "not-applicable"
+                else None if status in {"unavailable", "disabled"} else True
+            ),
             output_valid=self.output_valid,
             finding_count=self.finding_count,
             target_count=self.target_count,
             target_count_basis=(
-                status if status in {"unavailable", "disabled"}
+                status if status in {"not-applicable", "unavailable", "disabled"}
                 else "scanner-reported-files"
             ),
             version=self.version,
-            configuration=self.configuration,
+            configuration=self.configuration_label,
             invocation=self.invocation,
             configuration_digest=self.configuration_digest,
             rule_count=self.rule_count,
@@ -402,7 +441,7 @@ class SastAdapter:
             line_end=max(f.line_end, f.line_start),
             citation_snippet=(f.snippet or f.message[:200] or f.rule_id),
             source_tool=self.tool_name,
-            producer="semgrep",
+            producer=self.producer,
             confidence=sarif_tool_confidence(f),
             severity=sarif_severity(f),
             rationale=f"{f.message} (rule {f.rule_id}){cwe}",

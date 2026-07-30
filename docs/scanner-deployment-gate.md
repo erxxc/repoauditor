@@ -12,12 +12,14 @@ The job installs the same exact scanner binary versions used by bounded UAT and 
 repoauditor scanner-canaries --output scanner-canaries.json
 ```
 
-The command exits nonzero unless all four scanners satisfy their positive,
+The command exits nonzero unless all five scanner passes satisfy their positive,
 clean/not-applicable, target-count, producer-schema, and scanner-specific provenance
 controls. Provenance qualification requires:
 
 - a version and normalized invocation for every positive and non-positive execution;
 - a verified digest and nonzero rule count for the local Semgrep canary configuration;
+- a verified digest, nonzero rule count, and separate execution identity for the
+  RepoAuditor supplemental Semgrep pass;
 - the binary-embedded default identity for gitleaks;
 - live-service identity and UTC advisory query time for applicable pip-audit and OSV runs;
   and

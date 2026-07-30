@@ -88,6 +88,7 @@ def test_canary_orchestrator_never_persists_findings(monkeypatch):
 
     for name, scanner in (
         ("_semgrep_canary", "semgrep"),
+        ("_supplemental_semgrep_canary", "semgrep-supplemental"),
         ("_gitleaks_canary", "gitleaks"),
         ("_pip_audit_canary", "pip-audit"),
         ("_osv_canary", "osv-scanner"),
@@ -107,7 +108,7 @@ def test_canary_orchestrator_never_persists_findings(monkeypatch):
     assert rendered["persisted_findings"] == 0
     assert all(item["provenance_passed"] for item in rendered["results"])
     assert {item["scanner"] for item in rendered["results"]} == {
-        "semgrep", "gitleaks", "pip-audit", "osv-scanner",
+        "semgrep", "semgrep-supplemental", "gitleaks", "pip-audit", "osv-scanner",
     }
     assert seen_roots
     assert all(not root.exists() for root in seen_roots)

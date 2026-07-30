@@ -1,0 +1,81 @@
+rules:
+  - id: repoauditor.javascript.security.dynamic-shell-execution
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: >-
+      A variable or concatenated command is passed to a shell-executing child_process
+      API. Review caller control, reachability, and exploitability; this match is not an
+      automatic command-injection disposition.
+    metadata:
+      cwe:
+        - "CWE-78: Improper Neutralization of Special Elements used in an OS Command"
+      confidence: MEDIUM
+      category: security
+      technology:
+        - nodejs
+      source: repoauditor-supplemental-v1
+    patterns:
+      - pattern-either:
+          - patterns:
+              - pattern-inside: |
+                  var $EXEC = require('child_process').execSync
+                  ...
+              - pattern: $EXEC($COMMAND, ...)
+          - patterns:
+              - pattern-inside: |
+                  const $EXEC = require('child_process').execSync
+                  ...
+              - pattern: $EXEC($COMMAND, ...)
+          - patterns:
+              - pattern-inside: |
+                  let $EXEC = require('child_process').execSync
+                  ...
+              - pattern: $EXEC($COMMAND, ...)
+          - patterns:
+              - pattern-inside: |
+                  const { $EXEC } = require('child_process')
+                  ...
+              - metavariable-regex:
+                  metavariable: $EXEC
+                  regex: ^(exec|execSync)$
+              - pattern: $EXEC($COMMAND, ...)
+          - patterns:
+              - pattern-inside: |
+                  var $CP = require('child_process')
+                  ...
+              - metavariable-regex:
+                  metavariable: $METHOD
+                  regex: ^(exec|execSync)$
+              - pattern: $CP.$METHOD($COMMAND, ...)
+          - patterns:
+              - pattern-inside: |
+                  const $CP = require('child_process')
+                  ...
+              - metavariable-regex:
+                  metavariable: $METHOD
+                  regex: ^(exec|execSync)$
+              - pattern: $CP.$METHOD($COMMAND, ...)
+          - patterns:
+              - pattern-inside: |
+                  let $CP = require('child_process')
+                  ...
+              - metavariable-regex:
+                  metavariable: $METHOD
+                  regex: ^(exec|execSync)$
+              - pattern: $CP.$METHOD($COMMAND, ...)
+          - pattern: require('child_process').exec($COMMAND, ...)
+          - pattern: require('child_process').execSync($COMMAND, ...)
+      - pattern-not: $EXEC("...", ...)
+      - pattern-not: $EXEC('...', ...)
+      - pattern-not: $EXEC(`...`, ...)
+      - pattern-not: $CP.$METHOD("...", ...)
+      - pattern-not: $CP.$METHOD('...', ...)
+      - pattern-not: $CP.$METHOD(`...`, ...)
+      - pattern-not: require('child_process').exec("...", ...)
+      - pattern-not: require('child_process').exec('...', ...)
+      - pattern-not: require('child_process').exec(`...`, ...)
+      - pattern-not: require('child_process').execSync("...", ...)
+      - pattern-not: require('child_process').execSync('...', ...)
+      - pattern-not: require('child_process').execSync(`...`, ...)

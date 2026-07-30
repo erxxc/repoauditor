@@ -10,6 +10,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict
 
 from .execution import ScannerExecution
+from .provenance import supplemental_semgrep_provenance
 from .sast_adapter import SastAdapter
 from .sca_adapter import ScaAdapter
 from .secrets_adapter import SecretsAdapter
@@ -88,7 +89,7 @@ def _provenance_passed(
     executions = (positive.execution, clean.execution)
     if not all(item.version and item.invocation for item in executions):
         return False
-    if scanner == "semgrep":
+    if scanner in {"semgrep", "semgrep-supplemental"}:
         return all(
             item.configuration_resolution == "pinned-verified"
             and item.configuration_digest
@@ -156,6 +157,55 @@ def _semgrep_canary(root: Path, timeout_seconds: int) -> ScannerCanaryResult:
     provenance_passed = _provenance_passed("semgrep", positive, clean)
     return ScannerCanaryResult(
         scanner="semgrep",
+        passed=positive.passed and clean.passed and provenance_passed,
+        provenance_passed=provenance_passed,
+        positive=positive,
+        clean=clean,
+    )
+
+
+def _supplemental_semgrep_canary(
+    root: Path, timeout_seconds: int
+) -> ScannerCanaryResult:
+    rules, digest, _ = supplemental_semgrep_provenance()
+    positive_root = root / "semgrep-supplemental-positive"
+    clean_root = root / "semgrep-supplemental-clean"
+    _write(
+        positive_root,
+        "service.js",
+        (
+            "const { execSync } = require('child_process')\n"
+            "function run(command) { return execSync(command) }\n"
+        ),
+    )
+    _write(
+        clean_root,
+        "service.js",
+        (
+            "const { execFileSync } = require('child_process')\n"
+            "execFileSync('node', ['--version'], { shell: false })\n"
+        ),
+    )
+    options = {
+        "configuration": str(rules),
+        "configuration_label": f"repoauditor-supplemental@sha256:{digest}",
+        "scanner_name": "semgrep-supplemental",
+        "producer": "semgrep-supplemental",
+        "applicable_extensions": frozenset({
+            ".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx",
+        }),
+    }
+    positive_adapter = SastAdapter(timeout_seconds, **options)
+    positive_adapter.run(positive_root)
+    clean_adapter = SastAdapter(timeout_seconds, **options)
+    clean_adapter.run(clean_root)
+    positive = _positive_probe(positive_adapter.execution())
+    clean = _clean_probe(clean_adapter.execution())
+    provenance_passed = _provenance_passed(
+        "semgrep-supplemental", positive, clean
+    )
+    return ScannerCanaryResult(
+        scanner="semgrep-supplemental",
         passed=positive.passed and clean.passed and provenance_passed,
         provenance_passed=provenance_passed,
         positive=positive,
@@ -248,6 +298,7 @@ def run_scanner_canaries(timeout_seconds: int = 180) -> ScannerCanaryReport:
         root = Path(tmp)
         results = [
             _semgrep_canary(root, timeout_seconds),
+            _supplemental_semgrep_canary(root, timeout_seconds),
             _gitleaks_canary(root, timeout_seconds),
             _pip_audit_canary(root, timeout_seconds),
             _osv_canary(root, timeout_seconds),

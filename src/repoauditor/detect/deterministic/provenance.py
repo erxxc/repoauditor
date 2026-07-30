@@ -19,6 +19,7 @@ SEMGREP_RULESET_SHA256 = (
 )
 SEMGREP_CONFIGURATION = f"p/default@sha256:{SEMGREP_RULESET_SHA256}"
 SEMGREP_RULESET_ARCHIVE = Path(__file__).with_name("semgrep-default.yml.gz")
+SEMGREP_SUPPLEMENTAL_RULESET = Path(__file__).with_name("semgrep-supplemental.yml")
 
 
 def utc_now() -> datetime:
@@ -53,6 +54,16 @@ def pinned_semgrep_rule_ids() -> tuple[str, ...]:
     with gzip.open(SEMGREP_RULESET_ARCHIVE, "rt", encoding="utf-8") as source:
         ids = re.findall(r"(?m)^\s*- id:\s*(\S+)\s*$", source.read())
     return tuple(sorted(set(ids), key=lambda value: (-len(value), value)))
+
+
+def supplemental_semgrep_provenance() -> tuple[Path, str, int]:
+    """Return the versioned owned ruleset with its content identity."""
+    payload = SEMGREP_SUPPLEMENTAL_RULESET.read_bytes()
+    digest = hashlib.sha256(payload).hexdigest()
+    rule_count = len(re.findall(rb"(?m)^\s*- id:", payload))
+    if rule_count < 1:
+        raise RuntimeError("supplemental Semgrep ruleset contains no rules")
+    return SEMGREP_SUPPLEMENTAL_RULESET, digest, rule_count
 
 
 def canonical_semgrep_rule_id(rule_id: str) -> str:

@@ -42,6 +42,14 @@ def test_pinned_semgrep_configuration_rejects_registry_drift(monkeypatch, tmp_pa
             pass
 
 
+def test_supplemental_semgrep_provenance_retains_digest_and_rule_count():
+    path, digest, rule_count = provenance.supplemental_semgrep_provenance()
+
+    assert path.name == "semgrep-supplemental.yml"
+    assert digest == hashlib.sha256(path.read_bytes()).hexdigest()
+    assert rule_count == 1
+
+
 def test_execution_serializes_complete_provenance():
     record = ScannerExecution(
         scanner="pip-audit",

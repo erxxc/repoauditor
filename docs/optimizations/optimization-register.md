@@ -4,10 +4,10 @@ Status: authoritative post-MVP work list as of 2026-07-29. POC acceptance is com
 
 Current execution priorities
 
-1. **OPT-027/OPT-028 — supplemental detection and differential qualification** are the next
-   paired capability workstream now that OPT-026 repaired the historical execution evidence.
-2. **OPT-029 — candidate explosion and repetition controls** must land before another large
-   human-review packet is produced.
+1. **OPT-029 — candidate explosion and repetition controls** is the next scale workstream
+   and must land before another large human-review packet is produced.
+2. **OPT-030 — per-tool capability and applicability matrix** can now be finalized from the
+   completed OPT-026 and OPT-028 measurements.
 3. **OPT-002 — family-aware bootstrap ranges** remains held until the evaluation-compatible
    scored cohort reaches its existing floor with adequate held-out family breadth.
 4. **OPT-001 — reviewed-label growth** is complete at its lower maturity bound; further
@@ -15,8 +15,8 @@ Current execution priorities
 
 OPT-022 through OPT-025 are implemented. OPT-003 through OPT-006 and OPT-008 through OPT-014
 remain behind their documented evidence, budget, safety, or methodology gates. OPT-016 is
-routine dependency maintenance. OPT-027 through OPT-030 remain ordered capability/scale work
-behind the assurance and evidence gates above.
+routine dependency maintenance. OPT-027 and OPT-028 are implemented at their initial
+qualified scope; OPT-029 and OPT-030 remain ordered scale/documentation work.
 
 I. Evaluation and classifier maturity
 
@@ -336,8 +336,8 @@ VI. Deterministic scanner assurance and capability
       retains every status and delta while the original SARIF remains unchanged. Activation:
       satisfied after OPT-025; remeasurement complete — DoD impact: none.
 
-   F. OPT-027 — RepoAuditor-owned supplemental Semgrep pack — medium/high,
-      evidence-gated — owner: AppSec detection engineering — source:
+   F. OPT-027 — RepoAuditor-owned supplemental Semgrep pack — implemented at initial
+      evidence-qualified scope — owner: AppSec detection engineering — source:
       `../codecov-node-positive-acquisition-2026-07-29.json` — add a narrow reviewed pack for
       high-value sinks the public rules demonstrably miss, beginning with variable or
       concatenated shell execution and paired vulnerable/patched controls; consider direct
@@ -350,10 +350,18 @@ VI. Deterministic scanner assurance and capability
       manufactured controls, the codecov-node pre/post qualification target, and four
       observational acquisition pairs before the rule exists. The official and supplemental
       configurations must execute as separately attributable production-adapter passes with
-      independent provenance. Protocol/harness frozen; rule implementation pending — DoD
-      impact: none.
+      independent provenance. The first owned rule is now promoted: all four manufactured
+      controls passed, the codecov-node target classified `vulnerable_only_recovery`, and
+      four observational acquisition pairs retained their official and supplemental deltas.
+      The first attempt is preserved because Python/Ruby language-inapplicability was
+      initially reported as failed; the corrected adapter reports `not-applicable` and the
+      complete rerun passed every frozen criterion. The official and supplemental passes now
+      retain separate configuration identity, digest, rule count, SARIF, status, and source
+      count, and the required deployment gate exercises the exact owned pack. Receipt:
+      [`qualification results`](opt-027-028-supplemental-differential-results-2026-07-29.json);
+      broader rule families remain separately evidence-gated — DoD impact: none.
 
-   G. OPT-028 — Advisory-target pre/post differential checks — medium — owner: detection
+   G. OPT-028 — Advisory-target pre/post differential checks — implemented — owner: detection
       evaluation — source:
       `../codecov-node-positive-acquisition-2026-07-29.json` and
       `../semgrep-execution-audit-2026-07-29.json` — classify each frozen target as
@@ -363,9 +371,11 @@ VI. Deterministic scanner assurance and capability
       candidates as unadjudicated. The generic differential harness now requires exact rule,
       file, citation, and frozen-line agreement for target recovery and separately reports
       exact-identity stable, pre-only, and post-only unrelated candidates. Regression tests
-      cover all four target classifications and near-miss rejection. Activation satisfied
-      alongside OPT-027 qualification; harness implemented, qualification run pending — DoD
-      impact: none.
+      cover all four target classifications and near-miss rejection. The qualified run
+      classified codecov-node as vulnerable-only while preserving three other supplemental
+      pre-fix signals and one post-fix signal as unrelated and unadjudicated; aggregate count
+      differences were not transferred into target recovery. Activation satisfied alongside
+      OPT-027 qualification; implemented — DoD impact: none.
 
    H. OPT-029 — Candidate explosion and repetition controls — medium/scale-gated — owner:
       AppSec workflow engineering — source:

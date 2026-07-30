@@ -274,7 +274,13 @@ def run_ensemble(
         sarif_path, semgrep_status = artifact_path, sast.run_status
         scanner_statuses = {
             name: "disabled"
-            for name in ("semgrep", "pip-audit", "osv-scanner", "gitleaks")
+            for name in (
+                "semgrep",
+                "semgrep-supplemental",
+                "pip-audit",
+                "osv-scanner",
+                "gitleaks",
+            )
         }
         from .deterministic.execution import ScannerExecution
 
@@ -288,7 +294,13 @@ def run_ensemble(
                 target_count=0,
                 target_count_basis="disabled",
             ).model_dump()
-            for name in ("semgrep", "pip-audit", "osv-scanner", "gitleaks")
+            for name in (
+                "semgrep",
+                "semgrep-supplemental",
+                "pip-audit",
+                "osv-scanner",
+                "gitleaks",
+            )
         ]
 
     projection = project_detection_work(
@@ -386,6 +398,9 @@ def run_ensemble(
     all_findings = db.list_findings(repo_id, config)
     source_counts = {
         "semgrep": sum(c.producer == "semgrep" for c in tool_candidates),
+        "semgrep-supplemental": sum(
+            c.producer == "semgrep-supplemental" for c in tool_candidates
+        ),
         "gitleaks": sum(c.producer == "gitleaks" for c in tool_candidates),
         "pip-audit": sum(c.producer == "pip-audit" for c in tool_candidates),
         "osv-scanner": sum(c.producer == "osv-scanner" for c in tool_candidates),
@@ -541,20 +556,37 @@ def _run_deterministic_adapters(
     adapter failing never sinks the others (or the whole detect run).
     """
     from .deterministic import SastAdapter, ScaAdapter, SecretsAdapter
+    from .deterministic.provenance import supplemental_semgrep_provenance
 
     timeout = config.detect.tool_timeout_seconds
     sast = SastAdapter(timeout, sarif_output_path=sarif_output_path)
+    supplemental_rules, supplemental_digest, _ = supplemental_semgrep_provenance()
+    supplemental_path = sarif_output_path.with_name("semgrep-supplemental.sarif")
+    supplemental = SastAdapter(
+        timeout,
+        sarif_output_path=supplemental_path,
+        configuration=str(supplemental_rules),
+        configuration_label=f"repoauditor-supplemental@sha256:{supplemental_digest}",
+        scanner_name="semgrep-supplemental",
+        producer="semgrep-supplemental",
+        applicable_extensions=frozenset({
+            ".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx",
+        }),
+    )
     sca = ScaAdapter(timeout)
     secrets = SecretsAdapter(timeout)
-    adapters = [sast, sca, secrets]
+    adapters = [sast, supplemental, sca, secrets]
     candidates: list[CandidateFinding] = []
     with ThreadPoolExecutor(max_workers=len(adapters)) as pool:
         for cands in pool.map(lambda a: _safe_run(a, snapshot_path), adapters):
             candidates.extend(cands)
     if not sarif_output_path.is_file():
         sast.write_empty_artifact(sast.run_status or "failed")
+    if not supplemental_path.is_file():
+        supplemental.write_empty_artifact(supplemental.run_status or "failed")
     statuses = {
         "semgrep": sast.run_status or "failed",
+        "semgrep-supplemental": supplemental.run_status or "failed",
         **sca.run_statuses,
         "gitleaks": secrets.run_status,
     }
@@ -562,6 +594,7 @@ def _run_deterministic_adapters(
         name: detail
         for name, detail in {
             "semgrep": sast.failure_detail,
+            "semgrep-supplemental": supplemental.failure_detail,
             **sca.failure_details,
             "gitleaks": secrets.failure_detail,
         }.items()
@@ -569,6 +602,7 @@ def _run_deterministic_adapters(
     }
     executions = [
         sast.execution(),
+        supplemental.execution(),
         *sca.executions(),
         secrets.execution(),
     ]

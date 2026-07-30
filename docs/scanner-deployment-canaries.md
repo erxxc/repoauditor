@@ -1,6 +1,7 @@
 # Scanner Deployment Canaries
 
-Status: implemented for Semgrep, gitleaks, pip-audit, and OSV-Scanner.
+Status: implemented for the official and RepoAuditor supplemental Semgrep passes, gitleaks,
+pip-audit, and OSV-Scanner.
 
 Run the isolated deployment check with:
 
@@ -20,6 +21,7 @@ generated candidate findings.
 | Scanner | Positive control | Non-positive control |
 | --- | --- | --- |
 | Semgrep | Python shell invocation matched by a local canary rule | Safe argument-vector invocation with no match |
+| Semgrep supplemental | Variable JavaScript command passed to `execSync` | `execFileSync` argument-vector invocation with the shell disabled |
 | gitleaks | Synthetic Stripe-shaped credential | Environment-placeholder text |
 | pip-audit | Exact pin of a known vulnerable package | Applicable, deliberately empty requirements file |
 | OSV-Scanner | Exact pin of a known vulnerable package | Root with no supported manifest (`not-applicable`) |
@@ -29,10 +31,11 @@ least one finding. Each clean control must produce validated empty output over a
 target. The OSV non-applicable control instead proves that absence of a supported manifest is
 reported distinctly from a clean scan.
 
-All controls travel through the production adapter subprocess and parser paths. The Semgrep
-control intentionally uses a repository-local rule so the canary itself does not depend on
-mutable registry resolution. It therefore verifies the binary, target submission, parser,
-and adapter contract, but does not establish the provenance of the production ruleset.
+All controls travel through the production adapter subprocess and parser paths. The official
+Semgrep control intentionally uses a repository-local rule so the canary itself does not
+depend on mutable registry resolution. The supplemental control uses the exact packaged
+owned ruleset and therefore also verifies its digest, rule count, positive behavior, clean
+behavior, separate execution identity, and candidate attribution.
 Likewise, advisory counts may change as vulnerability databases change; the check requires a
 nonzero positive result rather than an exact count. Pinning and retaining scanner
 configuration and advisory provenance is tracked separately in OPT-024.
