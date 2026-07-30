@@ -1,0 +1,45 @@
+{
+  "schema_version": "semgrep-supplemental-shell-controls-v1",
+  "kind": "manufactured_scanner_controls",
+  "purpose": "Qualify a narrow JavaScript/TypeScript dynamic shell-execution rule without using an advisory target as the only answer key.",
+  "rule_id": "repoauditor.javascript.security.dynamic-shell-execution",
+  "cases": [
+    {
+      "id": "variable-execsync",
+      "file": "positive_variable_execsync.js",
+      "line_start": 4,
+      "line_end": 4,
+      "citation_snippet": "execSync(command)",
+      "expected_detection": "raised",
+      "basis": "A variable command is passed to a shell-executing child_process API."
+    },
+    {
+      "id": "concatenated-exec",
+      "file": "positive_concatenated_exec.js",
+      "line_start": 4,
+      "line_end": 4,
+      "citation_snippet": "childProcess.exec(tool + ' ' + argumentsText)",
+      "expected_detection": "raised",
+      "basis": "A concatenated command is passed to a shell-executing child_process API."
+    },
+    {
+      "id": "execfile-argument-vector",
+      "file": "negative_execfile_argv.js",
+      "line_start": 4,
+      "line_end": 4,
+      "citation_snippet": "execFileSync(binary, files, { shell: false })",
+      "expected_detection": "absent",
+      "basis": "The binary and arguments are passed separately with shell execution disabled."
+    },
+    {
+      "id": "constant-command-and-spawn-vector",
+      "file": "negative_constant_and_spawn.js",
+      "line_start": 4,
+      "line_end": 5,
+      "citation_snippet": "spawn('node', ['--version'], { shell: false })",
+      "expected_detection": "absent",
+      "basis": "A constant shell command and an argument-vector spawn are explicit clean controls."
+    }
+  ],
+  "claim_boundary": "These controls qualify rule behavior only. They do not establish attacker control, reachability, exploitability, real-world precision, or recall."
+}

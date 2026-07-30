@@ -1,0 +1,159 @@
+{
+  "schema_version": 1,
+  "frozen_at": "2026-07-29",
+  "optimizations": ["OPT-027", "OPT-028"],
+  "status": "frozen-before-supplemental-rule",
+  "objective": "Qualify one narrow RepoAuditor-owned JavaScript/TypeScript dynamic shell-execution rule with manufactured controls and mechanism-specific advisory pre/post evidence before considering any broader supplemental Semgrep coverage.",
+  "approval": {
+    "decision": "project-owner-approved",
+    "selected_options": ["1A", "2A", "3A", "4A", "5A", "6A"]
+  },
+  "scope": {
+    "initial_rule_id": "repoauditor.javascript.security.dynamic-shell-execution",
+    "languages": ["javascript", "typescript"],
+    "candidate_mechanism": "A variable or concatenated command is passed to child_process.exec or child_process.execSync, including destructured aliases and direct member calls.",
+    "candidate_claim": "Review dynamic shell-command construction for attacker control, reachability, and exploitability.",
+    "not_a_claim": [
+      "Every match is command injection.",
+      "Every command value is attacker-controlled.",
+      "The sink is reachable in a deployed product.",
+      "The rule estimates real-world precision or recall."
+    ],
+    "excluded_from_initial_rule": [
+      "constant commands",
+      "execFile or execFileSync argument-vector execution",
+      "spawn argument-vector execution with shell disabled",
+      "SQL injection",
+      "SSRF",
+      "archive extraction",
+      "filesystem traversal"
+    ]
+  },
+  "manufactured_controls": {
+    "manifest": "../../tests/fixtures/semgrep_supplemental_shell_controls/manifest.json",
+    "snapshot": "../../tests/fixtures/semgrep_supplemental_shell_controls/snapshot",
+    "snapshot_tree_sha256": "dab5fac3bf63a134230ed6875441ff6c44245d20343b225ddd3d4cd7b8fc091b",
+    "required_cases": [
+      {
+        "id": "variable-execsync",
+        "expected": "raised"
+      },
+      {
+        "id": "concatenated-exec",
+        "expected": "raised"
+      },
+      {
+        "id": "execfile-argument-vector",
+        "expected": "absent"
+      },
+      {
+        "id": "constant-command-and-spawn-vector",
+        "expected": "absent"
+      }
+    ],
+    "selection_changed_after_results": false
+  },
+  "frozen_acquisition_pairs": [
+    {
+      "slug": "codecov_node_cve_2020_15123",
+      "role": "declared_rule_qualification_target",
+      "evaluation_eligible": false,
+      "mechanism": "OS command injection through caller-controlled gcov options interpolated into a shell command",
+      "target_file": "lib/codecov.js",
+      "target_line_start": 386,
+      "target_line_end": 417,
+      "target_citation_contains": "execSync(gcov)",
+      "pre_fixture": "../../tests/fixtures/acquisition_cve_codecov_node_cve_2020_15123_pre/snapshot",
+      "pre_commit": "5f6cc62d4f83bf3a75c973868259798814cd231e",
+      "pre_tree_sha256": "0cd5119b62e563ad8e3dfe5556867201301c17e52ca08b3c05ea521cf8f55243",
+      "post_fixture": "../../tests/fixtures/acquisition_cve_codecov_node_cve_2020_15123_post/snapshot",
+      "post_commit": "c0711c656686e902af2cd92d6aecc8074de4d83d",
+      "post_tree_sha256": "98dc426af67ef0ffaa6842975cd06102b35e7fe0a1d9c8de1423a60314ff7c26",
+      "required_target_classification": "vulnerable_only_recovery"
+    },
+    {
+      "slug": "pyjwt_cve_2022_29217",
+      "role": "observational_non_target_pair",
+      "evaluation_eligible": false,
+      "pre_fixture": "../../tests/fixtures/acquisition_cve_pyjwt_cve_2022_29217_pre/snapshot",
+      "pre_commit": "24b29adfebcb4f057a3cef5aaf35653bc0c1c8cc",
+      "pre_tree_sha256": "8d7359bc9d9f03e529acb973d8dbe2ccaaf1e647b9f87a46a0eaaffe51a5d38b",
+      "post_fixture": "../../tests/fixtures/acquisition_cve_pyjwt_cve_2022_29217_post/snapshot",
+      "post_commit": "9c528670c455b8d948aff95ed50e22940d1ad3fc",
+      "post_tree_sha256": "0fa0430d9cbfe2c3bb7531ecda4e1a6043acd086dee490257116f1b38d140663"
+    },
+    {
+      "slug": "simple_git_cve_2026_28292",
+      "role": "observational_non_target_pair",
+      "evaluation_eligible": false,
+      "pre_fixture": "../../tests/fixtures/acquisition_cve_simple_git_cve_2026_28292_pre/snapshot",
+      "pre_commit": "f8cb7df3feb3c135d2e10803586d64dfe6a2bfe9",
+      "pre_tree_sha256": "f45c4c02574f83b4e822a2810681f2ba413410bc68779dc2c89311580b248996",
+      "post_fixture": "../../tests/fixtures/acquisition_cve_simple_git_cve_2026_28292_post/snapshot",
+      "post_commit": "f7042088aa2dac59e3c49a84d7a2f4b26048a257",
+      "post_tree_sha256": "55999d23d92470d23fd7b7322203bcfee016ed397cab1a4b96c7692a1842f0f5"
+    },
+    {
+      "slug": "reposilite_cve_2024_36116",
+      "role": "observational_non_target_pair",
+      "evaluation_eligible": false,
+      "pre_fixture": "../../tests/fixtures/acquisition_cve_reposilite_cve_2024_36116_pre/snapshot",
+      "pre_commit": "e172ae4b539c822d0d6e04cf090713c7202a79d6",
+      "pre_tree_sha256": "4b924bc2dfd886dfca44a1a655f9a182c6f6a4cba4d83d12fcdeb520383704bb",
+      "post_fixture": "../../tests/fixtures/acquisition_cve_reposilite_cve_2024_36116_post/snapshot",
+      "post_commit": "848173738e4375482c70365db5cebae29f125eaa",
+      "post_tree_sha256": "559f210d9b2e500efb15abd11f52d1ddd78163d54d6c64b8117f4d657daa1d0b"
+    },
+    {
+      "slug": "ruby_saml_cve_2025_25291_25292",
+      "role": "observational_non_target_pair",
+      "evaluation_eligible": false,
+      "pre_fixture": "../../tests/fixtures/acquisition_cve_ruby_saml_cve_2025_25291_25292_pre/snapshot",
+      "pre_commit": "acac9e9cc0b9a507882c614f25d41f8b47be349a",
+      "pre_tree_sha256": "2587920f396b767af3db3ccb1e55b599491f61dec9b36964e6780e5c1a28fbb5",
+      "post_fixture": "../../tests/fixtures/acquisition_cve_ruby_saml_cve_2025_25291_25292_post/snapshot",
+      "post_commit": "e9c1cdbd0f9afa467b585de279db0cbd0fb8ae97",
+      "post_tree_sha256": "9449d9f529979d1ab4eb767dd1a37fdc2bdbe04d44f0b4db5700fa07a92c4f63"
+    }
+  ],
+  "differential_contract": {
+    "implementation": "../../src/repoauditor/eval/scanner_differential.py",
+    "target_match_requires": [
+      "canonical file equality",
+      "exact supplemental rule identity",
+      "frozen source citation",
+      "overlap with the frozen target line range"
+    ],
+    "classifications": [
+      "vulnerable_only_recovery",
+      "stable_pre_post_mechanism_signal",
+      "patched_only_signal",
+      "complete_miss"
+    ],
+    "unrelated_candidates": "Retain exact stable, pre-only, and post-only identity counts separately. Never transfer an unrelated candidate into target recovery because it shares a file or aggregate count.",
+    "automatic_adjudication": false
+  },
+  "execution_and_provenance": {
+    "required_precondition": "The full production scanner deployment canary passes before qualification.",
+    "official_baseline": "Run through the pinned official Semgrep adapter and retain its existing configuration digest, rule count, status, and candidate attribution.",
+    "supplemental_pass": "Run separately through the production Semgrep adapter with its own reviewed file, digest, rule count, status, and semgrep-supplemental candidate attribution.",
+    "combined_configuration": false,
+    "raw_output_retained": true,
+    "source_executed": false,
+    "hosted_model_used": false
+  },
+  "promotion_criteria": [
+    "Both manufactured positive cases are raised by the exact supplemental rule.",
+    "Both manufactured negative cases are absent.",
+    "The codecov-node pre-fix target is matched by rule, file, citation, and line.",
+    "The codecov-node patched target is not matched.",
+    "Every unrelated candidate and all five pair-level differential outcomes are retained.",
+    "The supplemental configuration has a verified digest and nonzero rule count.",
+    "No candidate becomes a label, ground-truth record, classifier score, or review acquisition entry."
+  ],
+  "failure_policy": "Retain and report any control failure, stable target signal, patched-only signal, complete miss, scanner failure, or provenance failure. Do not revise the cohort, controls, target identity, or rule acceptance criteria after observing results.",
+  "pr_sequence": [
+    "Freeze this protocol, controls, and generic differential harness before the supplemental rule exists.",
+    "Implement the rule, execute qualification, retain results, and integrate the separately attributable production pass in a second PR."
+  ]
+}
