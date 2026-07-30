@@ -320,8 +320,14 @@ VI. Deterministic scanner assurance and capability
       historical zero-result Semgrep artifacts coverage-invalid without deleting them, then
       rerun material historical snapshots through the pinned, canary-qualified adapters.
       Report candidate and status deltas; do not retroactively turn newly emitted candidates
-      into labels, ground truth, or evaluation positives. Activation: after OPT-025 — DoD
-      impact: none.
+      into labels, ground truth, or evaluation positives. The project-owner-approved
+      [`frozen protocol`](opt-026-historical-scanner-remeasurement-protocol-2026-07-29.json)
+      records all three immutable source snapshots, marks their byte-identical historical
+      SARIF as coverage-invalid without modifying it, requires the full deployment canary,
+      and freezes a Semgrep-only one-to-one rerun with digest-backed raw retention. Results
+      must be produced in a separate PR and cannot enter labels, ground truth, classifier
+      scoring, or review acquisition. Activation: satisfied after OPT-025; protocol frozen,
+      rerun pending — DoD impact: none.
 
    F. OPT-027 — RepoAuditor-owned supplemental Semgrep pack — medium/high,
       evidence-gated — owner: AppSec detection engineering — source:
