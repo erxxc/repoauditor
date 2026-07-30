@@ -329,15 +329,21 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
   SARIF, status, candidate count, and required deployment canary.
   Protocol: `docs/optimizations/opt-027-028-supplemental-differential-protocol-2026-07-29.json`.
   Results: `docs/optimizations/opt-027-028-supplemental-differential-results-2026-07-29.json`.
-- [~] Bound candidate explosion before the next large human-review packet. The approved
+- [x] Bound candidate explosion before the next large human-review packet. The approved
   OPT-029 PR 1 contract applies only at review acquisition, preserves raw artifacts and
   stored findings, publishes a monotonic seven-stage funnel, caps a normalized
   rule/sink family at two candidates per engagement, and prioritizes product/deployment
   paths ahead of supporting and vendor/generated paths. It explicitly forbids outcome,
   severity, score, verdict, or answer-key inputs. The retained detailed measurement has
-  1,331 pre-supplemental candidates and cannot substitute for the final 1,941 aggregate;
-  PR 2 must persist and digest the complete replay when it integrates production selection.
+  1,331 pre-supplemental measurement no longer substitutes for the final aggregate: a fresh
+  healthy deterministic run reproduced all 1,941 candidates and retained the complete raw
+  report and funnel replay by digest. Schema v3 now integrates explicit declared-pair,
+  vendor/generated override, family-cap, engagement-balance, and durable-output controls
+  while loading v1/v2 plans. The replay reduced 1,941 raw records to 1,033 after exact
+  pre/post collapse, 1,026 after same-location dedupe, 946 after family caps, and 24 after
+  engagement balancing, without using outcomes or adjudicating omitted candidates.
   Protocol: `docs/optimizations/opt-029-acquisition-funnel-protocol-2026-07-29.json`.
+  Results: `docs/optimizations/opt-029-acquisition-funnel-results-2026-07-29.json`.
 
 ### Current falsification tuning
 

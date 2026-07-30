@@ -1451,16 +1451,54 @@ def triage_acquisition_plan_command(
         min=0,
         help="Exclude rule families with more prior human labels than this.",
     ),
+    max_per_family: int = typer.Option(
+        2,
+        min=1,
+        help="Maximum candidates per normalized producer/rule/sink family and engagement.",
+    ),
+    include_vendor_generated: bool = typer.Option(
+        False,
+        help="Include normally deferred vendor/generated paths in acquisition.",
+    ),
+    pre_post_pair: list[str] = typer.Option(
+        None,
+        help="Repeatable declared PRE:POST engagement pair for exact stable collapse.",
+    ),
+    output: Path = typer.Option(
+        None,
+        dir_okay=False,
+        help="Persist the complete plan JSON; parent directory must already exist.",
+    ),
 ) -> None:
-    """Build a stable, rule-diverse human-review acquisition plan as JSON."""
+    """Build a stable, fully accounted human-review acquisition plan as JSON."""
     config = get_config()
     db.init_db(config)
-    typer.echo(render_review_acquisition_plan(build_review_acquisition_plan(
+    pairs = []
+    for value in pre_post_pair or []:
+        pre, separator, post = value.partition(":")
+        if not separator or not pre or not post:
+            raise ValueError(
+                f"invalid pre/post pair {value!r}; expected PRE:POST"
+            )
+        pairs.append((pre, post))
+    plan = build_review_acquisition_plan(
         config,
         limit=limit,
         max_per_engagement=max_per_engagement,
         max_prior_human_labels_per_rule=max_prior_labels_per_rule,
-    )), nl=False)
+        max_per_family_per_engagement=max_per_family,
+        include_vendor_generated=include_vendor_generated,
+        pre_post_pairs=tuple(pairs),
+    )
+    rendered = render_review_acquisition_plan(plan)
+    if output is not None:
+        output.write_text(rendered, encoding="utf-8")
+        typer.echo(
+            f"wrote {len(plan.entries)} candidates to {output} "
+            f"(input {plan.input_digest})"
+        )
+    else:
+        typer.echo(rendered, nl=False)
 
 
 @app.command(name="triage-review-packet")
