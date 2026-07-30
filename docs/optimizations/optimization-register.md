@@ -344,7 +344,14 @@ VI. Deterministic scanner assurance and capability
       SQL construction, URL-fetch SSRF, unsafe archive extraction, and filesystem traversal
       only with equally defensible controls. Supplemental matches remain review candidates,
       not automatic actionable findings. Activation: after OPT-024 pins the baseline and
-      OPT-026 establishes corrected historical behavior — DoD impact: none.
+      OPT-026 establishes corrected historical behavior. The project-owner-approved
+      [`OPT-027/028 protocol`](opt-027-028-supplemental-differential-protocol-2026-07-29.json)
+      freezes one initial JavaScript/TypeScript dynamic shell-execution rule, four
+      manufactured controls, the codecov-node pre/post qualification target, and four
+      observational acquisition pairs before the rule exists. The official and supplemental
+      configurations must execute as separately attributable production-adapter passes with
+      independent provenance. Protocol/harness frozen; rule implementation pending — DoD
+      impact: none.
 
    G. OPT-028 — Advisory-target pre/post differential checks — medium — owner: detection
       evaluation — source:
@@ -353,7 +360,11 @@ VI. Deterministic scanner assurance and capability
       vulnerable-only recovery, stable pre/post mechanism signal, patched-only signal, or
       complete miss. Never count a signal that persists after the isolated patch as precise
       target recovery merely because its file/citation overlaps; preserve unrelated
-      candidates as unadjudicated. Activation: alongside OPT-027 rule qualification — DoD
+      candidates as unadjudicated. The generic differential harness now requires exact rule,
+      file, citation, and frozen-line agreement for target recovery and separately reports
+      exact-identity stable, pre-only, and post-only unrelated candidates. Regression tests
+      cover all four target classifications and near-miss rejection. Activation satisfied
+      alongside OPT-027 qualification; harness implemented, qualification run pending — DoD
       impact: none.
 
    H. OPT-029 — Candidate explosion and repetition controls — medium/scale-gated — owner:
