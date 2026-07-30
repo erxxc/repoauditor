@@ -377,15 +377,22 @@ VI. Deterministic scanner assurance and capability
       differences were not transferred into target recovery. Activation satisfied alongside
       OPT-027 qualification; implemented — DoD impact: none.
 
-   H. OPT-029 — Candidate explosion and repetition controls — medium/scale-gated — owner:
+   H. OPT-029 — Candidate explosion and repetition controls — in progress/scale-gated — owner:
       AppSec workflow engineering — source:
       `../deterministic-tool-deployment-audit-2026-07-29.json` — the corrected bounded run
       produced 1,941 raw candidates. Add disclosed, deterministic collapse by exact pre/post
       identity, rule/normalized sink/location deduplication, repeated-family caps per
       engagement, and explicit generated/vendor/docs/example path policy. Preserve raw
       artifacts and publish every suppression count; never suppress by predicted outcome or
-      hidden answer key. Activation: before producing the next large human-review packet —
-      DoD impact: none.
+      hidden answer key. The project-owner-approved PR 1 protocol freezes acquisition-only
+      application, a complete monotonic funnel, narrow identities, a two-per-family/
+      engagement cap, and three disclosed path tiers. Pure contract primitives and replay
+      tests do not yet alter production selection. The retained detailed 1,331-candidate
+      pre-supplemental report demonstrates repetition but is not the detailed form of the
+      final 1,941 aggregate; PR 2 must persist a complete replay and digest while integrating
+      the controls. Protocol:
+      [`OPT-029 acquisition funnel`](opt-029-acquisition-funnel-protocol-2026-07-29.json).
+      Activation: before producing the next large human-review packet — DoD impact: none.
 
    I. OPT-030 — Per-tool capability and applicability matrix — medium/documentation —
       owner: detection architecture — source:

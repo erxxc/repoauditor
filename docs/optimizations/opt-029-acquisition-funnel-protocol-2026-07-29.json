@@ -1,0 +1,119 @@
+{
+  "schema_version": 1,
+  "frozen_at": "2026-07-29",
+  "optimization": "OPT-029",
+  "status": "frozen-before-production-integration",
+  "objective": "Bound large human-review acquisitions with disclosed, deterministic repetition and path controls while preserving every raw scanner finding and reporting every deferred count.",
+  "approval": {
+    "decision": "project-owner-approved",
+    "selected_options": ["1A", "2A", "3A", "4A", "5A", "6A"]
+  },
+  "scope_boundary": {
+    "application_point": "human-review acquisition only",
+    "raw_scanner_artifacts_preserved": true,
+    "stored_findings_preserved": true,
+    "finding_dispositions_changed": false,
+    "classifier_labels_changed": false,
+    "evaluation_ground_truth_changed": false,
+    "production_selection_changed_in_this_pr": false
+  },
+  "funnel_contract": {
+    "schema": "opt-029-acquisition-funnel-v1",
+    "ordered_stages": [
+      "raw",
+      "after_pre_post_collapse",
+      "after_exact_duplicate_collapse",
+      "after_path_policy",
+      "after_family_cap",
+      "after_engagement_balance",
+      "selected"
+    ],
+    "required_accounting": "Publish the retained count and the non-negative delta at every stage. Use deferred or collapsed, never false positive, for candidates omitted from a packet.",
+    "monotonic": true,
+    "implementation": "../../src/repoauditor/triage/acquisition_funnel.py"
+  },
+  "identity_contract": {
+    "text_normalization": "Whitespace collapse only; preserve case and punctuation.",
+    "path_normalization": "Normalize path separators, repeated separators, and leading current-directory segments; preserve case.",
+    "pre_post_identity": [
+      "producer",
+      "canonical_rule_id",
+      "normalized_file",
+      "line_start",
+      "line_end",
+      "normalized_sink"
+    ],
+    "exact_location_identity": [
+      "engagement",
+      "producer",
+      "canonical_rule_id",
+      "normalized_file",
+      "line_start",
+      "line_end",
+      "normalized_sink"
+    ],
+    "repeated_family_identity": [
+      "engagement",
+      "producer",
+      "canonical_rule_id",
+      "normalized_sink"
+    ],
+    "family_cap_per_engagement": 2,
+    "breadth_pass": "Select at most one representative per family before considering a second.",
+    "forbidden_identity_inputs": [
+      "predicted outcome",
+      "actionability score",
+      "severity",
+      "falsification verdict",
+      "human disposition",
+      "hidden answer key",
+      "CVE target membership"
+    ],
+    "forbidden_collapse": "Do not collapse merely similar mechanisms across different files, locations, or normalized sinks."
+  },
+  "path_policy": {
+    "tier_1_product_deployment": ["production", "deployment"],
+    "tier_2_supporting": ["ci", "test", "docs_examples"],
+    "tier_3_vendor_generated": ["vendor_generated"],
+    "selection_order": [
+      "tier_1_product_deployment",
+      "tier_2_supporting",
+      "tier_3_vendor_generated"
+    ],
+    "tier_3_default": "deferred from the initial packet but retained and countable",
+    "override": "A caller may request a lower tier explicitly; the plan must record the requested policy.",
+    "interpretation": "Path class prioritizes review effort only and does not predict technical validity or operational actionability."
+  },
+  "representative_measurement": {
+    "detailed_artifact_location": "/private/tmp/repoauditor-bounded-uat-corrected.json",
+    "detailed_artifact_sha256": "a36acc7a00d03024863f38a8464f0dc929455bacccd6242541e529fef67d8f14",
+    "detailed_artifact_committed": false,
+    "raw_candidate_count": 1331,
+    "exact_pre_post_pair_collapsed_count": 722,
+    "exact_pre_post_reduction": 609,
+    "top_eight_rule_family_count": 908,
+    "top_eight_rule_family_share_approx": 0.682,
+    "supporting_path_count_floor": 179,
+    "largest_pair_engagement_raw_count": 1116,
+    "interpretation": "The retained detailed pre-supplemental report demonstrates substantial exact pre/post repetition, rule-family concentration, and engagement imbalance. These figures select no answer and adjudicate no candidate."
+  },
+  "provenance_gap": {
+    "final_audit": "../deterministic-tool-deployment-audit-2026-07-29.json",
+    "final_audit_raw_candidate_count": 1941,
+    "cause": "The final aggregate was recorded after supplemental Semgrep activation, while the retained detailed temporary report contains the earlier 1,331-candidate official-baseline run.",
+    "required_resolution_in_pr_2": "Persist the complete raw input reference, digest, funnel counts, and path/family distributions for every production acquisition replay. Do not present the 1,331-candidate measurement as the detailed form of the 1,941-candidate aggregate."
+  },
+  "pr_sequence": [
+    "PR 1 freezes this protocol, pure identity/path primitives, funnel accounting schema, replay tests, and the known provenance gap without changing production acquisition.",
+    "PR 2 integrates the contract into review acquisition, persists complete accounting, replays the current bounded evidence, and updates CLI and operator documentation."
+  ],
+  "promotion_criteria_for_pr_2": [
+    "Every raw candidate remains in its retained artifact and finding store.",
+    "Every funnel stage publishes retained and deferred counts.",
+    "Repeated-family selection is capped at two per engagement with a one-per-family breadth pass.",
+    "Tier 1 precedes Tier 2; Tier 3 is deferred by default and remains explicitly requestable.",
+    "Selection is deterministic under input reordering.",
+    "No forbidden identity input affects collapse, capping, balancing, or tie-breaking.",
+    "The complete 1,941-candidate input or a fresh equivalent replay is persisted with a digest rather than represented only by an aggregate."
+  ]
+}

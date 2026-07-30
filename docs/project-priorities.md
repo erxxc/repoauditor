@@ -329,6 +329,15 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
   SARIF, status, candidate count, and required deployment canary.
   Protocol: `docs/optimizations/opt-027-028-supplemental-differential-protocol-2026-07-29.json`.
   Results: `docs/optimizations/opt-027-028-supplemental-differential-results-2026-07-29.json`.
+- [~] Bound candidate explosion before the next large human-review packet. The approved
+  OPT-029 PR 1 contract applies only at review acquisition, preserves raw artifacts and
+  stored findings, publishes a monotonic seven-stage funnel, caps a normalized
+  rule/sink family at two candidates per engagement, and prioritizes product/deployment
+  paths ahead of supporting and vendor/generated paths. It explicitly forbids outcome,
+  severity, score, verdict, or answer-key inputs. The retained detailed measurement has
+  1,331 pre-supplemental candidates and cannot substitute for the final 1,941 aggregate;
+  PR 2 must persist and digest the complete replay when it integrates production selection.
+  Protocol: `docs/optimizations/opt-029-acquisition-funnel-protocol-2026-07-29.json`.
 
 ### Current falsification tuning
 
