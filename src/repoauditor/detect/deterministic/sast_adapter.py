@@ -170,10 +170,12 @@ class SastAdapter:
         self,
         timeout_seconds: int = 180,
         sarif_output_path: Path | None = None,
+        target_report_output_path: Path | None = None,
         configuration: str = SEMGREP_CONFIGURATION,
     ) -> None:
         self.timeout_seconds = timeout_seconds
         self.sarif_output_path = sarif_output_path
+        self.target_report_output_path = target_report_output_path
         self.configuration = configuration
         self.run_status: str | None = None
         self.failure_detail: str | None = None
@@ -188,19 +190,23 @@ class SastAdapter:
         self._resolved_configuration: str | None = None
 
     def _write_artifact(self, raw_output: str) -> None:
-        if self.sarif_output_path is None:
+        self._write_output(self.sarif_output_path, raw_output, ".semgrep-")
+
+    @staticmethod
+    def _write_output(path: Path | None, raw_output: str, prefix: str) -> None:
+        if path is None:
             return
-        self.sarif_output_path.parent.mkdir(parents=True, exist_ok=True)
+        path.parent.mkdir(parents=True, exist_ok=True)
         temporary: Path | None = None
         try:
             with tempfile.NamedTemporaryFile(
-                mode="w", encoding="utf-8", dir=self.sarif_output_path.parent,
-                prefix=".semgrep-", suffix=".tmp", delete=False,
+                mode="w", encoding="utf-8", dir=path.parent,
+                prefix=prefix, suffix=".tmp", delete=False,
             ) as handle:
                 temporary = Path(handle.name)
                 os.chmod(temporary, 0o600)
                 handle.write(raw_output)
-            os.replace(temporary, self.sarif_output_path)
+            os.replace(temporary, path)
         finally:
             if temporary is not None and temporary.exists():
                 temporary.unlink()
@@ -301,6 +307,12 @@ class SastAdapter:
                 if target_report is not None and target_report.is_file()
                 else ""
             )
+            if target_payload:
+                self._write_output(
+                    self.target_report_output_path,
+                    target_payload,
+                    ".semgrep-target-report-",
+                )
             if target_report is not None:
                 target_report.unlink(missing_ok=True)
         if not proc.stdout.strip():

@@ -152,6 +152,9 @@ def test_sast_adapter_preserves_valid_sarif_outside_snapshot(tmp_path, monkeypat
     snapshot = tmp_path / "raw" / "acme" / "abc123"
     snapshot.mkdir(parents=True)
     artifact = tmp_path / "artifacts" / "acme" / "abc123" / "detect" / "semgrep.sarif"
+    target_report = (
+        tmp_path / "artifacts" / "acme" / "abc123" / "detect" / "semgrep-targets.json"
+    )
 
     class Completed:
         stdout = _SARIF
@@ -172,7 +175,11 @@ def test_sast_adapter_preserves_valid_sarif_outside_snapshot(tmp_path, monkeypat
         "repoauditor.detect.deterministic.sast_adapter.subprocess.run", run
     )
 
-    adapter = SastAdapter(sarif_output_path=artifact, configuration="test-rules")
+    adapter = SastAdapter(
+        sarif_output_path=artifact,
+        target_report_output_path=target_report,
+        configuration="test-rules",
+    )
     findings = adapter.run(snapshot)
 
     assert len(findings) == 1
@@ -192,6 +199,10 @@ def test_sast_adapter_preserves_valid_sarif_outside_snapshot(tmp_path, monkeypat
     ]
     assert artifact.read_text(encoding="utf-8") == _SARIF
     assert stat.S_IMODE(artifact.stat().st_mode) == 0o600
+    assert json.loads(target_report.read_text(encoding="utf-8"))["paths"]["scanned"] == [
+        str(snapshot / "service.py")
+    ]
+    assert stat.S_IMODE(target_report.stat().st_mode) == 0o600
     assert not (snapshot / "semgrep.sarif").exists()
     execution = adapter.execution().model_dump(exclude_none=True)
     execution.pop("version", None)

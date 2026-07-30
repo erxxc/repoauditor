@@ -4,11 +4,13 @@ Status: authoritative post-MVP work list as of 2026-07-29. POC acceptance is com
 
 Current execution priorities
 
-1. **OPT-026 — historical scanner remeasurement** is the active evidence-repair workstream
-   now that the scanner deployment gate is required and OPT-001 reached its maturity floor.
-2. **OPT-002 — family-aware bootstrap ranges** remains held until the evaluation-compatible
+1. **OPT-027/OPT-028 — supplemental detection and differential qualification** are the next
+   paired capability workstream now that OPT-026 repaired the historical execution evidence.
+2. **OPT-029 — candidate explosion and repetition controls** must land before another large
+   human-review packet is produced.
+3. **OPT-002 — family-aware bootstrap ranges** remains held until the evaluation-compatible
    scored cohort reaches its existing floor with adequate held-out family breadth.
-3. **OPT-001 — reviewed-label growth** is complete at its lower maturity bound; further
+4. **OPT-001 — reviewed-label growth** is complete at its lower maturity bound; further
    acquisition is optional and must preserve abstention, holdout, and family controls.
 
 OPT-022 through OPT-025 are implemented. OPT-003 through OPT-006 and OPT-008 through OPT-014
@@ -314,7 +316,7 @@ VI. Deterministic scanner assurance and capability
       OPT-024; repository branch protection should require the stable job name — DoD impact:
       none.
 
-   E. OPT-026 — Rerun and qualify historical scanner evidence — high/evidence repair —
+   E. OPT-026 — Rerun and qualify historical scanner evidence — implemented —
       owner: detection evaluation — source:
       `../deterministic-tool-deployment-audit-2026-07-29.json` — mark the three identified
       historical zero-result Semgrep artifacts coverage-invalid without deleting them, then
@@ -325,9 +327,14 @@ VI. Deterministic scanner assurance and capability
       records all three immutable source snapshots, marks their byte-identical historical
       SARIF as coverage-invalid without modifying it, requires the full deployment canary,
       and freezes a Semgrep-only one-to-one rerun with digest-backed raw retention. Results
-      must be produced in a separate PR and cannot enter labels, ground truth, classifier
-      scoring, or review acquisition. Activation: satisfied after OPT-025; protocol frozen,
-      rerun pending — DoD impact: none.
+      were produced in a separate PR and cannot enter labels, ground truth, classifier
+      scoring, or review acquisition. The full four-tool canary passed with zero persisted
+      findings. All three snapshot digests matched and the pinned Semgrep 1.170.0 reruns
+      completed: 3,862 verified targets produced 571 unadjudicated candidates, changing all
+      three records from ambiguous historical zeros to qualified nonzero measurements. The
+      digest-backed [`result receipt`](opt-026-historical-scanner-remeasurement-results-2026-07-29.json)
+      retains every status and delta while the original SARIF remains unchanged. Activation:
+      satisfied after OPT-025; remeasurement complete — DoD impact: none.
 
    F. OPT-027 — RepoAuditor-owned supplemental Semgrep pack — medium/high,
       evidence-gated — owner: AppSec detection engineering — source:
