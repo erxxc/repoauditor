@@ -1,22 +1,22 @@
 # Optimization Register
 
-Status: authoritative post-MVP work list as of 2026-07-29. POC acceptance is complete.
+Status: authoritative post-MVP work list as of 2026-07-31. POC acceptance is complete.
 
 Current execution priorities
 
-1. **OPT-029 — candidate explosion and repetition controls** is the next scale workstream
-   and must land before another large human-review packet is produced.
-2. **OPT-030 — per-tool capability and applicability matrix** can now be finalized from the
-   completed OPT-026 and OPT-028 measurements.
-3. **OPT-002 — family-aware bootstrap ranges** remains held until the evaluation-compatible
+1. **OPT-030 — per-tool capability and applicability matrix** is implemented; the next
+   active optimization should be selected through reassessment rather than inferred here.
+2. **OPT-002 — family-aware bootstrap ranges** remains held until the evaluation-compatible
    scored cohort reaches its existing floor with adequate held-out family breadth.
-4. **OPT-001 — reviewed-label growth** is complete at its lower maturity bound; further
+3. **OPT-001 — reviewed-label growth** is complete at its lower maturity bound; further
    acquisition is optional and must preserve abstention, holdout, and family controls.
+4. **OPT-016 — dependency warning cleanup** remains routine maintenance pending a compatible
+   upstream SHAP/Matplotlib release.
 
 OPT-022 through OPT-025 are implemented. OPT-003 through OPT-006 and OPT-008 through OPT-014
 remain behind their documented evidence, budget, safety, or methodology gates. OPT-016 is
 routine dependency maintenance. OPT-027 and OPT-028 are implemented at their initial
-qualified scope; OPT-029 and OPT-030 remain ordered scale/documentation work.
+qualified scope; OPT-029 and OPT-030 are implemented.
 
 I. Evaluation and classifier maturity
 
@@ -400,14 +400,23 @@ VI. Deterministic scanner assurance and capability
       Activation satisfied before the next large human-review packet; implemented —
       DoD impact: none.
 
-   I. OPT-030 — Per-tool capability and applicability matrix — medium/documentation —
+   I. OPT-030 — Per-tool capability and applicability matrix — implemented —
       owner: detection architecture — source:
       `../deterministic-tool-deployment-audit-2026-07-29.json` — publish the mechanisms,
       ecosystems, manifest/source prerequisites, expected strengths, known blind spots, and
       meaning of `complete`, `empty`, and `not-applicable` for every deterministic tool.
       Keep deployment health separate from recall/precision claims and link each capability
-      statement to a control or retained measurement. Activation: draft with OPT-022 and
-      finalize after OPT-026/OPT-028 evidence — DoD impact: none.
+      statement to a control or retained measurement. The published human-readable and
+      machine-readable matrices cover all five production scanner identities, all seven
+      execution statuses, actual input/applicability boundaries, strengths, blind spots,
+      canaries, configuration provenance, and retained evidence. They explicitly separate
+      deployment health from detection claims and disclose that current `pip-audit`
+      production behavior is root `requirements*.txt` only, narrower than an older audit
+      narrative. A consistency test binds scanner/status coverage and evidence links to the
+      production contract. Matrix:
+      [`capability and applicability matrix`](../scanner-capability-matrix.md) and
+      [`machine-readable contract`](../scanner-capability-matrix.json). Activation
+      satisfied after OPT-026/OPT-028; implemented — DoD impact: none.
 
    J. Add the next proposed improvement as `OPT-031`; do not place it directly into the MVP
       recovery plan unless the project owner explicitly changes the DoD.
