@@ -267,20 +267,14 @@ def run_ensemble(
         for cand in tool_candidates:
             persisted.append(_persist_tool_candidate(cand, repo_id, architecture, config))
     else:
-        from .deterministic import SastAdapter
+        from .deterministic import DETERMINISTIC_SCANNERS, SastAdapter
 
         sast = SastAdapter(sarif_output_path=artifact_path)
         sast.write_empty_artifact("disabled")
         sarif_path, semgrep_status = artifact_path, sast.run_status
         scanner_statuses = {
             name: "disabled"
-            for name in (
-                "semgrep",
-                "semgrep-supplemental",
-                "pip-audit",
-                "osv-scanner",
-                "gitleaks",
-            )
+            for name in DETERMINISTIC_SCANNERS
         }
         from .deterministic.execution import ScannerExecution
 
@@ -294,13 +288,7 @@ def run_ensemble(
                 target_count=0,
                 target_count_basis="disabled",
             ).model_dump()
-            for name in (
-                "semgrep",
-                "semgrep-supplemental",
-                "pip-audit",
-                "osv-scanner",
-                "gitleaks",
-            )
+            for name in DETERMINISTIC_SCANNERS
         ]
 
     projection = project_detection_work(

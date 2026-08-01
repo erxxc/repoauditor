@@ -344,6 +344,15 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
   engagement balancing, without using outcomes or adjudicating omitted candidates.
   Protocol: `docs/optimizations/opt-029-acquisition-funnel-protocol-2026-07-29.json`.
   Results: `docs/optimizations/opt-029-acquisition-funnel-results-2026-07-29.json`.
+- [x] Publish the deterministic scanner capability and applicability matrix. OPT-030 now
+  distinguishes execution health from detection capability for official Semgrep, the
+  RepoAuditor supplemental pass, pip-audit, OSV-Scanner, and gitleaks. It records actual
+  production inputs, prerequisites, target-count bases, strengths, blind spots, canaries,
+  configuration/advisory provenance, and the meaning of every execution status. The matrix
+  also discloses that current pip-audit behavior accepts root `requirements*.txt`, narrower
+  than the lockfile list in an older audit narrative; no historical artifact was rewritten.
+  Matrix: `docs/scanner-capability-matrix.md` and
+  `docs/scanner-capability-matrix.json`.
 
 ### Current falsification tuning
 

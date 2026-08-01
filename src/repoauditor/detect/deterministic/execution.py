@@ -18,6 +18,14 @@ ScannerStatus = Literal[
     "disabled",
 ]
 
+DETERMINISTIC_SCANNERS = (
+    "semgrep",
+    "semgrep-supplemental",
+    "pip-audit",
+    "osv-scanner",
+    "gitleaks",
+)
+
 
 class ScannerExecution(BaseModel):
     """Evidence that distinguishes a clean zero from missing scanner coverage."""

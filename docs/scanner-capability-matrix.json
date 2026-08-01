@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "updated_at": "2026-07-31",
+  "optimization": "OPT-030",
+  "claim_boundary": {
+    "execution_health": "A passing execution contract or canary establishes only that the configured adapter ran and produced validated output over disclosed targets.",
+    "detection_capability": "Capabilities describe implemented rule or advisory coverage; they do not establish exhaustive recall, exploitability, actionability, or project-wide precision.",
+    "candidate_policy": "Every match remains an unadjudicated review candidate until repository evidence supports a disposition."
+  },
+  "status_semantics": {
+    "complete": "Applicable execution with validated output, at least one disclosed target, and at least one candidate.",
+    "empty": "Applicable execution with validated output, at least one disclosed target, and zero candidates; not proof that the repository is vulnerability-free.",
+    "not-applicable": "The adapter found zero inputs it can evaluate under its production applicability policy.",
+    "partial": "Validated results cover only a disclosed subset or fallback mode; failure_detail states the missing coverage.",
+    "unavailable": "The scanner binary or required executable capability was unavailable, so no coverage claim is made.",
+    "failed": "Execution, target verification, or output validation failed with attributable detail; no clean-zero claim is permitted.",
+    "disabled": "Deterministic tools were explicitly disabled; no coverage claim is made."
+  },
+  "scanners": [
+    {
+      "id": "semgrep",
+      "category": "static application and configuration analysis",
+      "adapter": "SastAdapter",
+      "producer": "semgrep",
+      "mechanisms": ["Rule-defined source-code security patterns and data flows", "Rule-defined framework, configuration, CI, infrastructure, and secret patterns in the pinned official pack"],
+      "ecosystems": ["Languages and technologies represented by the 1,073-rule pinned official default pack"],
+      "applicability": "Applicable when the verified pinned configuration selects at least one non-symlink file; zero selected targets is failed, not empty.",
+      "inputs": ["Repository source and configuration files selected by Semgrep"],
+      "target_count_basis": "scanner-reported-files",
+      "configuration": "Vendored p/default payload verified by decompressed SHA-256 before execution; 1,073 rules in the 2026-07-29 snapshot.",
+      "strengths": ["Broad offline multi-language rule coverage", "Exact file/line candidates from validated normalized SARIF", "Verified target report distinguishes a clean scan from an unexplained zero"],
+      "blind_spots": ["Public rules miss nonstandard and advisory-specific mechanisms even when execution is healthy", "Matches do not establish attacker control, reachability, mitigation, or actionability", "No exhaustive cross-service or business-logic analysis"],
+      "canary": "Local Python shell-invocation rule with a safe argument-vector negative control.",
+      "evidence": ["scanner-provenance.md#semgrep-baseline", "scanner-deployment-canaries.md#controls", "optimizations/opt-026-historical-scanner-remeasurement-results-2026-07-29.json", "deterministic-tool-deployment-audit-2026-07-29.json"]
+    },
+    {
+      "id": "semgrep-supplemental",
+      "category": "RepoAuditor-owned narrow static analysis",
+      "adapter": "SastAdapter",
+      "producer": "semgrep-supplemental",
+      "mechanisms": ["Variable or concatenated JavaScript/TypeScript commands passed to child_process.exec or execSync"],
+      "ecosystems": ["JavaScript", "TypeScript", "Node.js child_process"],
+      "applicability": "Applicable only when a non-symlink .js, .jsx, .mjs, .cjs, .ts, or .tsx file exists.",
+      "inputs": ["JavaScript and TypeScript source files"],
+      "target_count_basis": "scanner-reported-files",
+      "configuration": "Separately invoked packaged one-rule YAML with its own SHA-256, rule count, SARIF, target report, status, and producer identity.",
+      "strengths": ["Qualified vulnerable-only recovery for the frozen codecov-node target", "Manufactured positive and argument-vector negative controls exercise the production rule"],
+      "blind_spots": ["Only one qualified mechanism and two languages are in scope", "A shell sink match is not proof of attacker control or command injection", "SQL construction, SSRF, archive extraction, and traversal await separate qualification"],
+      "canary": "Variable execSync positive and execFileSync argument-vector negative using the packaged rule.",
+      "evidence": ["scanner-provenance.md#repoauditor-supplemental-semgrep-pass", "optimizations/opt-027-028-supplemental-differential-results-2026-07-29.json", "scanner-deployment-canaries.md#controls"]
+    },
+    {
+      "id": "pip-audit",
+      "category": "Python dependency vulnerability analysis",
+      "adapter": "ScaAdapter",
+      "producer": "pip-audit",
+      "mechanisms": ["Known PyPI package-version advisories for dependencies declared in submitted requirements files"],
+      "ecosystems": ["Python", "PyPI"],
+      "applicability": "Applicable only when at least one root-level requirements*.txt file is present.",
+      "inputs": ["Root-level requirements*.txt files"],
+      "target_count_basis": "submitted-manifests",
+      "configuration": "Pinned binary plus the live PyPI Advisory Database; query time is retained and database version remains null when unavailable.",
+      "strengths": ["Reports affected package, version, advisory, and fixes", "Exact direct pins can use a disclosed no-transitive-resolution partial fallback"],
+      "blind_spots": ["The production adapter does not submit poetry.lock, Pipfile.lock, pdm.lock, pyproject.toml, or nested requirements files to pip-audit", "An advisory match does not establish vulnerable-code use or exploitability", "Live advisory responses can change between identical binary/manifest runs"],
+      "canary": "Known vulnerable exact Python pin and an applicable empty requirements file.",
+      "evidence": ["scanner-provenance.md#other-scanners", "scanner-deployment-canaries.md#controls", "deterministic-tool-deployment-audit-2026-07-29.json"]
+    },
+    {
+      "id": "osv-scanner",
+      "category": "multi-ecosystem dependency vulnerability analysis",
+      "adapter": "ScaAdapter",
+      "producer": "osv-scanner",
+      "mechanisms": ["Known OSV advisories for packages and versions resolved from supported package sources"],
+      "ecosystems": ["Package ecosystems and source/lockfile formats supported by the pinned OSV-Scanner binary"],
+      "applicability": "Recursively discovers supported package sources. After a no-source result, up to 100 discovered requirements*.txt files are tried explicitly; no supported source is not-applicable.",
+      "inputs": ["Submitted repository root", "Bounded explicit requirements*.txt fallback after recursive no-source failure"],
+      "target_count_basis": "submitted-root, or submitted-manifests in the disclosed partial fallback",
+      "configuration": "Pinned binary plus live OSV.dev; query time is retained and database version remains null when unavailable.",
+      "strengths": ["Multi-ecosystem recursive package-source discovery", "Canonical ecosystem/package/version/advisory identities", "No-source behavior is distinct from a validated clean scan"],
+      "blind_spots": ["Coverage is limited to formats recognized by the pinned binary", "The requirements fallback is partial and does not recover other missed manifest types", "Advisory matches do not establish reachability or exploitability", "Live advisory responses can change"],
+      "canary": "Known vulnerable package source and a root with no supported manifest, expected not-applicable.",
+      "evidence": ["scanner-provenance.md#other-scanners", "scanner-deployment-canaries.md#controls", "deterministic-tool-deployment-audit-2026-07-29.json"]
+    },
+    {
+      "id": "gitleaks",
+      "category": "committed-secret pattern detection",
+      "adapter": "SecretsAdapter",
+      "producer": "gitleaks",
+      "mechanisms": ["Rule-defined credential, token, key, and secret-like patterns in snapshot content"],
+      "ecosystems": ["Language-independent repository content"],
+      "applicability": "Applicable to every submitted snapshot root when the binary is available.",
+      "inputs": ["Repository snapshot scanned without Git history"],
+      "target_count_basis": "submitted-root",
+      "configuration": "Rules embedded in the pinned gitleaks binary; binary version and embedded-default identity are retained.",
+      "strengths": ["Language-independent credential-pattern coverage", "Matched secret values are redacted before persistence", "Validated empty JSON distinguishes clean execution from failure"],
+      "blind_spots": ["--no-git means repository history is not inspected", "Matches can be placeholders, examples, test values, or revoked credentials", "No match does not establish safety of runtime or external secrets"],
+      "canary": "Synthetic Stripe-shaped credential and an environment-placeholder negative control.",
+      "evidence": ["scanner-provenance.md#other-scanners", "scanner-deployment-canaries.md#controls", "deterministic-tool-deployment-audit-2026-07-29.json"]
+    }
+  ]
+}
