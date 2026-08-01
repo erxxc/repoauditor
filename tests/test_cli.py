@@ -1154,3 +1154,28 @@ def test_verbose_emits_extra_stage_metadata(triage_cfg, tmp_path):
     assert result.exit_code == 0, result.output
     assert f"SARIF={sarif}" in result.stdout
     assert "action-threshold=0.5" in result.stdout
+
+
+@pytest.mark.parametrize(
+    ("arguments", "expected_call"),
+    [(["threat-enrich", "repo"], "load"), (["threat-enrich", "repo", "--refresh"], "refresh")],
+)
+def test_threat_enrich_refresh_is_explicit(
+    tmp_config, monkeypatch, arguments, expected_call
+):
+    calls = []
+    monkeypatch.setattr(cli, "get_config", lambda: tmp_config)
+    monkeypatch.setattr(
+        cli, "load_threat_intel", lambda repo_id, config: calls.append("load") or "loaded"
+    )
+    monkeypatch.setattr(
+        cli,
+        "refresh_threat_intel",
+        lambda repo_id, config: calls.append("refresh") or "refreshed",
+    )
+    monkeypatch.setattr(cli, "render_threat_intel", lambda result: result)
+
+    result = runner.invoke(cli.app, arguments)
+
+    assert result.exit_code == 0, result.output
+    assert calls == [expected_call]

@@ -5,24 +5,23 @@ Status: authoritative post-MVP work list as of 2026-08-01. POC acceptance is com
 Current execution priorities
 
 OPT-035 publishes the canonical machine-readable lifecycle ledger at
-[`optimization-status.json`](optimization-status.json). It records 24 closed and 11 open
+[`optimization-status.json`](optimization-status.json). It records 25 closed and 10 open
 items. Every open item remains subject to its activation gate; priority does not waive it.
 
 | Priority | Open item | Gate |
 |---:|---|---|
-| 1 | OPT-012 — cached EPSS and KEV enrichment | network and source |
-| 2 | OPT-006 — provider dollar-cost reporting | source |
-| 3 | OPT-005 — same-store usage calibration | budget |
-| 4 | OPT-002 — family-aware bootstrap ranges | data |
-| 5 | OPT-013 — prior temporal metadata and applicability | source |
-| 6 | OPT-003 — temporal validation | data |
-| 7 | OPT-009 — novelty prioritization | data |
-| 8 | OPT-004 — provider repeatability | budget and protocol |
-| 9 | OPT-011 — organization-frequency allocation | methodology |
-| 10 | OPT-014 — predictive checks and portfolio modeling | data |
-| 11 | OPT-010 — agentic falsification | safety and evaluation |
+| 1 | OPT-006 — provider dollar-cost reporting | source |
+| 2 | OPT-005 — same-store usage calibration | budget |
+| 3 | OPT-002 — family-aware bootstrap ranges | data |
+| 4 | OPT-013 — prior temporal metadata and applicability | source |
+| 5 | OPT-003 — temporal validation | data |
+| 6 | OPT-009 — novelty prioritization | data |
+| 7 | OPT-004 — provider repeatability | budget and protocol |
+| 8 | OPT-011 — organization-frequency allocation | methodology |
+| 9 | OPT-014 — predictive checks and portfolio modeling | data |
+| 10 | OPT-010 — agentic falsification | safety and evaluation |
 
-OPT-001, OPT-007, OPT-008, and OPT-015 through OPT-035 are closed at their approved scope. Optional
+OPT-001, OPT-007, OPT-008, OPT-012, and OPT-015 through OPT-035 are closed at their approved scope. Optional
 expansion of a closed bounded scope must be proposed as new work rather than silently
 reopening its lifecycle state.
 
@@ -173,9 +172,18 @@ IV. Quantitative enrichment
       gates affected output as experimental and not decision-grade — DoD impact: MVP
       presentation gate completed; richer model remains optimization.
 
-   B. OPT-012 — Dated cached EPSS/KEV enrichment — deferred/network- and source-gated —
-      owner: threat-data engineering — source: `../prior-scope-roadmap.md` — activate only
-      for real CVEs with defined stale/offline behavior — DoD impact: none.
+   B. OPT-012 — Dated cached EPSS/KEV enrichment — implemented — owner: threat-data
+      engineering — source: `../prior-scope-roadmap.md`. The frozen
+      [`source/cache protocol`](opt-012-threat-intel-protocol-2026-08-01.json) uses FIRST's
+      official EPSS API and CISA's official KEV JSON feed for real CVEs extracted from
+      repository findings. `threat-enrich --refresh` is the only network path; it validates
+      required source fields and numeric ranges before atomically replacing a repo-bound mode-0600
+      cache. Offline reads report current, stale, missing, or invalid with a documented
+      48-hour freshness window. Dated EPSS probability/percentile and KEV catalog/date-added/
+      due-date/ransomware fields appear as informational scenario threat labels only. They
+      do not change finding validity, severity, conditional frequency, magnitude, or deal
+      risk, avoiding double counting while OPT-011 remains methodology-gated. Implemented —
+      DoD impact: none.
 
    C. OPT-013 — Prior temporal metadata and population applicability — deferred/source-gated
       — owner: quantitative-methodology — source: `../prior-scope-roadmap.md` — activate

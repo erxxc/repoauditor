@@ -28,9 +28,12 @@ from pathlib import Path
 from . import __version__
 from .analyze import (
     audit_quantitative_inputs,
+    load_threat_intel,
     quantitative_disclosure,
     quantify_appendix,
+    refresh_threat_intel,
     render_quant_audit,
+    render_threat_intel,
 )
 from .config import get_config
 from .detect import (
@@ -1569,6 +1572,23 @@ def quant_audit_command(
 ) -> None:
     """Check quantitative applicability/double counting without changing the model."""
     typer.echo(render_quant_audit(audit_quantitative_inputs(repo_id, get_config())))
+
+
+@app.command(name="threat-enrich")
+@_clean_errors("threat-enrich")
+def threat_enrich_command(
+    repo_id: str = typer.Argument(..., help="Repo id whose CVEs should be enriched."),
+    refresh: bool = typer.Option(
+        False, "--refresh", help="Fetch FIRST EPSS and CISA KEV and replace the cache."
+    ),
+) -> None:
+    """Show cached EPSS/KEV evidence, optionally refreshing authoritative sources."""
+    config = get_config()
+    result = (
+        refresh_threat_intel(repo_id, config)
+        if refresh else load_threat_intel(repo_id, config)
+    )
+    typer.echo(render_threat_intel(result))
 
 
 @app.command()

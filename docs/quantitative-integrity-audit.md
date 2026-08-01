@@ -15,7 +15,7 @@ uv run repoauditor quant-audit <repo-id>
 |---|---|---|---|
 | Finding validity | Epistemic Bernoulli gate: whether the issue exists | Falsification/review confirmation or triage `P(actionable)` | Structurally separate from event rate |
 | Conditional frequency | Threat/loss-event rate | IRIS 2022 Figure 4 organization-level annual loss-event baseline | **Blocking:** currently repeated once per finding and summed within a scenario |
-| EPSS/KEV | CVE-specific threat evidence | Inactive; industry fallback is explicitly labeled | No proxy or severity-derived value is active |
+| EPSS/KEV | CVE-specific threat evidence | Explicitly refreshed FIRST/CISA cache; current/stale state and source dates are labeled | Informational only; no proxy, severity inference, or quantitative multiplier is active |
 | Exposure | Threat contact-frequency modifier | Existing map/deal-risk production-exposure signal or analyst override | Used in deal ranking and quantification, but those are separate outputs rather than one repeated equation |
 | Control strength | Vulnerability/success modifier | Conservative zero unless explicitly overridden | Separate from validity; no inferred control credit |
 | Loss scale | Loss-magnitude modifier | Conservative 1.0 unless explicitly overridden | Applied only to magnitude |

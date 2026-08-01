@@ -30,6 +30,7 @@ from .risk_quant import (
     monte_carlo,
     tornado_sensitivity,
 )
+from .threat_intel import load_threat_intel, refresh_threat_intel, render_threat_intel
 
 __all__ = [
     "corroborate",
@@ -52,4 +53,7 @@ __all__ = [
     "quantify_appendix",
     "monte_carlo",
     "tornado_sensitivity",
+    "load_threat_intel",
+    "refresh_threat_intel",
+    "render_threat_intel",
 ]
