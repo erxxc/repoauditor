@@ -85,7 +85,12 @@ class ScaAdapter:
         self.timeout_seconds = timeout_seconds
         self.run_statuses = {"pip-audit": "not-run", "osv-scanner": "not-run"}
         self.failure_details: dict[str, str] = {}
+        self.applicability_details: dict[str, str] = {}
         self.target_counts = {"pip-audit": 0, "osv-scanner": 0}
+        self.target_count_bases = {
+            "pip-audit": "submitted-manifests",
+            "osv-scanner": "submitted-root",
+        }
         self.output_valid = {"pip-audit": False, "osv-scanner": False}
         self.finding_counts = {"pip-audit": 0, "osv-scanner": 0}
         self.versions = {"pip-audit": None, "osv-scanner": None}
@@ -118,6 +123,9 @@ class ScaAdapter:
         })
         if not reqs:
             self.run_statuses["pip-audit"] = "not-applicable"
+            self.applicability_details["pip-audit"] = (
+                "snapshot contains no root-level requirements*.txt file"
+            )
             return []
         self.target_counts["pip-audit"] = len(reqs)
         out: list[CandidateFinding] = []
@@ -332,6 +340,7 @@ class ScaAdapter:
                         )
                         self.run_statuses["osv-scanner"] = "partial"
                         self.target_counts["osv-scanner"] = len(explicit)
+                        self.target_count_bases["osv-scanner"] = "submitted-manifests"
                         self.output_valid["osv-scanner"] = True
                         self.finding_counts["osv-scanner"] = len(findings)
                         self.failure_details["osv-scanner"] = (
@@ -343,6 +352,10 @@ class ScaAdapter:
                     if fallback_failures and only_no_source_failures:
                         self.run_statuses["osv-scanner"] = "not-applicable"
                         self.target_counts["osv-scanner"] = 0
+                        self.applicability_details["osv-scanner"] = (
+                            "recursive discovery and explicit requirements fallback found "
+                            "no supported package source"
+                        )
                         self.database_checked_at["osv-scanner"] = None
                         return []
                     primary_failure += (
@@ -352,6 +365,10 @@ class ScaAdapter:
                 else:
                     self.run_statuses["osv-scanner"] = "not-applicable"
                     self.target_counts["osv-scanner"] = 0
+                    self.applicability_details["osv-scanner"] = (
+                        "recursive discovery found no supported package source and no "
+                        "requirements*.txt fallback input"
+                    )
                     self.database_checked_at["osv-scanner"] = None
                     return []
             self.run_statuses["osv-scanner"] = "failed"
@@ -386,9 +403,7 @@ class ScaAdapter:
                 applicable = False if status == "not-applicable" else None
             else:
                 basis = (
-                    "submitted-manifests"
-                    if scanner == "pip-audit"
-                    else "submitted-root"
+                    self.target_count_bases[scanner]
                 )
                 applicable = True
             records.append(ScannerExecution(
@@ -421,6 +436,7 @@ class ScaAdapter:
                     else "OSV.dev"
                 ),
                 advisory_database_checked_at=self.database_checked_at[scanner],
+                applicability_detail=self.applicability_details.get(scanner),
                 failure_detail=detail,
             ))
         return records

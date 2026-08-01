@@ -26,6 +26,14 @@ DETERMINISTIC_SCANNERS = (
     "gitleaks",
 )
 
+SCANNER_TARGET_COUNT_BASES = {
+    "semgrep": ("scanner-reported-files",),
+    "semgrep-supplemental": ("scanner-reported-files",),
+    "pip-audit": ("submitted-manifests",),
+    "osv-scanner": ("submitted-root", "submitted-manifests"),
+    "gitleaks": ("submitted-root",),
+}
+
 
 class ScannerExecution(BaseModel):
     """Evidence that distinguishes a clean zero from missing scanner coverage."""
@@ -62,10 +70,21 @@ class ScannerExecution(BaseModel):
     advisory_database: str | None = None
     advisory_database_version: str | None = None
     advisory_database_checked_at: datetime | None = None
+    applicability_detail: str | None = None
     failure_detail: str | None = None
 
     @model_validator(mode="after")
     def validate_status_evidence(self) -> "ScannerExecution":
+        coverage_bases = SCANNER_TARGET_COUNT_BASES.get(self.scanner)
+        if (
+            coverage_bases is not None
+            and self.status in {"complete", "empty", "partial", "failed"}
+            and self.target_count_basis not in coverage_bases
+        ):
+            raise ValueError(
+                f"{self.scanner} execution cannot use target-count basis "
+                f"{self.target_count_basis!r}"
+            )
         if self.status in {"complete", "empty"}:
             if self.applicable is not True or not self.output_valid or self.target_count < 1:
                 raise ValueError(
@@ -80,8 +99,12 @@ class ScannerExecution(BaseModel):
             self.applicable is not False
             or self.target_count != 0
             or self.target_count_basis != "not-applicable"
+            or not self.applicability_detail
         ):
-            raise ValueError("not-applicable execution requires zero applicable targets")
+            raise ValueError(
+                "not-applicable execution requires zero applicable targets and an "
+                "applicability detail"
+            )
         if self.status == "failed" and not self.failure_detail:
             raise ValueError("failed scanner execution requires failure detail")
         return self

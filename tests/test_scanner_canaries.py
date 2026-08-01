@@ -5,7 +5,10 @@ from __future__ import annotations
 import json
 
 from repoauditor.detect.deterministic import canaries
-from repoauditor.detect.deterministic.execution import ScannerExecution
+from repoauditor.detect.deterministic.execution import (
+    SCANNER_TARGET_COUNT_BASES,
+    ScannerExecution,
+)
 
 
 def _execution(
@@ -19,7 +22,14 @@ def _execution(
         finding_count=findings,
         target_count=targets,
         target_count_basis=(
-            "not-applicable" if status == "not-applicable" else "submitted-root"
+            "not-applicable"
+            if status == "not-applicable"
+            else SCANNER_TARGET_COUNT_BASES[scanner][0]
+        ),
+        applicability_detail=(
+            "control contains no supported package source"
+            if status == "not-applicable"
+            else None
         ),
     )
 

@@ -4,8 +4,8 @@ Status: authoritative post-MVP work list as of 2026-08-01. POC acceptance is com
 
 Current execution priorities
 
-1. **OPT-016 — dependency warning cleanup** and **OPT-031 — executable SCA applicability
-   contracts** are implemented; select the next active optimization through reassessment.
+1. **OPT-032 through OPT-034 — scanner execution evidence hardening** are implemented;
+   select the next active optimization through reassessment.
 2. **OPT-002 — family-aware bootstrap ranges** remains held until the evaluation-compatible
    scored cohort reaches its existing floor with adequate held-out family breadth.
 3. **OPT-001 — reviewed-label growth** is complete at its lower maturity bound; further
@@ -14,7 +14,7 @@ Current execution priorities
 OPT-022 through OPT-025 are implemented. OPT-003 through OPT-006 and OPT-008 through OPT-014
 remain behind their documented evidence, budget, safety, or methodology gates. OPT-016 is
 implemented without patching third-party code. OPT-027 and OPT-028 are implemented at their
-initial qualified scope; OPT-029 through OPT-031 are implemented.
+initial qualified scope; OPT-029 through OPT-034 are implemented.
 
 I. Evaluation and classifier maturity
 
@@ -430,5 +430,28 @@ VI. Deterministic scanner assurance and capability
       lockfile support remains outside the adapter until an underlying supported execution
       path is designed and qualified. Implemented — DoD impact: none.
 
-   K. Add the next proposed improvement as `OPT-032`; do not place it directly into the MVP
+   K. OPT-032 — Correct OSV explicit-fallback target evidence — implemented — owner:
+      deterministic detection — source: OPT-030/OPT-031 contract review. A successful
+      explicit `requirements*.txt` fallback previously changed `target_count` to the number
+      of submitted manifests while leaving `target_count_basis` as `submitted-root`.
+      Scanner state now records the active basis and emits `submitted-manifests` for that
+      partial path, with a behavioral regression over the real adapter command sequence.
+      Implemented offline — DoD impact: none.
+
+   L. OPT-033 — Retain explicit not-applicable reasons — implemented — owner: reliability
+      engineering — source: scanner zero-review policy. `ScannerExecution` now requires
+      `applicability_detail` whenever status is `not-applicable`. Supplemental Semgrep,
+      pip-audit, and both OSV no-source paths retain the missing production prerequisite;
+      CLI evidence displays it. This distinguishes attributable inapplicability from an
+      unexplained zero without repurposing failure detail. Implemented offline — DoD
+      impact: none.
+
+   M. OPT-034 — Enforce scanner target-count bases as code — implemented — owner: detection
+      architecture — source: OPT-030 machine contract. The runtime execution model now
+      rejects a known scanner using a target-count basis outside its declared capability.
+      Schema v2 represents bases as structured arrays and a consistency test requires exact
+      equality with the runtime allowlist, including OSV's root and manifest modes.
+      Implemented offline — DoD impact: none.
+
+   N. Add the next proposed improvement as `OPT-035`; do not place it directly into the MVP
       recovery plan unless the project owner explicitly changes the DoD.

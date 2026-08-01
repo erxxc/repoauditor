@@ -63,3 +63,8 @@ support would be a new optimization rather than an undocumented capability claim
 OPT-031 subsequently bound this correction to scanner-specific constants consumed by the
 adapter and added a behavioral regression for the root-only pip-audit boundary. It did not
 expand pip-audit inputs or alter the historical audit.
+
+OPT-032 through OPT-034 further harden execution evidence: OSV's explicit requirements
+fallback reports `submitted-manifests`, every `not-applicable` record carries an explicit
+input-prerequisite reason, and each scanner's allowed target-count bases are enforced by the
+runtime model and mirrored exactly in the schema-v2 machine contract.

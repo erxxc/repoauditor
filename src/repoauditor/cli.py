@@ -681,6 +681,11 @@ def _detect_stage(repo_id: str, config):
                 f"({execution['target_count_basis']}); "
                 f"findings={execution['finding_count']}; "
                 f"output-valid={str(execution['output_valid']).lower()}"
+                + (
+                    f"; applicability={execution['applicability_detail']}"
+                    if execution.get("applicability_detail")
+                    else ""
+                )
             )
     return result
 

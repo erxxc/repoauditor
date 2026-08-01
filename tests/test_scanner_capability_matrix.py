@@ -8,6 +8,7 @@ from typing import get_args
 
 from repoauditor.detect.deterministic.execution import (
     DETERMINISTIC_SCANNERS,
+    SCANNER_TARGET_COUNT_BASES,
     ScannerStatus,
 )
 
@@ -40,7 +41,7 @@ def test_each_capability_entry_is_complete_and_links_retained_evidence():
         "ecosystems",
         "applicability",
         "inputs",
-        "target_count_basis",
+        "target_count_bases",
         "configuration",
         "strengths",
         "blind_spots",
@@ -54,6 +55,15 @@ def test_each_capability_entry_is_complete_and_links_retained_evidence():
             assert (MATRIX_PATH.parent / relative).is_file(), (
                 scanner["id"], evidence
             )
+
+
+def test_matrix_target_count_bases_match_runtime_contract():
+    matrix = json.loads(MATRIX_PATH.read_text(encoding="utf-8"))
+
+    assert {
+        scanner["id"]: tuple(scanner["target_count_bases"])
+        for scanner in matrix["scanners"]
+    } == SCANNER_TARGET_COUNT_BASES
 
 
 def test_matrix_discloses_actual_pip_audit_boundary_and_claim_limits():
