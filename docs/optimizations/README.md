@@ -13,6 +13,9 @@ II. Intake rule
    B. Record its source, owner, status, rationale, activation evidence, and relationship to
       the current DoD.
    C. Default status is `deferred`; enthusiasm is not an activation gate.
+   D. Record the canonical lifecycle state and activation gate in
+      [`optimization-status.json`](optimization-status.json). The prose register remains the
+      rationale and evidence authority; the ledger is the machine-readable inventory.
 
 III. Promotion rule
 
@@ -21,6 +24,9 @@ III. Promotion rule
    B. It becomes MVP-required only after explicit project-owner approval updates both
       `../poc-definition-of-done.md` and `../poc-recovery-plan.md`.
    C. Completed optimization work remains valid even when it was not necessary for the POC.
+   D. Mark an item `closed` only when its approved bounded scope is implemented or its
+      investigation is complete. Treat optional expansion as new scope rather than silently
+      reopening the completed item.
 
 IV. Required entry shape
 
