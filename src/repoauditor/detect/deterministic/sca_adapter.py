@@ -32,7 +32,8 @@ from .provenance import tool_version, utc_now
 logger = logging.getLogger(__name__)
 
 TOOL_NAME = "sca"
-_MANIFEST_GLOBS = ("requirements*.txt", "poetry.lock", "Pipfile.lock", "pdm.lock")
+_PIP_AUDIT_MANIFEST_GLOBS = ("requirements*.txt",)
+_OSV_EXPLICIT_FALLBACK_GLOBS = ("requirements*.txt",)
 _MAX_EXPLICIT_OSV_REQUIREMENTS = 100
 # SCA confirms a *known* CVE match against a declared dependency — the existence is
 # reliable, but exploitability in this codebase is not, so a moderate confidence.
@@ -109,7 +110,12 @@ class ScaAdapter:
         self.versions["pip-audit"] = tool_version(
             "pip-audit", "--version", timeout_seconds=self.timeout_seconds
         )
-        reqs = sorted(snapshot_path.glob("requirements*.txt"))
+        reqs = sorted({
+            path
+            for pattern in _PIP_AUDIT_MANIFEST_GLOBS
+            for path in snapshot_path.glob(pattern)
+            if path.is_file()
+        })
         if not reqs:
             self.run_statuses["pip-audit"] = "not-applicable"
             return []
@@ -262,7 +268,8 @@ class ScaAdapter:
             if "no package sources found" in primary_detail.lower():
                 discovered = sorted({
                     path
-                    for path in snapshot_path.rglob("requirements*.txt")
+                    for pattern in _OSV_EXPLICIT_FALLBACK_GLOBS
+                    for path in snapshot_path.rglob(pattern)
                     if path.is_file()
                 })
                 explicit = discovered[:_MAX_EXPLICIT_OSV_REQUIREMENTS]

@@ -59,3 +59,7 @@ The 2026-07-29 deployment audit's narrative listed several Python lockfile names
 only root-level `requirements*.txt`. The historical audit is retained unchanged; this
 matrix follows executable behavior and records the discrepancy. Broader Python manifest
 support would be a new optimization rather than an undocumented capability claim.
+
+OPT-031 subsequently bound this correction to scanner-specific constants consumed by the
+adapter and added a behavioral regression for the root-only pip-audit boundary. It did not
+expand pip-audit inputs or alter the historical audit.

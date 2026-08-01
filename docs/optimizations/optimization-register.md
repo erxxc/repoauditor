@@ -1,22 +1,20 @@
 # Optimization Register
 
-Status: authoritative post-MVP work list as of 2026-07-31. POC acceptance is complete.
+Status: authoritative post-MVP work list as of 2026-08-01. POC acceptance is complete.
 
 Current execution priorities
 
-1. **OPT-030 — per-tool capability and applicability matrix** is implemented; the next
-   active optimization should be selected through reassessment rather than inferred here.
+1. **OPT-016 — dependency warning cleanup** and **OPT-031 — executable SCA applicability
+   contracts** are implemented; select the next active optimization through reassessment.
 2. **OPT-002 — family-aware bootstrap ranges** remains held until the evaluation-compatible
    scored cohort reaches its existing floor with adequate held-out family breadth.
 3. **OPT-001 — reviewed-label growth** is complete at its lower maturity bound; further
    acquisition is optional and must preserve abstention, holdout, and family controls.
-4. **OPT-016 — dependency warning cleanup** remains routine maintenance pending a compatible
-   upstream SHAP/Matplotlib release.
 
 OPT-022 through OPT-025 are implemented. OPT-003 through OPT-006 and OPT-008 through OPT-014
 remain behind their documented evidence, budget, safety, or methodology gates. OPT-016 is
-routine dependency maintenance. OPT-027 and OPT-028 are implemented at their initial
-qualified scope; OPT-029 and OPT-030 are implemented.
+implemented without patching third-party code. OPT-027 and OPT-028 are implemented at their
+initial qualified scope; OPT-029 through OPT-031 are implemented.
 
 I. Evaluation and classifier maturity
 
@@ -181,12 +179,15 @@ V. Intake
       are now retained; an exact-direct-pin fallback is visibly partial rather than full
       transitive coverage.
 
-   B. OPT-016 — Remove SHAP/Matplotlib pending-deprecation noise — newly surfaced/deferred
-      — owner: test infrastructure — source: the 2026-07-28 fast-lane run completed with
+   B. OPT-016 — Remove SHAP/Matplotlib pending-deprecation noise — implemented — owner:
+      test infrastructure — source: the 2026-07-28 fast-lane run completed with
       three warnings from SHAP's use of deprecated Matplotlib colormap mutation methods.
-      Track the upstream dependency upgrade rather than patching third-party code; no
-      correctness impact was observed — activation: routine dependency maintenance after
-      MVP closure — DoD impact: none.
+      SHAP 0.52.0 still emits the three warnings with Matplotlib 3.11.1. The classifier now
+      suppresses only those exact `set_bad`, `set_over`, and `set_under`
+      `PendingDeprecationWarning` messages, only while importing SHAP. It does not patch
+      third-party code or hide unrelated warnings. Focused CLI, triage, and deterministic
+      tests complete without warning noise — activation satisfied after MVP closure;
+      implemented — DoD impact: none.
 
    C. OPT-017 — Diagnose the UAT IDOR selection/detection miss — completed diagnosis —
       owner: detection evaluation — source:
@@ -418,5 +419,16 @@ VI. Deterministic scanner assurance and capability
       [`machine-readable contract`](../scanner-capability-matrix.json). Activation
       satisfied after OPT-026/OPT-028; implemented — DoD impact: none.
 
-   J. Add the next proposed improvement as `OPT-031`; do not place it directly into the MVP
+   J. OPT-031 — Bind SCA applicability declarations to executable behavior — implemented —
+      owner: deterministic detection — source: the OPT-030 capability-matrix correction.
+      Replace the unused `_MANIFEST_GLOBS` declaration, which named lockfiles the adapter
+      never submitted to pip-audit, with separate constants for pip-audit root-manifest
+      selection and OSV's recursive explicit fallback. Both executable paths now consume
+      their declared patterns, and regression coverage proves pip-audit selects only root
+      `requirements*.txt` while excluding nested requirements and unsupported lockfiles.
+      This is contract hardening, not a claim of expanded manifest coverage; broader Python
+      lockfile support remains outside the adapter until an underlying supported execution
+      path is designed and qualified. Implemented — DoD impact: none.
+
+   K. Add the next proposed improvement as `OPT-032`; do not place it directly into the MVP
       recovery plan unless the project owner explicitly changes the DoD.

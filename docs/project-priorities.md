@@ -353,6 +353,13 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
   than the lockfile list in an older audit narrative; no historical artifact was rewritten.
   Matrix: `docs/scanner-capability-matrix.md` and
   `docs/scanner-capability-matrix.json`.
+- [x] Close the post-matrix maintenance batch. OPT-016 now locally suppresses only SHAP
+  0.52.0's three known Matplotlib 3.11 pending-deprecation messages during the third-party
+  import; unrelated warnings remain visible and no dependency code is patched. OPT-031
+  replaces the stale combined SCA manifest declaration with executable, scanner-specific
+  applicability constants and proves pip-audit's root `requirements*.txt` boundary against
+  nested requirements and unsupported lockfiles. This hardens the published contract; it
+  does not claim expanded scanner coverage.
 
 ### Current falsification tuning
 
