@@ -377,6 +377,11 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
   `Marshal.load`, optionally through one `Base64.decode64` wrapper. Claim and verifier v11
   independently parse Ruby; aliases, constants, alternate parsers, forged text, and
   non-params sources do not verify.
+- [x] Add dated cached EPSS/KEV evidence. OPT-012 uses explicit refreshes from FIRST and
+  CISA, validates both source schemas before atomic mode-0600 cache replacement, and keeps
+  offline current/stale/missing/invalid states visible. Scenario threat labels retain source
+  dates and catalog provenance without changing validity, severity, frequency, magnitude,
+  or deal-risk weight.
 
 ### Current falsification tuning
 

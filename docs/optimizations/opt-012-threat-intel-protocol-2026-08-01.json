@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-012",
+  "frozen_at": "2026-08-01",
+  "sources": {
+    "epss": {
+      "authority": "FIRST EPSS SIG",
+      "endpoint": "https://api.first.org/data/v1/epss",
+      "documentation": "https://www.first.org/epss/api",
+      "fields": ["cve", "epss", "percentile", "date", "response version"],
+      "meaning": "EPSS is a 0-1 estimate of exploitation in the wild in the next 30 days following score publication."
+    },
+    "kev": {
+      "authority": "Cybersecurity and Infrastructure Security Agency",
+      "endpoint": "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json",
+      "documentation": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+      "fields": ["catalogVersion", "dateReleased", "cveID", "dateAdded", "dueDate", "knownRansomwareCampaignUse"],
+      "meaning": "Catalog membership is authoritative evidence that exploitation in the wild is known."
+    }
+  },
+  "refresh_policy": {
+    "network": "Explicit threat-enrich --refresh only; quantify and report paths never refresh implicitly.",
+    "freshness_window_hours": 48,
+    "basis": "Both sources are living threat datasets and EPSS publishes daily. Forty-eight hours tolerates one missed daily refresh while clearly marking older evidence stale.",
+    "write": "Validate required fields and numeric ranges in both responses, then atomically replace the repo-bound mode-0600 cache.",
+    "failure": "Any network, HTTP, JSON, schema, range, or identity failure aborts refresh and preserves the prior cache."
+  },
+  "offline_policy": {
+    "current": "Display dated evidence when cache age is at most 48 hours.",
+    "stale": "Display evidence with an explicit stale label; never refresh implicitly.",
+    "missing": "Display no-cached-enrichment and preserve the industry baseline.",
+    "invalid": "Reject cache contents and preserve the industry baseline."
+  },
+  "quantitative_boundary": "EPSS and KEV are informational finding-level threat labels only. They do not alter validity, technical severity, conditional frequency, magnitude, or deal-risk weight while the separate organization-frequency methodology defect remains unresolved."
+}
