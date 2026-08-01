@@ -4,17 +4,28 @@ Status: authoritative post-MVP work list as of 2026-08-01. POC acceptance is com
 
 Current execution priorities
 
-1. **OPT-032 through OPT-034 — scanner execution evidence hardening** are implemented;
-   select the next active optimization through reassessment.
-2. **OPT-002 — family-aware bootstrap ranges** remains held until the evaluation-compatible
-   scored cohort reaches its existing floor with adequate held-out family breadth.
-3. **OPT-001 — reviewed-label growth** is complete at its lower maturity bound; further
-   acquisition is optional and must preserve abstention, holdout, and family controls.
+OPT-035 publishes the canonical machine-readable lifecycle ledger at
+[`optimization-status.json`](optimization-status.json). It records 23 closed and 12 open
+items. Every open item remains subject to its activation gate; priority does not waive it.
 
-OPT-022 through OPT-025 are implemented. OPT-003 through OPT-006 and OPT-008 through OPT-014
-remain behind their documented evidence, budget, safety, or methodology gates. OPT-016 is
-implemented without patching third-party code. OPT-027 and OPT-028 are implemented at their
-initial qualified scope; OPT-029 through OPT-034 are implemented.
+| Priority | Open item | Gate |
+|---:|---|---|
+| 1 | OPT-008 — expanded slicing and deterministic certificates | evidence |
+| 2 | OPT-012 — cached EPSS and KEV enrichment | network and source |
+| 3 | OPT-006 — provider dollar-cost reporting | source |
+| 4 | OPT-005 — same-store usage calibration | budget |
+| 5 | OPT-002 — family-aware bootstrap ranges | data |
+| 6 | OPT-013 — prior temporal metadata and applicability | source |
+| 7 | OPT-003 — temporal validation | data |
+| 8 | OPT-009 — novelty prioritization | data |
+| 9 | OPT-004 — provider repeatability | budget and protocol |
+| 10 | OPT-011 — organization-frequency allocation | methodology |
+| 11 | OPT-014 — predictive checks and portfolio modeling | data |
+| 12 | OPT-010 — agentic falsification | safety and evaluation |
+
+OPT-001, OPT-007, and OPT-015 through OPT-035 are closed at their approved scope. Optional
+expansion of a closed bounded scope must be proposed as new work rather than silently
+reopening its lifecycle state.
 
 I. Evaluation and classifier maturity
 
@@ -248,7 +259,7 @@ V. Intake
 
 VI. Deterministic scanner assurance and capability
 
-   A. OPT-022 — First-class scanner execution contract — highest/immediate — owner:
+   A. OPT-022 — First-class scanner execution contract — implemented — owner:
       reliability engineering — source:
       `../deterministic-tool-deployment-audit-2026-07-29.json` and
       `../scanner-execution-contract.md` — define one durable contract
@@ -453,5 +464,15 @@ VI. Deterministic scanner assurance and capability
       equality with the runtime allowlist, including OSV's root and manifest modes.
       Implemented offline — DoD impact: none.
 
-   N. Add the next proposed improvement as `OPT-035`; do not place it directly into the MVP
+   N. OPT-035 — Canonical optimization lifecycle ledger — implemented — owner: project
+      governance — source: repeated post-merge backlog reassessments. The schema-v1
+      [`status ledger`](optimization-status.json) enumerates every OPT from 001 through 035,
+      assigns exactly one `closed` or `open` state, records the activation gate for every
+      open item, and provides a contiguous post-035 priority order. Tests reject missing or
+      duplicate IDs, incorrect summary totals, ungated open items, noncontiguous priorities,
+      and disagreement with the authoritative register headings. Closed means the approved
+      bounded scope is complete; optional expansion requires a new scope decision.
+      Implemented offline — DoD impact: none.
+
+   O. Add the next proposed improvement as `OPT-036`; do not place it directly into the MVP
       recovery plan unless the project owner explicitly changes the DoD.

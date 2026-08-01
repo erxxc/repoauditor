@@ -366,6 +366,11 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
   target-count bases at runtime and binds them exactly to schema v2 of the machine-readable
   capability matrix. All three changes are offline contract hardening and add no detection
   or deployment claim.
+- [x] Publish a canonical optimization lifecycle ledger. OPT-035 records all 35 numbered
+  items with explicit open/closed state, activation gate, and a contiguous priority for the
+  12 open items. Consistency tests bind the ledger totals, IDs, states, and priorities to the
+  authoritative optimization register. Ledger:
+  `docs/optimizations/optimization-status.json`.
 
 ### Current falsification tuning
 
