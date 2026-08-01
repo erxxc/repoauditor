@@ -5,25 +5,24 @@ Status: authoritative post-MVP work list as of 2026-08-01. POC acceptance is com
 Current execution priorities
 
 OPT-035 publishes the canonical machine-readable lifecycle ledger at
-[`optimization-status.json`](optimization-status.json). It records 23 closed and 12 open
+[`optimization-status.json`](optimization-status.json). It records 24 closed and 11 open
 items. Every open item remains subject to its activation gate; priority does not waive it.
 
 | Priority | Open item | Gate |
 |---:|---|---|
-| 1 | OPT-008 — expanded slicing and deterministic certificates | evidence |
-| 2 | OPT-012 — cached EPSS and KEV enrichment | network and source |
-| 3 | OPT-006 — provider dollar-cost reporting | source |
-| 4 | OPT-005 — same-store usage calibration | budget |
-| 5 | OPT-002 — family-aware bootstrap ranges | data |
-| 6 | OPT-013 — prior temporal metadata and applicability | source |
-| 7 | OPT-003 — temporal validation | data |
-| 8 | OPT-009 — novelty prioritization | data |
-| 9 | OPT-004 — provider repeatability | budget and protocol |
-| 10 | OPT-011 — organization-frequency allocation | methodology |
-| 11 | OPT-014 — predictive checks and portfolio modeling | data |
-| 12 | OPT-010 — agentic falsification | safety and evaluation |
+| 1 | OPT-012 — cached EPSS and KEV enrichment | network and source |
+| 2 | OPT-006 — provider dollar-cost reporting | source |
+| 3 | OPT-005 — same-store usage calibration | budget |
+| 4 | OPT-002 — family-aware bootstrap ranges | data |
+| 5 | OPT-013 — prior temporal metadata and applicability | source |
+| 6 | OPT-003 — temporal validation | data |
+| 7 | OPT-009 — novelty prioritization | data |
+| 8 | OPT-004 — provider repeatability | budget and protocol |
+| 9 | OPT-011 — organization-frequency allocation | methodology |
+| 10 | OPT-014 — predictive checks and portfolio modeling | data |
+| 11 | OPT-010 — agentic falsification | safety and evaluation |
 
-OPT-001, OPT-007, and OPT-015 through OPT-035 are closed at their approved scope. Optional
+OPT-001, OPT-007, OPT-008, and OPT-015 through OPT-035 are closed at their approved scope. Optional
 expansion of a closed bounded scope must be proposed as new work rather than silently
 reopening its lifecycle state.
 
@@ -143,10 +142,20 @@ III. Detection and falsification depth
       requires measurement, not a passing selection outcome.
 
    B. OPT-008 — Expand slicing and deterministic certificates across additional clients,
-      frameworks, languages, and cross-file flows — deferred/evidence-gated — owner: AppSec
-      engineering — source: `../security-claim-certificates.md` and
-      `../triage-accuracy-roadmap.md` — activate for specific corpus misses — DoD impact:
-      none.
+      frameworks, languages, and cross-file flows — implemented at initial
+      evidence-qualified scope — owner: AppSec engineering — source:
+      `../security-claim-certificates.md` and `../triage-accuracy-roadmap.md`. The specific
+      activation evidence is the human-reviewed RailsGoat CWE-502 target at pinned commit
+      `0222f7da3406ba3ab637bc6d24ae9366b5f0a680`. The frozen
+      [`Ruby protocol`](opt-008-ruby-deserialization-protocol-2026-08-01.json) adds one
+      deliberately narrow Ruby certificate: exact `Marshal.load` over a literal-symbol
+      `params` element, optionally wrapped once by exact `Base64.decode64`. Producer and
+      independent checker both use tree-sitter, claim/verifier versions advance to v11, and
+      five external-answer-key controls cover two positives plus constant, aliased receiver,
+      and alternate-parser negatives. Forged text, a generic `.load`, and non-`params`
+      sources are independently refuted. Routing, authentication, gadget availability,
+      exploitability, and other Ruby loaders remain explicit non-claims. Further mechanism
+      expansion requires new specific miss evidence. Implemented offline — DoD impact: none.
 
    C. OPT-009 — In-family/out-of-family novelty prioritization — deferred/data-gated —
       owner: AppSec/ML evaluation — source: `../project-priorities.md` — activate after

@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-008",
+  "frozen_at": "2026-08-01",
+  "scope": "One local Ruby unsafe-deserialization certificate shape only.",
+  "evidence_gate": {
+    "status": "satisfied",
+    "basis": "The pinned OWASP RailsGoat anchor contains a human-reviewed, confirmed CWE-502 path at app/controllers/password_resets_controller.rb:6: Marshal.load(Base64.decode64(params[:user])).",
+    "target_commit": "0222f7da3406ba3ab637bc6d24ae9366b5f0a680",
+    "target_source": "../../tests/fixtures/positive_mechanism_expansion_cohort.json"
+  },
+  "supported_positive": "Exactly one cited Marshal.load call whose sole argument is either params[:literal_symbol] or Base64.decode64(params[:literal_symbol]).",
+  "controls": [
+    {"id": "ruby-marshal-positive-direct", "expected": "structurally_verified"},
+    {"id": "ruby-marshal-positive-base64", "expected": "structurally_verified"},
+    {"id": "ruby-marshal-negative-constant", "expected": "verification_incomplete"},
+    {"id": "ruby-marshal-negative-alias", "expected": "verification_incomplete"},
+    {"id": "ruby-marshal-negative-other-parser", "expected": "verification_incomplete"}
+  ],
+  "non_claims": [
+    "Rails routing, authentication state, runtime reachability, gadget availability, exploitability, and impact are not verified.",
+    "String-key params, local-variable aliases, alternate decoders, YAML/ObjectSpace loaders, and composed expressions remain unsupported.",
+    "The benchmark target is qualification evidence, not an independent evaluation holdout."
+  ],
+  "acceptance": [
+    "All five manufactured controls match their frozen outcomes.",
+    "Producer and independent checker both parse Ruby with tree-sitter and independently reconstruct the exact supported shape.",
+    "Forged source text, non-Marshal receivers, and non-params input cannot structurally verify.",
+    "Existing Python, JavaScript/TypeScript, and Java certificate suites remain unchanged and pass."
+  ]
+}

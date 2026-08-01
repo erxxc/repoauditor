@@ -2,6 +2,8 @@
 
 from pathlib import Path
 
+import pytest
+
 from repoauditor.detect.retrieval import RetrievalIndex
 from repoauditor.falsify.claims import claim_from_slice, verify_structural_claim
 from repoauditor.falsify.slicing import (
@@ -605,6 +607,83 @@ def test_java_checker_reports_other_mechanisms_unsupported(tmp_path):
 
     assert verification.status is ClaimVerificationStatus.UNSUPPORTED
     assert "supports SSRF only" in verification.reason
+
+
+def test_ruby_unsafe_deserialization_claim_round_trip(tmp_path):
+    (tmp_path / "password_resets_controller.rb").write_text(
+        "def reset_password\n"
+        "  Marshal.load(Base64.decode64(params[:user]))\n"
+        "end\n"
+    )
+    finding = Finding(
+        repo_id="r", title="Unsafe deserialization [CWE-502]",
+        file="password_resets_controller.rb", line_start=2, line_end=2,
+        citation_snippet="Marshal.load(Base64.decode64(params[:user]))",
+        source_tool="semgrep", confidence=0.8, severity="critical",
+    )
+    evidence = build_structural_slice(RetrievalIndex().build(tmp_path), finding)
+    assert evidence is not None and evidence.status == "local"
+    claim = claim_from_slice(1, evidence, "commit-ruby").model_copy(update={"id": 1})
+
+    verification = verify_structural_claim(claim, tmp_path, "commit-ruby")
+
+    assert claim.language == "ruby"
+    assert verification.status is ClaimVerificationStatus.STRUCTURALLY_VERIFIED
+    assert verification.checks["supported_sink_present"] is True
+    assert verification.checks["params_source_present"] is True
+
+
+def test_ruby_checker_refutes_forged_params_source(tmp_path):
+    (tmp_path / "reset.rb").write_text(
+        "def reset\n"
+        "  Marshal.load(params[:user])\n"
+        "end\n"
+    )
+    finding = Finding(
+        repo_id="r", title="Unsafe deserialization [CWE-502]", file="reset.rb",
+        line_start=2, line_end=2, citation_snippet="Marshal.load(params[:user])",
+        source_tool="semgrep", confidence=0.8, severity="critical",
+    )
+    evidence = build_structural_slice(RetrievalIndex().build(tmp_path), finding)
+    assert evidence is not None
+    claim = claim_from_slice(1, evidence, "commit-ruby").model_copy(update={"id": 1})
+    forged_source = claim.source_evidence[0].model_copy(
+        update={"source": "params[:admin]"}
+    )
+    forged = claim.model_copy(update={
+        "source_evidence": [forged_source],
+        "path_nodes": [
+            forged_source if item == claim.source_evidence[0] else item
+            for item in claim.path_nodes
+        ],
+    })
+
+    verification = verify_structural_claim(forged, tmp_path, "commit-ruby")
+
+    assert verification.status is ClaimVerificationStatus.STRUCTURALLY_REFUTED
+    assert verification.checks["evidence_matches_snapshot"] is False
+
+
+@pytest.mark.parametrize(
+    ("sink", "source"),
+    [
+        ("loader.load(params[:user])", "params[:user]"),
+        ("Marshal.load(config[:user])", "config[:user]"),
+    ],
+)
+def test_ruby_checker_refutes_unsupported_sink_or_source(tmp_path, sink, source):
+    (tmp_path / "reset.rb").write_text(f"def reset\n  {sink}\nend\n")
+    evidence = StructuralSliceEvidence(
+        mechanism="unsafe_deserialization", status="local", file="reset.rb",
+        language="ruby", source_evidence=[SliceLine(2, source)],
+        sink=SliceLine(2, sink),
+    )
+    claim = claim_from_slice(1, evidence, "commit-ruby").model_copy(update={"id": 1})
+
+    verification = verify_structural_claim(claim, tmp_path, "commit-ruby")
+
+    assert verification.status is ClaimVerificationStatus.STRUCTURALLY_REFUTED
+    assert verification.checks["local_def_use_closes"] is False
 
 
 def test_checker_refutes_forged_entrypoint_evidence():

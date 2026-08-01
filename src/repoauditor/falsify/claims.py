@@ -19,9 +19,9 @@ from ..store.models import (
 )
 from .slicing import StructuralSliceEvidence, SLICE_VERSION
 
-CLAIM_VERSION = "security_claim_v10"
+CLAIM_VERSION = "security_claim_v11"
 VERIFIER_NAME = "deterministic-structural-certificate-checker"
-VERIFIER_VERSION = "deterministic_structural_certificate_checker_v10"
+VERIFIER_VERSION = "deterministic_structural_certificate_checker_v11"
 
 # Intentionally separate from the slicer's rule table: this is the small checker policy.
 _CHECKER_SINKS = {
@@ -758,6 +758,182 @@ def _verify_java_ssrf_claim(
     )
 
 
+def _verify_ruby_deserialization_claim(
+    claim: SecurityClaim,
+    snapshot_path: Path | None,
+    expected_commit: str | None,
+) -> ClaimVerification:
+    """Independently check one Ruby literal-symbol params→Marshal.load certificate."""
+    checks = {
+        "snapshot_bound": bool(claim.snapshot_commit and expected_commit),
+        "snapshot_matches": bool(
+            claim.snapshot_commit and expected_commit
+            and claim.snapshot_commit == expected_commit
+        ),
+        "supported_mechanism": claim.mechanism == "unsafe_deserialization",
+        "certificate_complete": bool(
+            claim.source_evidence and claim.sink_evidence and claim.path_nodes
+        ),
+        "evidence_matches_snapshot": False,
+        "supported_sink_present": False,
+        "params_source_present": False,
+        "local_def_use_closes": False,
+    }
+    status = ClaimVerificationStatus.VERIFICATION_INCOMPLETE
+    reason = "Ruby certificate verification could not complete."
+    if not checks["supported_mechanism"]:
+        status = ClaimVerificationStatus.UNSUPPORTED
+        reason = "The Ruby checker currently supports unsafe deserialization only."
+    elif not checks["snapshot_bound"]:
+        reason = "Claim or verification request lacks an immutable snapshot commit."
+    elif not checks["snapshot_matches"]:
+        status = ClaimVerificationStatus.STRUCTURALLY_REFUTED
+        reason = "Claim snapshot commit does not match the snapshot being checked."
+    elif not checks["certificate_complete"]:
+        reason = "Certificate lacks required source, sink, or path-node evidence."
+    elif snapshot_path is None:
+        reason = "No pinned snapshot path was available to the independent checker."
+    else:
+        evidence = [
+            *claim.source_evidence,
+            *claim.path_nodes,
+            *([claim.sink_evidence] if claim.sink_evidence else []),
+        ]
+        files = {item.file for item in evidence}
+        if len(files) != 1:
+            reason = "The Ruby checker accepts exactly one source file."
+        else:
+            relative = next(iter(files))
+            path = _safe_file(snapshot_path, relative)
+            if path is None or path.suffix.lower() != ".rb":
+                reason = "Claimed Ruby source file is absent or escapes the snapshot."
+            else:
+                try:
+                    from tree_sitter_language_pack import get_parser
+
+                    parser = get_parser("ruby")
+                except Exception:
+                    reason = "Required Ruby tree-sitter grammar is unavailable."
+                else:
+                    text = path.read_text(errors="replace")
+                    source = text.encode("utf-8", errors="replace")
+                    tree = parser.parse(source)
+                    if tree.root_node.has_error:
+                        reason = "Claimed Ruby source cannot be parsed without errors."
+                    else:
+                        def node_text(node) -> str:
+                            return source[node.start_byte:node.end_byte].decode(
+                                "utf-8", errors="replace"
+                            )
+
+                        nodes = []
+                        stack = [tree.root_node]
+                        while stack:
+                            node = stack.pop()
+                            nodes.append(node)
+                            stack.extend(reversed(node.children))
+
+                        checks["evidence_matches_snapshot"] = all(
+                            any(
+                                node.start_point.row + 1 == item.line
+                                and node_text(node).strip() == item.source.strip()
+                                for node in nodes
+                            )
+                            for item in evidence
+                        )
+
+                        def call_parts(node):
+                            if node is None or node.type != "call":
+                                return None, None, []
+                            receiver = node.child_by_field_name("receiver")
+                            method = node.child_by_field_name("method")
+                            arguments = node.child_by_field_name("arguments")
+                            args = (
+                                list(arguments.named_children)
+                                if arguments is not None else []
+                            )
+                            return receiver, method, args
+
+                        def params_source(node):
+                            if node is None:
+                                return None
+                            if node.type == "element_reference" and re.fullmatch(
+                                r"params\s*\[\s*:[A-Za-z_][A-Za-z0-9_]*\s*\]",
+                                node_text(node).strip(),
+                            ):
+                                return node
+                            receiver, method, args = call_parts(node)
+                            if (
+                                receiver is not None and method is not None
+                                and len(args) == 1
+                                and node_text(receiver) == "Base64"
+                                and node_text(method) == "decode64"
+                            ):
+                                return params_source(args[0])
+                            return None
+
+                        sink_calls = []
+                        sink_sources = []
+                        for node in nodes:
+                            if (
+                                node.type != "call"
+                                or node.start_point.row + 1 != claim.sink_evidence.line
+                            ):
+                                continue
+                            receiver, method, args = call_parts(node)
+                            if (
+                                receiver is not None and method is not None
+                                and len(args) == 1
+                                and node_text(receiver) == "Marshal"
+                                and node_text(method) == "load"
+                            ):
+                                sink_calls.append(node)
+                                sink_sources.append(params_source(args[0]))
+                        checks["supported_sink_present"] = len(sink_calls) == 1
+                        source_node = sink_sources[0] if len(sink_sources) == 1 else None
+                        checks["params_source_present"] = bool(
+                            source_node is not None
+                            and any(
+                                item.line == source_node.start_point.row + 1
+                                and item.source.strip() == node_text(source_node).strip()
+                                for item in claim.source_evidence
+                            )
+                        )
+                        checks["local_def_use_closes"] = (
+                            checks["evidence_matches_snapshot"]
+                            and checks["supported_sink_present"]
+                            and checks["params_source_present"]
+                        )
+                        if not checks["evidence_matches_snapshot"]:
+                            status = ClaimVerificationStatus.STRUCTURALLY_REFUTED
+                            reason = "Certificate text does not match the pinned snapshot."
+                        elif not checks["supported_sink_present"]:
+                            status = ClaimVerificationStatus.STRUCTURALLY_REFUTED
+                            reason = "Certificate sink is not one exact Marshal.load call."
+                        elif not checks["params_source_present"]:
+                            status = ClaimVerificationStatus.STRUCTURALLY_REFUTED
+                            reason = (
+                                "Marshal.load input does not close to one supported "
+                                "literal-symbol params source."
+                            )
+                        else:
+                            status = ClaimVerificationStatus.STRUCTURALLY_VERIFIED
+                            reason = (
+                                "Structurally verified local Ruby params-to-Marshal.load "
+                                "syntax. Routing, authentication, runtime reachability, "
+                                "gadget availability, exploitability, and impact are not "
+                                "validated."
+                            )
+    return ClaimVerification(
+        claim_id=claim.id or 0,
+        status=status,
+        verifier_name=VERIFIER_NAME,
+        verifier_version=VERIFIER_VERSION,
+        checks=checks,
+        reason=reason,
+    )
+
+
 def verify_structural_claim(
     claim: SecurityClaim,
     snapshot_path: Path | None,
@@ -772,6 +948,10 @@ def verify_structural_claim(
         return _verify_javascript_claim(claim, snapshot_path, expected_commit)
     if claim.language == "java":
         return _verify_java_ssrf_claim(claim, snapshot_path, expected_commit)
+    if claim.language == "ruby":
+        return _verify_ruby_deserialization_claim(
+            claim, snapshot_path, expected_commit
+        )
     if claim.language != "python":
         return ClaimVerification(
             claim_id=claim.id or 0,

@@ -52,6 +52,6 @@ def test_manufactured_certificate_controls_close_against_external_answer_key():
 
 def test_manufactured_certificate_ground_truth_has_specific_basis():
     manifest = json.loads((FIXTURE / "manifest.json").read_text())
-    assert len(manifest["cases"]) == 8
-    assert len({case["id"] for case in manifest["cases"]}) == 8
+    assert len(manifest["cases"]) == 13
+    assert len({case["id"] for case in manifest["cases"]}) == 13
     assert all(len(case["basis"]) >= 30 for case in manifest["cases"])

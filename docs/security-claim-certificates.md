@@ -10,8 +10,8 @@ JavaScript `/pattern/flags.test(...)` expression from the supplied evidence miss
 supported regex-control bypass cannot be confirmed without that witness and a verified
 guard miss. The witness and checker result are stored with the falsification iteration.
 
-Current certificate version: `security_claim_v10`
-Current verifier: `deterministic_structural_certificate_checker_v10`
+Current certificate version: `security_claim_v11`
+Current verifier: `deterministic_structural_certificate_checker_v11`
 
 ## Checked facts
 
@@ -49,6 +49,10 @@ Current verifier: `deterministic_structural_certificate_checker_v10`
   expression, optionally assigned once to a local variable, flowing into the constructor
   argument of the exact `new URL(...).openStream()` or `openConnection()` shape. The checker
   independently loads the Java grammar and reconstructs the same local chain.
+- For Ruby unsafe deserialization: one literal-symbol `params[:key]` expression passed
+  directly to exact `Marshal.load(...)`, optionally through one exact
+  `Base64.decode64(...)` wrapper. The checker independently loads the Ruby grammar and
+  reconstructs the receiver, method, argument count, wrapper, and params source.
 
 ## Explicit non-claims
 
@@ -108,3 +112,8 @@ variables (`url.openConnection()`), `URI` conversion chains, `HttpClient`, Sprin
 composed URL expressions, non-literal parameter keys, and other vulnerability mechanisms
 remain incomplete/unsupported. Servlet binding and the deployed provenance of the
 `request` object are not established.
+
+Ruby support is likewise one reviewed shape, not general Rails taint analysis. String-key
+params, local-variable aliases, alternate Base64 helpers, YAML or other object loaders,
+composed expressions, and generic `.load` receivers remain incomplete. The certificate does
+not establish route exposure, authentication state, gadget availability, or code execution.

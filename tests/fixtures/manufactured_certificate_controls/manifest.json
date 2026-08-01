@@ -85,6 +85,56 @@
       "expected_check": "authorization_syntax_verified",
       "expected_check_value": false,
       "basis": "Authentication-only login_required must not be classified as authorization."
+    },
+    {
+      "id": "ruby-marshal-positive-direct",
+      "title": "Unsafe deserialization [CWE-502]",
+      "file": "controls.rb",
+      "line": 2,
+      "citation": "Marshal.load(params[:user])",
+      "expected_slice": "local",
+      "expected_verification": "structurally_verified",
+      "basis": "A literal-symbol Rails params element is the exact Marshal.load argument."
+    },
+    {
+      "id": "ruby-marshal-positive-base64",
+      "title": "Unsafe deserialization [CWE-502]",
+      "file": "controls.rb",
+      "line": 6,
+      "citation": "Marshal.load(Base64.decode64(params[:user]))",
+      "expected_slice": "local",
+      "expected_verification": "structurally_verified",
+      "basis": "The reviewed RailsGoat shape uses one exact Base64 decode around literal-symbol params input."
+    },
+    {
+      "id": "ruby-marshal-negative-constant",
+      "title": "Unsafe deserialization [CWE-502]",
+      "file": "controls.rb",
+      "line": 10,
+      "citation": "Marshal.load(\"fixed-payload\")",
+      "expected_slice": "incomplete",
+      "expected_verification": "verification_incomplete",
+      "basis": "A fixed payload has no direct Rails params source and must not close the certificate."
+    },
+    {
+      "id": "ruby-marshal-negative-alias",
+      "title": "Unsafe deserialization [CWE-502]",
+      "file": "controls.rb",
+      "line": 14,
+      "citation": "loader.load(params[:user])",
+      "expected_slice": "incomplete",
+      "expected_verification": "verification_incomplete",
+      "basis": "A generic load property on an alias does not establish the exact Marshal receiver identity."
+    },
+    {
+      "id": "ruby-marshal-negative-other-parser",
+      "title": "Unsafe deserialization [CWE-502]",
+      "file": "controls.rb",
+      "line": 18,
+      "citation": "JSON.parse(params[:user])",
+      "expected_slice": "incomplete",
+      "expected_verification": "verification_incomplete",
+      "basis": "Request input passed to a different parser is not a Marshal unsafe-deserialization sink."
     }
   ]
 }
