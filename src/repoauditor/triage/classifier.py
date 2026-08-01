@@ -32,6 +32,7 @@ the group-count shortfall. No grouped statistic is fabricated from insufficient 
 from __future__ import annotations
 
 import json
+import warnings
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -254,7 +255,18 @@ class TriageClassifier:
 
     def _build_explainer(self) -> None:
         try:
-            import shap
+            # SHAP 0.52 imports its plotting palette while constructing the core
+            # explainer and calls three Matplotlib APIs pending deprecation. Keep the
+            # compatibility suppression local to that third-party import so unrelated
+            # PendingDeprecationWarnings remain visible.
+            with warnings.catch_warnings():
+                warnings.filterwarnings(
+                    "ignore",
+                    message=r"The set_(?:bad|over|under) function will be deprecated.*",
+                    category=PendingDeprecationWarning,
+                    module=r"shap\.plots\.colors\._colors",
+                )
+                import shap
 
             self._explainer = shap.TreeExplainer(self.attribution_model)
         except Exception:

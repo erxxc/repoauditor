@@ -553,6 +553,41 @@ def test_sca_adapter_records_pip_audit_execution_failure(tmp_path, monkeypatch):
     assert "isolated environment" in adapter.failure_details["pip-audit"]
 
 
+def test_pip_audit_applicability_is_root_requirements_only(tmp_path, monkeypatch):
+    root_requirement = tmp_path / "requirements-prod.txt"
+    root_requirement.write_text("requests==2.19.1\n")
+    (tmp_path / "poetry.lock").write_text("[[package]]\n")
+    nested = tmp_path / "nested"
+    nested.mkdir()
+    (nested / "requirements.txt").write_text("flask==0.5\n")
+    monkeypatch.setattr(
+        "repoauditor.detect.deterministic.sca_adapter.shutil.which",
+        lambda binary: f"/usr/bin/{binary}",
+    )
+
+    class Clean:
+        returncode = 0
+        stdout = json.dumps({"dependencies": []})
+        stderr = ""
+
+    commands: list[list[str]] = []
+
+    def fake_run(command, **_kwargs):
+        commands.append(command)
+        return Clean()
+
+    monkeypatch.setattr(
+        "repoauditor.detect.deterministic.sca_adapter.subprocess.run", fake_run,
+    )
+    adapter = ScaAdapter()
+
+    assert adapter._run_pip_audit(tmp_path) == []
+    assert len(commands) == 1
+    assert commands[0][2] == str(root_requirement)
+    assert adapter.target_counts["pip-audit"] == 1
+    assert adapter.run_statuses["pip-audit"] == "empty"
+
+
 def test_sca_adapter_falls_back_to_exact_direct_pins(tmp_path, monkeypatch):
     (tmp_path / "requirements.txt").write_text("requests==2.19.1\n")
     monkeypatch.setattr(
