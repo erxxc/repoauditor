@@ -271,6 +271,32 @@ def test_scanner_execution_rejects_unverified_empty_result():
         )
 
 
+def test_scanner_execution_rejects_basis_outside_scanner_capability():
+    with pytest.raises(ValueError, match="pip-audit.*target-count basis"):
+        ScannerExecution(
+            scanner="pip-audit",
+            status="partial",
+            applicable=True,
+            output_valid=True,
+            finding_count=0,
+            target_count=1,
+            target_count_basis="submitted-root",
+        )
+
+
+def test_scanner_execution_requires_not_applicable_detail():
+    with pytest.raises(ValueError, match="applicability detail"):
+        ScannerExecution(
+            scanner="osv-scanner",
+            status="not-applicable",
+            applicable=False,
+            output_valid=False,
+            finding_count=0,
+            target_count=0,
+            target_count_basis="not-applicable",
+        )
+
+
 def test_scanner_execution_serializes_clean_zero_evidence():
     record = ScannerExecution(
         scanner="gitleaks",
@@ -299,6 +325,7 @@ def test_scanner_execution_serializes_clean_zero_evidence():
         "advisory_database": None,
         "advisory_database_version": None,
         "advisory_database_checked_at": None,
+        "applicability_detail": None,
         "failure_detail": None,
     }
 
@@ -367,6 +394,7 @@ def test_supplemental_sast_reports_language_inapplicable_without_scanning(
     assert execution.status == "not-applicable"
     assert execution.applicable is False
     assert execution.target_count_basis == "not-applicable"
+    assert "supported extension" in execution.applicability_detail
     assert execution.configuration == "owned@sha256:test"
     assert execution.configuration_resolution == "pinned-verified"
     assert json.loads(artifact.read_text())["runs"][0]["results"] == []
@@ -472,6 +500,7 @@ def test_sca_adapter_explicitly_scans_requirements_when_osv_recursive_discovery_
     execution = {item.scanner: item for item in adapter.executions()}["osv-scanner"]
     assert execution.status == "partial"
     assert execution.target_count == 1
+    assert execution.target_count_basis == "submitted-manifests"
     assert execution.finding_count == 1
     assert execution.output_valid is True
 
@@ -503,6 +532,7 @@ def test_sca_adapter_marks_no_package_sources_not_applicable(tmp_path, monkeypat
     execution = {item.scanner: item for item in adapter.executions()}["osv-scanner"]
     assert execution.applicable is False
     assert execution.target_count_basis == "not-applicable"
+    assert "no supported package source" in execution.applicability_detail
 
 
 def test_sca_adapter_marks_empty_explicit_requirements_not_applicable(

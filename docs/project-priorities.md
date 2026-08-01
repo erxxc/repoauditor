@@ -360,6 +360,12 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
   applicability constants and proves pip-audit's root `requirements*.txt` boundary against
   nested requirements and unsupported lockfiles. This hardens the published contract; it
   does not claim expanded scanner coverage.
+- [x] Harden scanner execution evidence after the capability review. OPT-032 corrects OSV's
+  explicit-fallback target basis to submitted manifests. OPT-033 requires and displays an
+  attributable reason for every `not-applicable` record. OPT-034 enforces per-scanner
+  target-count bases at runtime and binds them exactly to schema v2 of the machine-readable
+  capability matrix. All three changes are offline contract hardening and add no detection
+  or deployment claim.
 
 ### Current falsification tuning
 

@@ -197,6 +197,7 @@ class SastAdapter:
         self.applicable_extensions = applicable_extensions
         self.run_status: str | None = None
         self.failure_detail: str | None = None
+        self.applicability_detail: str | None = None
         self.target_count = 0
         self.output_valid = False
         self.finding_count = 0
@@ -286,6 +287,11 @@ class SastAdapter:
             and path.suffix.lower() in self.applicable_extensions
             for path in snapshot_path.rglob("*")
         ):
+            supported = ", ".join(sorted(self.applicable_extensions))
+            self.applicability_detail = (
+                "snapshot contains no non-symlink file with a supported extension: "
+                f"{supported}"
+            )
             self.write_empty_artifact("not-applicable")
             return []
         configuration_placeholder = (
@@ -418,6 +424,7 @@ class SastAdapter:
             configuration_digest=self.configuration_digest,
             rule_count=self.rule_count,
             configuration_resolution=self.configuration_resolution,
+            applicability_detail=self.applicability_detail,
             failure_detail=detail,
         )
 
