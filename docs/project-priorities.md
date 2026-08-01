@@ -371,6 +371,12 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
   12 open items. Consistency tests bind the ledger totals, IDs, states, and priorities to the
   authoritative optimization register. Ledger:
   `docs/optimizations/optimization-status.json`.
+- [x] Expand deterministic claim certificates for one evidence-qualified Ruby unsafe-
+  deserialization shape. OPT-008 uses the reviewed RailsGoat CWE-502 miss, a frozen protocol,
+  and five external-answer-key controls to qualify exact literal-symbol `params` input to
+  `Marshal.load`, optionally through one `Base64.decode64` wrapper. Claim and verifier v11
+  independently parse Ruby; aliases, constants, alternate parsers, forged text, and
+  non-params sources do not verify.
 
 ### Current falsification tuning
 

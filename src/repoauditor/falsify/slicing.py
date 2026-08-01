@@ -22,6 +22,9 @@ _MECHANISM_TERMS = {
     "sql_injection": ("sql injection", "sqli", "cwe-89"),
     "command_injection": ("command injection", "os command", "cwe-78"),
     "ssrf": ("ssrf", "server-side request forgery", "cwe-918"),
+    "unsafe_deserialization": (
+        "unsafe deserialization", "insecure deserialization", "object injection", "cwe-502",
+    ),
 }
 _SINKS = {
     "sql_injection": {"execute", "executemany", "query", "raw"},
@@ -738,6 +741,114 @@ def build_java_ssrf_slice(
     return result
 
 
+def _ruby_call_parts(node, source: bytes):
+    if node is None or node.type != "call":
+        return None, None, []
+    receiver = node.child_by_field_name("receiver")
+    method = node.child_by_field_name("method")
+    arguments = node.child_by_field_name("arguments")
+    args = list(arguments.named_children) if arguments is not None else []
+    return receiver, method, args
+
+
+def _ruby_params_source(node, source: bytes):
+    """Return the exact params element inside one supported source shape."""
+    if node is None:
+        return None
+    if node.type == "element_reference" and re.fullmatch(
+        r"params\s*\[\s*:[A-Za-z_][A-Za-z0-9_]*\s*\]",
+        _ts_source(node, source).strip(),
+    ):
+        return node
+    receiver, method, args = _ruby_call_parts(node, source)
+    if (
+        receiver is not None and method is not None and len(args) == 1
+        and _ts_source(receiver, source) == "Base64"
+        and _ts_source(method, source) == "decode64"
+    ):
+        return _ruby_params_source(args[0], source)
+    return None
+
+
+def _ruby_marshal_load_argument(node, source: bytes):
+    receiver, method, args = _ruby_call_parts(node, source)
+    if (
+        receiver is not None and method is not None and len(args) == 1
+        and _ts_source(receiver, source) == "Marshal"
+        and _ts_source(method, source) == "load"
+    ):
+        return args[0]
+    return None
+
+
+def build_ruby_deserialization_slice(
+    index: RetrievalIndex, finding: Finding
+) -> StructuralSliceEvidence | None:
+    """Build one bounded Ruby params→Marshal.load unsafe-deserialization slice."""
+    mechanism = _mechanism(finding)
+    if mechanism is None:
+        return None
+    source_record = index.source_text(finding.file)
+    if source_record is None:
+        return StructuralSliceEvidence(
+            mechanism, "incomplete", finding.file, language="ruby",
+            limitations=["cited file is not present in the retrieval index"],
+        )
+    relative, text = source_record
+    if not relative.endswith(".rb"):
+        return None
+    if mechanism != "unsafe_deserialization":
+        return StructuralSliceEvidence(
+            mechanism, "unsupported", relative, language="ruby",
+            limitations=["Ruby certificate checker supports unsafe deserialization only"],
+        )
+    parser = _ts_parser("ruby")
+    if parser is None:
+        return StructuralSliceEvidence(
+            mechanism, "incomplete", relative, language="ruby",
+            limitations=["tree-sitter grammar unavailable for Ruby"],
+        )
+    source = text.encode("utf-8", errors="replace")
+    tree = parser.parse(source)
+    if tree.root_node.has_error:
+        return StructuralSliceEvidence(
+            mechanism, "incomplete", relative, language="ruby",
+            limitations=["Ruby source could not be parsed without errors"],
+        )
+    sinks = [
+        node for node in _ts_walk(tree.root_node)
+        if _ruby_marshal_load_argument(node, source) is not None
+        and node.start_point.row + 1 <= finding.line_end
+        and finding.line_start <= node.end_point.row + 1
+    ]
+    result = StructuralSliceEvidence(
+        mechanism, "incomplete", relative, language="ruby",
+        limitations=[
+            "local Ruby params-to-Marshal syntax only; routing, authentication, runtime "
+            "reachability, gadget availability, exploitability, and impact are not proven"
+        ],
+    )
+    if len(sinks) != 1:
+        result.limitations.append("exactly one cited Marshal.load sink was not found")
+        return result
+    sink = sinks[0]
+    result.sink = SliceLine(sink.start_point.row + 1, _ts_source(sink, source))
+    params_node = _ruby_params_source(
+        _ruby_marshal_load_argument(sink, source), source
+    )
+    if params_node is None:
+        result.limitations.append(
+            "Marshal.load input was not direct literal-symbol params input or one exact "
+            "Base64.decode64 wrapper"
+        )
+        return result
+    result.source_evidence.append(
+        SliceLine(params_node.start_point.row + 1, _ts_source(params_node, source))
+    )
+    result.status = "local"
+    return result
+
+
 def build_structural_slice(
     index: RetrievalIndex, finding: Finding
 ) -> StructuralSliceEvidence | None:
@@ -749,4 +860,6 @@ def build_structural_slice(
         return build_javascript_slice(index, finding)
     if suffix == "java":
         return build_java_ssrf_slice(index, finding)
+    if suffix == "rb":
+        return build_ruby_deserialization_slice(index, finding)
     return None
