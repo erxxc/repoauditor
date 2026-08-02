@@ -12,7 +12,7 @@
     {"id": "OPT-001", "title": "Reviewed-label growth", "status": "closed", "gate": "none", "next_priority": null},
     {"id": "OPT-002", "title": "Family-aware bootstrap ranges", "status": "open", "gate": "data", "next_priority": 2},
     {"id": "OPT-003", "title": "Temporal validation", "status": "open", "gate": "data", "next_priority": 3},
-    {"id": "OPT-004", "title": "Provider repeatability characterization", "status": "open", "gate": "budget-and-protocol", "next_priority": 5},
+    {"id": "OPT-004", "title": "Provider repeatability characterization", "status": "open", "gate": "budget", "next_priority": 5},
     {"id": "OPT-005", "title": "Same-store three-run usage calibration", "status": "open", "gate": "budget", "next_priority": 1},
     {"id": "OPT-006", "title": "Provider dollar-cost reporting", "status": "closed", "gate": "none", "next_priority": null},
     {"id": "OPT-007", "title": "Production-region selection", "status": "closed", "gate": "none", "next_priority": null},

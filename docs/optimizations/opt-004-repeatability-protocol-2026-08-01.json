@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-004",
+  "frozen_at": "2026-08-01",
+  "status": "protocol-frozen-budget-pending",
+  "objective": "Characterize provider variation on byte-identical falsification inputs without conflating it with retrieval-resolution changes.",
+  "subjects": {
+    "count": 2,
+    "required_strata": [
+      "one human-confirmed actionable finding",
+      "one human-decided non-actionable finding"
+    ],
+    "selection": "Before any repeat call, freeze finding id, human disposition, repository id, snapshot commit, finding-row digest, architecture-artifact digest, and retrieval-index digest in an execution receipt.",
+    "exclusions": [
+      "manufactured controls",
+      "unreviewed model labels",
+      "protected evaluation answer keys",
+      "findings used to develop the repeatability implementation"
+    ]
+  },
+  "instrument": {
+    "profile": "standard",
+    "max_iterations": 2,
+    "local_context_lines": 10,
+    "related_result_base": 2,
+    "module_context_lines": 18,
+    "max_evidence_chars": 12000,
+    "self_critique": true,
+    "minimum_iterations": 2,
+    "persist_production_verdict": false,
+    "fresh_pipeline_run_per_observation": true
+  },
+  "repetitions_per_subject": 3,
+  "held_constant": [
+    "repository snapshot bytes and commit",
+    "finding row and citation",
+    "architecture artifact",
+    "retrieval index and selected evidence",
+    "provider and exact model id",
+    "prompt and claim/verifier versions",
+    "temperature, thresholds, retries, timeouts, and all context caps"
+  ],
+  "reported_variation": [
+    "verdict agreement and full disposition sequence",
+    "all-pairs citation-set Jaccard similarity",
+    "confidence range and standard deviation",
+    "evidence-character range",
+    "provider input/output/cache tokens per observation",
+    "provider latency per observation",
+    "dated calculated dollar cost per observation"
+  ],
+  "blockers": [
+    "any subject or held-constant digest changes",
+    "any observation is missing authoritative provider usage",
+    "provider/model differs across observations",
+    "prompt, instrument, retry, timeout, or context configuration differs",
+    "any repetition is omitted, merged across stores, or reconstructed from historical output"
+  ],
+  "budget_gate": {
+    "observations": 6,
+    "approval_required_before_calls": true,
+    "approval_must_state": [
+      "maximum provider calls",
+      "maximum provider-reported tokens",
+      "maximum USD spend",
+      "selected subject ids and immutable digests"
+    ],
+    "existing_runtime_breakers_remain_in_force": true
+  },
+  "interpretation": {
+    "descriptive_only": true,
+    "pass_threshold": null,
+    "production_change": "None. Stable or unstable results characterize the measurement system and do not automatically change prompts, thresholds, findings, or verdicts.",
+    "closure": "OPT-004 closes after all six bounded observations and the complete machine-readable characterization receipt are retained, regardless of whether variation is low or high."
+  }
+}

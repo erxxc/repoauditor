@@ -44,7 +44,9 @@ that warning without changing the still-blocked frequency allocation.
 Provider repeatability is also uncharacterized. The current convergence experiment varies
 retrieval/decomposition resolution, while Anthropic and the OpenAI-compatible transport do
 not expose a configured sampling seed. Until identical-input repeats exist, sampling
-variance cannot be separated from resolution sensitivity.
+variance cannot be separated from resolution sensitivity. OPT-004 now freezes the initial
+identical-input protocol, so its remaining activation gate is explicit provider budget and
+predeclared subject identities rather than protocol design.
 
 ## Required order before tuning
 

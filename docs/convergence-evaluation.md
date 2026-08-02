@@ -51,3 +51,10 @@ Anthropic calls and the current OpenAI-compatible transport do not expose a conf
 sampling seed. Their output explicitly says seed reproducibility is unavailable. A live
 result therefore combines resolution sensitivity with possible model repeatability noise;
 repeatability/measurement-system characterization is a separate future phase.
+
+That phase now has a frozen initial protocol in
+[`optimizations/opt-004-repeatability-protocol-2026-08-01.json`](optimizations/opt-004-repeatability-protocol-2026-08-01.json).
+It holds the existing standard profile byte-identical for three fresh observations of each
+of two predeclared human-reviewed subjects. No calls are authorized by the protocol itself;
+execution still requires an explicit calls, tokens, and USD budget plus immutable subject
+digests.

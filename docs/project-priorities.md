@@ -104,8 +104,11 @@ priorities here.
   mechanism dimensions, detailed dispositions, and explicitly persisted SARIF
   language/detector cohorts are reported. Unavailable metadata remains visible and is never
   inferred from rule names or file extensions.
-- [ ] Characterize repeatability on identical inputs, separating sampling variance from
-  retrieval-resolution sensitivity. Report verdict/citation/confidence/token/latency spread.
+- [~] Characterize repeatability on identical inputs, separating sampling variance from
+  retrieval-resolution sensitivity. OPT-004 now freezes two predeclared human-reviewed
+  subjects, three fresh standard-profile observations each, immutable inputs, and
+  verdict/citation/confidence/token/latency/cost reporting. Paid execution remains gated on
+  explicit calls, tokens, and USD approval.
 - [x] Expand manufactured controls only where positive and negative mechanisms have
   independently checkable ground truth. Eight zero-token certificate controls now cover
   JS/TS SSRF, JS/TS command injection, Java SSRF, and authorization-versus-authentication
@@ -509,8 +512,8 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
 
 1. Produce the formal three-run usage comparison in one persistent store; do not merge
    temporary databases or raise limits automatically.
-2. Characterize repeatability on identical inputs, separating sampling variance from
-   retrieval-resolution sensitivity.
+2. [~] Characterize repeatability on identical inputs. The protocol is frozen; paid
+   observations remain budget-gated.
 3. Add dated/cached EPSS and KEV enrichment only with fixed stale/offline behavior and
    real-CVE-only matching.
 4. [x] Add provider dollar cost only from a dated, versioned provider/model price source.

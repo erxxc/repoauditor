@@ -14,7 +14,7 @@ items. Every open item remains subject to its activation gate; priority does not
 | 2 | OPT-002 — family-aware bootstrap ranges | data |
 | 3 | OPT-003 — temporal validation | data |
 | 4 | OPT-009 — novelty prioritization | data |
-| 5 | OPT-004 — provider repeatability | budget and protocol |
+| 5 | OPT-004 — provider repeatability | budget |
 | 6 | OPT-011 — organization-frequency allocation | methodology |
 | 7 | OPT-014 — predictive checks and portfolio modeling | data |
 | 8 | OPT-010 — agentic falsification | safety and evaluation |
@@ -104,10 +104,17 @@ I. Evaluation and classifier maturity
       `../triage-accuracy-roadmap.md` — activate after meaningful chronological depth exists
       — DoD impact: none.
 
-   D. OPT-004 — Identical-input provider repeatability characterization — deferred/paid —
-      owner: evaluation engineering — source: `../convergence-evaluation.md` and
-      `../pre-tuning-readiness.md` — activate after a frozen repeat protocol and budget are
-      approved — DoD impact: none.
+   D. OPT-004 — Identical-input provider repeatability characterization — budget-gated,
+      protocol frozen — owner: evaluation engineering — source: `../convergence-evaluation.md`,
+      `../pre-tuning-readiness.md`, and the frozen
+      [`repeatability protocol`](opt-004-repeatability-protocol-2026-08-01.json). The initial
+      characterization fixes the existing standard falsification profile across three fresh
+      observations of each of two predeclared human-reviewed subjects. Immutable input and
+      configuration digests prevent resolution or corpus changes from being mislabeled as
+      provider variance. Verdict, citation, confidence, evidence size, tokens, latency, and
+      dated cost are descriptive; no success threshold or automatic production change is
+      allowed. Execution requires an explicit calls/tokens/USD budget and frozen subject
+      receipt. Protocol implemented; paid observations not run — DoD impact: none.
 
 II. Operations and cost
 
