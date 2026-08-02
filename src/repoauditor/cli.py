@@ -57,6 +57,7 @@ from .eval import (
     render_sentinel_qualification,
     render_usage_calibration,
     render_xml_detection_qualification,
+    run_repeatability,
 )
 from .falsify import challenge
 from .falsify.challenger import (
@@ -1661,6 +1662,30 @@ def falsify_convergence(
         if output_format is ListFormat.JSON
         else render_convergence(result)
     )
+
+
+@app.command(name="repeatability-evaluate")
+@_clean_errors("repeatability-evaluate")
+def repeatability_evaluate(
+    receipt: Path = typer.Argument(..., help="Frozen OPT-004 execution receipt."),
+    approved_receipt_digest: str = typer.Option(
+        ..., "--approved-receipt-digest",
+        help="Exact sha256 digest explicitly approved for paid execution.",
+    ),
+    output: Path = typer.Option(
+        ..., "--output", help="New machine-readable characterization receipt.",
+    ),
+) -> None:
+    """Run the budgeted, non-mutating OPT-004 identical-input experiment."""
+    if output.exists():
+        raise FileExistsError(f"refusing to overwrite existing result: {output}")
+    result = run_repeatability(
+        receipt, approved_receipt_digest=approved_receipt_digest,
+        config=get_config(),
+    )
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(result.model_dump_json(indent=2) + "\n", encoding="utf-8")
+    typer.echo(result.model_dump_json(indent=2))
 
 
 @app.command(name="qualify-instrument")
