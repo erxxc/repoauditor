@@ -104,11 +104,12 @@ priorities here.
   mechanism dimensions, detailed dispositions, and explicitly persisted SARIF
   language/detector cohorts are reported. Unavailable metadata remains visible and is never
   inferred from rule names or file extensions.
-- [~] Characterize repeatability on identical inputs, separating sampling variance from
-  retrieval-resolution sensitivity. OPT-004 now freezes two predeclared human-reviewed
-  subjects, three fresh standard-profile observations each, immutable inputs, and
-  verdict/citation/confidence/token/latency/cost reporting. Paid execution remains gated on
-  explicit calls, tokens, and USD approval.
+- [x] Characterize repeatability on identical inputs, separating sampling variance from
+  retrieval-resolution sensitivity. OPT-004 completed three fresh standard-profile
+  observations for each of two immutable human-reviewed subjects. Both verdict sequences
+  and all citation sets agreed; confidence varied only by 0.05 for finding 295. The six
+  observations used 24 calls, 136,954 provider-reported tokens, and $0.832270. This is
+  descriptive measurement-system evidence and changes no production behavior.
 - [x] Expand manufactured controls only where positive and negative mechanisms have
   independently checkable ground truth. Eight zero-token certificate controls now cover
   JS/TS SSRF, JS/TS command injection, Java SSRF, and authorization-versus-authentication
@@ -517,8 +518,8 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
    queue correction reduces those rows to 60 conservative issue groups (51 redundant
    challenges removed) without dropping findings or inferring unretained advisory aliases.
    Its 120-call linear projection is descriptive only; no provider continuation is approved.
-2. [~] Characterize repeatability on identical inputs. The protocol is frozen; paid
-   observations remain budget-gated.
+2. [x] Characterize repeatability on identical inputs. Six approved observations completed
+   within budget with perfect verdict and citation-set agreement for both frozen subjects.
 3. Add dated/cached EPSS and KEV enrichment only with fixed stale/offline behavior and
    real-CVE-only matching.
 4. [x] Add provider dollar cost only from a dated, versioned provider/model price source.
@@ -530,8 +531,9 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
 The current evidence-backed decision is recorded in
 [pre-tuning-readiness.md](pre-tuning-readiness.md). Tuning is on hold: the local persistent
 store has no usable human-label cohort or completed same-store three-run calibration,
-repeatability is uncharacterized, and the organization-frequency defect remains
-methodology-blocking. This hold is the priority-10 decision, not an incomplete tuning run.
+and the organization-frequency defect remains methodology-blocking. OPT-004's bounded
+repeatability scope is complete. This hold is the priority-10 decision, not an incomplete
+tuning run.
 
 ## Large-repository detection safety
 

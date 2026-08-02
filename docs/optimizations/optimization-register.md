@@ -5,7 +5,7 @@ Status: authoritative post-MVP work list as of 2026-08-01. POC acceptance is com
 Current execution priorities
 
 OPT-035 publishes the canonical machine-readable lifecycle ledger at
-[`optimization-status.json`](optimization-status.json). It records 27 closed and 8 open
+[`optimization-status.json`](optimization-status.json). It records 28 closed and 7 open
 items. Every open item remains subject to its activation gate; priority does not waive it.
 
 | Priority | Open item | Gate |
@@ -14,12 +14,11 @@ items. Every open item remains subject to its activation gate; priority does not
 | 2 | OPT-002 — family-aware bootstrap ranges | data |
 | 3 | OPT-003 — temporal validation | data |
 | 4 | OPT-009 — novelty prioritization | data |
-| 5 | OPT-004 — provider repeatability | budget |
-| 6 | OPT-011 — organization-frequency allocation | methodology |
-| 7 | OPT-014 — predictive checks and portfolio modeling | data |
-| 8 | OPT-010 — agentic falsification | safety and evaluation |
+| 5 | OPT-011 — organization-frequency allocation | methodology |
+| 6 | OPT-014 — predictive checks and portfolio modeling | data |
+| 7 | OPT-010 — agentic falsification | safety and evaluation |
 
-OPT-001, OPT-006 through OPT-008, OPT-012, OPT-013, and OPT-015 through OPT-035 are closed at their approved scope. Optional
+OPT-001, OPT-004, OPT-006 through OPT-008, OPT-012, OPT-013, and OPT-015 through OPT-035 are closed at their approved scope. Optional
 expansion of a closed bounded scope must be proposed as new work rather than silently
 reopening its lifecycle state.
 
@@ -104,8 +103,8 @@ I. Evaluation and classifier maturity
       `../triage-accuracy-roadmap.md` — activate after meaningful chronological depth exists
       — DoD impact: none.
 
-   D. OPT-004 — Identical-input provider repeatability characterization — budget-gated,
-      protocol frozen — owner: evaluation engineering — source: `../convergence-evaluation.md`,
+   D. OPT-004 — Identical-input provider repeatability characterization — implemented —
+      owner: evaluation engineering — source: `../convergence-evaluation.md`,
       `../pre-tuning-readiness.md`, and the frozen
       [`repeatability protocol`](opt-004-repeatability-protocol-2026-08-01.json). The initial
       characterization fixes the existing standard falsification profile across three fresh
@@ -115,9 +114,13 @@ I. Evaluation and classifier maturity
       dated cost are descriptive; no success threshold or automatic production change is
       allowed. The [`execution receipt`](opt-004-repeatability-execution-receipt-2026-08-02.json)
       freezes findings 295/300, their shared snapshot, architecture and retrieval digests,
-      and a proposed aggregate ceiling of 72 calls, 250,000 provider-reported tokens, and
-      $6.25. Execution still requires explicit approval of that complete receipt. Protocol
-      and offline preparation implemented; paid observations not run — DoD impact: none.
+      and an approved aggregate ceiling of 72 calls, 250,000 provider-reported tokens, and
+      $6.25. The complete [`result`](opt-004-repeatability-result-2026-08-02.json) used 24
+      calls, 136,954 provider-reported tokens, and $0.832270. Finding 295 was confirmed in
+      all three observations and finding 300 was killed in all three; both had pairwise
+      citation Jaccard 1.0. Confidence varied only for 295 (range 0.05; population standard
+      deviation 0.02357). This descriptive result closes the approved scope and changes no
+      production threshold or verdict — DoD impact: none.
 
 II. Operations and cost
 

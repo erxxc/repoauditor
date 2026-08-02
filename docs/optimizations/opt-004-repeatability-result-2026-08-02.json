@@ -1,0 +1,199 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-004",
+  "status": "complete",
+  "receipt_digest": "sha256:b9968883b766e44788844db3d53bd890f8f5f1489b5aae60d10d52bfbbc1d67c",
+  "provider": "anthropic",
+  "model": "claude-opus-4-8",
+  "prompt_versions": {
+    "falsify": "falsification_v3+untrusted_repository_content_v1+falsification_selfcritique_v2+untrusted_repository_content_v1+falsification_context_v3"
+  },
+  "observations": [
+    {
+      "finding_id": 295,
+      "repetition": 1,
+      "pipeline_run_id": 7,
+      "verdict": "confirmed",
+      "confidence": 0.9,
+      "citations": [
+        "frontend/src/app/login/login.component.ts:94-139",
+        "frontend/src/app/oauth/oauth.component.ts:27-43",
+        "frontend/src/app/oauth/oauth.component.ts:45-61",
+        "routes/login.ts:18-83",
+        "server.ts:170-683"
+      ],
+      "evidence_characters": 16890,
+      "calls": 4,
+      "input_tokens": 22839,
+      "output_tokens": 1310,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0,
+      "known_tokens": 24149,
+      "unknown_usage_calls": 0,
+      "latency_ms": 25399,
+      "calculated_cost_usd": 0.146945
+    },
+    {
+      "finding_id": 295,
+      "repetition": 2,
+      "pipeline_run_id": 8,
+      "verdict": "confirmed",
+      "confidence": 0.9,
+      "citations": [
+        "frontend/src/app/login/login.component.ts:94-139",
+        "frontend/src/app/oauth/oauth.component.ts:27-43",
+        "frontend/src/app/oauth/oauth.component.ts:45-61",
+        "routes/login.ts:18-83",
+        "server.ts:170-683"
+      ],
+      "evidence_characters": 16890,
+      "calls": 4,
+      "input_tokens": 22882,
+      "output_tokens": 1288,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0,
+      "known_tokens": 24170,
+      "unknown_usage_calls": 0,
+      "latency_ms": 27970,
+      "calculated_cost_usd": 0.14661
+    },
+    {
+      "finding_id": 295,
+      "repetition": 3,
+      "pipeline_run_id": 9,
+      "verdict": "confirmed",
+      "confidence": 0.95,
+      "citations": [
+        "frontend/src/app/login/login.component.ts:94-139",
+        "frontend/src/app/oauth/oauth.component.ts:27-43",
+        "frontend/src/app/oauth/oauth.component.ts:45-61",
+        "routes/login.ts:18-83",
+        "server.ts:170-683"
+      ],
+      "evidence_characters": 16890,
+      "calls": 4,
+      "input_tokens": 22864,
+      "output_tokens": 1286,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0,
+      "known_tokens": 24150,
+      "unknown_usage_calls": 0,
+      "latency_ms": 29067,
+      "calculated_cost_usd": 0.14647
+    },
+    {
+      "finding_id": 300,
+      "repetition": 1,
+      "pipeline_run_id": 10,
+      "verdict": "killed",
+      "confidence": 0.9,
+      "citations": [
+        "routes/videoHandler.ts:50-78",
+        "server.ts:170-683"
+      ],
+      "evidence_characters": 13603,
+      "calls": 4,
+      "input_tokens": 20294,
+      "output_tokens": 1160,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0,
+      "known_tokens": 21454,
+      "unknown_usage_calls": 0,
+      "latency_ms": 23989,
+      "calculated_cost_usd": 0.13047
+    },
+    {
+      "finding_id": 300,
+      "repetition": 2,
+      "pipeline_run_id": 11,
+      "verdict": "killed",
+      "confidence": 0.9,
+      "citations": [
+        "routes/videoHandler.ts:50-78",
+        "server.ts:170-683"
+      ],
+      "evidence_characters": 13603,
+      "calls": 4,
+      "input_tokens": 20332,
+      "output_tokens": 1098,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0,
+      "known_tokens": 21430,
+      "unknown_usage_calls": 0,
+      "latency_ms": 22671,
+      "calculated_cost_usd": 0.12911
+    },
+    {
+      "finding_id": 300,
+      "repetition": 3,
+      "pipeline_run_id": 12,
+      "verdict": "killed",
+      "confidence": 0.9,
+      "citations": [
+        "routes/videoHandler.ts:50-78",
+        "server.ts:170-683"
+      ],
+      "evidence_characters": 13603,
+      "calls": 4,
+      "input_tokens": 20368,
+      "output_tokens": 1233,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0,
+      "known_tokens": 21601,
+      "unknown_usage_calls": 0,
+      "latency_ms": 25472,
+      "calculated_cost_usd": 0.132665
+    }
+  ],
+  "aggregate_usage": {
+    "calls": 24,
+    "known_tokens": 136954,
+    "calculated_cost_usd": 0.83227
+  },
+  "subject_metrics": [
+    {
+      "finding_id": 295,
+      "observations": 3,
+      "verdict_sequence": [
+        "confirmed",
+        "confirmed",
+        "confirmed"
+      ],
+      "verdict_agreement": true,
+      "all_pairs_citation_jaccard": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "confidence_range": 0.04999999999999993,
+      "confidence_standard_deviation": 0.023570226039551553,
+      "evidence_character_range": [
+        16890,
+        16890
+      ]
+    },
+    {
+      "finding_id": 300,
+      "observations": 3,
+      "verdict_sequence": [
+        "killed",
+        "killed",
+        "killed"
+      ],
+      "verdict_agreement": true,
+      "all_pairs_citation_jaccard": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "confidence_range": 0.0,
+      "confidence_standard_deviation": 0.0,
+      "evidence_character_range": [
+        13603,
+        13603
+      ]
+    }
+  ],
+  "descriptive_only": true,
+  "production_verdicts_persisted": false
+}
