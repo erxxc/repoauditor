@@ -28,6 +28,7 @@ from .detection_sentinels import (
     render_detection_qualification,
     render_xml_detection_qualification,
 )
+from .repeatability import RepeatabilityResult, run_repeatability
 
 __all__ = [
     "record_and_check",
@@ -48,4 +49,6 @@ __all__ = [
     "evaluate_xml_detection_sentinels",
     "render_detection_qualification",
     "render_xml_detection_qualification",
+    "RepeatabilityResult",
+    "run_repeatability",
 ]
