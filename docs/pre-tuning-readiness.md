@@ -41,12 +41,12 @@ persist target-population and uncertainty-role metadata. OPT-013 later verified 
 July 2022 Advisen feed release and 2012–2021 study window; this temporal metadata removes
 that warning without changing the still-blocked frequency allocation.
 
-Provider repeatability is also uncharacterized. The current convergence experiment varies
-retrieval/decomposition resolution, while Anthropic and the OpenAI-compatible transport do
-not expose a configured sampling seed. Until identical-input repeats exist, sampling
-variance cannot be separated from resolution sensitivity. OPT-004 now freezes the initial
-identical-input protocol, so its remaining activation gate is explicit provider budget and
-predeclared subject identities rather than protocol design.
+OPT-004 now provides a bounded initial provider-repeatability characterization. Across three
+byte-identical standard-profile observations per frozen subject, finding 295 was confirmed
+three times and finding 300 was killed three times; every pairwise citation-set Jaccard was
+1.0. Confidence varied only for finding 295 (range 0.05). The provider exposes no sampling
+seed, and two subjects do not establish universal stability, but this separates an observed
+identical-input baseline from the existing retrieval-resolution experiment.
 
 ## Required order before tuning
 
