@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-005",
+  "attempted_at": "2026-08-01T20:25:57-04:00",
+  "status": "incomplete-budget-safe-stop",
+  "scope": "lightweight calibration fixture only; protected pre/post pair not started",
+  "authorization": {
+    "maximum_calls": 75,
+    "maximum_provider_reported_tokens": 250000,
+    "maximum_usd": 2.0
+  },
+  "run": {
+    "terminal_run_id": 6,
+    "source": "tests/fixtures/uat_lightweight_app/snapshot",
+    "repo_id": "snapshot",
+    "commit": "6c26c595e143",
+    "status": "completed",
+    "calls": 27,
+    "input_tokens": 93115,
+    "output_tokens": 7062,
+    "cache_read_tokens": 0,
+    "cache_write_tokens": 0,
+    "unknown_usage_calls": 0,
+    "known_tokens": 100177,
+    "calculated_cost_usd": 0.642125,
+    "price_snapshot": "opt-006-provider-pricing-2026-08-01.json"
+  },
+  "coverage": {
+    "source_files": 12,
+    "planned_regions": 6,
+    "omitted_regions": 6,
+    "new_detection_calls": 18,
+    "reused_detection_calls_after_local_recovery": 18,
+    "findings": 115,
+    "falsification_confirmed": 3,
+    "falsification_killed": 0,
+    "falsification_unresolved": 0,
+    "falsification_deferred": 111
+  },
+  "local_correction": {
+    "symptom": "Completed scanner evidence contained a datetime that the stage-summary JSON writer could not serialize.",
+    "effect": "The first process stopped after paid detection with run/stage rows still marked running.",
+    "recovery": "Normalize Pydantic models and datetimes to JSON-safe values before persistence, then resume the same source without --fresh.",
+    "checkpoint_result": "All 18 completed LLM detection calls were reused; zero detection calls were repeated."
+  },
+  "qualification": {
+    "opt_005_ready": false,
+    "reason": "The terminal logical scan still has 111 deferred findings; the usage-calibration contract requires zero deferred findings.",
+    "next_gate": "Approve a revised bounded continuation budget after reviewing this attempt. Do not start the protected pair first."
+  }
+}

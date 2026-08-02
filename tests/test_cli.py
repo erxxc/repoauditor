@@ -6,6 +6,7 @@ the review list/decide surface are exercised exactly as a user would.
 from __future__ import annotations
 
 import json
+from datetime import datetime
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -680,6 +681,7 @@ def test_standalone_detect_persists_region_plan_and_scanner_coverage(
             "target_count_basis": "scanner-reported-files",
             "version": "1.170.0",
             "configuration": "pinned-test",
+            "advisory_database_checked_at": datetime(2026, 8, 1, 12, 30),
             "failure_detail": None,
         }],
         context_expansions=[{
@@ -708,6 +710,9 @@ def test_standalone_detect_persists_region_plan_and_scanner_coverage(
     assert "explicit fallback" in stage.summary["scanner_failures"]["osv-scanner"]
     assert stage.summary["scanner_executions"][0]["target_count"] == 12
     assert stage.summary["scanner_executions"][0]["output_valid"] is True
+    assert stage.summary["scanner_executions"][0]["advisory_database_checked_at"] == (
+        "2026-08-01T12:30:00"
+    )
     assert stage.summary["context_expansions"][0]["related"][0]["file"] == (
         "storefront/component_b.py"
     )

@@ -385,6 +385,19 @@ def _map_run_metadata(value, config):
     )
 
 
+def _json_safe_metadata(value):
+    """Convert stage evidence to JSON values before durable summary persistence."""
+    if hasattr(value, "model_dump"):
+        return value.model_dump(mode="json")
+    if isinstance(value, datetime):
+        return value.isoformat()
+    if isinstance(value, dict):
+        return {key: _json_safe_metadata(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_json_safe_metadata(item) for item in value]
+    return value
+
+
 def _detect_run_metadata(value, config, scanner_coverage=None):
     projection = getattr(value, "projection", None)
     source_counts = getattr(value, "source_counts", {}) or {}
@@ -403,8 +416,12 @@ def _detect_run_metadata(value, config, scanner_coverage=None):
         "semgrep_status": getattr(value, "semgrep_status", None),
         "scanner_statuses": getattr(value, "scanner_statuses", {}),
         "scanner_failures": getattr(value, "scanner_failures", {}),
-        "scanner_executions": getattr(value, "scanner_executions", []),
-        "context_expansions": getattr(value, "context_expansions", []),
+        "scanner_executions": _json_safe_metadata(
+            getattr(value, "scanner_executions", [])
+        ),
+        "context_expansions": _json_safe_metadata(
+            getattr(value, "context_expansions", [])
+        ),
         "llm": {
             "provider": config.llm.provider,
             "model": config.model.name,
