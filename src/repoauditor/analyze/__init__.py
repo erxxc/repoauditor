@@ -31,6 +31,7 @@ from .risk_quant import (
     tornado_sensitivity,
 )
 from .threat_intel import load_threat_intel, refresh_threat_intel, render_threat_intel
+from .provider_cost import calculate_provider_cost, render_provider_cost
 
 __all__ = [
     "corroborate",
@@ -56,4 +57,6 @@ __all__ = [
     "load_threat_intel",
     "refresh_threat_intel",
     "render_threat_intel",
+    "calculate_provider_cost",
+    "render_provider_cost",
 ]

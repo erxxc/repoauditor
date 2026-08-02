@@ -583,7 +583,10 @@ Successful provider responses record authoritative input, output, cache, and lat
 metadata per attempt. `repoauditor runs show <run-id>` reports the run totals. If a provider
 failure does not expose usage metadata, the attempt is still counted and is explicitly
 reported as `unknown-usage-calls`; repoauditor never invents a token value. Dollar cost
-remains unavailable because no dated provider/model price table is persisted.
+uses the frozen 2026-08-01 Anthropic price snapshot only for exact standard-global
+`claude-opus-4-8` usage. Unknown usage, unlisted providers/models, cache writes without a
+recorded TTL, and alternate pricing modes remain visibly unavailable; taxes and negotiated
+discounts are excluded.
 
 Two `[llm]` circuit breakers prevent any CLI-triggered provider operation from issuing
 calls indefinitely:

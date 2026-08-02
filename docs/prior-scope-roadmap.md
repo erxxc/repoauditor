@@ -1,7 +1,8 @@
 # Prior-scope roadmap
 
-Status: applicability inventory, persisted scope/uncertainty metadata, and dated cached
-EPSS/KEV evidence are implemented; quantitative-model changes remain gated.
+Status: applicability inventory, exact source temporal metadata, persisted scope/uncertainty
+metadata, and dated cached EPSS/KEV evidence are implemented; quantitative-model changes
+remain gated.
 
 Open enrichment work is post-MVP and tracked in
 [`optimizations/optimization-register.md`](optimizations/optimization-register.md). The
@@ -38,9 +39,11 @@ Before expanding their scope, preserve these gates:
 
 The configured priors now persist target-population descriptions and separate the aleatory
 representation used by the simulation from epistemic limitations that remain unquantified.
-The cited edition is not relabeled as an effective date or data vintage: those fields remain
-null and `quant-audit` reports that missing temporal scope explicitly. This metadata change
-does not alter either configured distribution.
+IRIS 2022's methodology identifies the July 2022 Advisen data-feed release and its exact
+2012–2021 study window. The configured magnitude and frequency priors therefore record
+`2022-07` as the effective source snapshot and `2012-01-01/2021-12-31` as data vintage.
+These are source-exact metadata, not values inferred from the edition, and they do not alter
+either configured distribution.
 
 OPT-012 adds explicit `repoauditor threat-enrich <repo-id> --refresh` acquisition from FIRST
 EPSS and CISA KEV. Quantification reads the repo-bound cache offline and labels it current,
@@ -48,7 +51,6 @@ stale, missing, or invalid. These signals remain informational: they do not modi
 frequency, magnitude, severity, or deal-risk weight while the frequency-allocation defect is
 unresolved.
 
-Remaining implementation order is: establish exact temporal metadata from a verified source
-or source dataset, establish adequate real-data coverage, run prior-predictive and held-out
+Remaining implementation order is: establish adequate real-data coverage, run prior-predictive and held-out
 checks, then introduce versioned hierarchical priors behind an explicit compatibility
 boundary.

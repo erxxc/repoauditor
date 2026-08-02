@@ -40,6 +40,9 @@ risk-acceptance use.
 
 ## Applicability gaps
 
+- Both IRIS priors now record the source-exact July 2022 Advisen feed snapshot and
+  2012–2021 study window. This removes the temporal-metadata warning but does not broaden
+  the population or resolve the frequency structure.
 - The frequency population is organizations over $10M revenue. An unknown revenue band is
   reported as unverified; a configured band below $10M is reported as a mismatch.
 - The magnitude distribution is all-event and all-sector. It is not evidence for different

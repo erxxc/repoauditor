@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-006",
+  "checked_at": "2026-08-01",
+  "currency": "USD",
+  "unit": "per_million_tokens",
+  "source": "https://platform.claude.com/docs/en/about-claude/pricing",
+  "source_authority": "Anthropic Claude Platform documentation",
+  "transport_scope": "Anthropic first-party Claude API, standard global routing, non-batch, non-fast mode",
+  "prices": [
+    {
+      "provider": "anthropic",
+      "model": "claude-opus-4-8",
+      "input": 5.0,
+      "output": 25.0,
+      "cache_read": 0.5,
+      "cache_write_5m": 6.25,
+      "cache_write_1h": 10.0
+    }
+  ],
+  "fail_closed": [
+    "usage_available=false",
+    "provider/model absent from this snapshot",
+    "cache-write tokens without a recorded 5-minute or 1-hour TTL",
+    "nonstandard speed, batch, residency, or partner-platform pricing"
+  ],
+  "exclusions": "Displayed estimates exclude taxes, negotiated discounts, and non-token provider features. No missing token count or pricing modifier is estimated."
+}

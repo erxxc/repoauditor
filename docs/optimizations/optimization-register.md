@@ -5,23 +5,21 @@ Status: authoritative post-MVP work list as of 2026-08-01. POC acceptance is com
 Current execution priorities
 
 OPT-035 publishes the canonical machine-readable lifecycle ledger at
-[`optimization-status.json`](optimization-status.json). It records 25 closed and 10 open
+[`optimization-status.json`](optimization-status.json). It records 27 closed and 8 open
 items. Every open item remains subject to its activation gate; priority does not waive it.
 
 | Priority | Open item | Gate |
 |---:|---|---|
-| 1 | OPT-006 — provider dollar-cost reporting | source |
-| 2 | OPT-005 — same-store usage calibration | budget |
-| 3 | OPT-002 — family-aware bootstrap ranges | data |
-| 4 | OPT-013 — prior temporal metadata and applicability | source |
-| 5 | OPT-003 — temporal validation | data |
-| 6 | OPT-009 — novelty prioritization | data |
-| 7 | OPT-004 — provider repeatability | budget and protocol |
-| 8 | OPT-011 — organization-frequency allocation | methodology |
-| 9 | OPT-014 — predictive checks and portfolio modeling | data |
-| 10 | OPT-010 — agentic falsification | safety and evaluation |
+| 1 | OPT-005 — same-store usage calibration | budget |
+| 2 | OPT-002 — family-aware bootstrap ranges | data |
+| 3 | OPT-003 — temporal validation | data |
+| 4 | OPT-009 — novelty prioritization | data |
+| 5 | OPT-004 — provider repeatability | budget and protocol |
+| 6 | OPT-011 — organization-frequency allocation | methodology |
+| 7 | OPT-014 — predictive checks and portfolio modeling | data |
+| 8 | OPT-010 — agentic falsification | safety and evaluation |
 
-OPT-001, OPT-007, OPT-008, OPT-012, and OPT-015 through OPT-035 are closed at their approved scope. Optional
+OPT-001, OPT-006 through OPT-008, OPT-012, OPT-013, and OPT-015 through OPT-035 are closed at their approved scope. Optional
 expansion of a closed bounded scope must be proposed as new work rather than silently
 reopening its lifecycle state.
 
@@ -118,9 +116,14 @@ II. Operations and cost
       MVP closure or if current hard ceilings block the POC walkthrough — DoD impact: none
       while limits remain fail-closed.
 
-   B. OPT-006 — Provider dollar-cost reporting — deferred/source-gated — owner: reliability
-      engineering — source: `../project-priorities.md` — activate only with dated,
-      versioned provider/model pricing — DoD impact: none.
+   B. OPT-006 — Provider dollar-cost reporting — implemented — owner: reliability
+      engineering — source: `../project-priorities.md` and the frozen
+      [`2026-08-01 pricing snapshot`](opt-006-provider-pricing-2026-08-01.json). Anthropic's
+      official model-specific table supplies standard global Claude API input, output, and
+      cache-read prices for the configured `claude-opus-4-8`. Run and stage projections
+      price only authoritative recorded tokens. Unknown usage, unlisted providers/models,
+      cache writes without a recorded TTL, and alternate pricing modes remain visibly
+      unavailable; taxes and negotiated discounts are excluded. Implemented — DoD impact: none.
 
 III. Detection and falsification depth
 
@@ -185,9 +188,12 @@ IV. Quantitative enrichment
       risk, avoiding double counting while OPT-011 remains methodology-gated. Implemented —
       DoD impact: none.
 
-   C. OPT-013 — Prior temporal metadata and population applicability — deferred/source-gated
-      — owner: quantitative-methodology — source: `../prior-scope-roadmap.md` — activate
-      after exact source metadata is verified — DoD impact: none beyond current disclosure.
+   C. OPT-013 — Prior temporal metadata and population applicability — implemented — owner:
+      quantitative-methodology — source: `../prior-scope-roadmap.md` and IRIS 2022's
+      Methodology and Firmographics section. Both configured IRIS priors now record the
+      report's July 2022 Advisen feed release as effective date and its exact 2012–2021
+      study window as data vintage. Population and epistemic limitations remain unchanged;
+      no distribution input or quantitative result changed. Implemented — DoD impact: none.
 
    D. OPT-014 — Prior-predictive checks, held-out validation, hierarchical priors,
       backtesting, and portfolio optimization — deferred/data-gated — owner:
