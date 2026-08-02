@@ -18,7 +18,8 @@ evidence exists.
    deferred batches carry durable parent links, and linked batches are aggregated as one
    logical scan.
    Calls whose failure response omits usage metadata remain counted and explicitly unknown.
-   Dollar cost stays unavailable until a dated, provider/model-specific price source exists.
+   OPT-006 now calculates standard first-party `claude-opus-4-8` token cost from a dated
+   Anthropic price snapshot. Unsupported pricing modifiers and missing usage remain unavailable.
 2. **Protected evaluation cohort — partial.** The frozen serialize-javascript pair remains
    outside prompt development and training, but one pair is not a broad real-world cohort.
 3. **Baseline comparison — open/paid.** Compare the current bounded falsifier against the

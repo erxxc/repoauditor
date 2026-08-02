@@ -137,22 +137,25 @@ priorities here.
 
 ## P4 — quantitative enrichment
 
-- [ ] Add dated, cached EPSS and KEV enrichment only for real CVE-backed findings. Define
+- [x] Add dated, cached EPSS and KEV enrichment only for real CVE-backed findings. Define
   stale/offline behavior and retain the labeled industry fallback when no signal exists.
 - [~] Audit EPSS, KEV, exposure, control strength, loss scale, and baseline applicability
   for double counting. The read-only `quant-audit` now exposes scope gaps and confirmed that
   the organization-level IRIS frequency baseline is repeated per finding within a scenario.
   The model correction is blocked pending a sourced allocation/decomposition decision.
 - [x] Inventory current prior applicability through the read-only `quant-audit`.
-- [ ] Continue the prior-scope roadmap: capture cohort metadata/effective dates, establish
-  data coverage, run prior-predictive/held-out checks, then consider versioned hierarchical
+- [~] Continue the prior-scope roadmap: exact July 2022 feed metadata and the 2012–2021
+  data vintage are now recorded. Establish data coverage, run prior-predictive/held-out
+  checks, then consider versioned hierarchical
   priors. Explicitly separate aleatory variability from epistemic uncertainty. Never
   fabricate subgroup scaling.
 
 ## P5 — gated later capabilities
 
-- [ ] Add dollar-cost reporting only with a dated, versioned provider/model price source;
-  keep authoritative token observations separate from calculated cost.
+- [x] Add dollar-cost reporting only with a dated, versioned provider/model price source.
+  The 2026-08-01 Anthropic snapshot prices exact `claude-opus-4-8` usage while unknown
+  usage, models, providers, and pricing modifiers remain unavailable. Authoritative token
+  observations stay separate from calculated cost.
 - [ ] Keep agentic falsification opt-in and deferred until every escalation gate is met:
   protected evaluation, baseline comparison, recall safety, cohort breakdowns, read-only
   tools, and independent deterministic certificate verification.
@@ -184,8 +187,8 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
    qualification remains separate and deferred.
 4. [x] Persist prior target-population and temporal-scope fields without changing
    distributions. Aleatory representations and unquantified epistemic limitations are
-   separate. Exact effective date/data vintage remain null—and visibly warned by
-   `quant-audit`—because the configured citation does not establish them.
+   separate. OPT-013 subsequently verified the report methodology and records the July 2022
+   Advisen feed release plus exact 2012–2021 study window without changing distributions.
 5. [x] Persist analyst-declared materiality and enforce a matching review by a second,
    distinct analyst before a material disposition enters classifier training. Materiality
    is never inferred; pending and disputed reviews remain visible in `triage-collection`.
@@ -368,7 +371,7 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
   or deployment claim.
 - [x] Publish a canonical optimization lifecycle ledger. OPT-035 records all 35 numbered
   items with explicit open/closed state, activation gate, and a contiguous priority for the
-  12 open items. Consistency tests bind the ledger totals, IDs, states, and priorities to the
+  remaining open items. Consistency tests bind the ledger totals, IDs, states, and priorities to the
   authoritative optimization register. Ledger:
   `docs/optimizations/optimization-status.json`.
 - [x] Expand deterministic claim certificates for one evidence-qualified Ruby unsafe-
@@ -510,7 +513,7 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
    retrieval-resolution sensitivity.
 3. Add dated/cached EPSS and KEV enrichment only with fixed stale/offline behavior and
    real-CVE-only matching.
-4. Add provider dollar cost only from a dated, versioned provider/model price source.
+4. [x] Add provider dollar cost only from a dated, versioned provider/model price source.
 5. Consider agentic falsification only after every gate in
    [agentic-escalation-gate.md](agentic-escalation-gate.md) is satisfied.
 

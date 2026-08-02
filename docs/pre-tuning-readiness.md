@@ -36,9 +36,10 @@ or represented as that calibration cohort.
 
 Quantitative tuning is independently blocked. `quant-audit` correctly identifies that the
 IRIS organization-level annual frequency baseline is repeated per finding and summed within
-a scenario. No cited source currently supports that allocation. The configured priors now
-persist target-population and uncertainty-role metadata, but exact effective dates and data
-vintages remain unknown and visibly warned rather than fabricated.
+a scenario. No cited source currently supports that allocation. The configured priors
+persist target-population and uncertainty-role metadata. OPT-013 later verified the source's
+July 2022 Advisen feed release and 2012–2021 study window; this temporal metadata removes
+that warning without changing the still-blocked frequency allocation.
 
 Provider repeatability is also uncharacterized. The current convergence experiment varies
 retrieval/decomposition resolution, while Anthropic and the OpenAI-compatible transport do

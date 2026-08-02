@@ -435,6 +435,7 @@ def test_run_stops_cleanly_when_no_review_is_needed(tmp_config, monkeypatch):
     assert '"model_usage": "not recorded"' in detail.stdout
     assert "model usage: calls=1; processed-tokens=130" in detail.stdout
     assert "unknown-usage-calls=0" in detail.stdout
+    assert "provider cost: unavailable (no dated price for anthropic/test-model)" in detail.stdout
 
 
 def test_run_points_back_to_bounded_queue_when_findings_are_deferred(

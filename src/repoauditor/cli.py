@@ -28,11 +28,13 @@ from pathlib import Path
 from . import __version__
 from .analyze import (
     audit_quantitative_inputs,
+    calculate_provider_cost,
     load_threat_intel,
     quantitative_disclosure,
     quantify_appendix,
     refresh_threat_intel,
     render_quant_audit,
+    render_provider_cost,
     render_threat_intel,
 )
 from .config import get_config
@@ -303,6 +305,11 @@ def _run_step(
             summary, artifacts = metadata(value)
             usage = db.summarize_model_usage(pipeline_id, config, stage=stage)
             summary["model_usage"] = usage if usage["calls"] else "not recorded"
+            rows = [
+                row for row in db.list_model_usage(config, pipeline_run_id=pipeline_id)
+                if row.stage == stage
+            ]
+            summary["provider_cost"] = calculate_provider_cost(rows).model_dump(mode="json")
             db.finish_stage_run(
                 pipeline_id,
                 stage,
@@ -2002,6 +2009,9 @@ def run(
     artifact_items.append(f"review-requests={len(requests)}")
     artifact_items.append(f"deferred-findings={len(deferred)}")
     usage_totals = db.summarize_model_usage(pipeline.id, config)
+    provider_cost = calculate_provider_cost(
+        db.list_model_usage(config, pipeline_run_id=pipeline.id)
+    )
     if usage_totals["calls"]:
         processed_tokens = (
             usage_totals["input_tokens"] + usage_totals["output_tokens"]
@@ -2014,6 +2024,7 @@ def run(
                 if usage_totals["unknown_usage_calls"] else ""
             )
         )
+        artifact_items.append("provider-cost=" + render_provider_cost(provider_cost))
     db.finish_pipeline_run(
         pipeline.id, RunStatus.COMPLETED, artifacts=artifact_paths, config=config
     )
@@ -2031,6 +2042,7 @@ def run(
             open_review_requests=len(requests), deferred_findings=len(deferred),
             artifacts=artifact_paths,
             model_usage=usage_totals if usage_totals["calls"] else "not recorded",
+            provider_cost=provider_cost.model_dump(mode="json"),
             elapsed_seconds=round(time.monotonic() - run_started, 3),
             next_command=next_command,
         ))
@@ -2274,6 +2286,12 @@ def runs_show(run_id: int = typer.Argument(..., help="Pipeline run id.")) -> Non
             f"unknown-usage-calls={usage['unknown_usage_calls']}; "
             f"provider-latency-ms={usage['latency_ms']}"
         )
+        typer.echo(
+            "provider cost: "
+            + render_provider_cost(calculate_provider_cost(
+                db.list_model_usage(config, pipeline_run_id=run_id)
+            ))
+        )
     else:
         typer.echo("model usage: not recorded")
     chain, chain_usage, _ = db.summarize_model_usage_chain(run_id, config)
@@ -2286,6 +2304,15 @@ def runs_show(run_id: int = typer.Argument(..., help="Pipeline run id.")) -> Non
             f"logical scan chain: runs={[run.id for run in chain]}; "
             f"calls={chain_usage['calls']}; processed-tokens={chain_processed}; "
             f"unknown-usage-calls={chain_usage['unknown_usage_calls']}"
+        )
+        chain_rows = [
+            row
+            for linked_run in chain
+            for row in db.list_model_usage(config, pipeline_run_id=linked_run.id)
+        ]
+        typer.echo(
+            "logical scan cost: "
+            + render_provider_cost(calculate_provider_cost(chain_rows))
         )
     if item.artifacts:
         typer.echo("artifacts: " + ", ".join(item.artifacts))

@@ -1,9 +1,7 @@
 # priors.yaml — exact, auditable distribution inputs for analyze/risk_quant.py.
 #
-# EPSS and KEV do not appear as proxy bands here. No live/cached enrichment exists yet,
-# so every finding uses the explicitly labelled industry baseline below. A future CVE
-# enrichment layer may add actual, dated EPSS probabilities and KEV membership, but must
-# never infer either from severity.
+# EPSS and KEV do not appear as proxy bands here. Cached real-CVE enrichment is
+# informational only and never changes the explicitly labelled industry baseline below.
 
 triage:
   global_actionable_prior:
@@ -24,10 +22,10 @@ magnitude:
     transformation: "Fit Lognormal(mu,sigma) with published median=exp(mu) and published p95=exp(mu+z_0.95*sigma); model-implied p05=exp(mu-z_0.95*sigma)."
     detail: "All-event, all-sector baseline: 1,893 publicly recorded loss events; amounts inflation-adjusted by the study. It is not category- or organization-specific."
     target_population: "Publicly recorded loss events across all represented sectors; not a category-, organization-, geography-, or architecture-specific cohort."
-    effective_date:
-    data_vintage:
+    effective_date: "2022-07"
+    data_vintage: "2012-01-01/2021-12-31"
     aleatory_representation: "Lognormal event-to-event loss variability fitted to the published median and p95."
-    epistemic_status: "Applicability and parameter uncertainty are not quantified by this configuration; edition is not treated as an effective date or data vintage."
+    epistemic_status: "Applicability and parameter uncertainty are not quantified by this configuration. Effective date records the cited July 2022 Advisen feed release; data vintage records the report's exact 2012-2021 study window."
 
 frequency:
   industry_baseline:
@@ -38,9 +36,9 @@ frequency:
     locator: "Figure 4: Upper-bound observed and modeled annualized loss event frequency, report page 9 (PDF page 7)"
     url: "https://www.cyentia.com/wp-content/uploads/IRIS-2022_Cyentia.pdf"
     transformation: "Conditional Poisson rate lambda=-ln(1-p), using published modeled P(N>=1)=0.129 for a one-year horizon."
-    detail: "All-event industry baseline for organizations over $10M revenue; upper-bound model. Used because no organization-specific frequency or real CVE EPSS/KEV enrichment exists."
+    detail: "All-event industry baseline for organizations over $10M revenue; upper-bound model. Used because no organization-specific frequency evidence exists; cached CVE EPSS/KEV signals remain informational."
     target_population: "Organizations over $10M revenue in the all-event industry baseline; not organization-, geography-, sector-, or architecture-specific."
-    effective_date:
-    data_vintage:
+    effective_date: "2022-07"
+    data_vintage: "2012-01-01/2021-12-31"
     aleatory_representation: "Poisson trial-to-trial event-count variability using the transformed annual probability."
-    epistemic_status: "Applicability and rate-estimation uncertainty are not quantified by this configuration; edition is not treated as an effective date or data vintage."
+    epistemic_status: "Applicability and rate-estimation uncertainty are not quantified by this configuration. Effective date records the cited July 2022 Advisen feed release; data vintage records the report's exact 2012-2021 study window."
