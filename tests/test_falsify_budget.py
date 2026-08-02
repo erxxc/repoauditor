@@ -13,7 +13,11 @@ from pathlib import Path
 
 from repoauditor.detect import run_ensemble
 from repoauditor.falsify import challenge
-from repoauditor.falsify.challenger import _budget_order, _budget_partition
+from repoauditor.falsify.challenger import (
+    _budget_order,
+    _budget_partition,
+    _grouped_queue,
+)
 from repoauditor.ingest import ingest_repo
 from repoauditor.map import recover_architecture
 from repoauditor.llm import model_usage_scope
@@ -209,3 +213,53 @@ def test_single_slot_budget_retains_existing_best_first_priority():
 
     assert [finding.id for finding in selected] == [1]
     assert [finding.id for finding in deferred] == [2]
+
+
+def test_grouped_queue_uses_one_priority_aware_representative_per_issue():
+    lower = _candidate(1, tool="sast")
+    lower.identity_key = "advisory:pkg:CVE-2026-0001"
+    higher = _candidate(2, tool="sca")
+    higher.identity_key = lower.identity_key
+    distinct = _candidate(3, tool="sca")
+    distinct.identity_key = "advisory:pkg:CVE-2026-0002"
+    triage = {
+        2: TriageResult(
+            finding_id=2, p_actionable=0.95, rank=1, model_name="xgboost"
+        )
+    }
+
+    groups = _grouped_queue([lower, distinct, higher], triage)
+
+    assert [representative.id for representative, _members in groups] == [2, 3]
+    assert {member.id for member in groups[0][1]} == {1, 2}
+
+
+def test_one_challenge_propagates_to_conservative_duplicate_group(
+    tmp_config, scripted_llm, stub_deterministic_tools
+):
+    cfg = _budget_config(tmp_config, 1)
+    db.init_db(cfg)
+    repo_id = _detect(cfg, scripted_llm)
+    original = db.list_findings(repo_id, cfg)[0]
+    duplicate = original.model_copy(update={
+        "id": None,
+        "source_lens": "supply_chain",
+        "source_tool": None,
+        "confidence": max(0.0, original.confidence - 0.1),
+    })
+    duplicate_id = db.insert_finding(duplicate, cfg)
+    _persist_triage_result(TriageResult(
+        finding_id=original.id, p_actionable=0.99, rank=1, model_name="xgboost"
+    ), repo_id, cfg)
+
+    result = challenge(repo_id, cfg, llm=scripted_llm)
+
+    challenged_id = next(iter(db.finding_ids_with_iterations(repo_id, cfg)))
+    grouped_id = duplicate_id if challenged_id == original.id else original.id
+    grouped = db.get_finding(grouped_id, cfg)
+    assert len(result) == 1
+    assert result.pending_count == 4
+    assert result.pending_group_count == 3
+    assert grouped.falsification_status is not FalsificationStatus.DEFERRED
+    assert f"representative finding #{challenged_id}" in grouped.falsification_reason
+    assert db.list_falsification_iterations(grouped_id, cfg) == []

@@ -127,7 +127,12 @@ II. Operations and cost
       findings, so it does not qualify and the protected pair was not started. A stage-summary
       datetime serialization defect surfaced after paid detection; the correction resumed
       the same run and reused all 18 completed detection calls without rebilling them.
-      Continuation requires a revised explicit budget — DoD impact: none.
+      An offline [`queue replay`](opt-005-falsification-queue-replay-2026-08-02.json) then
+      found 60 conservative issue groups across those 111 rows and removed 51 redundant
+      future challenges while retaining every finding and explicit propagation provenance.
+      Advisory namespaces remain separate where detector alias evidence was not retained.
+      The descriptive continuation projection falls from 222 to 120 calls; it is not an
+      authorization. Continuation requires a revised explicit budget — DoD impact: none.
 
    B. OPT-006 — Provider dollar-cost reporting — implemented — owner: reliability
       engineering — source: `../project-priorities.md` and the frozen

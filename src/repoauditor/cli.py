@@ -754,9 +754,10 @@ def _falsify_stage(repo_id: str, config):
     )
     if result.remaining_call_capacity is not None and not _quiet_enabled.get():
         typer.echo(
-            f"  cost preflight: pending={result.pending_count}; "
-            f"minimum={result.minimum_calls_per_finding} calls/finding; "
-            f"reserved={result.reserved_calls_per_finding} including iteration/retry envelope; "
+            f"  cost preflight: pending-findings={result.pending_count}; "
+            f"matched-issue-groups={result.pending_group_count}; "
+            f"minimum={result.minimum_calls_per_finding} calls/group; "
+            f"reserved={result.reserved_calls_per_finding} per group including iteration/retry envelope; "
             f"capacity-at-start={result.remaining_call_capacity}"
         )
     return result

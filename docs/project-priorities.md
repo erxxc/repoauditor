@@ -513,7 +513,10 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
 1. Produce the formal three-run usage comparison in one persistent store; do not merge
    temporary databases or raise limits automatically. The 2026-08-01 lightweight attempt
    stayed within its approved envelope but retained 111 deferred findings, so it is not a
-   qualifying terminal run and the protected pair remains unstarted.
+   qualifying terminal run and the protected pair remains unstarted. The 2026-08-02 offline
+   queue correction reduces those rows to 60 conservative issue groups (51 redundant
+   challenges removed) without dropping findings or inferring unretained advisory aliases.
+   Its 120-call linear projection is descriptive only; no provider continuation is approved.
 2. [~] Characterize repeatability on identical inputs. The protocol is frozen; paid
    observations remain budget-gated.
 3. Add dated/cached EPSS and KEV enrichment only with fixed stale/offline behavior and
