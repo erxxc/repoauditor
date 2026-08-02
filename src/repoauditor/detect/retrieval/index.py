@@ -26,6 +26,8 @@ benefit from the new languages without any change to their calling code.
 from __future__ import annotations
 
 import ast
+import hashlib
+import json
 import logging
 import os
 import re
@@ -140,6 +142,30 @@ class RetrievalIndex:
             self._add(infos)
         self._built = True
         return self
+
+    def content_digest(self) -> str:
+        """Digest the exact deterministic index content used by downstream retrieval."""
+        if not self._built:
+            raise RuntimeError("retrieval index must be built before it can be digested")
+        payload = {
+            "files": sorted(self._file_texts.items()),
+            "functions": sorted(
+                (
+                    item.symbol,
+                    item.file,
+                    item.line_start,
+                    item.line_end,
+                    item.source,
+                    sorted(item.calls),
+                    item.language,
+                )
+                for item in self._functions
+            ),
+        }
+        encoded = json.dumps(
+            payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+        ).encode("utf-8")
+        return "sha256:" + hashlib.sha256(encoded).hexdigest()
 
     @property
     def snapshot_path(self) -> Path | None:

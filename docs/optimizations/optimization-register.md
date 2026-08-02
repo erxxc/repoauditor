@@ -113,8 +113,11 @@ I. Evaluation and classifier maturity
       configuration digests prevent resolution or corpus changes from being mislabeled as
       provider variance. Verdict, citation, confidence, evidence size, tokens, latency, and
       dated cost are descriptive; no success threshold or automatic production change is
-      allowed. Execution requires an explicit calls/tokens/USD budget and frozen subject
-      receipt. Protocol implemented; paid observations not run — DoD impact: none.
+      allowed. The [`execution receipt`](opt-004-repeatability-execution-receipt-2026-08-02.json)
+      freezes findings 295/300, their shared snapshot, architecture and retrieval digests,
+      and a proposed aggregate ceiling of 72 calls, 250,000 provider-reported tokens, and
+      $6.25. Execution still requires explicit approval of that complete receipt. Protocol
+      and offline preparation implemented; paid observations not run — DoD impact: none.
 
 II. Operations and cost
 

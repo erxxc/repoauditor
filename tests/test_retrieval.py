@@ -36,6 +36,17 @@ def _index(tmp_path: Path) -> RetrievalIndex:
     return RetrievalIndex().build(tmp_path)
 
 
+def test_content_digest_is_stable_and_changes_with_indexed_source(tmp_path):
+    first = _index(tmp_path).content_digest()
+    second = RetrievalIndex().build(tmp_path).content_digest()
+
+    assert first == second
+    assert first.startswith("sha256:")
+
+    (tmp_path / "app.py").write_text(SOURCE + "\ndef newly_added():\n    return run_query('1')\n")
+    assert RetrievalIndex().build(tmp_path).content_digest() != first
+
+
 def test_find_callers(tmp_path):
     index = _index(tmp_path)
     callers = index.find_callers("run_query")

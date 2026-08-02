@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-004",
+  "frozen_at": "2026-08-02",
+  "status": "inputs-frozen-authorization-pending",
+  "protocol": "opt-004-repeatability-protocol-2026-08-01.json",
+  "repository": {
+    "repo_id": "acquisition-anchor-owasp-juice-shop",
+    "source": "tests/fixtures/anchor_owasp_juice_shop/snapshot",
+    "snapshot_commit": "22f9c32fed78"
+  },
+  "subjects": [
+    {
+      "finding_id": 295,
+      "human_disposition": "confirmed_actionable",
+      "stratum": "human-confirmed actionable finding",
+      "finding_row_digest": "sha256:acd9805de7fbdfc2f52773e57d1087e0d8d05761e65fce84b7cb10efcfeff756"
+    },
+    {
+      "finding_id": 300,
+      "human_disposition": "tool_incorrect",
+      "stratum": "human-decided non-actionable finding",
+      "finding_row_digest": "sha256:bb783646c6798490b6100240dd07e7c7c7f7179f0124d4e827b817971fcae5ce"
+    }
+  ],
+  "held_constant_digests": {
+    "architecture_artifact": "sha256:736b44c73075af15862d6d7f45e41d116a4dc998792ccf9c4dcbb9dba4426742",
+    "retrieval_index": "sha256:969325302d3e5fa63a1bb8c12953022d24495e081877a006629a93f05b2794cf"
+  },
+  "instrument": {
+    "provider": "anthropic",
+    "model": "claude-opus-4-8",
+    "profile": "standard",
+    "max_iterations": 2,
+    "minimum_iterations": 2,
+    "self_critique": true,
+    "repetitions_per_subject": 3,
+    "observations": 6,
+    "minimum_logical_calls": 24,
+    "max_retries_per_logical_call": 2,
+    "persist_production_verdict": false,
+    "fresh_pipeline_run_per_observation": true
+  },
+  "proposed_aggregate_budget": {
+    "maximum_provider_calls": 72,
+    "maximum_provider_reported_tokens": 250000,
+    "maximum_usd": 6.25,
+    "usd_basis": "Worst-case output-token price at the frozen 250,000-token ceiling using the dated OPT-006 Claude Opus 4.8 standard rate; actual recorded input tokens are cheaper.",
+    "authorization_granted": false
+  },
+  "execution_guard": {
+    "before_each_observation": "Recompute every finding, architecture, and retrieval digest; stop on any mismatch.",
+    "usage": "Retain authoritative provider usage per fresh observation and stop before another observation when an aggregate ceiling is exhausted.",
+    "mutation": "Do not persist production falsification verdicts or iteration artifacts.",
+    "partial_result": "Retain and report any completed observations; never reconstruct or silently rerun them."
+  }
+}
