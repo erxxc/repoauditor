@@ -121,7 +121,13 @@ II. Operations and cost
    A. OPT-005 — Formal same-store three-run usage calibration — deferred/paid — owner:
       reliability engineering — source: `../offline-readiness-runbook.md` — activate after
       MVP closure or if current hard ceilings block the POC walkthrough — DoD impact: none
-      while limits remain fail-closed.
+      while limits remain fail-closed. The first newly authorized
+      [`lightweight attempt`](opt-005-lightweight-attempt-2026-08-01.json) stopped safely at
+      27 calls, 100,177 provider-reported tokens, and $0.642125. It retained 111 deferred
+      findings, so it does not qualify and the protected pair was not started. A stage-summary
+      datetime serialization defect surfaced after paid detection; the correction resumed
+      the same run and reused all 18 completed detection calls without rebilling them.
+      Continuation requires a revised explicit budget — DoD impact: none.
 
    B. OPT-006 — Provider dollar-cost reporting — implemented — owner: reliability
       engineering — source: `../project-priorities.md` and the frozen

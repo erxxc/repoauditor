@@ -511,7 +511,9 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
 ### D — paid/network deferred
 
 1. Produce the formal three-run usage comparison in one persistent store; do not merge
-   temporary databases or raise limits automatically.
+   temporary databases or raise limits automatically. The 2026-08-01 lightweight attempt
+   stayed within its approved envelope but retained 111 deferred findings, so it is not a
+   qualifying terminal run and the protected pair remains unstarted.
 2. [~] Characterize repeatability on identical inputs. The protocol is frozen; paid
    observations remain budget-gated.
 3. Add dated/cached EPSS and KEV enrichment only with fixed stale/offline behavior and
