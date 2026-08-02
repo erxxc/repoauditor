@@ -138,7 +138,11 @@ II. Operations and cost
       future challenges while retaining every finding and explicit propagation provenance.
       Advisory namespaces remain separate where detector alias evidence was not retained.
       The descriptive continuation projection falls from 222 to 120 calls; it is not an
-      authorization. Continuation requires a revised explicit budget — DoD impact: none.
+      authorization. A frozen [`lightweight continuation receipt`](opt-005-lightweight-continuation-receipt-2026-08-02.json)
+      proposes at most 16 linked batches, 180 aggregate calls, 600,000 provider-reported
+      tokens, and $5.00 while preserving the existing per-batch breakers and production
+      retry policy. It excludes the protected pair and remains authorization-pending — DoD
+      impact: none.
 
    B. OPT-006 — Provider dollar-cost reporting — implemented — owner: reliability
       engineering — source: `../project-priorities.md` and the frozen

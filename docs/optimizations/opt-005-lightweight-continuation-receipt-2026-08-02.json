@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-005",
+  "frozen_at": "2026-08-02",
+  "status": "lightweight-continuation-authorization-pending",
+  "scope": "Drain only the existing run-6 lightweight falsification backlog; do not start either protected snapshot.",
+  "parent_run": {
+    "pipeline_run_id": 6,
+    "source": "tests/fixtures/uat_lightweight_app/snapshot",
+    "repo_id": "snapshot",
+    "commit": "6c26c595e143"
+  },
+  "frozen_queue": {
+    "deferred_findings": 111,
+    "conservative_issue_groups": 60,
+    "finding_rows_digest": "sha256:46a741aa45201fe72819716de1eb6bf26f63c1024b0219e559c37c4164ab1911",
+    "ordered_groups_digest": "sha256:f34c59612972760549bd032ef7b7bb03f6fe8fd641e6a63f726cf94e511f1de8"
+  },
+  "observed_basis": {
+    "run_6_completed_falsification_findings": 3,
+    "calls": 6,
+    "provider_reported_tokens": 18589,
+    "calculated_cost_usd": 0.132065,
+    "opt_004_retry_count": 0,
+    "opt_004_calls": 24,
+    "opt_004_provider_reported_tokens": 136954,
+    "opt_004_calculated_cost_usd": 0.83227
+  },
+  "projection": {
+    "groups": 60,
+    "calls": 120,
+    "provider_reported_tokens": 371780,
+    "calculated_cost_usd": 2.6413,
+    "method": "Linear projection from the three completed run-6 production-profile falsification findings; descriptive, not guaranteed."
+  },
+  "proposed_aggregate_budget": {
+    "maximum_continuation_batches": 16,
+    "maximum_provider_calls": 180,
+    "maximum_provider_reported_tokens": 600000,
+    "maximum_usd": 5.0,
+    "existing_per_batch_call_ceiling": 75,
+    "existing_per_batch_token_ceiling": 250000,
+    "authorization_granted": false
+  },
+  "stop_conditions": [
+    "Any frozen repository, commit, finding-row, or ordered-group digest changes.",
+    "Any aggregate or existing per-batch ceiling is exhausted.",
+    "Any provider call lacks authoritative usage metadata or dated price support.",
+    "Any continuation batch fails; retain it and do not silently rebill it.",
+    "The lightweight backlog reaches zero; inspect terminal usage before separately authorizing the protected pair."
+  ],
+  "claim_boundary": {
+    "retry_policy": "The production max-iterations and retry configuration remains unchanged. The outer aggregate envelope stops excess consumption rather than weakening reliability behavior.",
+    "protected_pair": "This receipt does not authorize calls against independent_serialize_javascript_pre or independent_serialize_javascript_post.",
+    "qualification": "Even a successful lightweight continuation does not complete OPT-005; the protected pair and offline three-run comparison remain separately gated."
+  }
+}
