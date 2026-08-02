@@ -32,6 +32,7 @@ from ..config import Config, get_config
 from ..ingest import latest_snapshot
 from ..llm import LLMClient, get_llm_client, remaining_pipeline_call_capacity
 from ..map import ArchitectureMap, load_architecture
+from ..matching import find_matches, same_issue
 from ..store import db
 from ..store.models import (
     FalsificationIteration,
@@ -489,10 +490,12 @@ class FalsificationRun(list[FalsificationOutcome]):
         self, outcomes: list[FalsificationOutcome], deferred_count: int, *,
         pending_count: int = 0, minimum_calls_per_finding: int = 0,
         reserved_calls_per_finding: int = 0, remaining_call_capacity: int | None = None,
+        pending_group_count: int = 0,
     ):
         super().__init__(outcomes)
         self.deferred_count = deferred_count
         self.pending_count = pending_count
+        self.pending_group_count = pending_group_count
         self.minimum_calls_per_finding = minimum_calls_per_finding
         self.reserved_calls_per_finding = reserved_calls_per_finding
         self.remaining_call_capacity = remaining_call_capacity
@@ -509,7 +512,9 @@ def challenge(
 
     Repo-level entry point. Candidates are the findings the loop has not examined yet —
     `unresolved` (fresh from detect) or `deferred` (set aside by a prior run) with no
-    logged iterations. They are taken in **triage priority order** — highest
+    logged iterations. Conservative same-issue matches share one challenge, with every
+    member retaining its own persisted outcome. Group representatives are taken in
+    **triage priority order** — highest
     P(actionable) first — while a bounded run with at least two slots reserves configured
     capacity for untriaged findings (e.g. LLM-lens findings) so a large deterministic queue
     cannot starve novel work. Within the untriaged stream, severity then confidence orders
@@ -537,7 +542,11 @@ def challenge(
         f for f in db.list_findings(repo_id, config)
         if f.falsification_status in _PENDING_STATUSES and f.id not in already_examined
     ]
-    pending = _budget_order(pending, triage)
+    queue_groups = _grouped_queue(pending, triage)
+    representatives = [representative for representative, _members in queue_groups]
+    members_by_representative = {
+        representative.id: members for representative, members in queue_groups
+    }
 
     configured_budget = config.falsify.max_findings_per_run
     remaining_calls = remaining_pipeline_call_capacity(config)
@@ -560,11 +569,11 @@ def challenge(
     ]
     budget = min(budgets) if budgets else 0
     if budgets:
-        selected, deferred = _budget_partition(
-            pending, triage, budget, config.falsify.min_untriaged_per_run
+        selected, deferred_representatives = _budget_partition(
+            representatives, triage, budget, config.falsify.min_untriaged_per_run
         )
     else:
-        selected, deferred = pending, []
+        selected, deferred_representatives = representatives, []
 
     outcomes: list[FalsificationOutcome] = []
     for finding in selected:
@@ -578,19 +587,37 @@ def challenge(
             snapshot_commit=commit,
         )
         db.update_falsification(finding.id, outcome.status, outcome.rationale, config)
+        for member in members_by_representative[finding.id]:
+            if member.id == finding.id:
+                continue
+            decision = same_issue(finding, member)
+            basis = "+".join(decision.basis) if decision.matched else "transitive-group-match"
+            db.update_falsification(
+                member.id,
+                outcome.status,
+                f"Grouped falsification from representative finding #{finding.id} "
+                f"({basis}): {outcome.rationale}",
+                config,
+            )
         outcomes.append(outcome)
 
     # Everything past the budget cutoff is set aside explicitly (null-result logging),
     # not silently skipped, so review/analyze can tell "not yet examined" from a verdict.
+    deferred = [
+        member
+        for representative in deferred_representatives
+        for member in members_by_representative[representative.id]
+    ]
     for finding in deferred:
         db.update_falsification(
             finding.id, FalsificationStatus.DEFERRED,
-            f"Deferred: outside this falsify run's safe budget of {budget} finding(s); ranked "
-            f"below the cutoff and will be resumed by a later run.",
+            f"Deferred: outside this falsify run's safe budget of {budget} matched issue "
+            "group(s); ranked below the cutoff and will be resumed by a later run.",
             config,
         )
     return FalsificationRun(
         outcomes, len(deferred), pending_count=len(pending),
+        pending_group_count=len(queue_groups),
         minimum_calls_per_finding=minimum_calls,
         reserved_calls_per_finding=reserved_calls,
         remaining_call_capacity=remaining_calls,
@@ -598,6 +625,21 @@ def challenge(
 
 
 _PENDING_STATUSES = (FalsificationStatus.UNRESOLVED, FalsificationStatus.DEFERRED)
+
+
+def _grouped_queue(
+    pending: list[Finding], triage: dict[int, TriageResult]
+) -> list[tuple[Finding, list[Finding]]]:
+    """Choose one priority-aware representative per conservative issue match group."""
+    chosen = [
+        (_budget_order(group.findings, triage)[0], group.findings)
+        for group in find_matches(pending).groups
+    ]
+    members_by_id = {representative.id: members for representative, members in chosen}
+    ordered = _budget_order(
+        [representative for representative, _members in chosen], triage
+    )
+    return [(representative, members_by_id[representative.id]) for representative in ordered]
 
 
 def _budget_order(

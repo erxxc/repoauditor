@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-005",
+  "replayed_at": "2026-08-02",
+  "status": "offline-queue-correction-validated",
+  "scope": "Run 6 deferred falsification queue only; no provider calls",
+  "source_attempt": "opt-005-lightweight-attempt-2026-08-01.json",
+  "input": {
+    "terminal_run_id": 6,
+    "repo_id": "snapshot",
+    "commit": "6c26c595e143",
+    "deferred_findings": 111,
+    "source_mix": {
+      "sca": 76,
+      "owasp_lens": 28,
+      "sast": 5,
+      "supply_chain_lens": 1,
+      "secrets": 1
+    }
+  },
+  "conservative_replay": {
+    "matched_issue_groups": 60,
+    "collapsed_duplicate_rows": 51,
+    "finding_reduction_fraction": 0.459459,
+    "group_size_distribution": {
+      "1": 48,
+      "2": 6,
+      "4": 1,
+      "5": 3,
+      "13": 1,
+      "19": 1
+    },
+    "multi_source_groups": 3,
+    "representative_source_mix": {
+      "sca": 52,
+      "owasp_lens": 5,
+      "sast": 3
+    },
+    "all_finding_ids_preserved": true
+  },
+  "observed_falsification_basis": {
+    "completed_findings": 3,
+    "calls": 6,
+    "known_tokens": 18589,
+    "calculated_cost_usd": 0.132065
+  },
+  "linear_projection_not_authorization": {
+    "before_grouping": {
+      "questions": 111,
+      "calls": 222,
+      "known_tokens": 687793,
+      "calculated_cost_usd": 4.886405
+    },
+    "after_grouping": {
+      "questions": 60,
+      "calls": 120,
+      "known_tokens": 371780,
+      "calculated_cost_usd": 2.6413
+    }
+  },
+  "claim_boundary": {
+    "matching": "Only the existing conservative same-issue matcher is used. One priority-aware representative is challenged per group and its outcome is copied to every retained member with explicit provenance.",
+    "iterations": "Only the challenged representative receives falsification iteration rows; grouped members do not receive fabricated model interactions.",
+    "advisory_aliases": "PYSEC, GHSA, and OSV identifiers remain distinct unless the normalized detector identity is exactly shared. Adapter output does not retain source alias arrays, so no package/title-based alias inference is permitted.",
+    "cost": "The projection is a linear descriptive estimate from three completed findings, not a ceiling, commitment, or permission to call a provider."
+  },
+  "qualification": {
+    "opt_005_ready": false,
+    "reason": "The implementation removes offline queue amplification, but the same-store three-run calibration and protected pair remain unexecuted.",
+    "next_gate": "Complete OPT-004 under a separately approved budget, reassess observed variance, then request an explicit revised OPT-005 continuation budget."
+  }
+}
