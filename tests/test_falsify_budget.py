@@ -19,12 +19,14 @@ from repoauditor.falsify.challenger import (
     _budget_order,
     _budget_partition,
     _grouped_queue,
+    pending_falsification_findings,
 )
 from repoauditor.ingest import ingest_repo
 from repoauditor.map import recover_architecture
 from repoauditor.llm import model_usage_scope
 from repoauditor.store import db
 from repoauditor.store.models import (
+    FalsificationIteration,
     FalsificationStatus,
     Finding,
     Severity,
@@ -271,8 +273,6 @@ def test_interrupted_examined_finding_is_not_stranded_as_deferred(
     tmp_config, scripted_llm, stub_deterministic_tools, monkeypatch
 ):
     from repoauditor.falsify import challenger
-    from repoauditor.store.models import FalsificationIteration
-
     cfg = _budget_config(tmp_config, 1)
     db.init_db(cfg)
     repo_id = _detect(cfg, scripted_llm)
@@ -302,3 +302,26 @@ def test_interrupted_examined_finding_is_not_stranded_as_deferred(
     assert repaired.falsification_status is FalsificationStatus.UNRESOLVED
     assert "Interrupted after persisted falsification iteration" in repaired.falsification_reason
     assert repaired.id not in {item.id for item in db.list_deferred_findings(repo_id, cfg)}
+
+
+def test_pending_queue_includes_unexamined_unresolved_and_deferred_only(tmp_config):
+    db.init_db(tmp_config)
+    unresolved = _candidate(1)
+    deferred = _candidate(2)
+    deferred.falsification_status = FalsificationStatus.DEFERRED
+    confirmed = _candidate(3)
+    confirmed.falsification_status = FalsificationStatus.CONFIRMED
+    for finding in (unresolved, deferred, confirmed):
+        finding.repo_id = "queue"
+        finding.id = None
+        finding.id = db.insert_finding(finding, tmp_config)
+    db.insert_falsification_iteration(FalsificationIteration(
+        finding_id=unresolved.id, iteration=1, evidence="examined",
+        verdict_status=FalsificationStatus.UNRESOLVED,
+        verdict_rationale="partial", verdict_confidence=0.4,
+        critique_upholds=False, critique_note="partial", committed=False,
+    ), tmp_config)
+
+    assert [
+        finding.id for finding in pending_falsification_findings("queue", tmp_config)
+    ] == [deferred.id]

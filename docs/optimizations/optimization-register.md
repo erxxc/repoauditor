@@ -152,7 +152,12 @@ II. Operations and cost
       DoD impact: none. A smaller [`connectivity retry receipt`](opt-005-connectivity-retry-receipt-2026-08-06.json)
       freezes the corrected 60-row/52-group queue and proposes at most two batches, 36 calls,
       120,000 provider-reported tokens, and $1.00. It stops on the first unknown-usage
-      attempt and excludes both protected snapshots; authorization remains pending.
+      attempt and excludes both protected snapshots. The authorized
+      [`retry result`](opt-005-connectivity-retry-result-2026-08-06.json) completed one clean
+      batch (18 calls, 45,638 tokens, $0.312050, zero unknown usage), then stopped because
+      production preflight included an unexamined unresolved row omitted by the deferred-only
+      receipt. Production and future receipts now share the exact pending predicate. The
+      residual queue is 55 rows/51 groups; new authorization is required.
 
    B. OPT-006 — Provider dollar-cost reporting — implemented — owner: reliability
       engineering — source: `../project-priorities.md` and the frozen

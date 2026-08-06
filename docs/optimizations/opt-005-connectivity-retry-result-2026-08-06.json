@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-005",
+  "attempted_at": "2026-08-06",
+  "status": "stopped-after-one-clean-batch-on-queue-scope-mismatch",
+  "authorization": "opt-005-connectivity-retry-receipt-2026-08-06.json",
+  "execution": {
+    "pipeline_run_id": 16,
+    "completed_batches": 1,
+    "provider_calls": 18,
+    "unknown_usage_calls": 0,
+    "provider_reported_tokens": 45638,
+    "calculated_cost_usd": 0.31205,
+    "backlog_before_deferred": 60,
+    "backlog_after_deferred": 53,
+    "protected_snapshot_calls": 0
+  },
+  "connectivity_observation": {
+    "provider_timeouts": 0,
+    "claim": "All 18 attempts completed with authoritative usage. This is one clean batch, not evidence of general network or provider reliability."
+  },
+  "scope_mismatch": {
+    "receipt_queue": "60 deferred rows in 52 groups",
+    "production_preflight_queue": "61 pending rows in 53 groups",
+    "cause": "Receipt preparation used list_deferred_findings, while production falsification also includes unexamined unresolved findings.",
+    "paid_selection": "The four challenged representatives (571-574) were deferred rows present in the receipt, but batch 2 was not started because the frozen queue did not cover the complete production selection domain."
+  },
+  "offline_correction": {
+    "implementation": "Production and future receipt preparation share pending_falsification_findings: unresolved plus deferred, excluding findings with persisted iterations.",
+    "residual_pending_findings": 55,
+    "residual_status_counts": {"deferred": 53, "unresolved": 2},
+    "residual_issue_groups": 51,
+    "finding_rows_digest": "sha256:bff21d6dc4001362b73f8fc55e3ad3894faecb94fad30b0a1d6eb4d3ecf44098",
+    "ordered_groups_digest": "sha256:9888a25071c025c063f0ee2b0029e64c67d3dc9667a128fa02e293a1aaa20e04"
+  },
+  "next_gate": "Merge the exact pending-queue correction and reassess the 55-row/51-group residual queue. This authorization is closed; protected snapshots remain unauthorized."
+}
