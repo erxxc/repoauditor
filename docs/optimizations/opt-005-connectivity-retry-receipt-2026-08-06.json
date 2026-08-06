@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-005",
+  "frozen_at": "2026-08-06",
+  "status": "connectivity-retry-authorization-pending",
+  "scope": "At most two lightweight continuation batches against the corrected residual queue; protected snapshots excluded.",
+  "parent_chain": {
+    "root_pipeline_run_id": 6,
+    "latest_failed_pipeline_run_id": 15,
+    "repo_id": "snapshot",
+    "commit": "6c26c595e143"
+  },
+  "frozen_queue": {
+    "deferred_findings": 60,
+    "conservative_issue_groups": 52,
+    "finding_rows_digest": "sha256:75ebc93fb4a0d9b7e6b8230606348f80b690ddab4b95fc92b899792d71a58476",
+    "ordered_groups_digest": "sha256:b1fd4763987cadad2edeb1c47baaee78498f20b571f1f2b8892fcdf8edb2db05"
+  },
+  "prior_attempt": {
+    "completed_batches": 2,
+    "failed_batches": 1,
+    "provider_attempts": 38,
+    "known_usage_calls": 36,
+    "unknown_timeout_attempts": 2,
+    "known_provider_reported_tokens": 107076,
+    "priced_known_cost_usd": 0.72634,
+    "recovery_correction_merged": true
+  },
+  "proposed_retry_budget": {
+    "maximum_continuation_batches": 2,
+    "maximum_provider_calls": 36,
+    "maximum_provider_reported_tokens": 120000,
+    "maximum_usd": 1.0,
+    "existing_per_batch_call_ceiling": 75,
+    "existing_per_batch_token_ceiling": 250000,
+    "authorization_granted": false
+  },
+  "stop_conditions": [
+    "Any frozen queue or repository digest changes.",
+    "Any provider attempt lacks authoritative usage metadata, even if a retry later succeeds.",
+    "Either batch fails or any aggregate/per-batch ceiling is exhausted.",
+    "Two continuation batches complete.",
+    "The lightweight backlog reaches zero."
+  ],
+  "claim_boundary": {
+    "connectivity": "A clean retry is evidence only that these calls completed; it does not prove general network or provider reliability.",
+    "prior_authorization": "Prior authorization is not reused; prior attempts and costs remain separately accounted.",
+    "protected_pair": "Neither protected serialize-javascript snapshot is authorized."
+  }
+}
