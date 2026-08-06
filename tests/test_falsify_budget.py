@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from repoauditor.detect import run_ensemble
 from repoauditor.falsify import challenge
 from repoauditor.falsify.challenger import (
@@ -263,3 +265,40 @@ def test_one_challenge_propagates_to_conservative_duplicate_group(
     assert grouped.falsification_status is not FalsificationStatus.DEFERRED
     assert f"representative finding #{challenged_id}" in grouped.falsification_reason
     assert db.list_falsification_iterations(grouped_id, cfg) == []
+
+
+def test_interrupted_examined_finding_is_not_stranded_as_deferred(
+    tmp_config, scripted_llm, stub_deterministic_tools, monkeypatch
+):
+    from repoauditor.falsify import challenger
+    from repoauditor.store.models import FalsificationIteration
+
+    cfg = _budget_config(tmp_config, 1)
+    db.init_db(cfg)
+    repo_id = _detect(cfg, scripted_llm)
+    interrupted_ids = []
+
+    def interrupted(candidate, *_args, **_kwargs):
+        interrupted_ids.append(candidate.id)
+        db.insert_falsification_iteration(FalsificationIteration(
+            finding_id=candidate.id,
+            iteration=1,
+            evidence="partial evidence",
+            verdict_status=FalsificationStatus.UNRESOLVED,
+            verdict_rationale="partial",
+            verdict_confidence=0.4,
+            critique_upholds=False,
+            critique_note="provider interrupted",
+            committed=False,
+        ), cfg)
+        raise KeyboardInterrupt()
+
+    monkeypatch.setattr(challenger, "challenge_finding", interrupted)
+
+    with pytest.raises(KeyboardInterrupt):
+        challenge(repo_id, cfg, llm=scripted_llm)
+
+    repaired = db.get_finding(interrupted_ids[0], cfg)
+    assert repaired.falsification_status is FalsificationStatus.UNRESOLVED
+    assert "Interrupted after persisted falsification iteration" in repaired.falsification_reason
+    assert repaired.id not in {item.id for item in db.list_deferred_findings(repo_id, cfg)}

@@ -141,8 +141,15 @@ II. Operations and cost
       authorization. A frozen [`lightweight continuation receipt`](opt-005-lightweight-continuation-receipt-2026-08-02.json)
       proposes at most 16 linked batches, 180 aggregate calls, 600,000 provider-reported
       tokens, and $5.00 while preserving the existing per-batch breakers and production
-      retry policy. It excludes the protected pair and remains authorization-pending — DoD
-      impact: none.
+      retry policy. The authorized [`continuation attempt`](opt-005-lightweight-continuation-attempt-2026-08-02.json)
+      stopped after two completed batches and one partial failed batch when two 120-second
+      provider timeouts created unknown-usage rows. It retained 38 attempts, 36 priced calls,
+      107,076 known tokens, at least $0.726340, and 61 deferred rows; protected snapshots
+      were not started. The partial batch exposed finding 570 as deferred despite persisted
+      iterations. The queue now converts an interrupted, already-examined representative to
+      explicit unresolved before re-raising, and finding 570 was reconciled with the retained
+      run/usage provenance, leaving 60 deferred rows. New authorization remains required —
+      DoD impact: none.
 
    B. OPT-006 — Provider dollar-cost reporting — implemented — owner: reliability
       engineering — source: `../project-priorities.md` and the frozen

@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-005",
+  "attempted_at": "2026-08-02",
+  "status": "stopped-on-unknown-provider-usage",
+  "authorization": "opt-005-lightweight-continuation-receipt-2026-08-02.json",
+  "scope": "Existing run-6 lightweight backlog only; protected snapshots not started",
+  "batches": [
+    {"pipeline_run_id": 13, "status": "completed", "backlog_before": 111, "backlog_after": 84},
+    {"pipeline_run_id": 14, "status": "completed", "backlog_before": 84, "backlog_after": 61},
+    {"pipeline_run_id": 15, "status": "failed", "failure": "Operator interruption after the second provider timeout produced an unknown-usage row"}
+  ],
+  "usage": {
+    "provider_attempts": 38,
+    "known_usage_calls": 36,
+    "unknown_usage_calls": 2,
+    "known_provider_reported_tokens": 107076,
+    "priced_known_cost_usd": 0.72634,
+    "total_cost_status": "unavailable because two timeout attempts expose no authoritative provider token metadata"
+  },
+  "stop_evidence": {
+    "first_unknown_attempt": {"model_usage_id": 182, "latency_ms": 120026, "subsequent_retry_succeeded": true},
+    "second_unknown_attempt": {"model_usage_id": 184, "latency_ms": 120024, "subsequent_retry_started": false},
+    "failed_pipeline_run": 15,
+    "remaining_deferred_rows": 61,
+    "protected_snapshot_calls": 0
+  },
+  "recovery_defect": {
+    "finding_id": 570,
+    "state": "deferred with two persisted falsification iterations",
+    "effect": "The queue excludes any finding with iteration rows, so this row would remain counted as deferred but never be selected again.",
+    "required_offline_correction": "On an interrupted challenge, convert an examined representative to explicit unresolved before re-raising; reconcile finding 570 with an audit reason."
+  },
+  "next_gate": "Merge and verify the offline interruption-state correction, then reassess the residual queue and request new authorization. Do not reuse this authorization."
+}

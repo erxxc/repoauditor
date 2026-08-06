@@ -517,7 +517,11 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
    qualifying terminal run and the protected pair remains unstarted. The 2026-08-02 offline
    queue correction reduces those rows to 60 conservative issue groups (51 redundant
    challenges removed) without dropping findings or inferring unretained advisory aliases.
-   Its 120-call linear projection is descriptive only; no provider continuation is approved.
+   Its 120-call linear projection is descriptive only. The subsequent bounded continuation
+   stopped on two provider timeouts with unknown usage after 38 attempts and left 61 deferred
+   rows. The exposed interrupted-finding state defect is now corrected and its stranded row
+   was reconciled to explicit unresolved, leaving 60 deferred rows. New authorization is
+   required; neither protected snapshot has started.
 2. [x] Characterize repeatability on identical inputs. Six approved observations completed
    within budget with perfect verdict and citation-set agreement for both frozen subjects.
 3. Add dated/cached EPSS and KEV enrichment only with fixed stale/offline behavior and
