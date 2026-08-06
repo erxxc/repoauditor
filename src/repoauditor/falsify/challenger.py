@@ -577,15 +577,32 @@ def challenge(
 
     outcomes: list[FalsificationOutcome] = []
     for finding in selected:
-        outcome = challenge_finding(
-            finding,
-            architecture,
-            llm,
-            index,
-            config,
-            self_critique=self_critique,
-            snapshot_commit=commit,
-        )
+        try:
+            outcome = challenge_finding(
+                finding,
+                architecture,
+                llm,
+                index,
+                config,
+                self_critique=self_critique,
+                snapshot_commit=commit,
+            )
+        except BaseException as exc:
+            # A challenge may have persisted one or more iteration rows before a
+            # transport failure or operator interruption. Leaving that row deferred
+            # strands it permanently: resume excludes already-examined findings while
+            # the backlog counter still includes deferred rows. Preserve the partial
+            # trace, make its incomplete verdict explicit, and re-raise so the batch
+            # remains failed and is never presented as a successful continuation.
+            if db.list_falsification_iterations(finding.id, config):
+                db.update_falsification(
+                    finding.id,
+                    FalsificationStatus.UNRESOLVED,
+                    f"Interrupted after persisted falsification iteration(s): "
+                    f"{type(exc).__name__}: {exc}"[:2000],
+                    config,
+                )
+            raise
         db.update_falsification(finding.id, outcome.status, outcome.rationale, config)
         for member in members_by_representative[finding.id]:
             if member.id == finding.id:
