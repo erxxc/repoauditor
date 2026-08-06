@@ -149,7 +149,10 @@ II. Operations and cost
       iterations. The queue now converts an interrupted, already-examined representative to
       explicit unresolved before re-raising, and finding 570 was reconciled with the retained
       run/usage provenance, leaving 60 deferred rows. New authorization remains required —
-      DoD impact: none.
+      DoD impact: none. A smaller [`connectivity retry receipt`](opt-005-connectivity-retry-receipt-2026-08-06.json)
+      freezes the corrected 60-row/52-group queue and proposes at most two batches, 36 calls,
+      120,000 provider-reported tokens, and $1.00. It stops on the first unknown-usage
+      attempt and excludes both protected snapshots; authorization remains pending.
 
    B. OPT-006 — Provider dollar-cost reporting — implemented — owner: reliability
       engineering — source: `../project-priorities.md` and the frozen
