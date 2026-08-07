@@ -224,6 +224,13 @@ II. Operations and cost
       tokens, and $7.00, using the terminal pre-fix workload only as an operational bound.
       Authorization and protected post-fix evidence transfer remain pending; tuning and
       the offline comparison are excluded.
+      The authorized [`post-fix result`](opt-005-protected-post-result-2026-08-07.json)
+      completed runs 76–89 using 328 calls, 867,540 provider-reported tokens, $6.046320,
+      and zero unknown usage, then stopped at the 14-batch ceiling with one deferred
+      finding. The separately frozen
+      [`terminal receipt`](opt-005-protected-post-terminal-receipt-2026-08-07.json) permits
+      at most one batch, 26 calls, 75,000 tokens, and $0.55 for that exact row; its
+      authorization and evidence transfer remain pending.
 
    B. OPT-006 — Provider dollar-cost reporting — implemented — owner: reliability
       engineering — source: `../project-priorities.md` and the frozen

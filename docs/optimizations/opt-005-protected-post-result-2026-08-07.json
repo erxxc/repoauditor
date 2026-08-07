@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-005",
+  "attempted_at": "2026-08-07",
+  "status": "protected-post-batch-cap-reached",
+  "authorization": "opt-005-protected-post-receipt-2026-08-07.json",
+  "external_disclosure_authorized": true,
+  "execution": {
+    "repo_id": "snapshot-2d5abd74",
+    "materialized_commit": "beb955351e94",
+    "pinned_upstream_commit": "16a68ab53d9626fc7c942b48a1163108fcd184c8",
+    "first_pipeline_run_id": 76,
+    "last_pipeline_run_id": 89,
+    "completed_batches": 14,
+    "parent_chain_valid": true,
+    "provider_calls": 328,
+    "priced_provider_calls": 328,
+    "unknown_usage_calls": 0,
+    "input_tokens": 782109,
+    "output_tokens": 85431,
+    "provider_reported_tokens": 867540,
+    "provider_latency_ms": 1706572,
+    "calculated_cost_usd": 6.04632,
+    "detected_candidates": 56,
+    "pending_after": 1,
+    "protected_pre_calls": 0
+  },
+  "authorized_ceilings": {
+    "linked_batches": 14,
+    "provider_calls": 350,
+    "provider_reported_tokens": 1000000,
+    "usd": 7.0
+  },
+  "outcome": {
+    "terminal": false,
+    "reason": "The fourteen-batch authorization ceiling was reached with one deferred finding.",
+    "candidate_basis": "The fresh post-fix scan produced 55 OSV advisory candidates and one LLM candidate; the first batch challenged three and each continuation challenged four."
+  },
+  "claim_boundary": {
+    "post_fix": "All fourteen authorized batches completed, but this is not yet a qualifying terminal calibration observation.",
+    "pre_fix": "No new protected pre-fix execution occurred.",
+    "tuning": "No prompt, model, threshold, prior, selection, grouping, scoring, or operational-limit change was made from protected output."
+  },
+  "next_gate": "Merge and review this result plus the separately frozen one-row terminal receipt; obtain explicit new authorization before continuing."
+}
