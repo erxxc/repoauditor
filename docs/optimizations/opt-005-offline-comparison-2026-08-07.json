@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-005",
+  "generated_at": "2026-08-07",
+  "status": "not-ready",
+  "provider_calls_made": 0,
+  "network_accessed": false,
+  "selected_terminal_runs": {"lightweight": 61, "independent_pre": 75, "independent_post": 90},
+  "ready": false,
+  "blockers": ["lightweight: run #61 has 2 call(s) without token metadata"],
+  "observations": [
+    {"role": "lightweight", "terminal_run_id": 61, "batch_count": 50, "calls": 359, "processed_tokens": 989413, "unknown_usage_calls": 2, "peak_call_utilization": 0.36, "peak_token_utilization": 0.400708, "qualified": false},
+    {"role": "independent_pre", "terminal_run_id": 75, "batch_count": 14, "calls": 330, "processed_tokens": 868651, "unknown_usage_calls": 0, "peak_call_utilization": 0.3466666666666667, "peak_token_utilization": 0.440256, "qualified": true},
+    {"role": "independent_post", "terminal_run_id": 90, "batch_count": 15, "calls": 334, "processed_tokens": 886932, "unknown_usage_calls": 0, "peak_call_utilization": 0.37333333333333335, "peak_token_utilization": 0.465912, "qualified": true}
+  ],
+  "peak_observed_utilization": {"calls": 0.37333333333333335, "tokens": 0.465912},
+  "methodology": "Descriptive comparison against the current 75-call/250,000-token per-batch ceilings. Unknown provider metadata blocks calibration; failed or unknown calls are not discarded. No operational limit is inferred or changed.",
+  "decision": "Keep OPT-005 open. Preserve the two qualified protected observations and obtain a separately authorized fresh clean lightweight observation before rerunning this offline command."
+}
