@@ -248,6 +248,12 @@ II. Operations and cost
       same-store repository identity and parentless root with zero checkpoint reuse.
       Authorization and bounded evidence transfer remain pending; protected execution,
       tuning, historical repair, and the offline rerun are excluded.
+      The authorized [`clean result`](opt-005-clean-lightweight-result-2026-08-07.json)
+      completed runs 91–105 under new identity `snapshot-884a968b`: a parentless root,
+      zero reused detection calls, 331 calls, 882,103 provider-reported tokens, $6.032215,
+      zero unknown usage, and zero deferred findings. It qualifies as the replacement
+      lightweight observation. The zero-provider comparison over terminal runs 105, 75,
+      and 90 remains the final gate.
 
    B. OPT-006 — Provider dollar-cost reporting — implemented — owner: reliability
       engineering — source: `../project-priorities.md` and the frozen
