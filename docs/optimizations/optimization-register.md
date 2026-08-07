@@ -178,8 +178,11 @@ II. Operations and cost
       calls, 46,662 tokens, $0.328710, and zero unknown usage. The residual queue is 47
       deferred rows/43 groups. The next
       [`single-batch receipt`](opt-005-single-batch-2-receipt-2026-08-07.json) retains the
-      same 26-call/75,000-token/$0.55 limits and records budget plus bounded Anthropic
-      evidence transfer as authorization-pending.
+      same 26-call/75,000-token/$0.55 limits. Its authorized
+      [`result`](opt-005-single-batch-2-result-2026-08-07.json) completed as run 19 with 6
+      calls, 15,533 tokens, $0.103185, and zero unknown usage. The residual production
+      queue is 46 deferred rows/42 groups. Protected snapshots remain unstarted and any
+      further batch requires new authorization.
 
    B. OPT-006 — Provider dollar-cost reporting — implemented — owner: reliability
       engineering — source: `../project-priorities.md` and the frozen

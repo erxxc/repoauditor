@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-005",
+  "attempted_at": "2026-08-07",
+  "status": "single-batch-2-complete",
+  "authorization": "opt-005-single-batch-2-receipt-2026-08-07.json",
+  "external_disclosure_authorized": true,
+  "execution": {
+    "pipeline_run_id": 19,
+    "parent_pipeline_run_id": 18,
+    "completed_batches": 1,
+    "provider_calls": 6,
+    "unknown_usage_calls": 0,
+    "provider_reported_tokens": 15533,
+    "input_tokens": 14257,
+    "output_tokens": 1276,
+    "calculated_cost_usd": 0.103185,
+    "deferred_before": 47,
+    "deferred_after": 46,
+    "protected_snapshot_calls": 0
+  },
+  "authorized_ceilings": {
+    "batches": 1,
+    "provider_calls": 26,
+    "provider_reported_tokens": 75000,
+    "usd": 0.55
+  },
+  "residual_queue": {
+    "pending_findings": 46,
+    "status_counts": {
+      "deferred": 46,
+      "unresolved": 0
+    },
+    "conservative_issue_groups": 42,
+    "finding_ids_digest": "sha256:c8aa39e23f040c7c6f098636bc7f7756e282e99608427bdf9c22e90e76d7ffe6",
+    "ordered_group_ids_digest": "sha256:9563b6bebc3017b5ce58f2a1f990d3f55d9830ba6c4ce42b2c2b0d397b6a888c",
+    "digest_encoding": "UTF-8 SHA-256 of compact JSON arrays; finding IDs sorted ascending, group member IDs retained in production queue order"
+  },
+  "claim_boundary": {
+    "challenged_finding": "One finding completed the falsification loop as unresolved and retained its iteration evidence; it is not part of the resumable pending queue.",
+    "protected_pair": "Neither protected serialize-javascript snapshot was accessed or billed."
+  },
+  "next_gate": "Merge this result and separately authorize any next lightweight batch. Protected snapshots remain unauthorized."
+}
