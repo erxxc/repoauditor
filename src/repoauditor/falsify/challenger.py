@@ -536,12 +536,8 @@ def challenge(
     architecture = load_architecture(repo_id, commit, config)
     index = index or RetrievalIndex().build(snapshot_path)
 
-    already_examined = db.finding_ids_with_iterations(repo_id, config)
     triage = {tr.finding_id: tr for tr in db.list_triage_results(repo_id, config)}
-    pending = [
-        f for f in db.list_findings(repo_id, config)
-        if f.falsification_status in _PENDING_STATUSES and f.id not in already_examined
-    ]
+    pending = pending_falsification_findings(repo_id, config)
     queue_groups = _grouped_queue(pending, triage)
     representatives = [representative for representative, _members in queue_groups]
     members_by_representative = {
@@ -642,6 +638,16 @@ def challenge(
 
 
 _PENDING_STATUSES = (FalsificationStatus.UNRESOLVED, FalsificationStatus.DEFERRED)
+
+
+def pending_falsification_findings(repo_id: str, config: Config) -> list[Finding]:
+    """Return the exact resumable queue used by production falsification."""
+    already_examined = db.finding_ids_with_iterations(repo_id, config)
+    return [
+        finding for finding in db.list_findings(repo_id, config)
+        if finding.falsification_status in _PENDING_STATUSES
+        and finding.id not in already_examined
+    ]
 
 
 def _grouped_queue(
