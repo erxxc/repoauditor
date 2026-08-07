@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-005",
+  "generated_at": "2026-08-07",
+  "status": "ready",
+  "provider_calls_made": 0,
+  "network_accessed": false,
+  "selected_terminal_runs": {"lightweight": 105, "independent_pre": 75, "independent_post": 90},
+  "ready": true,
+  "blockers": [],
+  "observations": [
+    {"role": "lightweight", "terminal_run_id": 105, "run_ids": [91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105], "batch_count": 15, "batch_statuses": ["completed", "completed", "completed", "completed", "completed", "completed", "completed", "completed", "completed", "completed", "completed", "completed", "completed", "completed", "completed"], "calls": 331, "input_tokens": 801018, "output_tokens": 81085, "cache_read_tokens": 0, "cache_write_tokens": 0, "processed_tokens": 882103, "unknown_usage_calls": 0, "provider_latency_ms": 1634121, "peak_call_utilization": 0.38666666666666666, "peak_token_utilization": 0.401444, "qualified": true},
+    {"role": "independent_pre", "terminal_run_id": 75, "run_ids": [62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75], "batch_count": 14, "batch_statuses": ["completed", "completed", "completed", "completed", "completed", "completed", "completed", "completed", "completed", "completed", "completed", "completed", "completed", "completed"], "calls": 330, "input_tokens": 784851, "output_tokens": 83800, "cache_read_tokens": 0, "cache_write_tokens": 0, "processed_tokens": 868651, "unknown_usage_calls": 0, "provider_latency_ms": 1753617, "peak_call_utilization": 0.3466666666666667, "peak_token_utilization": 0.440256, "qualified": true},
+    {"role": "independent_post", "terminal_run_id": 90, "run_ids": [76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90], "batch_count": 15, "batch_statuses": ["completed", "completed", "completed", "completed", "completed", "completed", "completed", "completed", "completed", "completed", "completed", "completed", "completed", "completed", "completed"], "calls": 334, "input_tokens": 799346, "output_tokens": 87586, "cache_read_tokens": 0, "cache_write_tokens": 0, "processed_tokens": 886932, "unknown_usage_calls": 0, "provider_latency_ms": 1744490, "peak_call_utilization": 0.37333333333333335, "peak_token_utilization": 0.465912, "qualified": true}
+  ],
+  "peak_observed_utilization": {"calls": 0.38666666666666666, "tokens": 0.465912},
+  "configured_per_batch_ceilings": {"calls": 75, "processed_tokens": 250000},
+  "methodology": "Descriptive comparison against the current 75-call/250,000-token per-batch ceilings. Linked continuation batches are aggregated and peak utilization is measured per batch. Unknown provider metadata blocks calibration. No operational limit is inferred or changed.",
+  "decision": "Close OPT-005 at its approved scope. All three distinct same-store logical scan chains are terminal, have recorded provider calls, contain zero unknown token usage, and have zero deferred findings. Retain the current operational ceilings; any limit change requires a separate evidence-backed scope decision."
+}

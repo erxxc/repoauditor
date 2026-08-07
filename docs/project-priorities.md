@@ -546,7 +546,9 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
    The protected post-fix chain then completed through run 90 with 334 calls, 886,932
    tokens, $6.186380, zero unknown usage, and zero deferred findings. Its final confirmation
    remains unadjudicated rather than being treated automatically as persistence or a false
-   positive. Both protected observations are terminal; only the offline comparison remains.
+   positive. The clean zero-provider comparison over terminal runs 105/75/90 qualifies all
+   three logical scan chains with zero unknown usage and zero deferred findings. OPT-005 is
+   complete at its approved descriptive scope; current operational ceilings remain unchanged.
 2. [x] Characterize repeatability on identical inputs. Six approved observations completed
    within budget with perfect verdict and citation-set agreement for both frozen subjects.
 3. Add dated/cached EPSS and KEV enrichment only with fixed stale/offline behavior and
@@ -559,8 +561,8 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
 
 The current evidence-backed decision is recorded in
 [pre-tuning-readiness.md](pre-tuning-readiness.md). Tuning is on hold: the local persistent
-store has no usable human-label cohort or completed same-store three-run calibration,
-and the organization-frequency defect remains methodology-blocking. OPT-004's bounded
+store has no usable human-label cohort, and the organization-frequency defect remains
+methodology-blocking. The same-store three-run usage calibration and OPT-004's bounded
 repeatability scope is complete. This hold is the priority-10 decision, not an incomplete
 tuning run.
 

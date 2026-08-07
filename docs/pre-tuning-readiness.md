@@ -28,16 +28,12 @@ validation, novelty training, and classifier tuning remain evidence-gated. Fixtu
 keys, manufactured controls, and model-generated labels must not be substituted for this
 missing human cohort.
 
-The formal provider-usage calibration remains unavailable in this store. The protected
-pre/post observations are now terminal and carry authoritative token metadata, but the
-zero-provider comparison over runs 61/75/90 fails closed because the lightweight chain
-contains two historical timeout attempts without token metadata. A separately authorized
-fresh, clean lightweight observation is required; temporary CI artifacts and selective
-removal of unknown calls do not satisfy that requirement.
-An isolated replacement lightweight scan has now completed at terminal run 105 with a
-parentless root, zero checkpoint reuse, zero unknown usage, and zero deferred findings.
-The offline comparison over runs 105/75/90 remains to be executed and retained before the
-formal calibration blocker can be removed.
+The formal provider-usage calibration is now available in this store. The retained clean
+comparison over terminal runs 105/75/90 qualifies all three distinct logical scan chains
+with zero unknown usage and zero deferred findings. It observed peak per-batch utilization
+of 38.67% of the current call ceiling and 46.59% of the current token ceiling. This removes
+the OPT-005 calibration blocker without recommending or applying a limit change. The earlier
+run-61 comparison remains retained as fail-closed historical evidence.
 
 Quantitative tuning is independently blocked. `quant-audit` correctly identifies that the
 IRIS organization-level annual frequency baseline is repeated per finding and summed within
