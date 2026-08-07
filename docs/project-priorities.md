@@ -535,6 +535,10 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
    $4.228910 with zero unknown usage. Run 61 normalized 67 canonical findings and opened 51
    review requests. Protected snapshots remain unstarted; their pre/post execution and the
    offline three-run comparison remain separate OPT-005 gates.
+   The first protected pre-fix authorization completed three linked batches (runs 62–64)
+   using 74 calls, 230,595 tokens, and $1.503015 with zero unknown usage. It stopped at its
+   batch ceiling with 44 deferred findings after the current OSV feed produced 55 advisory
+   candidates. The pre-fix observation is therefore nonterminal; post-fix remains unstarted.
 2. [x] Characterize repeatability on identical inputs. Six approved observations completed
    within budget with perfect verdict and citation-set agreement for both frozen subjects.
 3. Add dated/cached EPSS and KEV enrichment only with fixed stale/offline behavior and
