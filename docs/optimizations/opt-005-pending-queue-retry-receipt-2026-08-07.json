@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-005",
+  "frozen_at": "2026-08-07",
+  "status": "pending-queue-retry-authorization-pending",
+  "scope": "At most two lightweight continuation batches against the exact production pending queue; protected snapshots excluded.",
+  "parent_chain": {
+    "root_pipeline_run_id": 6,
+    "latest_completed_pipeline_run_id": 16,
+    "repo_id": "snapshot",
+    "commit": "6c26c595e143"
+  },
+  "frozen_queue": {
+    "predicate": "falsification_status in {unresolved,deferred} and no persisted falsification iterations",
+    "pending_findings": 55,
+    "status_counts": {"deferred": 53, "unresolved": 2},
+    "conservative_issue_groups": 51,
+    "finding_rows_digest": "sha256:bff21d6dc4001362b73f8fc55e3ad3894faecb94fad30b0a1d6eb4d3ecf44098",
+    "ordered_groups_digest": "sha256:9888a25071c025c063f0ee2b0029e64c67d3dc9667a128fa02e293a1aaa20e04"
+  },
+  "latest_clean_batch_basis": {
+    "pipeline_run_id": 16,
+    "provider_calls": 18,
+    "provider_reported_tokens": 45638,
+    "calculated_cost_usd": 0.31205,
+    "unknown_usage_calls": 0
+  },
+  "proposed_retry_budget": {
+    "maximum_continuation_batches": 2,
+    "maximum_provider_calls": 36,
+    "maximum_provider_reported_tokens": 120000,
+    "maximum_usd": 1.0,
+    "existing_per_batch_call_ceiling": 75,
+    "existing_per_batch_token_ceiling": 250000,
+    "authorization_granted": false
+  },
+  "stop_conditions": [
+    "Any production pending-queue or repository digest changes.",
+    "Any provider attempt lacks authoritative usage metadata.",
+    "Either batch fails or any aggregate/per-batch ceiling is exhausted.",
+    "Two continuation batches complete.",
+    "The lightweight pending queue reaches zero."
+  ],
+  "claim_boundary": {
+    "prior_authorizations": "All prior attempts and costs remain separately accounted and are not reauthorized.",
+    "connectivity": "A clean tranche is bounded operational evidence, not proof of general provider reliability.",
+    "protected_pair": "Neither protected serialize-javascript snapshot is authorized."
+  }
+}

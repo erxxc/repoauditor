@@ -157,7 +157,11 @@ II. Operations and cost
       batch (18 calls, 45,638 tokens, $0.312050, zero unknown usage), then stopped because
       production preflight included an unexamined unresolved row omitted by the deferred-only
       receipt. Production and future receipts now share the exact pending predicate. The
-      residual queue is 55 rows/51 groups; new authorization is required.
+      residual queue is 55 rows/51 groups. A corrected
+      [`pending-queue retry receipt`](opt-005-pending-queue-retry-receipt-2026-08-07.json)
+      freezes that complete selection domain and proposes two batches, 36 calls, 120,000
+      provider-reported tokens, and $1.00. It excludes the protected pair and remains
+      authorization-pending.
 
    B. OPT-006 — Provider dollar-cost reporting — implemented — owner: reliability
       engineering — source: `../project-priorities.md` and the frozen
