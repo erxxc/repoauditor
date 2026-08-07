@@ -128,7 +128,9 @@ II. Operations and cost
    A. OPT-005 — Formal same-store three-run usage calibration — completed — owner:
       reliability engineering — source: `../offline-readiness-runbook.md` — activate after
       MVP closure or if current hard ceilings block the POC walkthrough — DoD impact: none
-      while limits remain fail-closed. The first newly authorized
+      while limits remain fail-closed. The following is a chronological execution record;
+      intermediate `open`, `pending`, and `unstarted` statements describe their dated step,
+      not current OPT-005 state. The first newly authorized
       [`lightweight attempt`](opt-005-lightweight-attempt-2026-08-01.json) stopped safely at
       27 calls, 100,177 provider-reported tokens, and $0.642125. It retained 111 deferred
       findings, so it does not qualify and the protected pair was not started. A stage-summary

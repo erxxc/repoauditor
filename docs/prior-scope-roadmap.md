@@ -1,20 +1,19 @@
 # Prior-scope roadmap
 
-Status: applicability inventory, exact source temporal metadata, persisted scope/uncertainty
-metadata, and dated cached EPSS/KEV evidence are implemented; quantitative-model changes
-remain gated.
+Status as of 2026-08-07: applicability inventory, exact source temporal metadata, persisted
+scope/uncertainty metadata, dated cached EPSS/KEV evidence, and the aggregate organization-
+frequency correction are implemented. OPT-014 expansion remains data-gated.
 
 Open enrichment work is post-MVP and tracked in
 [`optimizations/optimization-register.md`](optimizations/optimization-register.md). The
-current POC has one narrower requirement: affected quantitative output must be corrected or
-visibly gated as experimental/non-decision-grade while the organization-frequency defect
-remains unresolved.
+POC's narrower presentation gate was satisfied, and OPT-011 later corrected the frequency
+structure with `organization_all_event_v1`.
 
 The first applicability inventory is now executable through
 `repoauditor quant-audit <repo-id>` and documented in
 [quantitative-integrity-audit.md](quantitative-integrity-audit.md). It deliberately reports
-unsupported scope rather than changing priors. The confirmed organization-frequency
-repetition issue remains unresolved pending a sourced decomposition.
+unsupported scope rather than changing priors. It now verifies the single marked aggregate
+stream and continues to report population and uncertainty limitations.
 
 Repoauditor's current priors are industry baselines with explicit publication provenance,
 plus separately identified engagement inputs and CVE-specific EPSS/KEV signals where those
@@ -48,9 +47,9 @@ either configured distribution.
 OPT-012 adds explicit `repoauditor threat-enrich <repo-id> --refresh` acquisition from FIRST
 EPSS and CISA KEV. Quantification reads the repo-bound cache offline and labels it current,
 stale, missing, or invalid. These signals remain informational: they do not modify validity,
-frequency, magnitude, severity, or deal-risk weight while the frequency-allocation defect is
-unresolved.
+frequency, magnitude, severity, or deal-risk weight. OPT-011's completion does not convert
+these informational signals into model inputs.
 
-Remaining implementation order is: establish adequate real-data coverage, run prior-predictive and held-out
-checks, then introduce versioned hierarchical priors behind an explicit compatibility
-boundary.
+Remaining implementation order is: establish adequate real-data coverage, run prior-
+predictive and held-out checks, then introduce versioned hierarchical priors behind an
+explicit compatibility boundary.

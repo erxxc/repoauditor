@@ -4,10 +4,12 @@ I. Authoritative project control
 
    A. [`poc-definition-of-done.md`](poc-definition-of-done.md) — the owner-confirmed POC
       commitment and acceptance boundary.
-   B. [`poc-recovery-plan.md`](poc-recovery-plan.md) — the single current outstanding-item
-      list, MVP classification, owners, blockers, and next action.
-   C. [`optimizations/optimization-register.md`](optimizations/optimization-register.md) —
-      deferred improvements and all future scope drift.
+   B. [`documentation-status.md`](documentation-status.md) — authority/supersession rules
+      and the current-state pointer.
+   C. [`optimizations/optimization-status.json`](optimizations/optimization-status.json) —
+      canonical machine-readable optimization lifecycle.
+   D. [`optimizations/optimization-register.md`](optimizations/optimization-register.md) —
+      narrative scope, owners, gates, and chronological outcomes.
 
 II. Architecture and operating rules
 
@@ -23,7 +25,8 @@ II. Architecture and operating rules
 III. Evidence and historical execution
 
    A. [`project-priorities.md`](project-priorities.md) — detailed historical execution and
-      evidence ledger; superseded as the current priority authority by the recovery plan.
+      evidence ledger; superseded as the current priority authority by the optimization
+      ledger/register.
    B. Dated JSON plans, diagnostics, qualification receipts, and baselines are immutable
       evidence for their named runs.
    C. [`poc-acceptance-walkthrough-2026-07-28.md`](poc-acceptance-walkthrough-2026-07-28.md)

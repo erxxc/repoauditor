@@ -1,7 +1,9 @@
 # POC Recovery Plan
 
-Status: **POC recovery complete** as of 2026-07-28; retained as the final MVP execution
-record. Post-MVP work is governed by `optimizations/optimization-register.md`.
+Status: **historical MVP execution record — POC recovery completed 2026-07-28**.
+Post-MVP outcomes below are reconciled through 2026-08-07; current lifecycle authority is
+`optimizations/optimization-status.json` and narrative authority is
+`optimizations/optimization-register.md`.
 
 I. Validated Definition of Done
 
@@ -21,7 +23,7 @@ I. Validated Definition of Done
          blocker was unapproved scope drift and is now stopped.
       4. There is no separate sponsor- or client-facing commitment.
 
-II. Outstanding Items (consolidated)
+II. Post-MVP status annotations (reconciled 2026-08-07)
 
    A. POC acceptance and operations
 
@@ -34,30 +36,32 @@ II. Outstanding Items (consolidated)
          plus AppSec reviewer.
       3. Known organization-frequency defect in quantitative output — POC gate completed:
          affected CLI, memo, and appendix output is conditionally labelled experimental and
-         not decision-grade; sourced correction remains OPT-011 — quantitative-methodology
+         not decision-grade. OPT-011 later completed the sourced aggregate correction; this
+         bullet records the narrower MVP-era presentation gate — quantitative-methodology
          owner plus product owner.
 
-   B. Classifier and validation maturity
+   B. Classifier and validation maturity (current outcome annotation)
 
       1. Grow from 58 usable labels toward 100–200 with broader positive mechanisms —
-         in progress/evidence-gated — AppSec adjudication owner.
+         completed at the lower bound with 104 usable labels; broader held-out family
+         evidence remains OPT-002 — AppSec adjudication owner.
       2. Add family-aware bootstrap ranges — blocked on held-out family breadth — ML
          evaluation owner.
       3. Add temporal validation — blocked on chronological depth — ML evaluation owner.
-      4. Characterize identical-input provider repeatability — not started/paid — evaluation
-         engineering owner.
+      4. Characterize identical-input provider repeatability — completed at the approved
+         two-subject/six-observation scope — evaluation engineering owner.
 
    C. Operational calibration
 
       1. Produce the formal same-store three-run usage comparison — completed; clean
          zero-provider comparison retained with current limits unchanged — reliability owner.
-      2. Add provider dollar-cost reporting — blocked on a dated versioned price source —
-         reliability owner.
+      2. Add provider dollar-cost reporting — completed from the dated 2026-08-01
+         Anthropic price snapshot — reliability owner.
 
    D. Detection and falsification expansion
 
       1. Improve the planner after independent measurement identifies a generalizable miss —
-         evidence-ready and held until MVP closure as OPT-007 — detection owner.
+         completed at OPT-007's approved production-region selection scope — detection owner.
       2. Expand slicing/certificates to additional clients, frameworks, languages, and
          cross-file flows — deferred pending specific corpus misses — AppSec engineering.
       3. Evaluate novelty as an investigation-depth trigger — blocked on reviewed LLM
@@ -70,10 +74,11 @@ II. Outstanding Items (consolidated)
       1. Correct organization-frequency allocation — completed with one marked
          organization all-event stream and no finding/scenario allocation —
          quantitative-methodology owner.
-      2. Add dated cached EPSS/KEV enrichment — not started/network-dependent — threat-data
-         owner.
-      3. Establish exact prior temporal metadata and broader applicability — blocked on
-         verified sources/data — quantitative-methodology owner.
+      2. Add dated cached EPSS/KEV enrichment — completed with explicit refresh and offline
+         current/stale/missing/invalid states — threat-data owner.
+      3. Establish exact prior temporal metadata and broader applicability — exact source
+         metadata completed; broader applicability remains data-gated — quantitative-
+         methodology owner.
       4. Run prior-predictive, held-out, hierarchical-prior, and backtesting work — blocked
          on applicable organization/incident data — quantitative-methodology owner.
 
@@ -94,11 +99,12 @@ IV. Deferred / Tuning (post-MVP)
    E. Broader certificates, slicing, novelty, and agentic behavior — extend coverage beyond
       the POC and remain evidence-gated.
    F. EPSS/KEV, prior segmentation, hierarchy, backtesting, and portfolio optimization —
-      quantitative enrichment beyond the POC; the POC-safe presentation gate is complete,
-      while sourced correction remains deferred.
+      quantitative enrichment beyond the POC; EPSS/KEV, exact prior metadata, and the
+      aggregate frequency correction are complete, while OPT-014 remains data-gated.
 
-V. Recommended Next Step
+V. Historical handoff (superseded)
 
-   A. Begin the post-MVP optimization workstream from
+   A. The July 28 handoff was to begin the post-MVP optimization workstream from
       [`optimizations/optimization-register.md`](optimizations/optimization-register.md),
-      respecting each item's evidence and activation gate.
+      respecting each item's evidence and activation gate. Current next execution is in the
+      lifecycle ledger and outstanding-work checkpoint.

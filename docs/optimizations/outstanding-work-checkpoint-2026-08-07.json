@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "recorded_at": "2026-08-07",
-  "purpose": "Record all outstanding lifecycle work after completion of the bounded OPT-005 scope.",
+  "purpose": "Current derived checkpoint of all outstanding lifecycle work after completion of OPT-005 and OPT-011; must match optimization-status.json.",
   "poc_definition_of_done": {
     "status": "complete",
     "accepted_at": "2026-07-28",
@@ -48,5 +48,5 @@
     "Additional independently checked language/framework security-claim certificates.",
     "Any expansion of already closed bounded OPT scopes, which must be proposed as new work."
   ],
-  "next_execution": "Reassess the six remaining gated optimizations; no paid provider execution is currently authorized."
+  "next_execution": "Prepare an outcome-blind, zero-provider OPT-002 acquisition protocol for evaluation-compatible scored evidence; no paid provider execution is currently authorized."
 }
