@@ -20,8 +20,9 @@ evidence exists.
    Calls whose failure response omits usage metadata remain counted and explicitly unknown.
    OPT-006 now calculates standard first-party `claude-opus-4-8` token cost from a dated
    Anthropic price snapshot. Unsupported pricing modifiers and missing usage remain unavailable.
-2. **Protected evaluation cohort — partial.** The frozen serialize-javascript pair remains
-   outside prompt development and training, but one pair is not a broad real-world cohort.
+2. **Protected evaluation cohort — partial.** The frozen serialize-javascript pre/post pair
+   completed outside prompt development and training with terminal usage records, but one
+   pair is not a broad real-world cohort.
 3. **Baseline comparison — open/paid.** Compare the current bounded falsifier against the
    proposed agent on unique issues, reporting precision, recall, abstention coverage,
    latency, token use, and cost per uniquely validated issue.

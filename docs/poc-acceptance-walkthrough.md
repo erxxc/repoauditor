@@ -1,8 +1,9 @@
 # POC Acceptance Walkthrough
 
-Status: **ready to execute after the quantitative-output gate merges**.
+Status: **historical walkthrough template; superseded by the accepted execution on
+2026-07-28**. See [`poc-acceptance-walkthrough-2026-07-28.md`](poc-acceptance-walkthrough-2026-07-28.md).
 
-This is the final POC acceptance check. It is intentionally written for a reviewer without
+This was the final POC acceptance check template. It is intentionally written for a reviewer without
 a security background. The reviewer should use a clean checkout and the README only; project
 engineering may observe, but should not translate commands or make review decisions for them.
 

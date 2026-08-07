@@ -4,8 +4,9 @@ Status: **superseded as the active backlog on 2026-07-28**. This document preser
 detailed implementation history, completed gates, and source evidence. The authoritative
 POC commitment is now [`poc-definition-of-done.md`](poc-definition-of-done.md); the single
 current outstanding-item list and execution order are in
-[`poc-recovery-plan.md`](poc-recovery-plan.md). Non-MVP work belongs in
-[`optimizations/optimization-register.md`](optimizations/optimization-register.md).
+[`optimizations/optimization-status.json`](optimizations/optimization-status.json) and
+[`optimizations/optimization-register.md`](optimizations/optimization-register.md). The
+recovery plan is retained as the historical MVP execution record.
 
 The methodology-specific detail remains authoritative in
 [triage-accuracy-roadmap.md](triage-accuracy-roadmap.md),
@@ -143,10 +144,10 @@ priorities here.
 
 - [x] Add dated, cached EPSS and KEV enrichment only for real CVE-backed findings. Define
   stale/offline behavior and retain the labeled industry fallback when no signal exists.
-- [~] Audit EPSS, KEV, exposure, control strength, loss scale, and baseline applicability
-  for double counting. The read-only `quant-audit` now exposes scope gaps and confirmed that
-  the organization-level IRIS frequency baseline is repeated per finding within a scenario.
-  The model correction is blocked pending a sourced allocation/decomposition decision.
+- [x] Audit EPSS, KEV, exposure, control strength, loss scale, and baseline applicability
+  for double counting. `organization_all_event_v1` now consumes the IRIS organization rate
+  once, retains findings as non-allocating context, and fails closed on malformed aggregate
+  streams. Category attribution and remediation deltas remain unavailable under OPT-014.
 - [x] Inventory current prior applicability through the read-only `quant-audit`.
 - [~] Continue the prior-scope roadmap: exact July 2022 feed metadata and the 2012–2021
   data vintage are now recorded. Establish data coverage, run prior-predictive/held-out
@@ -562,12 +563,12 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
 
 ## Pre-tuning checkpoint
 
-The current evidence-backed decision is recorded in
-[pre-tuning-readiness.md](pre-tuning-readiness.md). Tuning is on hold: the local persistent
-store has no usable human-label cohort, and applicable organization/incident data remains
-absent for OPT-014. The same-store calibration, OPT-011 aggregate correction, and OPT-004's bounded
-repeatability scope is complete. This hold is the priority-10 decision, not an incomplete
-tuning run.
+The current evidence-backed decision is reconciled in
+[pre-tuning-readiness.md](pre-tuning-readiness.md). Tuning remains on hold: 104 usable human
+labels exist, but only 36 have compatible stored scores across 7 engagements, below the
+40-label/8-family activation gate. Applicable organization/incident data also remains absent
+for OPT-014. Same-store calibration, OPT-011, and OPT-004 are complete. This hold is a
+deliberate evidence decision, not an incomplete tuning run.
 
 ## Large-repository detection safety
 

@@ -46,7 +46,8 @@ II. Acceptance evidence
       4. Satisfied for the POC by the owner-approved disclosure-only gate: a blocking
          read-only integrity audit labels affected CLI, memo, and appendix output
          experimental and not decision-grade. The underlying model is deliberately
-         unchanged; sourced correction remains post-MVP work.
+         unchanged. This records the MVP-era gate; OPT-011 later completed the sourced
+         aggregate correction as post-MVP work.
 
    C. Independent semantic evidence
 

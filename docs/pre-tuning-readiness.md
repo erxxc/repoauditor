@@ -1,12 +1,27 @@
 # Pre-tuning readiness decision
 
-Status as of 2026-07-27: **historical checkpoint; not authorized to tune**.
+Status: **historical 2026-07-27 checkpoint, reconciled to current state on 2026-08-07;
+not authorized to tune**.
 
 This file preserves the evidence available at that checkpoint. Its zero-label counters were
 later superseded by the reviewed acquisition cohort and must not be read as current state.
-Use [`poc-recovery-plan.md`](poc-recovery-plan.md) for current MVP work and
+Use [`documentation-status.md`](documentation-status.md) for current authority and
 [`optimizations/optimization-register.md`](optimizations/optimization-register.md) for the
-still-deferred tuning prerequisites. The decision to hold tuning remains in force.
+still-deferred tuning prerequisites. The recovery plan is a historical MVP record. The
+decision to hold tuning remains in force.
+
+## Current reconciliation — 2026-08-07
+
+The live persistent store now has 104 usable human labels (37 positive, 67 negative) across
+15 source engagements. The narrower compatible scored cohort has only 36 labels (19 positive,
+17 negative) across 7 engagements, below the existing 40-label/8-family activation gate.
+There are 404 unlabeled triaged findings, but volume alone is not held-out family evidence.
+The same-store usage calibration, bounded repeatability characterization, and OPT-011
+aggregate frequency correction are complete. Current blockers are evaluation-compatible
+family breadth, chronological depth, reviewed LLM-origin novelty evidence, and applicable
+organization/incident data for OPT-014. See
+[`documentation-status.md`](documentation-status.md) and the optimization ledger for current
+authority.
 
 This checkpoint separates implementation verification from empirical validation. Passing
 tests and manufactured controls show that bounded code paths execute as specified; they do
@@ -23,10 +38,10 @@ The local persistent store used for this checkpoint reports:
 - two ingested lightweight snapshots; and
 - one pipeline run, which failed in `falsify`.
 
-Therefore grouped validation, threshold tradeoff curves, family-aware intervals, temporal
-validation, novelty training, and classifier tuning remain evidence-gated. Fixture answer
-keys, manufactured controls, and model-generated labels must not be substituted for this
-missing human cohort.
+At that checkpoint, grouped validation, threshold tradeoff curves, family-aware intervals,
+temporal validation, novelty training, and classifier tuning remained evidence-gated.
+Fixture answer keys, manufactured controls, and model-generated labels must not be
+substituted for the missing human cohort.
 
 The formal provider-usage calibration is now available in this store. The retained clean
 comparison over terminal runs 105/75/90 qualifies all three distinct logical scan chains
@@ -49,17 +64,17 @@ three times and finding 300 was killed three times; every pairwise citation-set 
 seed, and two subjects do not establish universal stability, but this separates an observed
 identical-input baseline from the existing retrieval-resolution experiment.
 
-## Required order before tuning
+## Current required order before tuning
 
-1. Collect human adjudications across genuine repositories until both label and engagement
-   gates are met, preserving abstentions and both outcome classes.
-2. Run the three bounded calibration scans in one persistent store when paid work resumes;
-   keep current call/token/time ceilings in force until that report is complete.
-3. Repeat identical provider/model/prompt/snapshot evaluations enough to describe verdict,
-   citation, confidence, token, and latency variability separately from resolution changes.
+1. Add at least four usable evaluation-compatible scored labels and an eighth genuine
+   evaluation family, preserving abstentions and both outcome classes; do not treat benchmark
+   acquisition as held-out evidence.
+2. Activate family-aware descriptive/bootstrap evaluation only after the 40-label/8-family
+   gate is actually satisfied.
+3. Accumulate meaningful observation/correction chronology before temporal validation.
 4. Obtain applicable organization/incident data before adding category allocation,
    prior-predictive checks, or remediation-effect modeling under OPT-014.
-5. Only then activate grouped validation and threshold/family analysis. Tune one bounded
-   component at a time against a frozen evaluation cohort; do not tune on the UAT answer key.
+5. Tune one bounded component at a time against a frozen evaluation cohort only after its
+   specific gate passes; do not tune on the UAT answer key.
 
 The correct priority-10 outcome is therefore a documented **hold**, not a parameter change.

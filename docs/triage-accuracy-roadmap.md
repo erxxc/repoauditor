@@ -28,13 +28,18 @@ Progress:
 
 ## Current baseline
 
+- As of 2026-08-07, the store contains 104 usable human labels (37 positive, 67
+  negative) across 15 source engagements and 404 unlabeled triaged findings. Only 36 labels
+  have compatible stored triage scores (19 positive, 17 negative) across 7 engagements;
+  OPT-002 therefore remains below its 40-label/8-family activation gate. Language metadata
+  is unavailable for the existing human cohort; the Semgrep detector cohort has both classes.
 - At the Phase 0 diagnostic that created this roadmap, real `TriageLabel` volume was
   0 true positives, 0 false positives, and 0 engagements. That is historical context, not a
   live counter; use `repoauditor triage-collection` for the current evidence volume.
 - `suppressed` is a persisted annotation only. Falsify does not exclude suppressed findings;
   it orders triaged findings by P(actionable), applies its run budget, and resumes deferred
   findings later.
-- `triage-stats` withholds threshold curves until 40 real scored labels exist.
+- `triage-stats` withholds threshold curves until 40 compatible real scored labels exist.
 - Evaluation-family-grouped validation activates at 40 usable labels and 8 families. The
   separate collection gate still requires labels from 8 genuine source repositories.
   Before activation, evaluation explicitly reports its row-random or synthetic fallback.
