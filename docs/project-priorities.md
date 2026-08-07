@@ -539,6 +539,10 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
    using 74 calls, 230,595 tokens, and $1.503015 with zero unknown usage. It stopped at its
    batch ceiling with 44 deferred findings after the current OSV feed produced 55 advisory
    candidates. The pre-fix observation is therefore nonterminal; post-fix remains unstarted.
+   A separately authorized 11-batch continuation then drained all 44 residual rows using
+   256 calls, 638,056 tokens, and $4.516240 with zero unknown usage. The complete protected
+   pre-fix chain ends at run 75 with 330 calls, 868,651 tokens, and zero deferred findings.
+   Post-fix remains unstarted and separately gated.
 2. [x] Characterize repeatability on identical inputs. Six approved observations completed
    within budget with perfect verdict and citation-set agreement for both frozen subjects.
 3. Add dated/cached EPSS and KEV enrichment only with fixed stale/offline behavior and
