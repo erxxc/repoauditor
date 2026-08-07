@@ -5,7 +5,7 @@ Status: authoritative post-MVP work list as of 2026-08-01. POC acceptance is com
 Current execution priorities
 
 OPT-035 publishes the canonical machine-readable lifecycle ledger at
-[`optimization-status.json`](optimization-status.json). It records 28 closed and 7 open
+[`optimization-status.json`](optimization-status.json). It records 29 closed and 6 open
 items. Every open item remains subject to its activation gate; priority does not waive it.
 The dated [`outstanding-work checkpoint`](outstanding-work-checkpoint-2026-08-07.json)
 records every open optimization, tuning blocker, and nonblocking future expansion before
@@ -13,15 +13,14 @@ the next paid OPT-005 batch; the accepted POC Definition of Done remains complet
 
 | Priority | Open item | Gate |
 |---:|---|---|
-| 1 | OPT-005 — same-store usage calibration | budget |
-| 2 | OPT-002 — family-aware bootstrap ranges | data |
-| 3 | OPT-003 — temporal validation | data |
-| 4 | OPT-009 — novelty prioritization | data |
-| 5 | OPT-011 — organization-frequency allocation | methodology |
-| 6 | OPT-014 — predictive checks and portfolio modeling | data |
-| 7 | OPT-010 — agentic falsification | safety and evaluation |
+| 1 | OPT-002 — family-aware bootstrap ranges | data |
+| 2 | OPT-003 — temporal validation | data |
+| 3 | OPT-009 — novelty prioritization | data |
+| 4 | OPT-011 — organization-frequency allocation | methodology |
+| 5 | OPT-014 — predictive checks and portfolio modeling | data |
+| 6 | OPT-010 — agentic falsification | safety and evaluation |
 
-OPT-001, OPT-004, OPT-006 through OPT-008, OPT-012, OPT-013, and OPT-015 through OPT-035 are closed at their approved scope. Optional
+OPT-001, OPT-004 through OPT-008, OPT-012, OPT-013, and OPT-015 through OPT-035 are closed at their approved scope. Optional
 expansion of a closed bounded scope must be proposed as new work rather than silently
 reopening its lifecycle state.
 
@@ -127,7 +126,7 @@ I. Evaluation and classifier maturity
 
 II. Operations and cost
 
-   A. OPT-005 — Formal same-store three-run usage calibration — deferred/paid — owner:
+   A. OPT-005 — Formal same-store three-run usage calibration — completed — owner:
       reliability engineering — source: `../offline-readiness-runbook.md` — activate after
       MVP closure or if current hard ceilings block the POC walkthrough — DoD impact: none
       while limits remain fail-closed. The first newly authorized
@@ -253,7 +252,11 @@ II. Operations and cost
       zero reused detection calls, 331 calls, 882,103 provider-reported tokens, $6.032215,
       zero unknown usage, and zero deferred findings. It qualifies as the replacement
       lightweight observation. The zero-provider comparison over terminal runs 105, 75,
-      and 90 remains the final gate.
+      and 90 was retained as a distinct [`clean ready result`](opt-005-offline-comparison-clean-2026-08-07.json).
+      All three logical scan chains qualify with zero unknown usage and no deferred findings.
+      Peak per-batch utilization was 38.67% of the 75-call ceiling and 46.59% of the
+      250,000-token ceiling. OPT-005 is closed at its approved descriptive scope with no
+      operational limit change; any future limit change requires a new scope decision.
 
    B. OPT-006 — Provider dollar-cost reporting — implemented — owner: reliability
       engineering — source: `../project-priorities.md` and the frozen

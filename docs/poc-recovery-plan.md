@@ -49,8 +49,8 @@ II. Outstanding Items (consolidated)
 
    C. Operational calibration
 
-      1. Produce the formal same-store three-run usage comparison — not started/paid —
-         reliability owner.
+      1. Produce the formal same-store three-run usage comparison — completed; clean
+         zero-provider comparison retained with current limits unchanged — reliability owner.
       2. Add provider dollar-cost reporting — blocked on a dated versioned price source —
          reliability owner.
 
