@@ -13,10 +13,10 @@ the next paid OPT-005 batch; the accepted POC Definition of Done remains complet
 
 | Priority | Open item | Gate |
 |---:|---|---|
-| 1 | OPT-002 — family-aware bootstrap ranges | data |
-| 2 | OPT-003 — temporal validation | data |
-| 3 | OPT-009 — novelty prioritization | data |
-| 4 | OPT-011 — organization-frequency allocation | methodology |
+| 1 | OPT-011 — organization-frequency aggregate implementation | approved methodology |
+| 2 | OPT-002 — family-aware bootstrap ranges | data |
+| 3 | OPT-003 — temporal validation | data |
+| 4 | OPT-009 — novelty prioritization | data |
 | 5 | OPT-014 — predictive checks and portfolio modeling | data |
 | 6 | OPT-010 — agentic falsification | safety and evaluation |
 
@@ -315,7 +315,13 @@ IV. Quantitative enrichment
       — owner: quantitative-methodology — source: `../quantitative-integrity-audit.md` —
       long-term activation requires a defensible allocation/decomposition. The MVP separately
       gates affected output as experimental and not decision-grade — DoD impact: MVP
-      presentation gate completed; richer model remains optimization.
+      presentation gate completed; richer model remains optimization. The dated
+      [`methodology decision`](opt-011-methodology-decision-2026-08-07.json) now specifies
+      one `organization_all_event` modeling unit that consumes the IRIS organization rate
+      exactly once. Findings remain auditable membership and cannot allocate or multiply
+      frequency; scenario attribution and remediation deltas remain unavailable. Runtime is
+      unchanged pending the ten-condition PR 2 acceptance contract in
+      [`organization-frequency-methodology.md`](../organization-frequency-methodology.md).
 
    B. OPT-012 — Dated cached EPSS/KEV enrichment — implemented — owner: threat-data
       engineering — source: `../prior-scope-roadmap.md`. The frozen

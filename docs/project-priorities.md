@@ -508,6 +508,9 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
 1. Resolve the confirmed organization-frequency error before changing quantitative output:
    the IRIS organization-level annual rate is currently repeated per finding. Choose no
    allocation/decomposition until a defensible source or explicit model specification exists.
+   OPT-011 PR 1 now supplies that specification: one organization-year all-event unit uses
+   the IRIS rate once, while findings remain non-allocating evidence. Runtime implementation
+   and its ten-condition acceptance contract remain PR 2 work.
 
 ### D — paid/network deferred
 
