@@ -231,6 +231,12 @@ II. Operations and cost
       [`terminal receipt`](opt-005-protected-post-terminal-receipt-2026-08-07.json) permits
       at most one batch, 26 calls, 75,000 tokens, and $0.55 for that exact row; its
       authorization and evidence transfer remain pending.
+      The authorized [`terminal result`](opt-005-protected-post-terminal-result-2026-08-07.json)
+      completed run 90 with 6 calls, 19,392 tokens, $0.140060, and zero unknown usage,
+      draining the final row. The complete post-fix chain is runs 76–90: 334 calls,
+      886,932 tokens, $6.186380, and zero deferred findings. Both protected observations
+      are now terminal. The zero-provider offline comparison over terminal runs 61, 75,
+      and 90 remains the final OPT-005 gate.
 
    B. OPT-006 — Provider dollar-cost reporting — implemented — owner: reliability
       engineering — source: `../project-priorities.md` and the frozen
