@@ -1,6 +1,7 @@
 # Quantitative input integrity audit
 
-Status: read-only audit implemented; one blocking model-structure issue remains unresolved.
+Status: read-only audit implemented; the repeated organization-frequency defect is fixed
+for methodology-marked aggregate runs.
 The audit never changes a scenario, prior, or simulation result.
 
 Run it against a repository whose findings have cleared review:
@@ -14,29 +15,21 @@ uv run repoauditor quant-audit <repo-id>
 | Input | FAIR/model role | Current source | Double-counting assessment |
 |---|---|---|---|
 | Finding validity | Epistemic Bernoulli gate: whether the issue exists | Falsification/review confirmation or triage `P(actionable)` | Structurally separate from event rate |
-| Conditional frequency | Threat/loss-event rate | IRIS 2022 Figure 4 organization-level annual loss-event baseline | **Blocking:** currently repeated once per finding and summed within a scenario |
+| Conditional frequency | Organization loss-event rate | IRIS 2022 Figure 4 organization-level annual loss-event baseline | Consumed once by `organization_all_event_v1`; malformed or legacy repeated streams remain blocking |
 | EPSS/KEV | CVE-specific threat evidence | Explicitly refreshed FIRST/CISA cache; current/stale state and source dates are labeled | Informational only; no proxy, severity inference, or quantitative multiplier is active |
 | Exposure | Threat contact-frequency modifier | Existing map/deal-risk production-exposure signal or analyst override | Used in deal ranking and quantification, but those are separate outputs rather than one repeated equation |
 | Control strength | Vulnerability/success modifier | Conservative zero unless explicitly overridden | Separate from validity; no inferred control credit |
 | Loss scale | Loss-magnitude modifier | Conservative 1.0 unless explicitly overridden | Applied only to magnitude |
 | Magnitude | Per-event loss distribution | IRIS 2022 Table 3 all-event/all-sector baseline | Reused across scenario names; no category-specific calibration is claimed |
 
-## Blocking frequency issue
+## Resolved frequency structure
 
-The cited frequency input is an organization-level probability of at least one annual loss
-event for organizations over $10M revenue. Scenario construction currently converts that
-probability to a Poisson rate, assigns the full rate to every finding, and sums those rates.
-Consequently, the estimated event rate rises mechanically with finding count even though the
-source does not publish a per-finding conditional rate.
-
-The audit flags multi-finding scenarios but does not choose a replacement. A correction
-requires a sourced modeling decision: for example, whether the baseline is allocated once
-per portfolio, once per scenario, or decomposed through calibrated threat-event categories.
-Until then, affected quantitative output is conditionally gated in the CLI, leadership memo,
-and quantitative appendix as **experimental and not decision-grade** whenever the read-only
-integrity audit returns a blocking issue. The simulation and stored inputs are unchanged;
-the gate preserves figures for method evaluation while prohibiting deal, budget, or
-risk-acceptance use.
+The cited input remains an organization-level probability for organizations over $10M
+revenue. New runs convert it once to a Poisson rate and consume one stream per modeled
+organization-year. Findings retain membership, validity provenance, and informational threat
+labels but cannot multiply or allocate frequency. The audit blocks a marked aggregate run
+unless it contains exactly one `organization_all_event` unit and one frequency stream. It
+also retains the earlier repeated-frequency check for historical/legacy shapes.
 
 ## Applicability gaps
 
@@ -52,5 +45,5 @@ risk-acceptance use.
 - No language, industry, geography, architecture, control-maturity, or time-vintage
   adjustment is currently supported beyond the provenance already attached to the baseline.
 
-The next model change remains gated on a sourced resolution of the organization-frequency
-allocation problem. Do not replace it with an intuitive equal split or severity weighting.
+Category allocation and remediation-effect modeling remain unavailable. Adding either is
+OPT-014/data-gated and must not use an intuitive equal split or severity weighting.

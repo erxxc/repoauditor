@@ -67,7 +67,8 @@ II. Outstanding Items (consolidated)
 
    E. Quantitative enrichment
 
-      1. Correct organization-frequency allocation — blocked on sourced methodology —
+      1. Correct organization-frequency allocation — completed with one marked
+         organization all-event stream and no finding/scenario allocation —
          quantitative-methodology owner.
       2. Add dated cached EPSS/KEV enrichment — not started/network-dependent — threat-data
          owner.

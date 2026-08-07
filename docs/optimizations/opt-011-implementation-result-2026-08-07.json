@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-011",
+  "completed_at": "2026-08-07",
+  "status": "implemented",
+  "methodology_version": "organization_all_event_v1",
+  "modeling_unit": "organization_all_event",
+  "invariants": {
+    "organization_frequency_streams": 1,
+    "base_rate_changes_with_finding_count": false,
+    "finding_validity_allocates_frequency": false,
+    "finding_exposure_allocates_frequency": false,
+    "scenario_attribution_available": false,
+    "remediation_delta_available": false,
+    "engagement_override_key": "*",
+    "scenario_specific_overrides": "fail-closed"
+  },
+  "persistence": {
+    "migration": "0034_risk_scenario_methodology.sql",
+    "new_marker": "organization_all_event_v1",
+    "historical_default_marker": "legacy_per_finding_v1",
+    "historical_rows_mutated": false
+  },
+  "surfaces": ["scenario construction", "Monte Carlo", "integrity audit", "CLI", "memo", "appendix", "charts", "persistence"],
+  "unchanged": ["IRIS prior values", "triage thresholds and verdicts", "provider limits", "historical simulation interpretation"],
+  "claim_boundary": "The result is an organization-level all-event industry baseline. Finding/scenario attribution and remediation savings remain unavailable.",
+  "next_gate": "OPT-014 remains data-gated; any calibrated category allocation or remediation-effect model requires applicable organization/incident data."
+}

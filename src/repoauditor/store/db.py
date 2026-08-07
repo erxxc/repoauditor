@@ -1751,14 +1751,15 @@ def insert_risk_scenario(scenario: RiskScenario, config: Config | None = None) -
         with conn:
             cur = conn.execute(
                 "INSERT INTO risk_scenario "
-                "(simulation_run_id, repo_id, name, finding_ids, frequency_lambda, magnitude_mu, "
+                "(simulation_run_id, methodology_version, repo_id, name, finding_ids, frequency_lambda, magnitude_mu, "
                 " magnitude_sigma, frequency_source, magnitude_source, p_actionable, "
                 " validity_probabilities, validity_sources, conditional_frequency_lambdas, "
                 " conditional_frequency_source, threat_signal_labels, "
                 " exposure_factors, control_strengths, loss_scale) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (
                     scenario.simulation_run_id,
+                    scenario.methodology_version,
                     scenario.repo_id,
                     scenario.name,
                     json.dumps(scenario.finding_ids),
@@ -1794,6 +1795,7 @@ def list_risk_scenarios(repo_id: str, config: Config | None = None) -> list[Risk
             RiskScenario(
                 id=r["id"],
                 simulation_run_id=r["simulation_run_id"],
+                methodology_version=r["methodology_version"],
                 repo_id=r["repo_id"],
                 name=r["name"],
                 finding_ids=json.loads(r["finding_ids"]),

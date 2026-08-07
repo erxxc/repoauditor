@@ -2,14 +2,14 @@
   "schema_version": 1,
   "recorded_at": "2026-08-07",
   "optimization_summary": {
-    "closed": 29,
-    "open": 6,
+    "closed": 30,
+    "open": 5,
     "total": 35
   },
   "recommended_sequence": [
     "Retain the qualified OPT-005 comparison and current operational ceilings; treat any expansion as new scope.",
     "Retain OPT-002, OPT-003, and OPT-009 as data-gated until independent held-out evidence exists.",
-    "Resolve OPT-011's allocation methodology before activating OPT-014.",
+    "Keep OPT-014 data-gated after OPT-011; no category allocation or remediation-effect model is inferred.",
     "Leave OPT-010 last until every safety and evaluation prerequisite passes."
   ],
   "current_execution_gate": null,

@@ -39,5 +39,5 @@ def test_opt011_methodology_preserves_claim_boundary_and_acceptance_contract():
     assert "equal allocation across findings" in text
     assert "incremental loss" in text and "remediation" in text
     assert "Historical simulation rows remain immutable" in text
-    assert "PR 2 acceptance contract" in text
+    assert "Implementation acceptance contract" in text
     assert all(f"{number}." in text for number in range(1, 11))

@@ -425,8 +425,8 @@ class DealRiskConfig(BaseModel):
 class RiskQuantConfig(BaseModel):
     """Engagement context and explicit analyst overrides for FAIR scenario inputs.
 
-    Override dictionaries are keyed by scenario name (for example ``data_breach``);
-    ``*`` supplies an engagement-wide override. Scenario-specific values take precedence.
+    The aggregate organization model accepts engagement-wide ``*`` overrides only.
+    Scenario-specific allocation is unsupported and fails closed.
     """
 
     company_revenue_band: Literal[
@@ -455,12 +455,11 @@ class RiskQuantConfig(BaseModel):
 
     @staticmethod
     def _validate_scenario_keys(values: dict[str, float]) -> None:
-        unknown = sorted(set(values) - RISK_SCENARIO_NAMES - {"*"})
-        if unknown:
-            recognized = ", ".join(sorted(RISK_SCENARIO_NAMES))
+        unsupported = sorted(set(values) - {"*"})
+        if unsupported:
             raise ValueError(
-                f"unknown risk scenario override key(s): {', '.join(unknown)}; "
-                f"recognized names are: {recognized} (or * for all scenarios)"
+                "aggregate organization risk accepts engagement-wide '*' overrides only; "
+                f"scenario-specific key(s) are unsupported: {', '.join(unsupported)}"
             )
 
 

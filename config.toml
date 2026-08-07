@@ -106,10 +106,9 @@ max_concurrency = 4
 # band scaling is deliberately withheld until its visual band/value mapping is
 # independently verified. The conservative default is therefore no scaling (1.0).
 company_revenue_band = "unknown"
-# Optional analyst overrides keyed by scenario name; "*" applies engagement-wide.
-# Valid names: credential_compromise, data_breach, rce_full_compromise,
-# service_disruption, uncategorized. Unknown names fail configuration loading.
-# control_strength_overrides = { "data_breach" = 0.7 }
+# Optional aggregate organization overrides. Only "*" is accepted; scenario-specific
+# allocation is unsupported and fails configuration loading.
+# control_strength_overrides = { "*" = 0.7 }
 # exposure_overrides = { "*" = 0.8 }
 # loss_scale_overrides = { "rce_full_compromise" = 1.5 }
 

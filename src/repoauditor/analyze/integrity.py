@@ -122,7 +122,35 @@ def audit_resolved_inputs(
             ),
         ))
 
+    aggregate = [
+        scenario for scenario in scenarios
+        if scenario.methodology_version == "organization_all_event_v1"
+    ]
+    if aggregate:
+        valid = (
+            len(scenarios) == 1
+            and aggregate[0].name == "organization_all_event"
+            and len(aggregate[0].conditional_frequency_lambdas) == 1
+            and aggregate[0].conditional_frequency_lambdas[0]
+            == aggregate[0].frequency_lambda
+        )
+        if not valid:
+            issues.append(QuantAuditIssue(
+                code="organization_frequency_aggregate_invalid",
+                level=AuditLevel.BLOCKING,
+                message=(
+                    "The aggregate methodology must contain one marked all-event scenario "
+                    "and one organization frequency stream."
+                ),
+                evidence=(
+                    f"scenarios={len(scenarios)}; aggregate={len(aggregate)}; "
+                    f"streams={[len(item.conditional_frequency_lambdas) for item in aggregate]}"
+                ),
+            ))
+
     for scenario in scenarios:
+        if scenario.methodology_version == "organization_all_event_v1":
+            continue
         if (
             len(scenario.conditional_frequency_lambdas) > 1
             and len(set(scenario.conditional_frequency_lambdas)) == 1
@@ -148,8 +176,8 @@ def audit_resolved_inputs(
             code="magnitude_population_baseline",
             level=AuditLevel.INFO,
             message=(
-                "Every scenario currently uses the same all-event, all-sector magnitude "
-                "baseline; scenario names do not imply category-specific calibration."
+                "The model uses the same all-event, all-sector magnitude baseline; no "
+                "finding or scenario category calibration is claimed."
             ),
             evidence="magnitude_source=magnitude.industry_baseline",
         ))
@@ -177,9 +205,9 @@ def audit_resolved_inputs(
         code="fair_factor_separation",
         level=AuditLevel.INFO,
         message=(
-            "Resolved factors remain structurally separate: validity gates existence, "
-            "exposure scales contact frequency, control strength conditions success, and "
-            "loss scale changes magnitude."
+            "Resolved factors remain structurally separate: finding validity is audit "
+            "context, organization exposure scales frequency, organization control strength "
+            "conditions success, and organization loss scale changes magnitude."
         ),
         evidence="No EPSS/KEV enrichment is active; no severity-derived proxy is used.",
     ))

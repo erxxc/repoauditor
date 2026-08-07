@@ -39,6 +39,29 @@ def _scenario(*, members: int) -> ScenarioParams:
     )
 
 
+def _aggregate_scenario(*, streams: int = 1) -> ScenarioParams:
+    lam = -math.log1p(-0.129)
+    return ScenarioParams(
+        name="organization_all_event",
+        finding_ids=[1, 2],
+        frequency_lambda=lam,
+        magnitude_mu=1.0,
+        magnitude_sigma=0.5,
+        p05_usd=1.0,
+        p95_usd=10.0,
+        frequency_source="frequency.industry_baseline",
+        magnitude_source="magnitude.industry_baseline",
+        p_actionable=1.0,
+        methodology_version="organization_all_event_v1",
+        validity_probabilities=[1.0, 1.0],
+        validity_sources=["falsify:confirmed", "falsify:confirmed"],
+        conditional_frequency_lambdas=[lam] * streams,
+        conditional_frequency_source="frequency.industry_baseline",
+        exposure_factors=[1.0],
+        control_strengths=[0.0],
+    )
+
+
 def _config(tmp_config, revenue_band: str = "unknown", **updates):
     risk_quant = tmp_config.risk_quant.model_copy(update={
         "company_revenue_band": revenue_band,
@@ -93,13 +116,35 @@ def test_audit_does_not_flag_frequency_repetition_for_one_finding(tmp_config):
     assert quantitative_disclosure(result) is None
 
 
+def test_audit_accepts_one_marked_organization_stream_for_many_findings(tmp_config):
+    result = audit_resolved_inputs(
+        [_aggregate_scenario()], _config(tmp_config, "10m_to_100m")
+    )
+    codes = {issue.code for issue in result.issues}
+
+    assert result.blocking == 0
+    assert "organization_frequency_repeated_per_finding" not in codes
+    assert "organization_frequency_aggregate_invalid" not in codes
+
+
+def test_audit_blocks_invalid_aggregate_stream_count(tmp_config):
+    result = audit_resolved_inputs(
+        [_aggregate_scenario(streams=2)], _config(tmp_config, "10m_to_100m")
+    )
+    assert any(
+        issue.code == "organization_frequency_aggregate_invalid"
+        and issue.level is AuditLevel.BLOCKING
+        for issue in result.issues
+    )
+
+
 def test_audit_discloses_out_of_population_band_and_analyst_overrides(tmp_config):
     result = audit_resolved_inputs(
         [_scenario(members=1)],
         _config(
             tmp_config,
             "1m_to_10m",
-            exposure_overrides={"data_breach": 0.5},
+            exposure_overrides={"*": 0.5},
         ),
     )
     codes = {issue.code for issue in result.issues}

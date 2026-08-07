@@ -508,9 +508,9 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
 1. Resolve the confirmed organization-frequency error before changing quantitative output:
    the IRIS organization-level annual rate is currently repeated per finding. Choose no
    allocation/decomposition until a defensible source or explicit model specification exists.
-   OPT-011 PR 1 now supplies that specification: one organization-year all-event unit uses
-   the IRIS rate once, while findings remain non-allocating evidence. Runtime implementation
-   and its ten-condition acceptance contract remain PR 2 work.
+   OPT-011 now implements that specification: one organization-year all-event unit uses the
+   IRIS rate once, while findings remain non-allocating evidence. Category attribution and
+   remediation deltas remain unavailable pending OPT-014's data gate.
 
 ### D — paid/network deferred
 
@@ -564,8 +564,8 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
 
 The current evidence-backed decision is recorded in
 [pre-tuning-readiness.md](pre-tuning-readiness.md). Tuning is on hold: the local persistent
-store has no usable human-label cohort, and the organization-frequency defect remains
-methodology-blocking. The same-store three-run usage calibration and OPT-004's bounded
+store has no usable human-label cohort, and applicable organization/incident data remains
+absent for OPT-014. The same-store calibration, OPT-011 aggregate correction, and OPT-004's bounded
 repeatability scope is complete. This hold is the priority-10 decision, not an incomplete
 tuning run.
 
