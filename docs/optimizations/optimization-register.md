@@ -161,7 +161,12 @@ II. Operations and cost
       [`pending-queue retry receipt`](opt-005-pending-queue-retry-receipt-2026-08-07.json)
       freezes that complete selection domain and proposes two batches, 36 calls, 120,000
       provider-reported tokens, and $1.00. It excludes the protected pair and remains
-      authorization-pending.
+      authorization-pending. The authorized
+      [`pending-queue retry result`](opt-005-pending-queue-retry-result-2026-08-07.json)
+      completed one clean batch using 22 calls, 57,041 tokens, and $0.395765 with zero
+      unknown usage. It stopped before batch two because only 14 calls remained—below the
+      recent 18–22 call batch range. The residual queue is 51 rows/47 groups, all deferred;
+      new authorization is required.
 
    B. OPT-006 — Provider dollar-cost reporting — implemented — owner: reliability
       engineering — source: `../project-priorities.md` and the frozen
