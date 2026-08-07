@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-005",
+  "frozen_at": "2026-08-07",
+  "status": "lightweight-completion-authorization-pending",
+  "scope": "Drain only the exact lightweight production pending queue through linked continuation batches; protected snapshots excluded.",
+  "parent_chain": {
+    "root_pipeline_run_id": 6,
+    "latest_completed_pipeline_run_id": 19,
+    "repo_id": "snapshot",
+    "source": "tests/fixtures/uat_lightweight_app/snapshot",
+    "commit": "6c26c595e143"
+  },
+  "frozen_queue": {
+    "predicate": "falsification_status in {unresolved,deferred} and no persisted falsification iterations",
+    "pending_findings": 46,
+    "status_counts": {
+      "deferred": 46,
+      "unresolved": 0
+    },
+    "conservative_issue_groups": 42,
+    "finding_ids_digest": "sha256:c8aa39e23f040c7c6f098636bc7f7756e282e99608427bdf9c22e90e76d7ffe6",
+    "ordered_group_ids_digest": "sha256:9563b6bebc3017b5ce58f2a1f990d3f55d9830ba6c4ce42b2c2b0d397b6a888c",
+    "digest_encoding": "UTF-8 SHA-256 of compact JSON arrays; finding IDs sorted ascending, group member IDs retained in production queue order"
+  },
+  "proposed_budget": {
+    "maximum_continuation_batches": 42,
+    "maximum_provider_calls": 270,
+    "maximum_provider_reported_tokens": 750000,
+    "maximum_usd": 5.5,
+    "authorization_granted": false
+  },
+  "per_batch_breakers": {
+    "maximum_provider_calls": 26,
+    "maximum_provider_reported_tokens": 75000,
+    "maximum_usd": 0.55,
+    "execution_note": "Apply the call and token breakers before each batch; verify calculated cost after every completed batch before continuing."
+  },
+  "data_transfer": {
+    "destination": "Anthropic",
+    "credential": "repoauditor-anthropic keychain entry",
+    "content": "Bounded repository-derived evidence from the frozen lightweight snapshot queue",
+    "authorized": false
+  },
+  "execution_policy": {
+    "batching": "Run linked batches sequentially and retain every completed or failed run before deciding whether to continue.",
+    "prior_spend": "All earlier calls, tokens, costs, and unknown-usage attempts remain separately accounted and are not reauthorized.",
+    "queue_completion": "Stop immediately when the lightweight production pending queue reaches zero; unused ceilings expire."
+  },
+  "stop_conditions": [
+    "The repository identity, snapshot commit, pending predicate, or either frozen queue digest changes before the first batch.",
+    "Any new provider attempt lacks authoritative usage metadata.",
+    "Any batch fails or encounters a transport timeout.",
+    "Any aggregate or per-batch call, token, or dollar ceiling is reached or would be exceeded.",
+    "The lightweight pending queue reaches zero.",
+    "Forty-two continuation batches complete."
+  ],
+  "protected_pair": "Neither protected serialize-javascript snapshot is authorized by this receipt.",
+  "next_gate": "Merge this receipt, then obtain explicit authorization for its exact frozen scope, evidence transfer, and ceilings before reading the keychain or making provider calls."
+}
