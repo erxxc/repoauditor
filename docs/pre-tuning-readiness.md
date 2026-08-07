@@ -34,6 +34,10 @@ zero-provider comparison over runs 61/75/90 fails closed because the lightweight
 contains two historical timeout attempts without token metadata. A separately authorized
 fresh, clean lightweight observation is required; temporary CI artifacts and selective
 removal of unknown calls do not satisfy that requirement.
+An isolated replacement lightweight scan has now completed at terminal run 105 with a
+parentless root, zero checkpoint reuse, zero unknown usage, and zero deferred findings.
+The offline comparison over runs 105/75/90 remains to be executed and retained before the
+formal calibration blocker can be removed.
 
 Quantitative tuning is independently blocked. `quant-audit` correctly identifies that the
 IRIS organization-level annual frequency baseline is repeated per finding and summed within
