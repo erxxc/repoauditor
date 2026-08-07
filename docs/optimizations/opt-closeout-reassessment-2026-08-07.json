@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-08-07",
+  "optimization_summary": {
+    "closed": 28,
+    "open": 7,
+    "total": 35
+  },
+  "recommended_sequence": [
+    "Complete OPT-005 lightweight continuation under its separately approved frozen receipt.",
+    "Review the terminal lightweight run and separately scope the protected pre/post pair.",
+    "Generate the offline same-store three-run comparison and close OPT-005 if it qualifies.",
+    "Retain OPT-002, OPT-003, and OPT-009 as data-gated until independent held-out evidence exists.",
+    "Resolve OPT-011's allocation methodology before activating OPT-014.",
+    "Leave OPT-010 last until every safety and evaluation prerequisite passes."
+  ],
+  "current_execution_gate": {
+    "optimization": "OPT-005",
+    "receipt": "opt-005-lightweight-completion-receipt-2026-08-07.json",
+    "authorization_pending": true,
+    "protected_snapshots_excluded": true
+  },
+  "poc_definition_of_done": {
+    "status": "complete",
+    "outstanding_acceptance_items": []
+  }
+}
