@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-005",
+  "completed_at": "2026-08-07",
+  "status": "lightweight-queue-complete",
+  "authorization": "opt-005-lightweight-completion-receipt-2026-08-07.json",
+  "external_disclosure_authorized": true,
+  "execution": {
+    "first_pipeline_run_id": 20,
+    "last_pipeline_run_id": 61,
+    "parent_pipeline_run_id": 19,
+    "completed_batches": 42,
+    "all_batches_completed": true,
+    "parent_chain_valid": true,
+    "repo_id": "snapshot",
+    "commit": "6c26c595e143",
+    "provider_calls": 230,
+    "priced_provider_calls": 230,
+    "unknown_usage_calls": 0,
+    "input_tokens": 560162,
+    "output_tokens": 57124,
+    "cache_read_tokens": 0,
+    "cache_write_tokens": 0,
+    "provider_reported_tokens": 617286,
+    "provider_latency_ms": 1283732,
+    "calculated_cost_usd": 4.22891,
+    "pricing_source_checked_at": "2026-08-01",
+    "pending_before": 46,
+    "pending_after": 0,
+    "protected_snapshot_calls": 0
+  },
+  "authorized_ceilings": {
+    "batches": 42,
+    "provider_calls": 270,
+    "provider_reported_tokens": 750000,
+    "usd": 5.5
+  },
+  "terminal_state": {
+    "lightweight_pending_findings": 0,
+    "canonical_findings": 67,
+    "resolved_findings": 26,
+    "unresolved_findings": 41,
+    "open_review_requests": 51,
+    "normalization_completed_in_run": 61
+  },
+  "claim_boundary": {
+    "lightweight": "The exact frozen lightweight production pending queue reached zero; unresolved findings remain visible through human-review requests.",
+    "protected_pair": "Neither protected serialize-javascript snapshot was accessed or billed.",
+    "optimization": "This result completes only the lightweight prerequisite. OPT-005 remains open until the protected pre/post pair and offline three-run comparison complete under separate gates."
+  },
+  "next_gate": "Review this terminal lightweight result, then separately freeze and authorize the protected pre/post pair."
+}

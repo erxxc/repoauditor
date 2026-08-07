@@ -189,7 +189,13 @@ II. Operations and cost
       breakers. Authorization and bounded evidence transfer remain pending; protected
       snapshots are excluded. The dated
       [`closeout reassessment`](opt-closeout-reassessment-2026-08-07.json) preserves the
-      sequence and gates for all seven open optimizations.
+      sequence and gates for all seven open optimizations. The authorized
+      [`lightweight completion result`](opt-005-lightweight-completion-result-2026-08-07.json)
+      then drained the exact queue through runs 20–61: 42 completed batches, 230 calls,
+      617,286 provider-reported tokens, $4.228910, and zero unknown usage. Run 61 completed
+      normalization and opened 51 review requests; the production pending queue is zero.
+      Protected snapshots remain unstarted, and OPT-005 stays open pending their separate
+      protocol plus the offline three-run comparison.
 
    B. OPT-006 — Provider dollar-cost reporting — implemented — owner: reliability
       engineering — source: `../project-priorities.md` and the frozen
