@@ -242,6 +242,12 @@ II. Operations and cost
       timeout attempts without token metadata. Both protected observations qualify with
       zero unknown usage. OPT-005 remains open pending one separately authorized fresh,
       clean lightweight observation; unknown calls will not be discarded to force closure.
+      The [`clean lightweight receipt`](opt-005-clean-lightweight-receipt-2026-08-07.json)
+      freezes a byte-identical isolated source alias and proposes at most 50 linked batches,
+      400 calls, 1,200,000 provider-reported tokens, and $8.00. The run must create a new
+      same-store repository identity and parentless root with zero checkpoint reuse.
+      Authorization and bounded evidence transfer remain pending; protected execution,
+      tuning, historical repair, and the offline rerun are excluded.
 
    B. OPT-006 — Provider dollar-cost reporting — implemented — owner: reliability
       engineering — source: `../project-priorities.md` and the frozen
