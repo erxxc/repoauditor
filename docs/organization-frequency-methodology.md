@@ -1,6 +1,6 @@
 # Organization-frequency methodology
 
-Status: **OPT-011 methodology approved for implementation; runtime behavior is unchanged.**
+Status: **implemented as `organization_all_event_v1`; OPT-011 complete.**
 
 ## Decision
 
@@ -72,9 +72,9 @@ The current `EXPERIMENTAL / NOT DECISION-GRADE` disclosure may be removed only f
 specific repeated-frequency blocker after PR 2 proves the new invariant. Population,
 parameter-uncertainty, and applicability warnings remain independently active.
 
-## PR 2 acceptance contract
+## Implementation acceptance contract
 
-Implementation is complete only when all of the following are enforced by tests:
+Implementation enforces all of the following with tests:
 
 1. One, two, or many countable findings resolve to exactly one aggregate modeling unit and
    exactly one base `lambda_org`; adding a finding cannot increase that base rate.

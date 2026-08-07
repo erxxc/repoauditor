@@ -8,7 +8,7 @@
     "outstanding_acceptance_items": [],
     "scope_note": "Open optimizations are explicitly outside the accepted POC Definition of Done and do not retroactively reopen it."
   },
-  "optimization_summary": {"closed": 29, "open": 6, "total": 35},
+  "optimization_summary": {"closed": 30, "open": 5, "total": 35},
   "open_optimizations_in_priority_order": [
     {
       "id": "OPT-002",
@@ -26,11 +26,6 @@
       "gate": "evidence supporting in-family/out-of-family novelty as an investigation-depth trigger"
     },
     {
-      "id": "OPT-011",
-      "title": "Organization-frequency allocation correction",
-      "gate": "defensible source or explicit model specification for allocation/decomposition"
-    },
-    {
       "id": "OPT-014",
       "title": "Predictive checks and portfolio modeling",
       "gate": "sufficient evaluation and portfolio data"
@@ -45,7 +40,7 @@
     "active": true,
     "blockers": [
       "Held-out classifier family/temporal evidence gates are not met.",
-      "OPT-011 organization-frequency allocation remains methodology-blocked."
+      "Applicable organization/incident data is still absent for OPT-014."
     ]
   },
   "nonblocking_future_expansion": [

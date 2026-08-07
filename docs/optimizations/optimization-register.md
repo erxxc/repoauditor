@@ -5,7 +5,7 @@ Status: authoritative post-MVP work list as of 2026-08-01. POC acceptance is com
 Current execution priorities
 
 OPT-035 publishes the canonical machine-readable lifecycle ledger at
-[`optimization-status.json`](optimization-status.json). It records 29 closed and 6 open
+[`optimization-status.json`](optimization-status.json). It records 30 closed and 5 open
 items. Every open item remains subject to its activation gate; priority does not waive it.
 The dated [`outstanding-work checkpoint`](outstanding-work-checkpoint-2026-08-07.json)
 records every open optimization, tuning blocker, and nonblocking future expansion before
@@ -13,14 +13,13 @@ the next paid OPT-005 batch; the accepted POC Definition of Done remains complet
 
 | Priority | Open item | Gate |
 |---:|---|---|
-| 1 | OPT-011 — organization-frequency aggregate implementation | approved methodology |
-| 2 | OPT-002 — family-aware bootstrap ranges | data |
-| 3 | OPT-003 — temporal validation | data |
-| 4 | OPT-009 — novelty prioritization | data |
-| 5 | OPT-014 — predictive checks and portfolio modeling | data |
-| 6 | OPT-010 — agentic falsification | safety and evaluation |
+| 1 | OPT-002 — family-aware bootstrap ranges | data |
+| 2 | OPT-003 — temporal validation | data |
+| 3 | OPT-009 — novelty prioritization | data |
+| 4 | OPT-014 — predictive checks and portfolio modeling | data |
+| 5 | OPT-010 — agentic falsification | safety and evaluation |
 
-OPT-001, OPT-004 through OPT-008, OPT-012, OPT-013, and OPT-015 through OPT-035 are closed at their approved scope. Optional
+OPT-001, OPT-004 through OPT-008, OPT-011 through OPT-013, and OPT-015 through OPT-035 are closed at their approved scope. Optional
 expansion of a closed bounded scope must be proposed as new work rather than silently
 reopening its lifecycle state.
 
@@ -311,7 +310,7 @@ III. Detection and falsification depth
 
 IV. Quantitative enrichment
 
-   A. OPT-011 — Sourced correction of organization-frequency allocation — methodology-gated
+   A. OPT-011 — Sourced correction of organization-frequency allocation — completed
       — owner: quantitative-methodology — source: `../quantitative-integrity-audit.md` —
       long-term activation requires a defensible allocation/decomposition. The MVP separately
       gates affected output as experimental and not decision-grade — DoD impact: MVP
@@ -322,6 +321,11 @@ IV. Quantitative enrichment
       frequency; scenario attribution and remediation deltas remain unavailable. Runtime is
       unchanged pending the ten-condition PR 2 acceptance contract in
       [`organization-frequency-methodology.md`](../organization-frequency-methodology.md).
+      The [`implementation result`](opt-011-implementation-result-2026-08-07.json) now
+      records `organization_all_event_v1`: one marked modeling unit, one IRIS frequency
+      stream, neutral organization defaults or explicit `*` overrides, immutable historical
+      semantics, and aligned simulation/audit/report surfaces. OPT-011 is closed; category
+      attribution and remediation deltas remain unavailable and OPT-014 remains data-gated.
 
    B. OPT-012 — Dated cached EPSS/KEV enrichment — implemented — owner: threat-data
       engineering — source: `../prior-scope-roadmap.md`. The frozen

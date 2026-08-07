@@ -35,12 +35,12 @@ of 38.67% of the current call ceiling and 46.59% of the current token ceiling. T
 the OPT-005 calibration blocker without recommending or applying a limit change. The earlier
 run-61 comparison remains retained as fail-closed historical evidence.
 
-Quantitative tuning is independently blocked. `quant-audit` correctly identifies that the
-IRIS organization-level annual frequency baseline is repeated per finding and summed within
-a scenario. No cited source currently supports that allocation. The configured priors
-persist target-population and uncertainty-role metadata. OPT-013 later verified the source's
-July 2022 Advisen feed release and 2012–2021 study window; this temporal metadata removes
-that warning without changing the still-blocked frequency allocation.
+The repeated organization-frequency defect is resolved by `organization_all_event_v1`,
+which consumes the IRIS annual rate once per modeled organization-year. Findings remain
+non-allocating audit context, historical rows retain their legacy marker, and category
+attribution/remediation deltas remain unavailable. Quantitative expansion is still blocked
+on applicable organization/incident data under OPT-014; the configured priors continue to
+preserve target-population and uncertainty limitations.
 
 OPT-004 now provides a bounded initial provider-repeatability characterization. Across three
 byte-identical standard-profile observations per frozen subject, finding 295 was confirmed
@@ -57,8 +57,8 @@ identical-input baseline from the existing retrieval-resolution experiment.
    keep current call/token/time ceilings in force until that report is complete.
 3. Repeat identical provider/model/prompt/snapshot evaluations enough to describe verdict,
    citation, confidence, token, and latency variability separately from resolution changes.
-4. Obtain a sourced frequency allocation/decomposition—or change the scenario model through
-   an explicit methodology decision—before treating quantitative output as decision-grade.
+4. Obtain applicable organization/incident data before adding category allocation,
+   prior-predictive checks, or remediation-effect modeling under OPT-014.
 5. Only then activate grouped validation and threshold/family analysis. Tune one bounded
    component at a time against a frozen evaluation cohort; do not tune on the UAT answer key.
 

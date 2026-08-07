@@ -136,8 +136,8 @@ def test_loss_scale_changes_magnitude_not_event_generation():
 @pytest.mark.parametrize("field", [
     "control_strength_overrides", "exposure_overrides", "loss_scale_overrides",
 ])
-def test_override_typo_fails_with_recognized_scenario_names(field):
-    with pytest.raises(ValueError, match="unknown risk scenario.*data_breach"):
+def test_scenario_specific_override_fails_for_aggregate_model(field):
+    with pytest.raises(ValueError, match="engagement-wide.*scenario-specific"):
         RiskQuantConfig(**{field: {"data-breach": 0.5}})
 
 
@@ -199,8 +199,9 @@ def test_build_scenarios_excludes_killed_and_writes_prior_sources(cfg):
                      status=FalsificationStatus.KILLED)
 
     scenarios = risk_quant.build_scenarios("r", cfg, persist=True)
-    names = {s.name for s in scenarios}
-    assert "data_breach" in names and "rce_full_compromise" in names
+    assert [s.name for s in scenarios] == ["organization_all_event"]
+    assert scenarios[0].methodology_version == "organization_all_event_v1"
+    assert len(scenarios[0].conditional_frequency_lambdas) == 1
     # Killed finding did not create a scenario / inflate frequency.
     all_ids = [fid for s in scenarios for fid in s.finding_ids]
     assert len(all_ids) == 2
@@ -229,9 +230,9 @@ def test_scenario_inputs_persist_origin_and_allow_analyst_overrides(cfg):
     _persist_finding(cfg, "SQL Injection", "critical", "sqli [CWE-89]")
     rq = cfg.risk_quant.model_copy(update={
         "company_revenue_band": "10m_to_100m",
-        "exposure_overrides": {"data_breach": 0.25},
-        "control_strength_overrides": {"data_breach": 0.75},
-        "loss_scale_overrides": {"data_breach": 1.4},
+        "exposure_overrides": {"*": 0.25},
+        "control_strength_overrides": {"*": 0.75},
+        "loss_scale_overrides": {"*": 1.4},
     })
     overridden = cfg.model_copy(update={"risk_quant": rq})
 
@@ -251,17 +252,17 @@ def test_default_inputs_are_transparently_derived_or_conservative(cfg):
 
     scenario = risk_quant.build_scenarios("r", cfg, persist=True)[0]
     inputs = {value.input_name: value for value in db.list_scenario_inputs("r", cfg)}
-    assert scenario.exposure_factors == [cfg.deal_risk.exposure.default_score]
+    assert scenario.exposure_factors == [1.0]
     assert scenario.control_strengths == [0.0]
     assert scenario.loss_scale == 1.0
-    assert inputs["exposure"].origin == "derived"
-    assert inputs["control_strength"].origin == "derived"
+    assert inputs["exposure"].origin == "conservative_default"
+    assert inputs["control_strength"].origin == "conservative_default"
     assert inputs["loss_scale"].origin == "conservative_default"
     assert "withheld" in inputs["loss_scale"].detail
 
 
-def test_risk_scenario_reuses_map_backed_deal_risk_exposure(cfg):
-    """Regression: risk quant consumes deal_risk's map signal, not a second heuristic."""
+def test_risk_scenario_does_not_promote_finding_exposure_to_organization_input(cfg):
+    """Finding exposure is context, not organization-frequency allocation evidence."""
     db.init_db(cfg)
     boundary_id = db.insert_trust_boundary(
         TrustBoundary(repo_id="r", name="public API", description="customer traffic"), cfg
@@ -279,10 +280,8 @@ def test_risk_scenario_reuses_map_backed_deal_risk_exposure(cfg):
     ), cfg)
 
     scenario = risk_quant.build_scenarios("r", cfg, persist=False)[0]
-    assert scenario.exposure_factors == [cfg.deal_risk.exposure.matched_score]
-    assert scenario.input_provenance[0].source == (
-        "analyze.deal_risk production-exposure component"
-    )
+    assert scenario.exposure_factors == [1.0]
+    assert scenario.input_provenance[0].source == "neutral organization-level exposure default"
 
 
 def test_cve_without_real_enrichment_uses_explicit_industry_baseline(cfg):
@@ -413,7 +412,7 @@ def test_generate_appendix_handles_no_findings(cfg, tmp_path):
     assert "No surviving" in path.read_text()
 
 
-def test_appendix_gates_repeated_organization_frequency(cfg, tmp_path, monkeypatch):
+def test_appendix_removes_only_repeated_frequency_blocker(cfg, tmp_path, monkeypatch):
     db.init_db(cfg)
     _persist_finding(
         cfg, "SQL Injection A", "critical", "sqli [CWE-89]", file="a.py", line=1
@@ -433,9 +432,24 @@ def test_appendix_gates_repeated_organization_frequency(cfg, tmp_path, monkeypat
     )
 
     text = path.read_text()
-    assert "EXPERIMENTAL QUANTITATIVE OUTPUT" in text
-    assert "NOT DECISION-GRADE" in text
-    assert text.index("NOT DECISION-GRADE") < text.index("## Headline")
+    assert "EXPERIMENTAL QUANTITATIVE OUTPUT" not in text
+    assert "organization-years using one all-event modeling unit" in text
+    assert "organization_all_event" in text
+
+
+def test_aggregate_base_rate_is_invariant_to_finding_count_and_category(cfg):
+    db.init_db(cfg)
+    _persist_finding(cfg, "SQL Injection", "critical", "sqli [CWE-89]")
+    one = risk_quant.build_scenarios("r", cfg, persist=False)
+    _persist_finding(
+        cfg, "Command Injection", "critical", "os command [CWE-78]", file="b.py", line=2
+    )
+    many = risk_quant.build_scenarios("r", cfg, persist=False)
+
+    assert len(one) == len(many) == 1
+    assert one[0].frequency_lambda == many[0].frequency_lambda
+    assert one[0].conditional_frequency_lambdas == many[0].conditional_frequency_lambdas
+    assert len(many[0].finding_ids) == 2
 
 
 def test_quantify_appendix_returns_reusable_artifact_metadata(cfg):

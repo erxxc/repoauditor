@@ -105,7 +105,7 @@ def test_memo_ranks_by_deal_weight_and_attaches_appendix(cfg):
     assert "deal-risk" in memo.lower()
 
 
-def test_memo_gates_blocking_quantitative_output_before_summary(cfg, monkeypatch):
+def test_memo_uses_aggregate_frequency_without_repetition_blocker(cfg, monkeypatch):
     db.init_db(cfg)
     tb = _tb(cfg)
     _finding(
@@ -127,9 +127,8 @@ def test_memo_gates_blocking_quantitative_output_before_summary(cfg, monkeypatch
     monkeypatch.setattr("repoauditor.report.memo.generate_appendix", fake_appendix)
     memo = build_memo("r", cfg)
 
-    assert "EXPERIMENTAL QUANTITATIVE OUTPUT" in memo
-    assert "NOT DECISION-GRADE" in memo
-    assert memo.index("NOT DECISION-GRADE") < memo.index("## Executive summary")
+    assert "EXPERIMENTAL QUANTITATIVE OUTPUT" not in memo
+    assert "consumed once per organization-year" in memo
 
 
 def test_memo_excludes_findings_blocked_at_review(cfg):

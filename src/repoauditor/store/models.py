@@ -501,6 +501,7 @@ class RiskScenario(BaseModel):
 
     id: int | None = None
     simulation_run_id: int | None = None
+    methodology_version: str = "legacy_per_finding_v1"
     repo_id: str
     name: str
     finding_ids: list[int] = Field(default_factory=list)

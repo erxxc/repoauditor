@@ -86,6 +86,7 @@ def test_pre_methodology_database_migrates_without_losing_audit_data(
             "0031_detection_region_runs.sql",
             "0032_assessment_classifier_eligibility.sql",
             "0033_falsification_counterexample_witness.sql",
+            "0034_risk_scenario_methodology.sql",
     ]
 
     assert db.list_findings("r", tmp_config)[0].id == finding_id
@@ -97,6 +98,7 @@ def test_pre_methodology_database_migrates_without_losing_audit_data(
     assert legacy.control_strengths == []
     assert legacy.loss_scale == 1.0
     assert legacy.simulation_run_id is None
+    assert legacy.methodology_version == "legacy_per_finding_v1"
 
 
 def test_structural_status_migration_preserves_claim_audit_data(
@@ -145,9 +147,10 @@ def test_structural_status_migration_preserves_claim_audit_data(
         "0029_triage_materiality.sql",
         "0030_prior_scope_metadata.sql",
             "0031_detection_region_runs.sql",
-            "0032_assessment_classifier_eligibility.sql",
-            "0033_falsification_counterexample_witness.sql",
-    ]
+                "0032_assessment_classifier_eligibility.sql",
+                "0033_falsification_counterexample_witness.sql",
+                "0034_risk_scenario_methodology.sql",
+        ]
 
     claim = db.list_security_claims(finding_id, tmp_config)[0]
     verification = db.list_claim_verifications(claim.id, tmp_config)[0]
