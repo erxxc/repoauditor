@@ -530,7 +530,11 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
    calls, 46,662 tokens, and $0.328710 with zero unknown usage, leaving 47 deferred rows in
    43 groups. The next separately authorized single batch used 6 calls, 15,533 tokens, and
    $0.103185 with zero unknown usage, leaving 46 deferred rows in 42 groups. Protected
-   snapshots remain unstarted.
+   snapshots remain unstarted. A separately authorized lightweight completion then drained
+   the exact residual queue across 42 linked batches using 230 calls, 617,286 tokens, and
+   $4.228910 with zero unknown usage. Run 61 normalized 67 canonical findings and opened 51
+   review requests. Protected snapshots remain unstarted; their pre/post execution and the
+   offline three-run comparison remain separate OPT-005 gates.
 2. [x] Characterize repeatability on identical inputs. Six approved observations completed
    within budget with perfect verdict and citation-set agreement for both frozen subjects.
 3. Add dated/cached EPSS and KEV enrichment only with fixed stale/offline behavior and
