@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-005",
+  "completed_at": "2026-08-07",
+  "status": "protected-pre-terminal",
+  "authorization": "opt-005-protected-pre-continuation-receipt-2026-08-07.json",
+  "external_disclosure_authorized": true,
+  "continuation_execution": {
+    "pipeline_run_ids": [65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75],
+    "completed_batches": 11,
+    "provider_calls": 256,
+    "priced_provider_calls": 256,
+    "unknown_usage_calls": 0,
+    "input_tokens": 571758,
+    "output_tokens": 66298,
+    "cache_read_tokens": 0,
+    "cache_write_tokens": 0,
+    "provider_reported_tokens": 638056,
+    "provider_latency_ms": 1322003,
+    "calculated_cost_usd": 4.51624,
+    "pending_before": 44,
+    "pending_after": 0
+  },
+  "authorized_ceilings": {
+    "batches": 11,
+    "provider_calls": 275,
+    "provider_reported_tokens": 750000,
+    "usd": 5.5
+  },
+  "complete_logical_scan": {
+    "pipeline_run_ids": [62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75],
+    "terminal_pipeline_run_id": 75,
+    "all_runs_completed": true,
+    "parent_chain_valid": true,
+    "provider_calls": 330,
+    "unknown_usage_calls": 0,
+    "provider_reported_tokens": 868651,
+    "calculated_cost_usd": 6.019255,
+    "canonical_findings": 55,
+    "resolved_findings": 3,
+    "unresolved_findings": 52,
+    "open_review_requests": 52,
+    "deferred_findings": 0
+  },
+  "claim_boundary": {
+    "pre_fix": "The protected pre-fix logical scan is terminal and eligible as the pre-fix usage-calibration observation; unresolved findings remain visible for human review.",
+    "post_fix": "The protected post-fix snapshot was not inspected, executed, disclosed, or billed.",
+    "tuning": "No prompt, model, threshold, prior, selection, grouping, or operational-limit change was made from protected output."
+  },
+  "next_gate": "Merge and review this terminal result, then separately freeze and authorize only the protected post-fix execution."
+}

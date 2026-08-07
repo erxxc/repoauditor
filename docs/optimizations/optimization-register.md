@@ -212,6 +212,12 @@ II. Operations and cost
       freezes the 44-row/44-group residual queue at run 64 and proposes 11 continuation
       batches, 275 calls, 750,000 provider-reported tokens, and $5.50. Authorization and
       protected residual evidence transfer remain pending; post-fix stays excluded.
+      The authorized [`continuation result`](opt-005-protected-pre-continuation-result-2026-08-07.json)
+      drained the queue through runs 65–75 using 256 calls, 638,056 provider-reported
+      tokens, $4.516240, and zero unknown usage. The complete pre-fix chain is runs 62–75:
+      330 calls, 868,651 tokens, $6.019255, and zero deferred findings. Run 75 normalized
+      55 canonical findings and opened 52 review requests. Pre-fix is now a terminal
+      calibration observation; post-fix remains untouched and separately gated.
 
    B. OPT-006 — Provider dollar-cost reporting — implemented — owner: reliability
       engineering — source: `../project-priorities.md` and the frozen
