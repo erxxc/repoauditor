@@ -195,7 +195,12 @@ II. Operations and cost
       617,286 provider-reported tokens, $4.228910, and zero unknown usage. Run 61 completed
       normalization and opened 51 review requests; the production pending queue is zero.
       Protected snapshots remain unstarted, and OPT-005 stays open pending their separate
-      protocol plus the offline three-run comparison.
+      protocol plus the offline three-run comparison. The next
+      [`protected pre-fix receipt`](opt-005-protected-pre-receipt-2026-08-07.json) freezes
+      only serialize-javascript commit `3bab6dee8db7317310a97af5d28f0f0479d21930`
+      and proposes at most three linked batches, 225 calls, 750,000 provider-reported
+      tokens, and $5.00. Authorization and protected evidence transfer remain pending; the
+      post-fix snapshot is explicitly excluded.
 
    B. OPT-006 — Provider dollar-cost reporting — implemented — owner: reliability
       engineering — source: `../project-priorities.md` and the frozen

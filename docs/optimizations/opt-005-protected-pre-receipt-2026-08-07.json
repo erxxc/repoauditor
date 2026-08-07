@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-005",
+  "frozen_at": "2026-08-07",
+  "status": "protected-pre-authorization-pending",
+  "scope": "Run only the frozen serialize-javascript vulnerable pre-fix protected holdout to a terminal zero-deferred state.",
+  "protected_subject": {
+    "fixture_id": "independent_serialize_javascript_pre",
+    "project_id": "serialize_javascript",
+    "variant": "pre_fix",
+    "evaluation_role": "protected_holdout",
+    "source": "tests/fixtures/independent_serialize_javascript_pre/snapshot",
+    "pinned_commit": "3bab6dee8db7317310a97af5d28f0f0479d21930",
+    "cve": "CVE-2019-16769",
+    "ghsa": "GHSA-h9rv-jmmf-4pgx",
+    "file_count": 10,
+    "byte_count": 110561,
+    "tree_digest": "sha256:1cc349730a5561c7e44dbf3b6679e68d865e6ddad17b5dd258998e71f3a812ab",
+    "manifest_digest": "sha256:be8fd6e9aafc6b094bf161100190b32985d5dfbe63c676768329ee3bb354aea4",
+    "digest_encoding": "Tree digest is SHA-256 of a compact UTF-8 JSON array ordered by relative path; each row contains path, file SHA-256, and byte size."
+  },
+  "readiness": {
+    "metadata_ready": true,
+    "online_execution_ready": true,
+    "network_accessed_during_audit": false,
+    "issues": []
+  },
+  "historical_observation": {
+    "source": "offline-readiness-runbook.md; separate temporary-store Actions execution",
+    "completed_batches": 2,
+    "provider_calls": 28,
+    "provider_reported_tokens": 121403,
+    "qualification": "Descriptive planning evidence only; it is not reused as the same-store calibration observation."
+  },
+  "proposed_budget": {
+    "maximum_linked_batches": 3,
+    "maximum_provider_calls": 225,
+    "maximum_provider_reported_tokens": 750000,
+    "maximum_usd": 5.0,
+    "authorization_granted": false
+  },
+  "per_batch_breakers": {
+    "maximum_provider_calls": 75,
+    "maximum_provider_reported_tokens": 250000
+  },
+  "data_transfer": {
+    "destination": "Anthropic",
+    "credential": "repoauditor-anthropic keychain entry",
+    "content": "Bounded repository-derived evidence from the frozen protected pre-fix snapshot",
+    "authorized": false
+  },
+  "execution_policy": {
+    "first_batch": "Start one fresh foreground pipeline from the exact frozen source path.",
+    "continuation": "If deferred findings remain, use only linked production resume batches for the ingested repository identity.",
+    "terminal_requirement": "Stop successfully only at zero deferred findings; retain every batch and all authoritative usage.",
+    "isolation": "Do not inspect, execute, disclose, or bill the post-fix protected snapshot under this receipt.",
+    "no_tuning": "Do not change prompts, models, selection, thresholds, priors, or operational limits based on protected output."
+  },
+  "stop_conditions": [
+    "The pinned commit, source path, tree digest, manifest digest, or protected-role metadata changes.",
+    "Any provider attempt lacks authoritative usage metadata.",
+    "Any batch fails or encounters a transport timeout.",
+    "Any call, token, dollar, or three-batch aggregate ceiling is reached or would be exceeded.",
+    "The pre-fix pending queue reaches zero."
+  ],
+  "excluded": "The protected post-fix snapshot, any prompt or parameter tuning, and the offline three-run comparison are not authorized.",
+  "next_gate": "Merge this receipt, then obtain explicit authorization for its exact protected pre-fix evidence transfer and ceilings before reading the keychain or making provider calls."
+}
