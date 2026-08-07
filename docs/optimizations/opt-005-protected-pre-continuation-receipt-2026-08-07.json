@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-005",
+  "frozen_at": "2026-08-07",
+  "status": "protected-pre-continuation-authorization-pending",
+  "scope": "Continue only the existing protected pre-fix logical scan from its exact frozen residual queue to zero pending findings.",
+  "parent_chain": {
+    "root_pipeline_run_id": 62,
+    "latest_completed_pipeline_run_id": 64,
+    "repo_id": "snapshot-336a2303",
+    "materialized_commit": "4e628d083f07",
+    "pinned_upstream_commit": "3bab6dee8db7317310a97af5d28f0f0479d21930",
+    "variant": "pre_fix",
+    "evaluation_role": "protected_holdout"
+  },
+  "frozen_queue": {
+    "predicate": "falsification_status in {unresolved,deferred} and no persisted falsification iterations",
+    "pending_findings": 44,
+    "status_counts": {
+      "deferred": 44,
+      "unresolved": 0
+    },
+    "conservative_issue_groups": 44,
+    "finding_ids_digest": "sha256:28cdaa1821020ac5c04cc1b15a5e8befdcedaee9745917c9d93473ece126ff63",
+    "ordered_group_ids_digest": "sha256:8d828a62d64dba519e925e65bd4aeceec907d88ca094fe2e2e31e6dacd376239",
+    "digest_encoding": "UTF-8 SHA-256 of compact JSON arrays; finding IDs sorted ascending, group member IDs retained in production queue order"
+  },
+  "observed_batch_basis": {
+    "completed_continuation_batches": 2,
+    "findings_per_batch": 4,
+    "provider_calls_per_batch": 24,
+    "provider_reported_tokens": [60006, 60525],
+    "calculated_cost_usd": [0.42513, 0.433745]
+  },
+  "proposed_budget": {
+    "maximum_continuation_batches": 11,
+    "maximum_provider_calls": 275,
+    "maximum_provider_reported_tokens": 750000,
+    "maximum_usd": 5.5,
+    "authorization_granted": false
+  },
+  "per_batch_breakers": {
+    "maximum_provider_calls": 75,
+    "maximum_provider_reported_tokens": 250000,
+    "execution_note": "Before every batch, lower runtime breakers if necessary so the remaining aggregate call/token allowance cannot be exceeded."
+  },
+  "data_transfer": {
+    "destination": "Anthropic",
+    "credential": "repoauditor-anthropic keychain entry",
+    "content": "Bounded repository-derived evidence from the frozen protected pre-fix residual queue",
+    "authorized": false
+  },
+  "execution_policy": {
+    "continuation_only": "Use only repoauditor resume for repo snapshot-336a2303; do not repeat ingest, map, detect, or triage.",
+    "sequential_verification": "Persist and verify authoritative usage, cost, parent linkage, and pending state after every batch.",
+    "terminal_requirement": "Stop successfully at zero pending findings; unused authorization expires.",
+    "no_tuning": "Do not change prompts, model, thresholds, priors, selection, grouping, or evidence based on protected output."
+  },
+  "stop_conditions": [
+    "The repository, commit, parent run, pending predicate, or either frozen queue digest changes before the first continuation.",
+    "Any new provider attempt lacks authoritative usage metadata.",
+    "Any batch fails or encounters a transport timeout.",
+    "Any aggregate or runtime call, token, dollar, or batch ceiling is reached or would be exceeded.",
+    "The protected pre-fix pending queue reaches zero.",
+    "Eleven continuation batches complete."
+  ],
+  "excluded": "The protected post-fix snapshot, any fresh pre-fix scan, tuning, and the offline comparison are not authorized.",
+  "next_gate": "Merge this receipt, then obtain explicit authorization for its exact residual evidence transfer and ceilings before reading the keychain or continuing."
+}
