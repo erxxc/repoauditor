@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-005",
+  "frozen_at": "2026-08-07",
+  "status": "single-batch-authorization-pending",
+  "scope": "One lightweight continuation batch against the exact production pending queue; protected snapshots excluded.",
+  "parent_chain": {
+    "root_pipeline_run_id": 6,
+    "latest_completed_pipeline_run_id": 17,
+    "repo_id": "snapshot",
+    "commit": "6c26c595e143"
+  },
+  "frozen_queue": {
+    "predicate": "falsification_status in {unresolved,deferred} and no persisted falsification iterations",
+    "pending_findings": 51,
+    "status_counts": {"deferred": 51, "unresolved": 0},
+    "conservative_issue_groups": 47,
+    "finding_rows_digest": "sha256:6e8467ddf6304fbf87852d61e05d9e61a1e2564345dfe8bf4fd2ddb69fb8e75e",
+    "ordered_groups_digest": "sha256:0090a002129f3e093dc190367a8644af4e2bca90016f423f83241fabf4bfcefd"
+  },
+  "latest_clean_batch_basis": {
+    "pipeline_run_id": 17,
+    "provider_calls": 22,
+    "provider_reported_tokens": 57041,
+    "calculated_cost_usd": 0.395765,
+    "unknown_usage_calls": 0
+  },
+  "proposed_budget": {
+    "maximum_continuation_batches": 1,
+    "maximum_provider_calls": 26,
+    "maximum_provider_reported_tokens": 75000,
+    "maximum_usd": 0.55,
+    "existing_per_batch_call_ceiling": 75,
+    "existing_per_batch_token_ceiling": 250000,
+    "authorization_granted": false
+  },
+  "data_transfer": {
+    "destination": "Anthropic",
+    "credential": "repoauditor-anthropic keychain entry",
+    "content": "Bounded repository-derived evidence from the frozen lightweight snapshot queue",
+    "authorized": false
+  },
+  "stop_conditions": [
+    "Any production pending-queue or repository digest changes.",
+    "Any provider attempt lacks authoritative usage metadata.",
+    "The batch fails or any aggregate/per-batch ceiling is exhausted.",
+    "One continuation batch completes.",
+    "The lightweight pending queue reaches zero."
+  ],
+  "claim_boundary": {
+    "prior_authorizations": "All prior attempts and costs remain separately accounted and are not reauthorized.",
+    "protected_pair": "Neither protected serialize-javascript snapshot is authorized."
+  }
+}
