@@ -218,6 +218,12 @@ II. Operations and cost
       330 calls, 868,651 tokens, $6.019255, and zero deferred findings. Run 75 normalized
       55 canonical findings and opened 52 review requests. Pre-fix is now a terminal
       calibration observation; post-fix remains untouched and separately gated.
+      The next [`protected post-fix receipt`](opt-005-protected-post-receipt-2026-08-07.json)
+      freezes only serialize-javascript commit `16a68ab53d9626fc7c942b48a1163108fcd184c8`
+      and proposes at most 14 linked batches, 350 calls, 1,000,000 provider-reported
+      tokens, and $7.00, using the terminal pre-fix workload only as an operational bound.
+      Authorization and protected post-fix evidence transfer remain pending; tuning and
+      the offline comparison are excluded.
 
    B. OPT-006 — Provider dollar-cost reporting — implemented — owner: reliability
       engineering — source: `../project-priorities.md` and the frozen
