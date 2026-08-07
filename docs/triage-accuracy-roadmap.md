@@ -31,8 +31,14 @@ Progress:
 - As of 2026-08-07, the store contains 104 usable human labels (37 positive, 67
   negative) across 15 source engagements and 404 unlabeled triaged findings. Only 36 labels
   have compatible stored triage scores (19 positive, 17 negative) across 7 engagements;
-  OPT-002 therefore remains below its 40-label/8-family activation gate. Language metadata
-  is unavailable for the existing human cohort; the Semgrep detector cohort has both classes.
+OPT-002 therefore remains below its 40-label/8-family activation gate. Language metadata
+is unavailable for the existing human cohort; the Semgrep detector cohort has both classes.
+The next evidence acquisition is frozen before source materialization in
+[`optimizations/opt-002-independent-acquisition-protocol-2026-08-07.json`](optimizations/opt-002-independent-acquisition-protocol-2026-08-07.json).
+It selects two independent deployable products plus one conditional reserve using public
+product/repository metadata only, fixes exact commits and the compatible 3.3.0 scoring
+identity, and requires scoring before an 8–12-entry blinded review packet is rendered. It
+does not authorize scanning, provider calls, review outcomes, tuning, or store mutation.
 - At the Phase 0 diagnostic that created this roadmap, real `TriageLabel` volume was
   0 true positives, 0 false positives, and 0 engagements. That is historical context, not a
   live counter; use `repoauditor triage-collection` for the current evidence volume.
