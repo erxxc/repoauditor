@@ -524,7 +524,9 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
    required; neither protected snapshot has started. A later connectivity retry completed
    one clean 18-call batch, then stopped when preflight exposed that the frozen receipt had
    omitted unexamined unresolved rows. Queue snapshots now use the exact production pending
-   predicate; 55 pending rows in 51 groups remain.
+   predicate. A corrected retry then completed one clean 22-call batch and stopped before a
+   second because its 14-call remainder was below the recent batch range. The residual queue
+   is 51 deferred rows in 47 groups; protected snapshots remain unstarted.
 2. [x] Characterize repeatability on identical inputs. Six approved observations completed
    within budget with perfect verdict and citation-set agreement for both frozen subjects.
 3. Add dated/cached EPSS and KEV enrichment only with fixed stale/offline behavior and

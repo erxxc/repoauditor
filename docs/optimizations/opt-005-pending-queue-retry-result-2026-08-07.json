@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-005",
+  "attempted_at": "2026-08-07",
+  "status": "stopped-after-one-clean-batch-on-aggregate-headroom",
+  "authorization": "opt-005-pending-queue-retry-receipt-2026-08-07.json",
+  "external_disclosure_authorized": true,
+  "execution": {
+    "pipeline_run_id": 17,
+    "completed_batches": 1,
+    "provider_calls": 22,
+    "unknown_usage_calls": 0,
+    "provider_reported_tokens": 57041,
+    "calculated_cost_usd": 0.395765,
+    "deferred_before": 53,
+    "deferred_after": 51,
+    "protected_snapshot_calls": 0
+  },
+  "unused_authorized_headroom": {
+    "batches": 1,
+    "provider_calls": 14,
+    "provider_reported_tokens": 62959,
+    "usd": 0.604235
+  },
+  "stop_reason": "Recent comparable batches required 18-22 calls. With only 14 calls remaining, a second batch could not be admitted with credible aggregate headroom, so the tranche stopped before another provider call.",
+  "residual_queue": {
+    "pending_findings": 51,
+    "status_counts": {"deferred": 51, "unresolved": 0},
+    "conservative_issue_groups": 47,
+    "finding_rows_digest": "sha256:6e8467ddf6304fbf87852d61e05d9e61a1e2564345dfe8bf4fd2ddb69fb8e75e",
+    "ordered_groups_digest": "sha256:0090a002129f3e093dc190367a8644af4e2bca90016f423f83241fabf4bfcefd"
+  },
+  "next_gate": "Merge this receipt and reassess the residual 47-group queue. This authorization is closed; protected snapshots remain unauthorized."
+}
