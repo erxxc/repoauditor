@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-005",
+  "frozen_at": "2026-08-07",
+  "status": "clean-lightweight-authorization-pending",
+  "scope": "Produce one clean same-store lightweight logical scan with no inherited unknown usage or checkpoint reuse.",
+  "frozen_subject": {
+    "canonical_source": "tests/fixtures/uat_lightweight_app/snapshot",
+    "execution_source": "/private/tmp/repoauditor-opt005-clean/uat_lightweight_app/snapshot",
+    "materialization": "Create a byte-identical directory copy immediately before execution; fail if the execution source already exists.",
+    "file_count": 38,
+    "byte_count": 72179,
+    "tree_digest": "sha256:b040cb6088ddb400567144859b0c15fcc4ca3fef8250580034ebee7c1c8dd446",
+    "digest_encoding": "SHA-256 of a compact UTF-8 JSON array ordered by relative path; each row contains path, file SHA-256, and byte size."
+  },
+  "isolation_contract": {
+    "same_store": "Use the current persistent data/repoauditor.db containing terminal protected runs 75 and 90.",
+    "new_identity": "The execution source must ingest under a repository identity not used by any existing pipeline run.",
+    "new_root": "The fresh foreground pipeline root must have parent_run_id=null.",
+    "no_reuse": "Detection must report zero reused completed calls; falsification must begin from the newly ingested identity's own pending queue.",
+    "source_marker": "The durable pipeline source retains uat_lightweight_app so usage-calibration recognizes the lightweight role."
+  },
+  "planning_basis": {
+    "prior_terminal_run_id": 61,
+    "prior_chain_batches": 50,
+    "prior_chain_calls": 359,
+    "prior_chain_known_tokens": 989413,
+    "prior_chain_unknown_usage_calls": 2,
+    "qualification": "Used only to size the clean run. No prior pipeline, finding, iteration, or model-usage row may be linked or reused."
+  },
+  "proposed_budget": {
+    "maximum_linked_batches": 50,
+    "maximum_provider_calls": 400,
+    "maximum_provider_reported_tokens": 1200000,
+    "maximum_usd": 8.0,
+    "authorization_granted": false
+  },
+  "per_batch_breakers": {
+    "maximum_provider_calls": 75,
+    "maximum_provider_reported_tokens": 250000,
+    "execution_note": "Verify every batch and lower runtime breakers when necessary so remaining aggregate allowances cannot be exceeded."
+  },
+  "data_transfer": {
+    "destination": "Anthropic",
+    "credential": "repoauditor-anthropic keychain entry",
+    "content": "Bounded repository-derived evidence from the byte-identical isolated lightweight snapshot",
+    "authorized": false
+  },
+  "stop_conditions": [
+    "The canonical or materialized execution tree digest differs from the frozen digest.",
+    "The execution source already exists or resolves to a previously ingested source identity.",
+    "The fresh root receives a parent run or any detection checkpoint is reused.",
+    "Any provider attempt lacks authoritative usage metadata.",
+    "Any batch fails or encounters a transport timeout.",
+    "Any aggregate or runtime call, token, dollar, or batch ceiling is reached or would be exceeded.",
+    "The isolated lightweight pending queue reaches zero.",
+    "Fifty linked batches complete."
+  ],
+  "excluded": "Any protected snapshot execution, tuning, scoring changes, prior-chain repair, deletion of unknown usage, and offline comparison are not authorized.",
+  "next_gate": "Merge this receipt, then explicitly authorize its exact isolated evidence transfer and ceilings before materializing the alias, reading the keychain, or executing."
+}
