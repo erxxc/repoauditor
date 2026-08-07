@@ -105,7 +105,12 @@ I. Evaluation and classifier maturity
       review, excludes all existing benchmark/CVE/protected/UAT families, and fails closed
       on identity drift or an undersized 8–12-entry packet. The protocol authorizes no
       materialization, scanning, provider transfer, store mutation, review outcome, or model
-      change; execution remains separately gated — DoD impact: none.
+      change. The pending
+      [`primary execution receipt`](opt-002-primary-execution-receipt-2026-08-07.json)
+      now fixes exact-commit ingest, deterministic-only detection, compatible scoring,
+      zero provider usage, resource ceilings, stop conditions, and complete result evidence
+      for the two primaries. It excludes the reserve and all review activity; explicit
+      execution authorization remains required — DoD impact: none.
 
    C. OPT-003 — Temporal validation — deferred — owner: ML evaluation — source:
       `../triage-accuracy-roadmap.md` — activate after meaningful chronological depth exists

@@ -21,7 +21,10 @@ The five open optimizations are OPT-002, OPT-003, OPT-009, OPT-010, and OPT-014.
 provider execution is currently authorized. The outcome-blind, zero-provider OPT-002
 [`acquisition protocol`](optimizations/opt-002-independent-acquisition-protocol-2026-08-07.json)
 is frozen; its repository materialization, deterministic scan, scoring, and review packet
-remain separately gated and are the next recommended work.
+remain separately gated. The
+[`primary execution receipt`](optimizations/opt-002-primary-execution-receipt-2026-08-07.json)
+is pending review and explicit authorization; it permits exactly zero provider usage and
+excludes the reserve and human review.
 
 ## Historical checkpoints
 

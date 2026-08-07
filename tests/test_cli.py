@@ -724,6 +724,40 @@ def test_standalone_detect_persists_region_plan_and_scanner_coverage(
     assert '"target_count": 12' in detail.stdout
 
 
+def test_deterministic_only_detect_forces_zero_provider_regions(
+    tmp_config, monkeypatch
+):
+    _resume_fixture(tmp_config, monkeypatch, count=0)
+    observed = {}
+
+    def detect_stage(repo_id, config):
+        observed["repo_id"] = repo_id
+        observed["detect"] = config.detect
+        return cli.DetectionRun(
+            [],
+            {
+                "semgrep": 0,
+                "gitleaks": 0,
+                "pip-audit": 0,
+                "osv-scanner": 0,
+                "llm-ensemble": 0,
+            },
+        )
+
+    monkeypatch.setattr(cli, "_detect_stage", detect_stage)
+
+    result = runner.invoke(
+        cli.app, ["detect", "acme", "--deterministic-only"]
+    )
+
+    assert result.exit_code == 0, result.output
+    assert observed["repo_id"] == "acme"
+    assert observed["detect"].run_deterministic_tools is True
+    assert observed["detect"].max_llm_regions_per_run == 0
+    assert observed["detect"].reserved_sample_regions == 0
+    assert observed["detect"].reserved_architecture_neighbor_regions == 0
+
+
 def test_scanner_canaries_cli_writes_report_and_fails_closed(
     tmp_config, monkeypatch, tmp_path
 ):
