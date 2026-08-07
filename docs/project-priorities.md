@@ -543,6 +543,10 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
    256 calls, 638,056 tokens, and $4.516240 with zero unknown usage. The complete protected
    pre-fix chain ends at run 75 with 330 calls, 868,651 tokens, and zero deferred findings.
    Post-fix remains unstarted and separately gated.
+   The protected post-fix chain then completed through run 90 with 334 calls, 886,932
+   tokens, $6.186380, zero unknown usage, and zero deferred findings. Its final confirmation
+   remains unadjudicated rather than being treated automatically as persistence or a false
+   positive. Both protected observations are terminal; only the offline comparison remains.
 2. [x] Characterize repeatability on identical inputs. Six approved observations completed
    within budget with perfect verdict and citation-set agreement for both frozen subjects.
 3. Add dated/cached EPSS and KEV enrichment only with fixed stale/offline behavior and
