@@ -201,6 +201,13 @@ II. Operations and cost
       and proposes at most three linked batches, 225 calls, 750,000 provider-reported
       tokens, and $5.00. Authorization and protected evidence transfer remain pending; the
       post-fix snapshot is explicitly excluded.
+      The authorized [`pre-fix result`](opt-005-protected-pre-result-2026-08-07.json)
+      completed runs 62–64 using 74 calls, 230,595 provider-reported tokens, $1.503015,
+      and zero unknown usage, then stopped at the three-batch ceiling with 44 deferred
+      findings. The current OSV-backed scan produced 55 advisory candidates, so the
+      historical two-batch observation did not predict the present queue. This is not a
+      terminal calibration observation; post-fix remains untouched and any continuation
+      requires a new frozen receipt.
 
    B. OPT-006 — Provider dollar-cost reporting — implemented — owner: reliability
       engineering — source: `../project-priorities.md` and the frozen

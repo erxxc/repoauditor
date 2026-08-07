@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-005",
+  "attempted_at": "2026-08-07",
+  "status": "protected-pre-batch-cap-reached",
+  "authorization": "opt-005-protected-pre-receipt-2026-08-07.json",
+  "external_disclosure_authorized": true,
+  "execution": {
+    "repo_id": "snapshot-336a2303",
+    "materialized_commit": "4e628d083f07",
+    "pinned_upstream_commit": "3bab6dee8db7317310a97af5d28f0f0479d21930",
+    "pipeline_run_ids": [62, 63, 64],
+    "completed_batches": 3,
+    "provider_calls": 74,
+    "priced_provider_calls": 74,
+    "unknown_usage_calls": 0,
+    "input_tokens": 213093,
+    "output_tokens": 17502,
+    "cache_read_tokens": 0,
+    "cache_write_tokens": 0,
+    "provider_reported_tokens": 230595,
+    "provider_latency_ms": 431614,
+    "calculated_cost_usd": 1.503015,
+    "pricing_source_checked_at": "2026-08-01",
+    "detected_candidates": 55,
+    "scanner_source_counts": {
+      "osv-scanner": 55,
+      "semgrep": 0,
+      "semgrep-supplemental": 0,
+      "gitleaks": 0,
+      "pip-audit": 0,
+      "llm-ensemble": 0
+    },
+    "deferred_after": 44,
+    "protected_post_calls": 0
+  },
+  "authorized_ceilings": {
+    "linked_batches": 3,
+    "provider_calls": 225,
+    "provider_reported_tokens": 750000,
+    "usd": 5.0
+  },
+  "outcome": {
+    "terminal": false,
+    "reason": "The three-batch authorization ceiling was reached with 44 deferred findings.",
+    "historical_difference": "The current OSV.dev-backed scan produced 55 distinct advisory candidates, so the historical two-batch observation did not predict the present queue size.",
+    "retained_positive_signal": "The first batch confirmed one finding; protected target scoring remains deferred until the logical scan reaches zero pending findings."
+  },
+  "claim_boundary": {
+    "pre_fix": "All three authorized batches completed and remain linked, but this is not a qualifying terminal calibration observation.",
+    "post_fix": "The protected post-fix snapshot was not inspected, executed, disclosed, or billed.",
+    "tuning": "No prompt, model, threshold, prior, selection, or operational-limit change was made from protected output."
+  },
+  "next_gate": "Merge and review this incomplete result, then separately freeze and authorize any exact pre-fix continuation. Post-fix remains excluded."
+}
