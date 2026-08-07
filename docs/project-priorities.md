@@ -526,7 +526,9 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
    omitted unexamined unresolved rows. Queue snapshots now use the exact production pending
    predicate. A corrected retry then completed one clean 22-call batch and stopped before a
    second because its 14-call remainder was below the recent batch range. The residual queue
-   is 51 deferred rows in 47 groups; protected snapshots remain unstarted.
+   was 51 deferred rows in 47 groups. A separately authorized single batch then used 18
+   calls, 46,662 tokens, and $0.328710 with zero unknown usage, leaving 47 deferred rows in
+   43 groups. Protected snapshots remain unstarted.
 2. [x] Characterize repeatability on identical inputs. Six approved observations completed
    within budget with perfect verdict and citation-set agreement for both frozen subjects.
 3. Add dated/cached EPSS and KEV enrichment only with fixed stale/offline behavior and

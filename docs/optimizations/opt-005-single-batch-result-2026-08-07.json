@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-005",
+  "attempted_at": "2026-08-07",
+  "status": "single-batch-complete",
+  "authorization": "opt-005-single-batch-receipt-2026-08-07.json",
+  "external_disclosure_authorized": true,
+  "execution": {
+    "pipeline_run_id": 18,
+    "completed_batches": 1,
+    "provider_calls": 18,
+    "unknown_usage_calls": 0,
+    "provider_reported_tokens": 46662,
+    "calculated_cost_usd": 0.32871,
+    "deferred_before": 51,
+    "deferred_after": 47,
+    "protected_snapshot_calls": 0
+  },
+  "authorized_ceilings": {
+    "batches": 1,
+    "provider_calls": 26,
+    "provider_reported_tokens": 75000,
+    "usd": 0.55
+  },
+  "residual_queue": {
+    "pending_findings": 47,
+    "status_counts": {"deferred": 47, "unresolved": 0},
+    "conservative_issue_groups": 43,
+    "finding_rows_digest": "sha256:bd41a70ec70685b47961dc05cdb67a2644de59326699f4ba5194fafc2f6a80df",
+    "ordered_groups_digest": "sha256:e26888b1f5060ce2fe0e0497f36bb7f2ad53954968cd52eb363cb170d52132fb"
+  },
+  "next_gate": "Merge this result and separately authorize any next lightweight batch. Protected snapshots remain unauthorized."
+}
