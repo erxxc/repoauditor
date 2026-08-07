@@ -1,26 +1,15 @@
 {
   "schema_version": 1,
   "recorded_at": "2026-08-07",
-  "purpose": "Record all outstanding lifecycle work before the next paid OPT-005 batch.",
+  "purpose": "Record all outstanding lifecycle work after completion of the bounded OPT-005 scope.",
   "poc_definition_of_done": {
     "status": "complete",
     "accepted_at": "2026-07-28",
     "outstanding_acceptance_items": [],
     "scope_note": "Open optimizations are explicitly outside the accepted POC Definition of Done and do not retroactively reopen it."
   },
-  "optimization_summary": {"closed": 28, "open": 7, "total": 35},
+  "optimization_summary": {"closed": 29, "open": 6, "total": 35},
   "open_optimizations_in_priority_order": [
-    {
-      "id": "OPT-005",
-      "title": "Same-store three-run usage calibration",
-      "gate": "budget",
-      "remaining": [
-        "Drain the frozen lightweight residual queue (47 findings in 43 groups before the next batch).",
-        "Review the terminal lightweight run and separately authorize the protected pre/post pair.",
-        "Run both protected snapshots to zero deferred findings without using them for tuning.",
-        "Generate and retain the offline three-run usage-calibration comparison."
-      ]
-    },
     {
       "id": "OPT-002",
       "title": "Family-aware bootstrap ranges",
@@ -55,7 +44,6 @@
   "tuning_hold": {
     "active": true,
     "blockers": [
-      "OPT-005 same-store calibration is incomplete.",
       "Held-out classifier family/temporal evidence gates are not met.",
       "OPT-011 organization-frequency allocation remains methodology-blocked."
     ]
@@ -65,5 +53,5 @@
     "Additional independently checked language/framework security-claim certificates.",
     "Any expansion of already closed bounded OPT scopes, which must be proposed as new work."
   ],
-  "next_execution": "One separately authorized OPT-005 lightweight batch; no protected snapshot calls."
+  "next_execution": "Reassess the six remaining gated optimizations; no paid provider execution is currently authorized."
 }

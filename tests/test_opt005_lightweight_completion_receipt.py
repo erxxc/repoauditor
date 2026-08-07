@@ -42,5 +42,9 @@ def test_closeout_reassessment_matches_canonical_ledger():
     )
 
     assert reassessment["optimization_summary"] == ledger["summary"]
-    assert reassessment["current_execution_gate"]["authorization_pending"] is True
+    opt005 = next(item for item in ledger["items"] if item["id"] == "OPT-005")
+    if opt005["status"] == "open":
+        assert reassessment["current_execution_gate"]["authorization_pending"] is True
+    else:
+        assert reassessment["current_execution_gate"] is None
     assert reassessment["poc_definition_of_done"]["outstanding_acceptance_items"] == []
