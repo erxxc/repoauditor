@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-005",
+  "frozen_at": "2026-08-07",
+  "status": "single-batch-2-authorization-pending",
+  "outstanding_work_checkpoint": "outstanding-work-checkpoint-2026-08-07.json",
+  "scope": "One lightweight continuation batch against the exact production pending queue; protected snapshots excluded.",
+  "parent_chain": {
+    "root_pipeline_run_id": 6,
+    "latest_completed_pipeline_run_id": 18,
+    "repo_id": "snapshot",
+    "commit": "6c26c595e143"
+  },
+  "frozen_queue": {
+    "pending_findings": 47,
+    "status_counts": {"deferred": 47, "unresolved": 0},
+    "conservative_issue_groups": 43,
+    "finding_rows_digest": "sha256:bd41a70ec70685b47961dc05cdb67a2644de59326699f4ba5194fafc2f6a80df",
+    "ordered_groups_digest": "sha256:e26888b1f5060ce2fe0e0497f36bb7f2ad53954968cd52eb363cb170d52132fb"
+  },
+  "proposed_budget": {
+    "maximum_continuation_batches": 1,
+    "maximum_provider_calls": 26,
+    "maximum_provider_reported_tokens": 75000,
+    "maximum_usd": 0.55,
+    "authorization_granted": false
+  },
+  "data_transfer": {
+    "destination": "Anthropic",
+    "credential": "repoauditor-anthropic keychain entry",
+    "content": "Bounded repository-derived evidence from the frozen lightweight snapshot queue",
+    "authorized": false
+  },
+  "stop_conditions": [
+    "Any frozen queue/repository digest changes.",
+    "Any provider attempt lacks authoritative usage metadata.",
+    "The batch fails or any ceiling is exhausted.",
+    "One continuation batch completes."
+  ],
+  "protected_pair": "Neither protected serialize-javascript snapshot is authorized."
+}
