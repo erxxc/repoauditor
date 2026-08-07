@@ -7,6 +7,9 @@ Current execution priorities
 OPT-035 publishes the canonical machine-readable lifecycle ledger at
 [`optimization-status.json`](optimization-status.json). It records 28 closed and 7 open
 items. Every open item remains subject to its activation gate; priority does not waive it.
+The dated [`outstanding-work checkpoint`](outstanding-work-checkpoint-2026-08-07.json)
+records every open optimization, tuning blocker, and nonblocking future expansion before
+the next paid OPT-005 batch; the accepted POC Definition of Done remains complete.
 
 | Priority | Open item | Gate |
 |---:|---|---|
@@ -173,7 +176,10 @@ II. Operations and cost
       authorization-pending; protected snapshots are excluded. The authorized
       [`single-batch result`](opt-005-single-batch-result-2026-08-07.json) completed with 18
       calls, 46,662 tokens, $0.328710, and zero unknown usage. The residual queue is 47
-      deferred rows/43 groups; new authorization is required.
+      deferred rows/43 groups. The next
+      [`single-batch receipt`](opt-005-single-batch-2-receipt-2026-08-07.json) retains the
+      same 26-call/75,000-token/$0.55 limits and records budget plus bounded Anthropic
+      evidence transfer as authorization-pending.
 
    B. OPT-006 — Provider dollar-cost reporting — implemented — owner: reliability
       engineering — source: `../project-priorities.md` and the frozen
