@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+from git import Repo
 from typer.testing import CliRunner
 
 from repoauditor import cli
@@ -83,3 +84,39 @@ def test_explicit_repo_id_cannot_merge_different_source_repositories(tmp_config,
 
     with pytest.raises(ValueError, match="already belongs to a different source"):
         ingest_repo(str(second_source), tmp_config, repo_id="engagement")
+
+
+def test_git_ingest_requires_exact_full_commit_when_declared(
+    tmp_config, tmp_path
+):
+    source = tmp_path / "frozen-source"
+    source.mkdir()
+    (source / "app.py").write_text("print('frozen')\n")
+    repo = Repo.init(source)
+    repo.index.add(["app.py"])
+    full_commit = repo.index.commit("freeze source").hexsha
+
+    accepted = ingest_repo(
+        str(source),
+        tmp_config,
+        repo_id="frozen-source",
+        expected_commit=full_commit,
+    )
+    assert accepted.commit == full_commit[:12]
+
+    with pytest.raises(ValueError, match="does not match expected commit"):
+        ingest_repo(
+            str(source),
+            tmp_config,
+            repo_id="wrong-frozen-source",
+            expected_commit="0" * 40,
+        )
+
+
+def test_plain_directory_rejects_expected_git_commit(tmp_config, fixture_repo):
+    with pytest.raises(ValueError, match="requires a git source"):
+        ingest_repo(
+            str(fixture_repo.snapshot_path),
+            tmp_config,
+            expected_commit="0" * 40,
+        )

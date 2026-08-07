@@ -105,7 +105,10 @@ def _copy_snapshot(src: Path, dest: Path) -> None:
 
 
 def ingest_repo(
-    source: str, config: Config | None = None, repo_id: str | None = None
+    source: str,
+    config: Config | None = None,
+    repo_id: str | None = None,
+    expected_commit: str | None = None,
 ) -> IngestResult:
     """Ingest `source` into the hash-keyed raw store, idempotently.
 
@@ -116,10 +119,25 @@ def ingest_repo(
     config = config or get_config()
     db.init_db(config)
     repo_id = _resolved_repo_id(source, repo_id, config)
+    if expected_commit is not None and not re.fullmatch(
+        r"[0-9a-fA-F]{40}", expected_commit
+    ):
+        raise ValueError("expected_commit must be a full 40-character hexadecimal SHA")
 
     if _looks_like_git(source):
-        commit, snapshot_source, cleanup = _prepare_git(source, config, repo_id)
+        commit, full_commit, snapshot_source, cleanup = _prepare_git(
+            source, config, repo_id, expected_commit=expected_commit
+        )
+        if expected_commit is not None and full_commit != expected_commit.lower():
+            if cleanup is not None:
+                cleanup()
+            raise ValueError(
+                f"source HEAD {full_commit} does not match expected commit "
+                f"{expected_commit.lower()}"
+            )
     else:
+        if expected_commit is not None:
+            raise ValueError("expected_commit requires a git source")
         src = Path(source)
         if not src.is_dir():
             raise FileNotFoundError(f"ingest source is not a directory or git repo: {source}")
@@ -162,25 +180,37 @@ def latest_snapshot(config: Config, repo_id: str) -> tuple[Path, str]:
     return latest, latest.name
 
 
-def _prepare_git(source: str, config: Config, repo_id: str):
+def _prepare_git(
+    source: str,
+    config: Config,
+    repo_id: str,
+    *,
+    expected_commit: str | None = None,
+):
     """Clone (or open) a git source into a temp checkout; return (commit, path, cleanup)."""
     from git import Repo  # imported lazily so non-git ingest doesn't need GitPython
 
     src_path = Path(source)
     if src_path.is_dir() and (src_path / ".git").exists():
         repo = Repo(src_path)
-        commit = repo.head.commit.hexsha[:12]
-        return commit, src_path, None
+        full_commit = repo.head.commit.hexsha.lower()
+        return full_commit[:12], full_commit, src_path, None
 
     # Remote URL: clone into a scratch dir under the raw store, then relocate.
     tmp = config.raw_dir / repo_id / ".clone-tmp"
     if tmp.exists():
         shutil.rmtree(tmp)
     tmp.parent.mkdir(parents=True, exist_ok=True)
-    repo = Repo.clone_from(source, tmp)
-    commit = repo.head.commit.hexsha[:12]
+    repo = Repo.clone_from(source, tmp, no_checkout=expected_commit is not None)
+    if expected_commit is not None:
+        try:
+            repo.git.checkout(expected_commit)
+        except BaseException:
+            shutil.rmtree(tmp, ignore_errors=True)
+            raise
+    full_commit = repo.head.commit.hexsha.lower()
 
     def cleanup() -> None:
         shutil.rmtree(tmp, ignore_errors=True)
 
-    return commit, tmp, cleanup
+    return full_commit[:12], full_commit, tmp, cleanup

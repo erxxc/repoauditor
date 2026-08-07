@@ -1317,9 +1317,32 @@ def scanner_canaries(
 
 @app.command()
 @_clean_errors("ingest")
-def ingest(source: str = typer.Argument(..., help="Git URL or local repo/dir to ingest.")) -> None:
+def ingest(
+    source: str = typer.Argument(..., help="Git URL or local repo/dir to ingest."),
+    repo_id: str = typer.Option(
+        None, "--repo-id", help="Explicit independent engagement identity."
+    ),
+    expected_commit: str = typer.Option(
+        None,
+        "--expected-commit",
+        help="Require a git source HEAD to equal this full immutable commit.",
+    ),
+) -> None:
     """Clone/snapshot a target repo (idempotent, keyed by commit hash)."""
-    _ingest_stage(source, get_config())
+    config = get_config()
+    with _stage_timing("ingest") as timing, _progress("ingest"):
+        result = ingest_repo(
+            source, config, repo_id=repo_id, expected_commit=expected_commit
+        )
+        manifests = snapshot_manifests(
+            result.snapshot_path, result.repo_id, result.commit
+        )
+    status = "reused (no-op)" if result.reused else "ingested"
+    _stage_summary(
+        f"{status}. repo-id: {result.repo_id}; commit: {result.commit}; "
+        f"manifests={len(manifests.manifests)} -> {result.snapshot_path}",
+        timing,
+    )
 
 
 @repos_app.command("list")
@@ -1350,9 +1373,24 @@ def map(repo_id: str = typer.Argument(..., help="Ingested repo id.")) -> None:
 
 @app.command()
 @_clean_errors("detect")
-def detect(repo_id: str = typer.Argument(..., help="Ingested + mapped repo id.")) -> None:
+def detect(
+    repo_id: str = typer.Argument(..., help="Ingested + mapped repo id."),
+    deterministic_only: bool = typer.Option(
+        False,
+        "--deterministic-only",
+        help="Run deterministic adapters with zero LLM regions and no map requirement.",
+    ),
+) -> None:
     """Run the multi-lens detection ensemble + deterministic tools."""
     config = get_config()
+    if deterministic_only:
+        config = config.model_copy(update={
+            "detect": config.detect.model_copy(update={
+                "max_llm_regions_per_run": 0,
+                "reserved_sample_regions": 0,
+                "reserved_architecture_neighbor_regions": 0,
+            })
+        })
     _metered_repo_stage(
         repo_id, "detect", lambda: _detect_stage(repo_id, config), config,
         metadata=lambda value: _detect_run_metadata(value, config),

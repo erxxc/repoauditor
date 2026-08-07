@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "frozen_at": "2026-08-07",
+  "optimization": "OPT-002",
+  "status": "authorization-pending",
+  "protocol": "opt-002-independent-acquisition-protocol-2026-08-07.json",
+  "scope": "Materialize, deterministically scan, and compatibly score only the two frozen primary repositories. Packet selection, human review, the reserve source, providers, tuning, and gate promotion are excluded.",
+  "frozen_sources": [
+    {
+      "repo_id": "opt002-documenso",
+      "url": "https://github.com/documenso/documenso.git",
+      "commit": "f0ab7c112e3c39656b0153b67fbf25fd9616e96f",
+      "stored_commit": "f0ab7c112e3c",
+      "evaluation_family": "independent-upstream:documenso/documenso"
+    },
+    {
+      "repo_id": "opt002-lobsters",
+      "url": "https://github.com/lobsters/lobsters.git",
+      "commit": "57268d762e1c2c95b7a8e64ee8deb259cddd8cc0",
+      "stored_commit": "57268d762e1c",
+      "evaluation_family": "independent-upstream:lobsters/lobsters"
+    }
+  ],
+  "preconditions": [
+    "The implementation commit contains exact-commit ingest and deterministic-only detection controls.",
+    "The current persistent store is backed up before the first mutation and no alternate store is substituted.",
+    "All production scanner binaries are available at their pinned versions and the complete scanner canary passes.",
+    "The frozen protocol and this receipt digests match the approved files.",
+    "No source has an existing repo_id or evaluation-family collision."
+  ],
+  "commands_in_order": [
+    "uv run repoauditor scanner-canaries --output data/artifacts/opt002-independent-primary/scanner-canaries.json",
+    "uv run repoauditor ingest https://github.com/documenso/documenso.git --repo-id opt002-documenso --expected-commit f0ab7c112e3c39656b0153b67fbf25fd9616e96f",
+    "uv run repoauditor detect opt002-documenso --deterministic-only",
+    "uv run repoauditor triage opt002-documenso --sarif data/artifacts/opt002-documenso/f0ab7c112e3c/detect/semgrep.sarif",
+    "uv run repoauditor ingest https://github.com/lobsters/lobsters.git --repo-id opt002-lobsters --expected-commit 57268d762e1c2c95b7a8e64ee8deb259cddd8cc0",
+    "uv run repoauditor detect opt002-lobsters --deterministic-only",
+    "uv run repoauditor triage opt002-lobsters --sarif data/artifacts/opt002-lobsters/57268d762e1c/detect/semgrep.sarif",
+    "uv run repoauditor triage-collection"
+  ],
+  "resource_ceilings": {
+    "repositories": 2,
+    "scanner_adapter_executions_per_repository": 5,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "maximum_elapsed_minutes_per_repository": 120,
+    "maximum_new_data_bytes": 5368709120,
+    "network_reads": "Only the two frozen public Git repositories and scanner-owned public rule/advisory data required by the pinned deterministic adapters.",
+    "network_uploads": 0
+  },
+  "scoring_identity": {
+    "model_name": "xgboost",
+    "model_version": "3.3.0",
+    "feature_schema_version": "sha256:89450a98dd4cdc1c",
+    "calibration": "isotonic",
+    "semgrep_version": "1.170.0",
+    "required_for_every_nonempty_source": true
+  },
+  "zero_provider_controls": {
+    "detect_flag": "--deterministic-only",
+    "max_llm_regions_per_run": 0,
+    "reserved_sample_regions": 0,
+    "reserved_architecture_neighbor_regions": 0,
+    "provider_client_calls_allowed": 0,
+    "map_stage": "not run",
+    "falsify_stage": "not run",
+    "normalize_stage": "not run"
+  },
+  "stop_conditions": [
+    "Any full commit, stored commit, source identity, or snapshot digest differs from the frozen source.",
+    "The scanner canary fails or any applicable scanner reports failed, partial, unavailable, malformed, unknown, or unexplained zero-target execution.",
+    "Any provider call, token, cost, map-stage record, or nonzero LLM region is observed.",
+    "Either nonempty triage result uses a scoring identity different from the frozen tuple.",
+    "A repository identity or evaluation family collides with existing evidence.",
+    "A resource ceiling is reached, disk usage is unknown, or an output would overwrite an existing artifact."
+  ],
+  "result_contract": {
+    "required_per_source": [
+      "resolved full commit and stored commit",
+      "snapshot tree digest and byte count",
+      "manifest count",
+      "per-scanner status, applicability, version, configuration identity, target count, finding count, and raw artifact digest",
+      "model-run id and complete scoring identity",
+      "triage feature, score, and unassessed candidate counts",
+      "provider calls, tokens, and cost, all exactly zero"
+    ],
+    "required_aggregate": [
+      "canary artifact digest",
+      "new persistent-store backup identity",
+      "eligible production/deployment candidate count before packet selection",
+      "whether the reserve activation condition is met without activating it"
+    ],
+    "packet_selection": "excluded; a result PR must first prove identities and counts, then freeze the outcome-blind packet without exposing scores to reviewers",
+    "automatic_labels": false,
+    "human_review": false,
+    "optimization_status_change": false
+  },
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the OPT-002 primary zero-provider execution described by opt-002-primary-execution-receipt-2026-08-07.json, limited to its two frozen primary repositories, deterministic scanner network reads, current persistent store, 5 GiB new-data ceiling, 120 minutes per repository, and exactly zero provider calls, tokens, uploads, and cost. The reserve, packet review, providers, tuning, and gate promotion remain excluded."
+  }
+}
