@@ -207,7 +207,11 @@ II. Operations and cost
       findings. The current OSV-backed scan produced 55 advisory candidates, so the
       historical two-batch observation did not predict the present queue. This is not a
       terminal calibration observation; post-fix remains untouched and any continuation
-      requires a new frozen receipt.
+      requires a new frozen receipt. The
+      [`pre-fix continuation receipt`](opt-005-protected-pre-continuation-receipt-2026-08-07.json)
+      freezes the 44-row/44-group residual queue at run 64 and proposes 11 continuation
+      batches, 275 calls, 750,000 provider-reported tokens, and $5.50. Authorization and
+      protected residual evidence transfer remain pending; post-fix stays excluded.
 
    B. OPT-006 — Provider dollar-cost reporting — implemented — owner: reliability
       engineering — source: `../project-priorities.md` and the frozen
