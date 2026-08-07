@@ -23,8 +23,11 @@ provider execution is currently authorized. The outcome-blind, zero-provider OPT
 is frozen; its repository materialization, deterministic scan, scoring, and review packet
 remain separately gated. The
 [`primary execution receipt`](optimizations/opt-002-primary-execution-receipt-2026-08-07.json)
-is pending review and explicit authorization; it permits exactly zero provider usage and
-excludes the reserve and human review.
+was authorized and attempted. The retained
+[`attempt result`](optimizations/opt-002-primary-execution-attempt-2026-08-07.json) records
+a fail-closed scoring-identity mismatch after successful Documenso deterministic scanning;
+Lobsters, the reserve, and human review were not started. OPT-002 remains open pending
+duplicate derived-label/evaluation-family reconciliation.
 
 ## Historical checkpoints
 

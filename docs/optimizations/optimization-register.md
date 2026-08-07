@@ -110,7 +110,14 @@ I. Evaluation and classifier maturity
       now fixes exact-commit ingest, deterministic-only detection, compatible scoring,
       zero provider usage, resource ceilings, stop conditions, and complete result evidence
       for the two primaries. It excludes the reserve and all review activity; explicit
-      execution authorization remains required — DoD impact: none.
+      execution authorization was granted. The first
+      [`execution attempt`](opt-002-primary-execution-attempt-2026-08-07.json) passed the
+      scanner canary, exact-commit Documenso ingest, deterministic scan, and zero-provider
+      accounting, then stopped before Lobsters because triage selected randomforest 1.9.0
+      instead of the frozen xgboost 3.3.0 identity. Seven previously unharvested derived
+      labels from the byte-identical lightweight identity changed the training corpus from
+      111 to 118 rows. No Documenso human labels were added; the duplicate-family corpus
+      must be reconciled before retry or protocol amendment — DoD impact: none.
 
    C. OPT-003 — Temporal validation — deferred — owner: ML evaluation — source:
       `../triage-accuracy-roadmap.md` — activate after meaningful chronological depth exists
