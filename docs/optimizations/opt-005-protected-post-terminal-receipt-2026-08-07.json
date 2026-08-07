@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-005",
+  "frozen_at": "2026-08-07",
+  "status": "protected-post-terminal-authorization-pending",
+  "scope": "Continue only the existing protected post-fix logical scan for its exact one-finding residual queue.",
+  "parent_chain": {
+    "root_pipeline_run_id": 76,
+    "latest_completed_pipeline_run_id": 89,
+    "repo_id": "snapshot-2d5abd74",
+    "materialized_commit": "beb955351e94",
+    "pinned_upstream_commit": "16a68ab53d9626fc7c942b48a1163108fcd184c8",
+    "variant": "post_fix"
+  },
+  "frozen_queue": {
+    "pending_findings": 1,
+    "conservative_issue_groups": 1,
+    "finding_ids_digest": "sha256:3b7d064a6fea895d1470f8c146b4faf93c7e984de2a0af6e2719124cf1cfe695",
+    "ordered_group_ids_digest": "sha256:d6f3b45e804253509fc7303810715a290c6b52f46f4d3fbf10a51d43c6d6ef06",
+    "digest_encoding": "UTF-8 SHA-256 of compact JSON arrays; finding IDs sorted ascending, group member IDs retained in production queue order"
+  },
+  "proposed_budget": {
+    "maximum_continuation_batches": 1,
+    "maximum_provider_calls": 26,
+    "maximum_provider_reported_tokens": 75000,
+    "maximum_usd": 0.55,
+    "authorization_granted": false
+  },
+  "data_transfer": {
+    "destination": "Anthropic",
+    "credential": "repoauditor-anthropic keychain entry",
+    "content": "Bounded repository-derived evidence for the single frozen protected post-fix residual finding",
+    "authorized": false
+  },
+  "stop_conditions": [
+    "The parent run, repository identity, commit, or either queue digest changes.",
+    "Any provider attempt lacks authoritative usage metadata.",
+    "The batch fails, times out, or reaches any call, token, or dollar ceiling.",
+    "One continuation batch completes."
+  ],
+  "excluded": "Any pre-fix execution, fresh post-fix scan, tuning, scoring changes, and offline comparison are not authorized.",
+  "next_gate": "Merge this receipt, then obtain explicit authorization for the exact one-row transfer and ceilings."
+}
