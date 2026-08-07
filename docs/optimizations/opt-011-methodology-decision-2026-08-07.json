@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-011",
+  "decided_at": "2026-08-07",
+  "status": "methodology-approved-implementation-pending",
+  "runtime_changed": false,
+  "decision": {
+    "modeling_unit": "organization_all_event",
+    "frequency_scope": "one organization-year all-event baseline",
+    "base_probability_at_least_one": 0.129,
+    "base_rate_transformation": "lambda_org=-ln(1-0.129)",
+    "base_rate_consumption": "exactly once per simulation trial",
+    "magnitude_scope": "IRIS 2022 Table 3 all-event/all-sector",
+    "finding_role": "auditable non-allocating evidence membership",
+    "scenario_attribution": "unavailable",
+    "remediation_delta": "unavailable"
+  },
+  "prohibited_allocations": [
+    "full organization rate per finding",
+    "full organization rate per scenario",
+    "equal finding or scenario split",
+    "severity, confidence, EPSS, KEV, or deal-risk weighting"
+  ],
+  "organization_inputs": {
+    "default_exposure": 1.0,
+    "default_control_strength": 0.0,
+    "default_loss_scale": 1.0,
+    "allowed_override_scope": "engagement-wide * only",
+    "scenario_specific_override_behavior": "fail-closed"
+  },
+  "historical_rows": "immutable and readable under their recorded earlier methodology",
+  "implementation_gate": "All ten acceptance conditions in organization-frequency-methodology.md must pass before OPT-011 closes.",
+  "excluded": "No runtime, prior, threshold, verdict, provider-limit, historical-row, or OPT-014 change is approved by this decision record."
+}
