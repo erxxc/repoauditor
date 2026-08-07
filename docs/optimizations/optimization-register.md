@@ -170,7 +170,10 @@ II. Operations and cost
       [`single-batch receipt`](opt-005-single-batch-receipt-2026-08-07.json) freezes that
       queue and proposes one batch capped at 26 calls, 75,000 provider-reported tokens, and
       $0.55. Its budget and bounded evidence transfer to Anthropic remain separately
-      authorization-pending; protected snapshots are excluded.
+      authorization-pending; protected snapshots are excluded. The authorized
+      [`single-batch result`](opt-005-single-batch-result-2026-08-07.json) completed with 18
+      calls, 46,662 tokens, $0.328710, and zero unknown usage. The residual queue is 47
+      deferred rows/43 groups; new authorization is required.
 
    B. OPT-006 — Provider dollar-cost reporting — implemented — owner: reliability
       engineering — source: `../project-priorities.md` and the frozen
