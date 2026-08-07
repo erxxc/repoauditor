@@ -98,7 +98,14 @@ I. Evaluation and classifier maturity
 
    B. OPT-002 — Family-aware bootstrap ranges — deferred — owner: ML evaluation — source:
       `../triage-accuracy-roadmap.md` — activate after adequate held-out family breadth and
-      both classes exist — DoD impact: none.
+      both classes exist. The
+      [`independent acquisition protocol`](opt-002-independent-acquisition-protocol-2026-08-07.json)
+      freezes two primary product repositories and one conditional reserve at exact commits
+      before scanning. It requires the current 3.3.0 score identity before blinded human
+      review, excludes all existing benchmark/CVE/protected/UAT families, and fails closed
+      on identity drift or an undersized 8–12-entry packet. The protocol authorizes no
+      materialization, scanning, provider transfer, store mutation, review outcome, or model
+      change; execution remains separately gated — DoD impact: none.
 
    C. OPT-003 — Temporal validation — deferred — owner: ML evaluation — source:
       `../triage-accuracy-roadmap.md` — activate after meaningful chronological depth exists

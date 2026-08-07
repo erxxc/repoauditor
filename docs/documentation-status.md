@@ -18,8 +18,10 @@ step. They must not be interpreted as the current lifecycle state.
   is the current derived checkpoint and must match the lifecycle ledger.
 
 The five open optimizations are OPT-002, OPT-003, OPT-009, OPT-010, and OPT-014. No paid
-provider execution is currently authorized. The next recommended work is an outcome-blind,
-zero-provider OPT-002 acquisition protocol targeting evaluation-compatible scored evidence.
+provider execution is currently authorized. The outcome-blind, zero-provider OPT-002
+[`acquisition protocol`](optimizations/opt-002-independent-acquisition-protocol-2026-08-07.json)
+is frozen; its repository materialization, deterministic scan, scoring, and review packet
+remain separately gated and are the next recommended work.
 
 ## Historical checkpoints
 

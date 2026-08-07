@@ -1,0 +1,137 @@
+{
+  "schema_version": 1,
+  "frozen_at": "2026-08-07",
+  "optimization": "OPT-002",
+  "status": "protocol-frozen-execution-not-authorized",
+  "objective": "Acquire evaluation-compatible scored human evidence from genuinely independent product repositories without selecting sources or review subjects from security outcomes.",
+  "current_gate": {
+    "usable_human_labels": 104,
+    "compatible_scored_human_labels": 36,
+    "compatible_positive": 19,
+    "compatible_negative": 17,
+    "compatible_engagements": 7,
+    "minimum_compatible_labels": 40,
+    "minimum_evaluation_families": 8,
+    "shortfall": "At least four additional compatible decided labels and one genuinely independent evaluation family are required; both classes must remain represented."
+  },
+  "frozen_scoring_identity": {
+    "source_model_run_id": 32,
+    "model_name": "xgboost",
+    "model_version": "3.3.0",
+    "feature_schema_version": "sha256:89450a98dd4cdc1c",
+    "calibration": "isotonic",
+    "scanner_versions": {"Semgrep OSS": "1.170.0"},
+    "compatibility_rule": "Every acquired finding must have a stored score with exactly this model name, model version, feature schema, and calibration before human review. Retraining, tuning, or substituting a newer tuple requires a new protocol."
+  },
+  "source_selection": {
+    "decision_inputs": [
+      "public repository identity and metadata",
+      "non-fork and non-archived state",
+      "deployable product rather than tutorial, benchmark, deliberately vulnerable application, or starter template",
+      "documented application domain and language/framework diversity",
+      "potential to exercise authorization, business workflow, tenant or ownership isolation, or service-boundary reasoning",
+      "absence from every existing RepoAuditor acquisition, protected, UAT, and evaluation family"
+    ],
+    "forbidden_inputs": [
+      "scanner findings or finding counts",
+      "known vulnerability or advisory membership",
+      "security issue or pull-request outcomes",
+      "classifier score, rank, predicted class, severity, confidence, or suppression",
+      "human label, falsification verdict, benchmark answer key, or exploit result"
+    ],
+    "selection_completed_before_materialization_or_scanning": true
+  },
+  "frozen_sources": [
+    {
+      "order": 1,
+      "role": "primary",
+      "evaluation_family": "independent-upstream:documenso/documenso",
+      "repository": "documenso/documenso",
+      "url": "https://github.com/documenso/documenso.git",
+      "branch_at_freeze": "main",
+      "commit": "f0ab7c112e3c39656b0153b67fbf25fd9616e96f",
+      "source_identity_digest": "sha256:da19ecf1fc8e5ff1872992f8e28efebd4556395696bd81de1d0ddc73d37de985",
+      "public_metadata_at_freeze": {"fork": false, "archived": false, "disabled": false, "license": "AGPL-3.0", "repository_size_kib": 285841},
+      "selection_basis": "A deployable, self-hostable TypeScript document-signing product with authentication, document workflows, teams/organizations, storage, background work, and external-service boundaries.",
+      "target_dimensions_are_hypotheses_not_labels": ["authorization", "ownership or tenant isolation", "business workflow", "cross-service"]
+    },
+    {
+      "order": 2,
+      "role": "primary",
+      "evaluation_family": "independent-upstream:lobsters/lobsters",
+      "repository": "lobsters/lobsters",
+      "url": "https://github.com/lobsters/lobsters.git",
+      "branch_at_freeze": "main",
+      "commit": "57268d762e1c2c95b7a8e64ee8deb259cddd8cc0",
+      "source_identity_digest": "sha256:ae92ee313338a7f21f81a59be4d070c13626d268c105f78c91a1b75a3995a602",
+      "public_metadata_at_freeze": {"fork": false, "archived": false, "disabled": false, "license": "BSD-3-Clause per repository README", "repository_size_kib": 8839},
+      "selection_basis": "A deployed Ruby on Rails community product with user, moderator, and administrator workflows and materially different language/framework ancestry from the TypeScript primary.",
+      "target_dimensions_are_hypotheses_not_labels": ["authorization", "role separation", "business workflow", "ownership"]
+    },
+    {
+      "order": 3,
+      "role": "reserve-only",
+      "activation_condition": "Use only if the two primary sources produce fewer than eight classifier-eligible candidates after the frozen filters; record the primary shortfall before materializing this source.",
+      "evaluation_family": "independent-upstream:chatwoot/chatwoot",
+      "repository": "chatwoot/chatwoot",
+      "url": "https://github.com/chatwoot/chatwoot.git",
+      "branch_at_freeze": "develop",
+      "commit": "f12529105bff8b16793c836bde5bfe1ba7e2f470",
+      "source_identity_digest": "sha256:79a4754f73f2b66c9c2c79a4e274891514f1adb4abc47c3b49cc26cc0f36bb4a",
+      "public_metadata_at_freeze": {"fork": false, "archived": false, "disabled": false, "license": "repository license requires verification at materialization", "repository_size_kib": 315993},
+      "selection_basis": "A deployable Rails and Vue customer-support product with account, inbox, agent, team, conversation, and integration boundaries.",
+      "target_dimensions_are_hypotheses_not_labels": ["tenant isolation", "role separation", "business workflow", "cross-service"]
+    }
+  ],
+  "excluded_families": {
+    "categories": ["deliberately vulnerable benchmarks", "known-CVE vulnerable or patched pairs", "protected snapshots", "UAT and manufactured fixtures", "lightweight calibration fixtures", "forks, clones, mirrors, and related pre/post variants"],
+    "named_existing_upstreams": ["OWASP Juice Shop", "OWASP WebGoat", "OWASP RailsGoat", "codecov-node", "pyjwt", "reposilite", "ruby-saml", "simple-git", "serialize-javascript"],
+    "partition_rule": "Every clone, fork, pre/post pair, or shared-upstream derivative remains one family and cannot create an additional held-out family."
+  },
+  "execution_sequence": [
+    "Verify each activated source still resolves to the exact frozen commit and materialize byte-identical content.",
+    "Run deterministic deployment canaries and the pinned deterministic scanner configuration; preserve raw artifacts, status, versions, source counts, and snapshot digests.",
+    "Create a new repository identity and evaluation-family assignment for each independent upstream; do not reuse or relabel an existing engagement.",
+    "Extract features and score every eligible finding with the frozen scoring identity before any human sees a review packet.",
+    "Freeze an 8-to-12-entry packet using the outcome-blind selection contract below.",
+    "Have analysts review bounded source evidence with abstention available and without classifier scores or expected outcomes.",
+    "Recompute compatible cohort counts and OPT-002 gates without changing labels, thresholds, calibration, or the scoring model."
+  ],
+  "review_selection": {
+    "packet_size_minimum": 8,
+    "packet_size_maximum": 12,
+    "primary_selection_key": "sha256('opt-002-independent-v1' + evaluation_family + finding_fingerprint)",
+    "ordering": "Round-robin activated evaluation families by the primary selection key, selecting at most six entries per family.",
+    "eligible_only_if": [
+      "production or deployment path tier",
+      "not already assessed or human-labelled",
+      "exact frozen scoring identity exists",
+      "unique exact-location identity after declared duplicate collapse",
+      "not generated, vendored, documentation, example, test, CI, package-hygiene-only, or secret-in-history evidence"
+    ],
+    "forbidden_selection_fields": ["score", "rank", "predicted class", "severity", "confidence", "rule prior", "human or scanner outcome", "known vulnerability membership"],
+    "review_packet_hides": ["score", "predicted class", "selection rank rationale beyond stable hash", "expected class"],
+    "abstentions_preserved": true,
+    "labels_are_never_inferred_from_scanner_output": true
+  },
+  "fail_closed_rules": [
+    "If source identity, commit, snapshot digest, scanner identity, feature schema, model identity, or calibration drifts, stop and issue a replacement protocol before review.",
+    "If fewer than eight eligible candidates exist after activating the reserve, publish the shortfall and stop; do not broaden path tiers or inspect outcomes to refill the packet.",
+    "If review yields fewer than four decided compatible labels, fewer than eight genuine evaluation families, or loses either class, retain the evidence but keep OPT-002 gated.",
+    "Do not rescore previously reviewed repositories after their labels are known and present that result as independent held-out evidence.",
+    "Do not tune, retrain, recalibrate, change thresholds, or add detector rules during this acquisition."
+  ],
+  "authorization_boundary": {
+    "authorized_by_this_protocol": ["read-only public metadata resolution", "documentation and offline contract tests"],
+    "not_authorized": ["repository materialization", "fresh scanning", "provider or LLM calls", "human-review outcome entry", "store mutation", "model training or tuning", "threshold or production policy changes"],
+    "next_approval": "A separate execution receipt must freeze activated source digests, commands, resource ceilings, output locations, scanner configuration, and whether any network transfer occurs."
+  },
+  "promotion_evidence": [
+    "immutable source and raw scanner digests",
+    "healthy per-tool status and applicability",
+    "stored score identity for every reviewed finding",
+    "frozen packet and its outcome-blind input digest",
+    "human dispositions including abstentions",
+    "post-review compatible label, class, engagement, and evaluation-family counts"
+  ]
+}
