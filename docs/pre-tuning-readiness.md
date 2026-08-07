@@ -28,11 +28,12 @@ validation, novelty training, and classifier tuning remain evidence-gated. Fixtu
 keys, manufactured controls, and model-generated labels must not be substituted for this
 missing human cohort.
 
-The formal provider-usage calibration also remains unavailable in this store. It requires
-one completed lightweight run and a completed independent pre/post pair, including linked
-continuations and authoritative token metadata, in the same persistent store. Workflow
-artifacts from temporary CI databases are useful safety observations but must not be merged
-or represented as that calibration cohort.
+The formal provider-usage calibration remains unavailable in this store. The protected
+pre/post observations are now terminal and carry authoritative token metadata, but the
+zero-provider comparison over runs 61/75/90 fails closed because the lightweight chain
+contains two historical timeout attempts without token metadata. A separately authorized
+fresh, clean lightweight observation is required; temporary CI artifacts and selective
+removal of unknown calls do not satisfy that requirement.
 
 Quantitative tuning is independently blocked. `quant-audit` correctly identifies that the
 IRIS organization-level annual frequency baseline is repeated per finding and summed within

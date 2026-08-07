@@ -236,7 +236,12 @@ II. Operations and cost
       draining the final row. The complete post-fix chain is runs 76–90: 334 calls,
       886,932 tokens, $6.186380, and zero deferred findings. Both protected observations
       are now terminal. The zero-provider offline comparison over terminal runs 61, 75,
-      and 90 remains the final OPT-005 gate.
+      and 90 was executed and retained as a
+      [`fail-closed result`](opt-005-offline-comparison-2026-08-07.json). It made no provider
+      calls, but is not ready because the full lightweight chain contains two historical
+      timeout attempts without token metadata. Both protected observations qualify with
+      zero unknown usage. OPT-005 remains open pending one separately authorized fresh,
+      clean lightweight observation; unknown calls will not be discarded to force closure.
 
    B. OPT-006 — Provider dollar-cost reporting — implemented — owner: reliability
       engineering — source: `../project-priorities.md` and the frozen
