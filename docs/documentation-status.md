@@ -33,9 +33,13 @@ implemented and recorded in
 historical rows remain immutable, exact aliases contribute once, and the read-only dry run
 restores the frozen scoring identity. The pending
 [`zero-provider continuation receipt`](optimizations/opt-002-zero-provider-continuation-receipt-2026-08-07.json)
-now freezes retained Documenso re-triage and conditionally permits frozen Lobsters
-acquisition only after that identity passes. It authorizes no execution until its exact
-approval statement is granted.
+froze retained Documenso re-triage and conditionally permitted frozen Lobsters acquisition
+only after that identity passed. Its
+[`continuation result`](optimizations/opt-002-zero-provider-continuation-result-2026-08-07.json)
+records successful compatible scoring for both primaries, complete deterministic scanner
+evidence, and exactly zero provider use. The two primaries yield 218 unique eligible
+production/deployment candidates, so the reserve remains inactive. Packet selection,
+candidate identity disclosure, human review, providers, tuning, and promotion remain gated.
 
 ## Historical checkpoints
 
