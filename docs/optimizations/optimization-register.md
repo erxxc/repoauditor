@@ -129,7 +129,13 @@ I. Evaluation and classifier maturity
       Lobsters deterministic acquisition only after the full scoring identity passes. It
       requires a new store backup, unchanged 1,473-row provider-usage ledger, and complete
       result evidence; reserve activation, packet selection, review, providers, tuning, and
-      gate promotion remain excluded — DoD impact: none.
+      gate promotion remain excluded. The
+      [`continuation result`](opt-002-zero-provider-continuation-result-2026-08-07.json)
+      records successful XGBoost 3.3.0 scoring for retained Documenso and exact-commit
+      Lobsters, healthy deterministic scanners, and zero provider activity. The primaries
+      yield 218 unique production/deployment candidates before selection, so the reserve is
+      not activated. No packet identities were selected or exposed and no labels were added;
+      OPT-002 is now packet-gated — DoD impact: none.
 
    C. OPT-003 — Temporal validation — deferred — owner: ML evaluation — source:
       `../triage-accuracy-roadmap.md` — activate after meaningful chronological depth exists

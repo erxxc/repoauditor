@@ -1,0 +1,150 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-08-07",
+  "optimization": "OPT-002",
+  "status": "completed-primary-zero-provider-continuation",
+  "authorization": "The project owner authorized retained Documenso re-triage and, only after its scoring identity passed, frozen exact-commit Lobsters deterministic acquisition, detection, and triage using the current persistent store, with a 5 GiB new-data ceiling, 30 minutes for Documenso, 120 minutes for Lobsters, and exactly zero provider calls, tokens, uploads, and cost. Reserve, packet selection, human review, providers, tuning, and gate promotion remained excluded.",
+  "execution_receipt": {
+    "path": "opt-002-zero-provider-continuation-receipt-2026-08-07.json",
+    "sha256": "97a152c370f3dabdcc531d0c54f8eb66eb4b1b25984679a31cd0cf98be76e16a",
+    "merged_pr": 123,
+    "merged_commit": "8b2cde756d976007569d801a8d15d3a2814d2506"
+  },
+  "preconditions": {
+    "protocol_sha256": "202a435a6ddd62e228dbc516a03cf526bce842b2bf9b7fed1bcc76e534fbddab",
+    "prior_attempt_sha256": "2093e5d14ff2d898a9411c757445e1ae5d369c0acd00b1faea5f2ee4252905c7",
+    "reconciliation_sha256": "4a63fe5d2344d1fbdcde1e5dad2996ba822ae067719c69a201f595dea12cc990",
+    "initial_model_runs": 33,
+    "initial_model_usage_rows": 1473,
+    "initial_data_kib": 374556,
+    "available_disk_kib": 62208664,
+    "source_identity_collisions": 0,
+    "new_store_backup": "data/backups/opt002-continuation-2026-08-07/repoauditor-pre-continuation.db",
+    "new_store_backup_sha256": "ae9c630426463fbf4ff3e84deffaeb9ac82a2e05f819698f382c7a6c1b860547"
+  },
+  "documenso_retriage": {
+    "repo_id": "opt002-documenso",
+    "full_commit": "f0ab7c112e3c39656b0153b67fbf25fd9616e96f",
+    "stored_commit": "f0ab7c112e3c",
+    "snapshot_tree_sha256": "43d09bb1cc0bdc9dc87db7f845f4087d13cd6e53bbd2d01ef53ddcb8f508b6ad",
+    "retained_detection_run_id": 106,
+    "retained_sarif_sha256": "aab592fd429b94397b2fd7a2c69dfa781af2332378a15156e1724b2818bcd69f",
+    "triage_elapsed_seconds": 20.8,
+    "triage_model_run_id": 34,
+    "triage_feature_count": 87,
+    "triage_score_count": 87,
+    "suppressed_count": 48,
+    "human_assessment_count": 0,
+    "identity_gate_passed": true
+  },
+  "scanner_canary": {
+    "passed": true,
+    "artifact": "data/artifacts/opt002-independent-continuation/scanner-canaries.json",
+    "sha256": "a9f02630d4c834f088e7bbed8abf4c410b69d92348746b9df2d247b2b9bd2512",
+    "scanners": ["semgrep", "semgrep-supplemental", "gitleaks", "pip-audit", "osv-scanner"],
+    "persisted_findings": 0
+  },
+  "lobsters": {
+    "repo_id": "opt002-lobsters",
+    "url": "https://github.com/lobsters/lobsters.git",
+    "full_commit": "57268d762e1c2c95b7a8e64ee8deb259cddd8cc0",
+    "stored_commit": "57268d762e1c",
+    "evaluation_family": "independent-upstream:lobsters/lobsters",
+    "ingest_elapsed_seconds": 1.4,
+    "manifest_count": 2,
+    "snapshot_file_count": 778,
+    "snapshot_bytes": 5861709,
+    "snapshot_tree_sha256": "57eef8015381605f2589aed021374c42dd67c9296e364ef127e876c5e8d91762",
+    "detect_pipeline_run_id": 107,
+    "detect_elapsed_seconds": 17.5,
+    "source_files": 485,
+    "llm_regions": 0,
+    "llm_completed_calls": 0,
+    "raw_candidates": 192,
+    "unique_candidate_groups": 190,
+    "scanner_executions": [
+      {"scanner": "semgrep", "status": "complete", "version": "1.170.0", "targets": 759, "findings": 194, "output_valid": true, "configuration_digest": "e1fb774d43b23f8265ae07566a5e325763244df9ba6eb8cbefe51e3ce05540c4"},
+      {"scanner": "semgrep-supplemental", "status": "empty", "version": "1.170.0", "targets": 2, "findings": 0, "output_valid": true, "configuration_digest": "e3b5ce91d91dcf194eff6fd1a0cdb9b6214a31a71b661075534d919143017963"},
+      {"scanner": "pip-audit", "status": "not-applicable", "version": "pip-audit 2.10.1", "targets": 0, "findings": 0, "output_valid": false, "applicability_detail": "snapshot contains no root-level requirements*.txt file"},
+      {"scanner": "osv-scanner", "status": "complete", "version": "osv-scanner version: 2.4.0", "targets": 1, "findings": 1, "output_valid": true},
+      {"scanner": "gitleaks", "status": "empty", "version": "8.30.1", "targets": 1, "findings": 0, "output_valid": true}
+    ],
+    "semgrep_sarif": "data/artifacts/opt002-lobsters/57268d762e1c/detect/semgrep.sarif",
+    "semgrep_sarif_sha256": "11453091e19a3dee8c36c08f2ca8cf83011bf1e0190de10c904e20a21872009f",
+    "supplemental_sarif_sha256": "63b80ef867d948249f7ddbf86e550bdab11b6cb6c1b4c52463d0b68709503aae",
+    "triage_elapsed_seconds": 20.3,
+    "triage_model_run_id": 35,
+    "triage_feature_count": 191,
+    "triage_score_count": 194,
+    "suppressed_count": 50,
+    "human_assessment_count": 0,
+    "identity_gate_passed": true
+  },
+  "scoring_identity": {
+    "model_name": "xgboost",
+    "model_version": "3.3.0",
+    "feature_schema_version": "sha256:89450a98dd4cdc1c",
+    "calibration": "isotonic",
+    "semgrep_version": "1.170.0",
+    "training_label_count": 111,
+    "effective_label_sources": {"manual": 104, "derived_falsify": 7},
+    "evaluation_label_count": 104,
+    "evaluation_basis": "real",
+    "split_strategy": "engagement_grouped",
+    "evaluation_families": 15,
+    "average_precision": 0.6458484493422382,
+    "brier": 0.20138816682464486,
+    "matched_for_both_sources": true
+  },
+  "outcome_blind_candidate_count": {
+    "method": "Count unassessed, unlabeled features for the two activated families with an exact frozen scoring run; retain only paths classified as production or deployment and collapse exact location identities. Scores, ranks, severities, outcomes, and rule priors were not read or used.",
+    "documenso": {
+      "feature_count": 87,
+      "excluded_ci": 32,
+      "excluded_docs_examples": 1,
+      "excluded_test": 1,
+      "eligible_production_deployment_unique": 53
+    },
+    "lobsters": {
+      "feature_count": 191,
+      "excluded_ci": 11,
+      "excluded_test": 15,
+      "eligible_production_deployment_unique": 165
+    },
+    "eligible_primary_total": 218,
+    "minimum_packet_size": 8,
+    "reserve_activation_condition_met": false,
+    "packet_selected": false,
+    "candidate_identities_exposed": false
+  },
+  "authorization_accounting": {
+    "final_data_kib": 385760,
+    "new_data_kib": 11204,
+    "new_data_ceiling_kib": 5242880,
+    "final_model_runs": 35,
+    "initial_model_usage_rows": 1473,
+    "final_model_usage_rows": 1473,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "network_upload_operations": 0,
+    "ceiling_breaches": []
+  },
+  "not_executed": {
+    "reserve_activation": true,
+    "packet_selection": true,
+    "candidate_identity_disclosure": true,
+    "human_review": true,
+    "automatic_labels": true,
+    "provider_activity": true,
+    "tuning": true,
+    "gate_promotion": true
+  },
+  "disposition": {
+    "opt_002_status": "open-packet-gated",
+    "primary_execution_complete": true,
+    "reserve_required": false,
+    "compatible_labels_added": 0,
+    "recommended_next_step": "Freeze a separate outcome-blind 8-to-12-entry packet-selection receipt over the two primary families. The selection implementation and result must hide scores and expected outcomes; human review requires a later explicit gate."
+  }
+}
