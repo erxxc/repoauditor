@@ -140,7 +140,11 @@ I. Evaluation and classifier maturity
       freezes a deterministic, balanced 12-entry selection over the two primary families.
       It forbids score and outcome fields, permits identity disclosure only in the persisted
       plan/result, and excludes source rendering, review, labels, network/provider activity,
-      reserve activation, tuning, and promotion — DoD impact: none.
+      reserve activation, tuning, and promotion. The
+      [`packet-selection result`](opt-002-packet-selection-result-2026-08-07.json)
+      records one successful offline selection: 12 unique identities, six per primary
+      family, with a byte-identical store and no forbidden output fields, network/provider
+      activity, assessments, or labels. OPT-002 is now review-gated — DoD impact: none.
 
    C. OPT-003 — Temporal validation — deferred — owner: ML evaluation — source:
       `../triage-accuracy-roadmap.md` — activate after meaningful chronological depth exists

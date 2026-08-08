@@ -45,6 +45,11 @@ The pending
 freezes a balanced 12-entry offline selection and forbids score/outcome inputs. It does not
 authorize execution until its exact approval statement is granted, and it authorizes no
 source-context rendering, human review, labels, network/provider use, or promotion.
+The subsequent
+[`packet-selection result`](optimizations/opt-002-packet-selection-result-2026-08-07.json)
+records 12 unique identities split evenly across the primary families. Selection was
+offline and read-only; the store remained byte-identical and no source context, assessment,
+or label was produced. OPT-002 now awaits a separately authorized bounded review.
 
 ## Historical checkpoints
 
