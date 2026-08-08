@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-08-07",
+  "optimization": "OPT-002",
+  "status": "stopped-scoring-identity-drift",
+  "protocol": "opt-002-independent-acquisition-protocol-2026-08-07.json",
+  "execution_receipt": "opt-002-primary-execution-receipt-2026-08-07.json",
+  "execution_receipt_sha256": "0a2ba8d39c3c2d7a63fa7e79fe2dec3c9c4a653a76ff3f69aca8fa871ae3a197",
+  "authorization": "Project owner authorized the two frozen primaries, deterministic scanner network reads, current persistent store, 5 GiB new-data ceiling, 120 minutes per repository, and exactly zero provider calls, tokens, uploads, and cost. Reserve, review, providers, tuning, and promotion remained excluded.",
+  "preconditions": {
+    "merged_gate_pr": 120,
+    "merged_commit": "0724e5045ec36c0a59505c579142ed4d1e7d81a9",
+    "source_identity_collisions": 0,
+    "initial_data_kib": 258060,
+    "available_disk_kib": 68247412,
+    "initial_model_usage_rows": 1473,
+    "store_backup": "data/backups/opt002-primary-2026-08-07/repoauditor-pre-execution.db",
+    "store_backup_sha256": "cc4ae5a1682bafa161c7fe62a0da0c9a684202f11724ff77d7c70f6d8d11e886"
+  },
+  "scanner_canary": {
+    "passed": true,
+    "artifact": "data/artifacts/opt002-independent-primary/scanner-canaries.json",
+    "sha256": "32accbafad0ea75d0effbc6c29a0cc2ee57fa37e14e66c16fecad2ac8facbc2d",
+    "scanners": ["semgrep", "semgrep-supplemental", "gitleaks", "pip-audit", "osv-scanner"],
+    "persisted_findings": 0
+  },
+  "completed_source": {
+    "repo_id": "opt002-documenso",
+    "url": "https://github.com/documenso/documenso.git",
+    "full_commit": "f0ab7c112e3c39656b0153b67fbf25fd9616e96f",
+    "stored_commit": "f0ab7c112e3c",
+    "ingest_elapsed_seconds": 1196.9,
+    "manifest_count": 19,
+    "snapshot_file_count": 2833,
+    "snapshot_kib": 102372,
+    "snapshot_tree_sha256": "43d09bb1cc0bdc9dc87db7f845f4087d13cd6e53bbd2d01ef53ddcb8f508b6ad",
+    "detect_pipeline_run_id": 106,
+    "detect_elapsed_seconds": 39.2,
+    "source_files": 2084,
+    "llm_regions": 0,
+    "llm_completed_calls": 0,
+    "raw_candidates": 175,
+    "scanner_executions": [
+      {"scanner": "semgrep", "status": "complete", "version": "1.170.0", "targets": 2613, "findings": 87, "output_valid": true, "configuration_digest": "e1fb774d43b23f8265ae07566a5e325763244df9ba6eb8cbefe51e3ce05540c4"},
+      {"scanner": "semgrep-supplemental", "status": "empty", "version": "1.170.0", "targets": 2083, "findings": 0, "output_valid": true, "configuration_digest": "e3b5ce91d91dcf194eff6fd1a0cdb9b6214a31a71b661075534d919143017963"},
+      {"scanner": "pip-audit", "status": "not-applicable", "version": "pip-audit 2.10.1", "targets": 0, "findings": 0, "output_valid": false, "applicability_detail": "snapshot contains no root-level requirements*.txt file"},
+      {"scanner": "osv-scanner", "status": "complete", "version": "osv-scanner version: 2.4.0", "targets": 1, "findings": 65, "output_valid": true},
+      {"scanner": "gitleaks", "status": "complete", "version": "8.30.1", "targets": 1, "findings": 23, "output_valid": true}
+    ],
+    "semgrep_sarif": "data/artifacts/opt002-documenso/f0ab7c112e3c/detect/semgrep.sarif",
+    "semgrep_sarif_sha256": "aab592fd429b94397b2fd7a2c69dfa781af2332378a15156e1724b2818bcd69f",
+    "supplemental_sarif_sha256": "63b80ef867d948249f7ddbf86e550bdab11b6cb6c1b4c52463d0b68709503aae",
+    "triage_model_run_id": 33,
+    "triage_feature_count": 87,
+    "triage_score_count": 87,
+    "suppressed_count": 51,
+    "human_assessment_count": 0
+  },
+  "scoring_stop": {
+    "expected": {"model_name": "xgboost", "model_version": "3.3.0", "feature_schema_version": "sha256:89450a98dd4cdc1c", "calibration": "isotonic", "semgrep_version": "1.170.0"},
+    "observed": {"model_name": "randomforest", "model_version": "1.9.0", "feature_schema_version": "sha256:89450a98dd4cdc1c", "calibration": "isotonic", "semgrep_version": "1.170.0", "training_label_count": 118, "evaluation_label_count": 104},
+    "cause_evidence": "The triage pre-pass harvested seven previously unmaterialized derived_falsify labels from snapshot-884a968b. The frozen source model run 32 trained on 111 labels (104 manual plus 7 derived); run 33 trained on 118 labels (104 manual plus 14 derived). The additional byte-identical lightweight repository identity duplicated the seven mechanism labels and changed model selection.",
+    "new_derived_label_ids": [120, 121, 122, 123, 124, 125, 126],
+    "new_derived_label_engagement": "snapshot-884a968b",
+    "stop_condition_applied": "Either nonempty triage result uses a scoring identity different from the frozen tuple."
+  },
+  "authorization_accounting": {
+    "final_data_kib": 368376,
+    "new_data_kib": 110316,
+    "new_data_ceiling_kib": 5242880,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "network_uploads": 0,
+    "final_model_usage_rows": 1473,
+    "ceiling_breaches": []
+  },
+  "not_executed": {
+    "lobsters_ingest": true,
+    "lobsters_detection": true,
+    "lobsters_triage": true,
+    "reserve_activation": true,
+    "packet_selection": true,
+    "human_review": true,
+    "provider_activity": true,
+    "tuning_or_retry": true,
+    "gate_promotion": true
+  },
+  "disposition": {
+    "opt_002_status": "open-data-gated",
+    "documenso_evidence": "retained but not review-eligible under the frozen protocol",
+    "automatic_labels_added_for_documenso": 0,
+    "recommended_next_step": "Reconcile the duplicate derived-label/evaluation-family identity before deciding whether to amend the frozen compatible scoring tuple or restore a leakage-safe corpus. Do not retry scoring or start Lobsters until that decision is frozen in a new receipt."
+  }
+}
