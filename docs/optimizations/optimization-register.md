@@ -135,7 +135,12 @@ I. Evaluation and classifier maturity
       Lobsters, healthy deterministic scanners, and zero provider activity. The primaries
       yield 218 unique production/deployment candidates before selection, so the reserve is
       not activated. No packet identities were selected or exposed and no labels were added;
-      OPT-002 is now packet-gated — DoD impact: none.
+      OPT-002 is now packet-gated. The pending
+      [`packet-selection receipt`](opt-002-packet-selection-receipt-2026-08-07.json)
+      freezes a deterministic, balanced 12-entry selection over the two primary families.
+      It forbids score and outcome fields, permits identity disclosure only in the persisted
+      plan/result, and excludes source rendering, review, labels, network/provider activity,
+      reserve activation, tuning, and promotion — DoD impact: none.
 
    C. OPT-003 — Temporal validation — deferred — owner: ML evaluation — source:
       `../triage-accuracy-roadmap.md` — activate after meaningful chronological depth exists

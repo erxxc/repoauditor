@@ -40,6 +40,11 @@ records successful compatible scoring for both primaries, complete deterministic
 evidence, and exactly zero provider use. The two primaries yield 218 unique eligible
 production/deployment candidates, so the reserve remains inactive. Packet selection,
 candidate identity disclosure, human review, providers, tuning, and promotion remain gated.
+The pending
+[`packet-selection receipt`](optimizations/opt-002-packet-selection-receipt-2026-08-07.json)
+freezes a balanced 12-entry offline selection and forbids score/outcome inputs. It does not
+authorize execution until its exact approval statement is granted, and it authorizes no
+source-context rendering, human review, labels, network/provider use, or promotion.
 
 ## Historical checkpoints
 
