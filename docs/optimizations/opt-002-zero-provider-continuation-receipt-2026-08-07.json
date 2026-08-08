@@ -1,0 +1,135 @@
+{
+  "schema_version": 1,
+  "frozen_at": "2026-08-07",
+  "optimization": "OPT-002",
+  "status": "authorization-pending",
+  "protocol": {
+    "path": "opt-002-independent-acquisition-protocol-2026-08-07.json",
+    "sha256": "202a435a6ddd62e228dbc516a03cf526bce842b2bf9b7fed1bcc76e534fbddab"
+  },
+  "prior_attempt": {
+    "path": "opt-002-primary-execution-attempt-2026-08-07.json",
+    "sha256": "2093e5d14ff2d898a9411c757445e1ae5d369c0acd00b1faea5f2ee4252905c7"
+  },
+  "reconciliation": {
+    "path": "opt-002-duplicate-reconciliation-2026-08-07.json",
+    "sha256": "4a63fe5d2344d1fbdcde1e5dad2996ba822ae067719c69a201f595dea12cc990"
+  },
+  "scope": "Re-triage the retained Documenso deterministic SARIF under the merged family-distinct corpus. Only if its complete scoring identity matches the frozen tuple, materialize, deterministically scan, and compatibly score the frozen Lobsters primary. Providers, the reserve, packet selection, human review, tuning, and gate promotion are excluded.",
+  "retained_documenso": {
+    "repo_id": "opt002-documenso",
+    "url": "https://github.com/documenso/documenso.git",
+    "commit": "f0ab7c112e3c39656b0153b67fbf25fd9616e96f",
+    "stored_commit": "f0ab7c112e3c",
+    "evaluation_family": "independent-upstream:documenso/documenso",
+    "snapshot_sha256": "43d09bb1cc0bdc9dc87db7f845f4087d13cd6e53bbd2d01ef53ddcb8f508b6ad",
+    "sarif_path": "data/artifacts/opt002-documenso/f0ab7c112e3c/detect/semgrep.sarif",
+    "sarif_sha256": "aab592fd429b94397b2fd7a2c69dfa781af2332378a15156e1724b2818bcd69f",
+    "detection_run_id": 106,
+    "allowed_operation": "triage only; do not re-ingest or re-detect"
+  },
+  "frozen_lobsters": {
+    "repo_id": "opt002-lobsters",
+    "url": "https://github.com/lobsters/lobsters.git",
+    "commit": "57268d762e1c2c95b7a8e64ee8deb259cddd8cc0",
+    "stored_commit": "57268d762e1c",
+    "evaluation_family": "independent-upstream:lobsters/lobsters"
+  },
+  "persistent_store_baseline": {
+    "model_runs": 33,
+    "model_usage_rows": 1473,
+    "required_backup_before_mutation": true,
+    "retained_pre_attempt_backup_sha256": "cc4ae5a1682bafa161c7fe62a0da0c9a684202f11724ff77d7c70f6d8d11e886",
+    "note": "Create a new continuation backup; the retained backup identifies the state before the original attempt and is not substituted for the current store."
+  },
+  "commands_in_order": [
+    "uv run repoauditor triage opt002-documenso --sarif data/artifacts/opt002-documenso/f0ab7c112e3c/detect/semgrep.sarif",
+    "uv run repoauditor scanner-canaries --output data/artifacts/opt002-independent-continuation/scanner-canaries.json",
+    "uv run repoauditor ingest https://github.com/lobsters/lobsters.git --repo-id opt002-lobsters --expected-commit 57268d762e1c2c95b7a8e64ee8deb259cddd8cc0",
+    "uv run repoauditor detect opt002-lobsters --deterministic-only",
+    "uv run repoauditor triage opt002-lobsters --sarif data/artifacts/opt002-lobsters/57268d762e1c/detect/semgrep.sarif",
+    "uv run repoauditor triage-collection"
+  ],
+  "conditional_sequence": [
+    "Verify the receipt digests, current store baseline, retained Documenso identities, SARIF digest, repository snapshot digest, and zero provider-usage baseline.",
+    "Create and digest a new current-store backup before the Documenso triage mutation.",
+    "Re-triage Documenso and stop unless its complete scoring identity is the frozen tuple and provider-usage rows remain exactly 1473.",
+    "Run the complete scanner canary and stop unless every applicable production adapter passes.",
+    "Verify opt002-lobsters and its evaluation family do not already exist, then ingest only its frozen exact commit.",
+    "Run deterministic-only detection, triage the retained SARIF, and stop on any scanner, identity, or usage mismatch.",
+    "Compute collection evidence and eligible candidate counts without selecting or exposing a review packet."
+  ],
+  "resource_ceilings": {
+    "retained_retriage_repositories": 1,
+    "new_repositories": 1,
+    "scanner_adapter_executions_for_lobsters": 5,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "maximum_elapsed_minutes_documenso_retriage": 30,
+    "maximum_elapsed_minutes_lobsters": 120,
+    "maximum_new_data_bytes": 5368709120,
+    "network_reads": "Only the frozen public Lobsters Git repository and scanner-owned public rule/advisory data required by the pinned deterministic adapters.",
+    "network_uploads": 0
+  },
+  "scoring_identity": {
+    "model_name": "xgboost",
+    "model_version": "3.3.0",
+    "feature_schema_version": "sha256:89450a98dd4cdc1c",
+    "calibration": "isotonic",
+    "semgrep_version": "1.170.0",
+    "required_for_every_nonempty_source": true
+  },
+  "zero_provider_controls": {
+    "detect_flag": "--deterministic-only",
+    "max_llm_regions_per_run": 0,
+    "reserved_sample_regions": 0,
+    "reserved_architecture_neighbor_regions": 0,
+    "provider_client_calls_allowed": 0,
+    "model_usage_rows_before": 1473,
+    "model_usage_rows_after_required": 1473,
+    "map_stage": "not run",
+    "falsify_stage": "not run",
+    "normalize_stage": "not run"
+  },
+  "stop_conditions": [
+    "Any receipt, retained artifact, full commit, stored commit, source identity, evaluation family, or snapshot digest differs from the frozen value.",
+    "The current store does not begin at 33 model runs and 1473 model-usage rows, or a current-store backup cannot be created and digested.",
+    "Documenso re-triage does not use exactly xgboost 3.3.0, sha256:89450a98dd4cdc1c, isotonic calibration, and Semgrep 1.170.0.",
+    "The scanner canary fails or any applicable Lobsters scanner reports failed, partial, unavailable, malformed, unknown, or unexplained zero-target execution.",
+    "Any provider call, token, cost, network upload, map-stage record, or nonzero LLM region is observed; model-usage rows must remain exactly 1473.",
+    "A repository identity or evaluation family collides with existing evidence.",
+    "A resource ceiling is reached, disk usage is unknown, or an output would overwrite an existing artifact."
+  ],
+  "result_contract": {
+    "required_documenso": [
+      "new model-run id and complete scoring identity",
+      "triage feature, score, and unassessed candidate counts",
+      "proof that retained source, snapshot, detection, and SARIF identities were unchanged"
+    ],
+    "required_lobsters": [
+      "resolved full commit and stored commit",
+      "snapshot tree digest and byte count",
+      "manifest count",
+      "per-scanner status, applicability, version, configuration identity, target count, finding count, and raw artifact digest",
+      "model-run id and complete scoring identity",
+      "triage feature, score, and unassessed candidate counts"
+    ],
+    "required_aggregate": [
+      "new persistent-store backup identity",
+      "canary artifact digest",
+      "model-usage row count before and after, both exactly 1473",
+      "provider calls, tokens, uploads, and cost, all exactly zero",
+      "eligible production/deployment candidate count before packet selection",
+      "whether the reserve activation condition is met without activating it"
+    ],
+    "packet_selection": "excluded; a later result PR must first prove identities and counts, then a separate gate may freeze an outcome-blind packet",
+    "automatic_labels": false,
+    "human_review": false,
+    "optimization_status_change": false
+  },
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the OPT-002 zero-provider continuation described by opt-002-zero-provider-continuation-receipt-2026-08-07.json, limited to retained Documenso re-triage and, only after its scoring identity passes, frozen exact-commit Lobsters deterministic acquisition, detection, and triage using the current persistent store, with a 5 GiB new-data ceiling, 30 minutes for Documenso, 120 minutes for Lobsters, and exactly zero provider calls, tokens, uploads, and cost. The reserve, packet selection, human review, providers, tuning, and gate promotion remain excluded."
+  }
+}
