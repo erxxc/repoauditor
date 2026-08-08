@@ -123,8 +123,13 @@ I. Evaluation and classifier maturity
       family/rule/fingerprint copies one effective contribution in training and rule priors,
       while retaining every historical row. Contradictory copies fail closed. Read-only
       live-store verification restores 111 effective rows (104 manual, 7 derived) and the
-      frozen xgboost selection; retry and Lobsters execution remain separately gated — DoD
-      impact: none.
+      frozen xgboost selection. The pending
+      [`zero-provider continuation receipt`](opt-002-zero-provider-continuation-receipt-2026-08-07.json)
+      freezes retained-artifact Documenso re-triage and conditionally permits exact-commit
+      Lobsters deterministic acquisition only after the full scoring identity passes. It
+      requires a new store backup, unchanged 1,473-row provider-usage ledger, and complete
+      result evidence; reserve activation, packet selection, review, providers, tuning, and
+      gate promotion remain excluded — DoD impact: none.
 
    C. OPT-003 — Temporal validation — deferred — owner: ML evaluation — source:
       `../triage-accuracy-roadmap.md` — activate after meaningful chronological depth exists
