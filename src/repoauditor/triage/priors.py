@@ -23,6 +23,7 @@ from __future__ import annotations
 from ..config import Config, get_config
 from ..store import db
 from ..store.models import RulePrior
+from .families import family_distinct_labels
 
 
 def global_prior(config: Config | None = None) -> tuple[float, float, str]:
@@ -43,7 +44,7 @@ def compute_rule_prior(rule_id: str, config: Config | None = None) -> RulePrior:
     """
     config = config or get_config()
     alpha0, beta0, source = global_prior(config)
-    labels = db.list_triage_labels(rule_id, config)
+    labels = family_distinct_labels(db.list_triage_labels(rule_id, config), config)
     n = len(labels)
     a = sum(1 for label in labels if label.actionable)
     return RulePrior(
@@ -80,7 +81,8 @@ def historical_fp_rate(rule_id: str, config: Config | None = None) -> tuple[floa
     zero FP-rate with a zero label-count (via `rule_label_count_log`) and can learn to
     discount unlabelled rules rather than trusting a spurious 0.
     """
-    labels = db.list_triage_labels(rule_id, config)
+    config = config or get_config()
+    labels = family_distinct_labels(db.list_triage_labels(rule_id, config), config)
     n = len(labels)
     if n == 0:
         return 0.0, 0

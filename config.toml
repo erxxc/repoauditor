@@ -86,6 +86,10 @@ min_real_labels_for_holdout_eval = 40
 # independent_project_pre = "independent_project"
 # independent_project_post = "independent_project"
 
+[triage.evaluation_family_overrides]
+snapshot = "uat_lightweight_app"
+snapshot-884a968b = "uat_lightweight_app"
+
 [review]
 # Human-review checkpoint (src/repoauditor/review/checkpoint.py).
 # A triage result whose winning-class probability max(p, 1-p) is below this is

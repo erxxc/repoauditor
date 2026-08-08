@@ -35,6 +35,7 @@ from .models import (
     ReviewDecision,
     ReviewDisposition,
     ReviewRequest,
+    RealTrainingExample,
     RiskScenario,
     RunStatus,
     ScenarioInput,
@@ -1339,10 +1340,10 @@ def list_triage_features(config: Config | None = None) -> list[TriageFeatureReco
         conn.close()
 
 
-def list_real_training_examples(
+def list_real_training_records(
     config: Config | None = None,
-) -> list[tuple[list[float], list[str], bool, str, TriageLabelSource]]:
-    """Join accumulated labels to their triaged features → real (features, names, label) rows.
+) -> list[RealTrainingExample]:
+    """Join labels to feature rows while retaining family-deduplication identity.
 
     The cross-engagement real training corpus: every `triage_label` that has a matching
     `triage_features` row (same engagement + fingerprint) becomes one labelled feature
@@ -1355,20 +1356,42 @@ def list_real_training_examples(
     conn = get_connection(config)
     try:
         rows = conn.execute(
-            "SELECT tf.features, tf.feature_names, tl.actionable, tl.engagement, tl.source "
+            "SELECT tl.*, tf.features, tf.feature_names "
             "FROM triage_label tl "
             "JOIN triage_features tf "
             "  ON tf.engagement = tl.engagement "
             " AND tf.fingerprint = tl.finding_fingerprint "
             "ORDER BY tl.id"
         ).fetchall()
-        return [
-            (json.loads(r["features"]), json.loads(r["feature_names"]),
-             bool(r["actionable"]), r["engagement"], TriageLabelSource(r["source"]))
-            for r in rows
-        ]
+        return [RealTrainingExample(
+            label=TriageLabel(
+                id=r["id"], engagement=r["engagement"], rule_id=r["rule_id"],
+                finding_fingerprint=r["finding_fingerprint"],
+                actionable=bool(r["actionable"]), note=r["note"],
+                created_at=r["created_at"], source=TriageLabelSource(r["source"]),
+                updated_at=r["updated_at"],
+            ),
+            features=json.loads(r["features"]),
+            feature_names=json.loads(r["feature_names"]),
+        ) for r in rows]
     finally:
         conn.close()
+
+
+def list_real_training_examples(
+    config: Config | None = None,
+) -> list[tuple[list[float], list[str], bool, str, TriageLabelSource]]:
+    """Backward-compatible tuple projection of joined real training rows."""
+    return [
+        (
+            record.features,
+            record.feature_names,
+            record.label.actionable,
+            record.label.engagement,
+            record.label.source,
+        )
+        for record in list_real_training_records(config)
+    ]
 
 
 def list_scored_triage_labels(

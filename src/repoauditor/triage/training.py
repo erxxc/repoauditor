@@ -28,6 +28,7 @@ from ..config import Config, get_config
 from ..store import db
 from ..store.models import TriageLabelSource
 from . import synthetic
+from .families import evaluation_family, family_distinct_labels
 from .features import FEATURE_NAMES
 
 
@@ -48,11 +49,6 @@ class TrainingCorpus:
     synthetic_dropped: bool        # True once n_real >= cutoff (synthetic retired)
 
 
-def evaluation_family(engagement: str, config: Config) -> str:
-    """Return the evaluation-only family id for one persisted engagement."""
-    return config.triage.evaluation_family_overrides.get(engagement, engagement)
-
-
 def load_real_examples(
     config: Config | None = None,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, dict[str, int]]:
@@ -69,16 +65,27 @@ def load_real_examples(
     groups: list[str] = []
     evaluation_eligible: list[bool] = []
     source_counts: dict[str, int] = {}
-    for features, names, actionable, engagement, source in db.list_real_training_examples(config):
+    records = db.list_real_training_records(config)
+    records_by_label_id = {record.label.id: record for record in records}
+    labels = family_distinct_labels(
+        (record.label for record in records), config
+    )
+    for label in labels:
+        record = records_by_label_id[label.id]
+        features, names = record.features, record.feature_names
         if names != FEATURE_NAMES or len(features) != width:
             continue
         xs.append([float(v) for v in features])
-        ys.append(int(actionable))
-        groups.append(evaluation_family(engagement, config))
+        ys.append(int(label.actionable))
+        groups.append(evaluation_family(label.engagement, config))
         evaluation_eligible.append(
-            source in (TriageLabelSource.MANUAL, TriageLabelSource.DERIVED_REVIEW)
+            label.source in (
+                TriageLabelSource.MANUAL,
+                TriageLabelSource.DERIVED_REVIEW,
+            )
         )
-        source_counts[str(source)] = source_counts.get(str(source), 0) + 1
+        source = str(label.source)
+        source_counts[source] = source_counts.get(source, 0) + 1
     if not xs:
         return (np.empty((0, width), dtype=float), np.empty((0,), dtype=int),
                 np.empty((0,), dtype=object), np.empty((0,), dtype=bool), {})

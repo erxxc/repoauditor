@@ -27,7 +27,11 @@ was authorized and attempted. The retained
 [`attempt result`](optimizations/opt-002-primary-execution-attempt-2026-08-07.json) records
 a fail-closed scoring-identity mismatch after successful Documenso deterministic scanning;
 Lobsters, the reserve, and human review were not started. OPT-002 remains open pending
-duplicate derived-label/evaluation-family reconciliation.
+duplicate derived-label/evaluation-family reconciliation. That reconciliation is now
+implemented and recorded in
+[`opt-002-duplicate-reconciliation-2026-08-07.json`](optimizations/opt-002-duplicate-reconciliation-2026-08-07.json):
+historical rows remain immutable, exact aliases contribute once, and the read-only dry run
+restores the frozen scoring identity. A separately authorized continuation is still needed.
 
 ## Historical checkpoints
 
