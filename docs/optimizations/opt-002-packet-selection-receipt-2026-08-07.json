@@ -1,0 +1,168 @@
+{
+  "schema_version": 1,
+  "frozen_at": "2026-08-07",
+  "optimization": "OPT-002",
+  "status": "authorization-pending",
+  "protocol": {
+    "path": "opt-002-independent-acquisition-protocol-2026-08-07.json",
+    "sha256": "202a435a6ddd62e228dbc516a03cf526bce842b2bf9b7fed1bcc76e534fbddab"
+  },
+  "primary_result": {
+    "path": "opt-002-zero-provider-continuation-result-2026-08-07.json",
+    "sha256": "be96675aefa96273206424e2d09a16f2135fe07215d6f7404cf14ba5126b7667",
+    "eligible_primary_count": 218,
+    "eligible_inventory_sha256": "73ec5f9f32ff47a65c13fb2b53c59c7fbc210024e641b7636b10cd9843ed0a6c"
+  },
+  "scope": "Deterministically select and persist one outcome-blind 12-entry OPT-002 review-plan artifact from the frozen Documenso and Lobsters primary inventory. This receipt permits candidate identity disclosure only inside the persisted plan and result evidence. Source-evidence rendering, human review, labels, providers, reserve activation, tuning, and gate promotion are excluded.",
+  "activated_families": [
+    {
+      "order": 1,
+      "repo_id": "opt002-documenso",
+      "evaluation_family": "independent-upstream:documenso/documenso",
+      "full_commit": "f0ab7c112e3c39656b0153b67fbf25fd9616e96f",
+      "stored_commit": "f0ab7c112e3c",
+      "snapshot_tree_sha256": "43d09bb1cc0bdc9dc87db7f845f4087d13cd6e53bbd2d01ef53ddcb8f508b6ad",
+      "triage_model_run_id": 34,
+      "eligible_count": 53
+    },
+    {
+      "order": 2,
+      "repo_id": "opt002-lobsters",
+      "evaluation_family": "independent-upstream:lobsters/lobsters",
+      "full_commit": "57268d762e1c2c95b7a8e64ee8deb259cddd8cc0",
+      "stored_commit": "57268d762e1c",
+      "snapshot_tree_sha256": "57eef8015381605f2589aed021374c42dd67c9296e364ef127e876c5e8d91762",
+      "triage_model_run_id": 35,
+      "eligible_count": 165
+    }
+  ],
+  "preconditions": [
+    "The protocol, primary result, source snapshots, and eligible inventory match their frozen digests and counts.",
+    "The current persistent store contains model runs 34 and 35 with the complete frozen scoring identity and score existence for every eligible feature; score values and ranks are not read.",
+    "Neither activated family has a triage assessment or label, and no packet artifact already exists at the output path.",
+    "The model-usage ledger still contains exactly 1473 rows.",
+    "The selector implementation is covered by offline tests proving that forbidden fields cannot affect ordering or serialized output."
+  ],
+  "command": "uv run python -m repoauditor.eval.independent_packet --output data/artifacts/opt002-independent-packet/review-plan.json",
+  "selection_contract": {
+    "packet_size": 12,
+    "minimum_packet_size": 8,
+    "maximum_packet_size": 12,
+    "maximum_per_family": 6,
+    "family_order": [
+      "independent-upstream:documenso/documenso",
+      "independent-upstream:lobsters/lobsters"
+    ],
+    "candidate_key": "sha256('opt-002-independent-v1' + evaluation_family + finding_fingerprint)",
+    "ordering": "Sort each family by candidate_key ascending, then round-robin in frozen family order until 12 entries are selected, with at most six entries from either family.",
+    "eligibility": [
+      "engagement is one of the two activated primary repository identities",
+      "path class is production or deployment",
+      "no triage assessment or human label exists",
+      "a score row exists under the source's exact frozen model-run identity",
+      "exact-location identity is unique after deterministic collapse",
+      "not generated, vendored, documentation, example, test, CI, package-hygiene-only, or secret-in-history evidence"
+    ],
+    "allowed_ordering_fields": [
+      "frozen evaluation-family order",
+      "evaluation_family",
+      "finding_fingerprint",
+      "candidate_key"
+    ],
+    "forbidden_read_or_selection_fields": [
+      "p_actionable",
+      "rank",
+      "suppressed",
+      "predicted class",
+      "severity",
+      "confidence",
+      "rule prior",
+      "falsification verdict",
+      "human or scanner outcome",
+      "known vulnerability membership"
+    ],
+    "duplicate_identity": [
+      "evaluation_family",
+      "producer",
+      "rule_id",
+      "normalized_path",
+      "line_start",
+      "line_end",
+      "normalized_sink"
+    ]
+  },
+  "output_contract": {
+    "plan_path": "data/artifacts/opt002-independent-packet/review-plan.json",
+    "result_evidence_path": "docs/optimizations/opt-002-packet-selection-result-2026-08-07.json",
+    "plan_fields": [
+      "schema_version",
+      "protocol_sha256",
+      "primary_result_sha256",
+      "eligible_inventory_sha256",
+      "selection_policy",
+      "packet_size",
+      "entries"
+    ],
+    "entry_fields": [
+      "finding_id",
+      "repo_id",
+      "evaluation_family",
+      "finding_fingerprint",
+      "rule_id",
+      "file",
+      "line_start",
+      "line_end",
+      "title",
+      "producer",
+      "candidate_key",
+      "source_commit",
+      "triage_model_run_id"
+    ],
+    "forbidden_output_fields": [
+      "p_actionable",
+      "rank",
+      "suppressed",
+      "predicted_class",
+      "severity",
+      "confidence",
+      "rule_prior",
+      "expected_outcome",
+      "source_evidence"
+    ],
+    "overwrite": false,
+    "render_review_packet": false,
+    "render_source_context": false
+  },
+  "resource_ceilings": {
+    "selection_runs": 1,
+    "packet_entries": 12,
+    "maximum_elapsed_minutes": 10,
+    "maximum_new_data_bytes": 10485760,
+    "network_reads": 0,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "store_mutations": 0
+  },
+  "stop_conditions": [
+    "Any protocol, result, source, model-run, scoring, inventory, assessment, label, or usage-ledger precondition differs from the frozen value.",
+    "The selector attempts to read or serialize a forbidden field.",
+    "The eligible inventory is not exactly 218 entries split 53 Documenso and 165 Lobsters.",
+    "The selected packet is not exactly 12 unique entries split six per family.",
+    "The output path exists, a resource ceiling is reached, or output usage is unknown.",
+    "Any provider activity, network activity, store mutation, source-context rendering, review action, or label write is attempted."
+  ],
+  "result_contract": [
+    "all frozen input and implementation commit identities",
+    "eligible counts by family and canonical inventory digest",
+    "selected count by family, plan digest, and stable selection-policy identity",
+    "proof that no forbidden field was read or serialized",
+    "provider, network, store-mutation, review, and label accounting, all exactly zero",
+    "confirmation that the reserve remained inactive and human review remained gated"
+  ],
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the OPT-002 outcome-blind packet selection described by opt-002-packet-selection-receipt-2026-08-07.json, limited to one deterministic offline selection of exactly 12 entries, six each from the frozen Documenso and Lobsters eligible inventories, and persistence of the review-plan and result-evidence artifacts, with ceilings of 10 minutes, 10 MiB new data, and exactly zero network reads, uploads, provider calls, tokens, cost, store mutations, source-evidence rendering, human review, or labels. Reserve activation, tuning, and gate promotion remain excluded."
+  }
+}
