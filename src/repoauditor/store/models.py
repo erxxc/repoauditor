@@ -435,6 +435,14 @@ class TriageModelRun(BaseModel):
     created_at: str | None = None
 
 
+class RealTrainingExample(BaseModel):
+    """One label joined to its exact persisted feature row and immutable identity."""
+
+    label: TriageLabel
+    features: list[float]
+    feature_names: list[str]
+
+
 class ScoredTriageLabel(BaseModel):
     """A historical P(actionable) joined to its later authoritative label and cohort."""
 

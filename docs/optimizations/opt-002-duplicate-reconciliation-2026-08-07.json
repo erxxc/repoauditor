@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-08-07",
+  "optimization": "OPT-002",
+  "status": "reconciled-pending-merge-and-retry-authorization",
+  "trigger": "opt-002-primary-execution-attempt-2026-08-07.json",
+  "problem": {
+    "description": "The same seven falsification outcomes were harvested under two repository identities for a byte-identical lightweight snapshot. Evaluation grouping did not prevent both rows from contributing independently to classifier training and Beta-Binomial rule priors.",
+    "original_engagement": "snapshot",
+    "alias_engagement": "snapshot-884a968b",
+    "shared_snapshot_commit": "6c26c595e143",
+    "original_source": "tests/fixtures/uat_lightweight_app/snapshot",
+    "alias_source": "/private/tmp/repoauditor-opt005-clean/uat_lightweight_app/snapshot",
+    "duplicate_fingerprints": ["f99812799fe10569", "7a134ceb887e4751", "c60af1a1583dbdbb", "ebb996b17dd00dc4", "c11bbeaf110e8a85", "931b56c350aca84a", "336bca2f3136be71"],
+    "raw_label_count_before": 118,
+    "effective_training_count_before": 118,
+    "derived_falsify_count_before": 14,
+    "observed_model_before": "randomforest 1.9.0"
+  },
+  "decision": {
+    "evaluation_family": "uat_lightweight_app",
+    "overrides": {"snapshot": "uat_lightweight_app", "snapshot-884a968b": "uat_lightweight_app"},
+    "identity": ["evaluation_family", "rule_id", "finding_fingerprint"],
+    "scope": "Exact aliases only. Related findings with different fingerprints remain distinct observations.",
+    "source_precedence": ["manual", "derived_review", "derived_falsify"],
+    "conflict_policy": "Fail closed if exact aliases disagree on actionable outcome.",
+    "persistence_policy": "Retain all immutable label, assessment, feature, score, model-run, finding, and usage rows. Reconcile only their effective statistical contribution."
+  },
+  "implementation": {
+    "family_module": "src/repoauditor/triage/families.py",
+    "training": "Family-distinct labels contribute one real row and one unit of effective mass; the selected authoritative label determines the associated stored feature vector.",
+    "priors": "Family-distinct labels contribute one Bernoulli observation to the rule posterior and historical false-positive rate.",
+    "store_boundary": "A typed RealTrainingExample retains label identity through the SQLite join; the legacy tuple projection remains available.",
+    "classifier_features": "Evaluation family remains excluded from classifier features and is used only for leakage control, grouped validation, and exact-alias reconciliation.",
+    "automatic_deletion": false,
+    "historical_rewrite": false
+  },
+  "read_only_live_store_verification": {
+    "raw_label_rows_after": 118,
+    "raw_model_runs_after": 33,
+    "raw_model_usage_rows_after": 1473,
+    "effective_training_rows_after": 111,
+    "effective_source_counts_after": {"manual": 104, "derived_falsify": 7},
+    "effective_grouped_holdout_families": 15,
+    "representative_duplicated_rule_observed_total_after": 1,
+    "dry_run_selected_model": "xgboost",
+    "dry_run_model_version_expected": "3.3.0",
+    "dry_run_feature_schema": "sha256:89450a98dd4cdc1c",
+    "dry_run_calibration": "isotonic",
+    "dry_run_evaluation_rows": 36,
+    "dry_run_xgboost_average_precision": 0.6458484493422382,
+    "dry_run_xgboost_brier": 0.20138816682464486,
+    "store_mutations_during_verification": 0
+  },
+  "authorization_boundary": {
+    "authorized_and_completed": ["source/label/feature identity inspection", "implementation", "offline tests", "read-only corpus assembly and model-selection dry run"],
+    "not_authorized": ["delete or update historical labels", "rerun Documenso triage", "start Lobsters", "activate reserve", "select or render review packet", "human review", "provider calls", "tuning", "gate promotion"],
+    "next_step": "After merge, freeze and authorize a zero-provider continuation receipt that re-triages the retained Documenso SARIF under the reconciled corpus, verifies the frozen xgboost identity, then proceeds to exact-commit Lobsters ingest/detect/triage only if Documenso passes."
+  }
+}

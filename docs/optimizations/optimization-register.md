@@ -117,7 +117,14 @@ I. Evaluation and classifier maturity
       instead of the frozen xgboost 3.3.0 identity. Seven previously unharvested derived
       labels from the byte-identical lightweight identity changed the training corpus from
       111 to 118 rows. No Documenso human labels were added; the duplicate-family corpus
-      must be reconciled before retry or protocol amendment — DoD impact: none.
+      must be reconciled before retry or protocol amendment. The
+      [`duplicate reconciliation`](opt-002-duplicate-reconciliation-2026-08-07.json)
+      now binds both lightweight aliases to one explicit evaluation family and gives exact
+      family/rule/fingerprint copies one effective contribution in training and rule priors,
+      while retaining every historical row. Contradictory copies fail closed. Read-only
+      live-store verification restores 111 effective rows (104 manual, 7 derived) and the
+      frozen xgboost selection; retry and Lobsters execution remain separately gated — DoD
+      impact: none.
 
    C. OPT-003 — Temporal validation — deferred — owner: ML evaluation — source:
       `../triage-accuracy-roadmap.md` — activate after meaningful chronological depth exists

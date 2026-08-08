@@ -16,6 +16,7 @@ from repoauditor.store.models import (
     ReviewDecision,
     ReviewDisposition,
     ReviewRequest,
+    RealTrainingExample,
     Severity,
     TriageLabel,
     TriageLabelSource,
@@ -617,15 +618,27 @@ def test_real_training_rows_use_evaluation_family_only_for_split_groups(
             }
         })
     })
-    rows = [
-        ([0.0] * len(FEATURE_NAMES), list(FEATURE_NAMES), True, "project-pre",
-         TriageLabelSource.MANUAL),
-        ([1.0] * len(FEATURE_NAMES), list(FEATURE_NAMES), False, "project-post",
-         TriageLabelSource.MANUAL),
+    records = [
+        RealTrainingExample(
+            label=TriageLabel(
+                id=1, engagement="project-pre", rule_id="rule-a",
+                finding_fingerprint="fingerprint-a", actionable=True,
+            ),
+            features=[0.0] * len(FEATURE_NAMES),
+            feature_names=list(FEATURE_NAMES),
+        ),
+        RealTrainingExample(
+            label=TriageLabel(
+                id=2, engagement="project-post", rule_id="rule-b",
+                finding_fingerprint="fingerprint-b", actionable=False,
+            ),
+            features=[1.0] * len(FEATURE_NAMES),
+            feature_names=list(FEATURE_NAMES),
+        ),
     ]
     monkeypatch.setattr(
-        "repoauditor.triage.training.db.list_real_training_examples",
-        lambda config=None: rows,
+        "repoauditor.triage.training.db.list_real_training_records",
+        lambda config=None: records,
     )
 
     X, y, groups, eligible, _sources = load_real_examples(grouped)
@@ -634,6 +647,86 @@ def test_real_training_rows_use_evaluation_family_only_for_split_groups(
     assert y.tolist() == [1, 0]
     assert groups.tolist() == ["project", "project"]
     assert eligible.tolist() == [True, True]
+
+
+def test_related_exact_label_aliases_contribute_one_training_and_prior_row(
+    cfg, monkeypatch
+):
+    grouped = cfg.model_copy(update={
+        "triage": cfg.triage.model_copy(update={
+            "evaluation_family_overrides": {
+                "fixture-original": "fixture",
+                "fixture-alias": "fixture",
+            }
+        })
+    })
+    labels = [
+        TriageLabel(
+            id=1, engagement="fixture-original", rule_id="same-rule",
+            finding_fingerprint="same-fingerprint", actionable=True,
+            source=TriageLabelSource.DERIVED_FALSIFY,
+        ),
+        TriageLabel(
+            id=2, engagement="fixture-alias", rule_id="same-rule",
+            finding_fingerprint="same-fingerprint", actionable=True,
+            source=TriageLabelSource.DERIVED_FALSIFY,
+        ),
+    ]
+    records = [
+        RealTrainingExample(
+            label=label,
+            features=[float(index)] * len(FEATURE_NAMES),
+            feature_names=list(FEATURE_NAMES),
+        )
+        for index, label in enumerate(labels)
+    ]
+    monkeypatch.setattr(
+        "repoauditor.triage.training.db.list_real_training_records",
+        lambda config=None: records,
+    )
+    monkeypatch.setattr(
+        "repoauditor.triage.priors.db.list_triage_labels",
+        lambda rule_id=None, config=None: labels,
+    )
+
+    X, y, groups, _eligible, sources = load_real_examples(grouped)
+    prior = triage_priors.compute_rule_prior("same-rule", grouped)
+
+    assert X.shape == (1, len(FEATURE_NAMES))
+    assert y.tolist() == [1]
+    assert groups.tolist() == ["fixture"]
+    assert sources == {"derived_falsify": 1}
+    assert prior.observed_total == 1
+
+
+def test_related_exact_label_aliases_fail_on_conflicting_outcomes(
+    cfg, monkeypatch
+):
+    grouped = cfg.model_copy(update={
+        "triage": cfg.triage.model_copy(update={
+            "evaluation_family_overrides": {"a": "family", "b": "family"}
+        })
+    })
+    records = [
+        RealTrainingExample(
+            label=TriageLabel(
+                id=index, engagement=engagement, rule_id="same-rule",
+                finding_fingerprint="same-fingerprint", actionable=actionable,
+            ),
+            features=[0.0] * len(FEATURE_NAMES),
+            feature_names=list(FEATURE_NAMES),
+        )
+        for index, (engagement, actionable) in enumerate(
+            [("a", True), ("b", False)], start=1
+        )
+    ]
+    monkeypatch.setattr(
+        "repoauditor.triage.training.db.list_real_training_records",
+        lambda config=None: records,
+    )
+
+    with pytest.raises(ValueError, match="contradictory labels"):
+        load_real_examples(grouped)
 
 
 def test_grouped_holdout_reports_clear_fallback_when_repo_breadth_is_insufficient():
