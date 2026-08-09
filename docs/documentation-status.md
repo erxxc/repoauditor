@@ -50,6 +50,11 @@ The subsequent
 records 12 unique identities split evenly across the primary families. Selection was
 offline and read-only; the store remained byte-identical and no source context, assessment,
 or label was produced. OPT-002 now awaits a separately authorized bounded review.
+The pending
+[`bounded review receipt`](optimizations/opt-002-bounded-review-receipt-2026-08-08.json)
+limits initial evidence to 20 adjacent lines around each citation and preserves explicit
+abstention. It authorizes no execution until approved and no store import, provider use,
+rescoring, tuning, reserve activation, or promotion.
 
 ## Historical checkpoints
 
