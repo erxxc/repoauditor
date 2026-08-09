@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-08-07",
+  "optimization": "OPT-002",
+  "status": "completed-outcome-blind-packet-selection",
+  "authorization": "The project owner authorized one deterministic offline selection of exactly 12 entries, six each from frozen Documenso and Lobsters inventories, and persistence of plan and result evidence, with ceilings of 10 minutes, 10 MiB new data, and exactly zero network reads, uploads, provider calls, tokens, cost, store mutations, source-evidence rendering, human review, or labels. Reserve activation, tuning, and gate promotion remained excluded.",
+  "execution_receipt": {
+    "path": "opt-002-packet-selection-receipt-2026-08-07.json",
+    "sha256": "be6bf5aa27772741d56e83df398e1ec59f15499fceaf6e30dd9d8fa44c367322",
+    "merged_pr": 125,
+    "merged_commit": "c99cf742a68e84bc32a1d45eb48832335bb60d7d"
+  },
+  "preconditions": {
+    "primary_result_sha256": "be96675aefa96273206424e2d09a16f2135fe07215d6f7404cf14ba5126b7667",
+    "eligible_inventory_count": 218,
+    "eligible_inventory_sha256": "73ec5f9f32ff47a65c13fb2b53c59c7fbc210024e641b7636b10cd9843ed0a6c",
+    "initial_store_sha256": "1f67635eb1458b93c3b9056f08377839f23d0726b0f3b92764f5791d2ca503b8",
+    "initial_model_runs": 35,
+    "initial_model_usage_rows": 1473,
+    "initial_primary_assessments": 0,
+    "initial_primary_labels": 0,
+    "initial_data_kib": 385760,
+    "output_path_absent": true
+  },
+  "selection": {
+    "selector": "repoauditor.eval.independent_packet",
+    "selection_runs": 1,
+    "elapsed_seconds": 2.2,
+    "selection_policy": "opt-002-independent-v1",
+    "packet_size": 12,
+    "documenso_count": 6,
+    "lobsters_count": 6,
+    "unique_finding_ids": 12,
+    "plan_path": "data/artifacts/opt002-independent-packet/review-plan.json",
+    "plan_bytes": 9090,
+    "plan_sha256": "8d682ce166109ef03559421b84287d9d39be43d6b99ef67933a0598b0d7555c8",
+    "forbidden_fields_present": [],
+    "source_evidence_rendered": false
+  },
+  "selected_identities": [
+    {"finding_id": 859, "repo_id": "opt002-documenso", "finding_fingerprint": "ee9c0ff3693ac452", "candidate_key": "00dc9f703e6dfd12390c516e23887ec39c7ec9b9b10b15274474ed6d9e75cdd2", "triage_model_run_id": 34},
+    {"finding_id": 1170, "repo_id": "opt002-lobsters", "finding_fingerprint": "db112284000ef04e", "candidate_key": "00ea2a908a731e9442983ac5259f5a6c8ba049838ef1470aacdfd73d3477cb0b", "triage_model_run_id": 35},
+    {"finding_id": 861, "repo_id": "opt002-documenso", "finding_fingerprint": "53ab0c51cbd36d68", "candidate_key": "029fb2d5148741f95ddba766bec028b9a36450bc48c6de9561dbbf96b182ddd7", "triage_model_run_id": 34},
+    {"finding_id": 1084, "repo_id": "opt002-lobsters", "finding_fingerprint": "59d8db405381e10d", "candidate_key": "00feef6fc9344630704759894339d6e19a766c272b0cad2fa70a25b1c51c9b2d", "triage_model_run_id": 35},
+    {"finding_id": 905, "repo_id": "opt002-documenso", "finding_fingerprint": "4afa02c83dec5553", "candidate_key": "06b644d3373dca93e303ff7804c5bfcff57786249557f68cc372b74ab3ef19c9", "triage_model_run_id": 34},
+    {"finding_id": 1147, "repo_id": "opt002-lobsters", "finding_fingerprint": "f38f8052aef3cb85", "candidate_key": "035849d96c8fe0b11876b4d350ba89eb6ee5812d752b9f91a55498ff6bf89f79", "triage_model_run_id": 35},
+    {"finding_id": 869, "repo_id": "opt002-documenso", "finding_fingerprint": "b0724b7dd23730d0", "candidate_key": "140694706ca6dd6d5e13de7414c8201a4154073525237bc91aa45472f81b48d1", "triage_model_run_id": 34},
+    {"finding_id": 1140, "repo_id": "opt002-lobsters", "finding_fingerprint": "3b7ace13c59b9c49", "candidate_key": "04431a540926327629d48047bc8257dfaa101709d3e99c6b5bb700d838a26723", "triage_model_run_id": 35},
+    {"finding_id": 884, "repo_id": "opt002-documenso", "finding_fingerprint": "8d9f3d42855187e8", "candidate_key": "1572f85471de4a8bd4f90fa18b4ab1f523ad43378985680cdefa722360a797b4", "triage_model_run_id": 34},
+    {"finding_id": 1081, "repo_id": "opt002-lobsters", "finding_fingerprint": "952eed7d5882e039", "candidate_key": "0a630058fc55bc080fed5cddc04ed16964c09cd762c47dd6fc30648aeb41d07e", "triage_model_run_id": 35},
+    {"finding_id": 870, "repo_id": "opt002-documenso", "finding_fingerprint": "855c532b0622f839", "candidate_key": "1e7025f3d355993c079bc57a48673fd1344cbe941d2d8a0aa506b33c4a9a0fec", "triage_model_run_id": 34},
+    {"finding_id": 1148, "repo_id": "opt002-lobsters", "finding_fingerprint": "82db16e020844a42", "candidate_key": "0bda2a2a8af27bb0e690febfa560d8c5e0fae2da753e8eed9f00b42d7c8a80f7", "triage_model_run_id": 35}
+  ],
+  "authorization_accounting": {
+    "final_store_sha256": "1f67635eb1458b93c3b9056f08377839f23d0726b0f3b92764f5791d2ca503b8",
+    "store_byte_identical": true,
+    "final_model_runs": 35,
+    "initial_model_usage_rows": 1473,
+    "final_model_usage_rows": 1473,
+    "final_primary_assessments": 0,
+    "final_primary_labels": 0,
+    "final_data_kib": 385772,
+    "new_data_kib": 12,
+    "new_data_ceiling_kib": 10240,
+    "network_reads": 0,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "ceiling_breaches": []
+  },
+  "not_executed": {
+    "source_evidence_rendering": true,
+    "human_review": true,
+    "labels": true,
+    "reserve_activation": true,
+    "provider_activity": true,
+    "tuning": true,
+    "gate_promotion": true
+  },
+  "disposition": {
+    "opt_002_status": "open-review-gated",
+    "packet_selection_complete": true,
+    "recommended_next_step": "Freeze a separate bounded review receipt that permits rendering source context only for these 12 immutable identities, captures analyst dispositions with abstention, and still forbids providers, tuning, rescoring, and promotion until post-review gate evidence is computed."
+  }
+}
