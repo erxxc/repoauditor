@@ -8,13 +8,8 @@
     "outstanding_acceptance_items": [],
     "scope_note": "Open optimizations are explicitly outside the accepted POC Definition of Done and do not retroactively reopen it."
   },
-  "optimization_summary": {"closed": 30, "open": 5, "total": 35},
+  "optimization_summary": {"closed": 31, "open": 4, "total": 35},
   "open_optimizations_in_priority_order": [
-    {
-      "id": "OPT-002",
-      "title": "Family-aware bootstrap ranges",
-      "gate": "adequate held-out family breadth with both classes"
-    },
     {
       "id": "OPT-003",
       "title": "Temporal validation",
@@ -48,5 +43,5 @@
     "Additional independently checked language/framework security-claim certificates.",
     "Any expansion of already closed bounded OPT scopes, which must be proposed as new work."
   ],
-  "next_execution": "Review and merge the OPT-002 bootstrap-implementation receipt, then obtain its exact authorization before adding evaluation-family-aware uncertainty ranges and one offline validation result. Automatic threshold selection, training, tuning, rescoring, production-policy changes, providers, store mutation, and premature OPT-002 closure remain unauthorized."
+  "next_execution": "Review and merge the OPT-002 bootstrap implementation result. OPT-003 temporal validation becomes the highest-ranked open optimization but remains data-gated pending meaningful chronological evaluation depth."
 }

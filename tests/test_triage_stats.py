@@ -47,6 +47,33 @@ def test_threshold_curve_reports_tradeoff_without_recommending_cutoff(tmp_config
     assert "precision" in rendered and "recall" in rendered
     assert "no threshold is recommended" in rendered
     assert "optimal" not in rendered.lower()
+    assert stats.bootstrap_available
+    assert stats.bootstrap_resamples == 2000
+    assert all(row.recall_lower is not None for row in stats.rows)
+
+
+def test_family_bootstrap_is_deterministic_and_honors_family_overrides(tmp_config, monkeypatch):
+    observations = [
+        _scored((index + 1) / 49, index % 2 == 0, f"repo-{index % 9}",
+                model_version="3.3.0")
+        for index in range(47)
+    ]
+    monkeypatch.setattr(
+        "repoauditor.triage.stats.db.list_scored_triage_labels",
+        lambda config, repo_id=None: observations,
+    )
+    first = threshold_stats(config=tmp_config)
+    second = threshold_stats(config=tmp_config)
+    assert first.rows == second.rows
+    assert first.n_evaluation_families == 9
+
+    triage = tmp_config.triage.model_copy(update={
+        "evaluation_family_overrides": {"repo-8": "repo-7"}
+    })
+    grouped = tmp_config.model_copy(update={"triage": triage})
+    collapsed = threshold_stats(config=grouped)
+    assert collapsed.n_evaluation_families == 8
+    assert collapsed.bootstrap_available
 
 
 def test_threshold_stats_defaults_to_human_labels_and_can_select_a_run(tmp_config, monkeypatch):

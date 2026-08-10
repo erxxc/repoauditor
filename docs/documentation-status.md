@@ -10,14 +10,14 @@ step. They must not be interpreted as the current lifecycle state.
 ## Current authoritative state
 
 - [`optimizations/optimization-status.json`](optimizations/optimization-status.json) is the
-  machine-readable lifecycle authority: **30 closed, 5 open, 35 total**.
+  machine-readable lifecycle authority: **31 closed, 4 open, 35 total**.
 - [`optimizations/optimization-register.md`](optimizations/optimization-register.md) is the
   narrative authority for scope, owners, activation gates, and chronological outcomes.
 - [`project-priorities.md`](project-priorities.md) records current work sequencing.
 - [`optimizations/outstanding-work-checkpoint-2026-08-07.json`](optimizations/outstanding-work-checkpoint-2026-08-07.json)
   is the current derived checkpoint and must match the lifecycle ledger.
 
-The five open optimizations are OPT-002, OPT-003, OPT-009, OPT-010, and OPT-014. No paid
+The four open optimizations are OPT-003, OPT-009, OPT-010, and OPT-014. No paid
 provider execution is currently authorized. The outcome-blind, zero-provider OPT-002
 [`acquisition protocol`](optimizations/opt-002-independent-acquisition-protocol-2026-08-07.json)
 is frozen; its repository materialization, deterministic scan, scoring, and review packet
@@ -77,6 +77,11 @@ itself close OPT-002. The pending
 [`bootstrap implementation receipt`](optimizations/opt-002-bootstrap-implementation-receipt-2026-08-10.json)
 limits that work to deterministic evaluation-family-aware descriptive uncertainty ranges,
 with no threshold recommendation, training, rescoring, store mutation, or policy change.
+The authorized
+[`bootstrap implementation result`](optimizations/opt-002-bootstrap-implementation-result-2026-08-10.json)
+records deterministic 95% family-block ranges over 47 compatible labels and nine families.
+The store remained byte-identical, no threshold was selected, and OPT-002 is closed at its
+bounded descriptive scope.
 
 ## Historical checkpoints
 

@@ -5,7 +5,7 @@ Status: authoritative post-MVP work list as of 2026-08-01. POC acceptance is com
 Current execution priorities
 
 OPT-035 publishes the canonical machine-readable lifecycle ledger at
-[`optimization-status.json`](optimization-status.json). It records 30 closed and 5 open
+[`optimization-status.json`](optimization-status.json). It records 31 closed and 4 open
 items. Every open item remains subject to its activation gate; priority does not waive it.
 The dated [`outstanding-work checkpoint`](outstanding-work-checkpoint-2026-08-07.json)
 records every open optimization, tuning blocker, and nonblocking future expansion before
@@ -96,7 +96,7 @@ I. Evaluation and classifier maturity
       does not activate OPT-002; benchmark acquisition is not reclassified as held-out
       evidence — DoD impact: none.
 
-   B. OPT-002 — Family-aware bootstrap ranges — deferred — owner: ML evaluation — source:
+   B. OPT-002 — Family-aware bootstrap ranges — implemented — owner: ML evaluation — source:
       `../triage-accuracy-roadmap.md` — activate after adequate held-out family breadth and
       both classes exist. The
       [`independent acquisition protocol`](opt-002-independent-acquisition-protocol-2026-08-07.json)
@@ -175,6 +175,12 @@ I. Evaluation and classifier maturity
       as sampling units. It preserves descriptive point estimates and excludes automatic
       threshold selection, training, tuning, rescoring, policy changes, providers, and store
       mutation.
+      The authorized
+      [`implementation result`](opt-002-bootstrap-implementation-result-2026-08-10.json)
+      reports deterministic 95% family-block ranges for all fixed thresholds over 47
+      compatible human labels and nine evaluation families. The CLI remains descriptive,
+      selects no threshold, and withholds ranges below the label/family/class gate. OPT-002
+      is closed at this bounded scope; further methods or policy use require new scope.
 
    C. OPT-003 — Temporal validation — deferred — owner: ML evaluation — source:
       `../triage-accuracy-roadmap.md` — activate after meaningful chronological depth exists
