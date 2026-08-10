@@ -72,6 +72,11 @@ atomically added 12 assessments and 11 manual labels while preserving one label-
 abstention. The measured compatible cohort is now 47 labels (24 positive, 23 negative)
 across nine genuine evaluation families, satisfying the frozen data-gate conditions.
 OPT-002 remains open pending a separate promotion decision.
+The satisfied data gate activates the remaining roadmap implementation; it does not by
+itself close OPT-002. The pending
+[`bootstrap implementation receipt`](optimizations/opt-002-bootstrap-implementation-receipt-2026-08-10.json)
+limits that work to deterministic evaluation-family-aware descriptive uncertainty ranges,
+with no threshold recommendation, training, rescoring, store mutation, or policy change.
 
 ## Historical checkpoints
 

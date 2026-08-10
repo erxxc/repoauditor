@@ -169,6 +169,12 @@ I. Evaluation and classifier maturity
       and one label-free abstention. The compatible cohort is now 47 labels across nine
       genuine evaluation families with both classes represented, satisfying the frozen
       data gate. OPT-002 remains open pending a separate promotion decision.
+      Gate satisfaction activates, rather than completes, the approved roadmap scope. The
+      pending [`bootstrap implementation receipt`](opt-002-bootstrap-implementation-receipt-2026-08-10.json)
+      freezes deterministic 2,000-resample, 95% percentile ranges using evaluation families
+      as sampling units. It preserves descriptive point estimates and excludes automatic
+      threshold selection, training, tuning, rescoring, policy changes, providers, and store
+      mutation.
 
    C. OPT-003 — Temporal validation — deferred — owner: ML evaluation — source:
       `../triage-accuracy-roadmap.md` — activate after meaningful chronological depth exists
