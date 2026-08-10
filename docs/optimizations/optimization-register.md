@@ -157,6 +157,12 @@ I. Evaluation and classifier maturity
       non-actionable) plus one preserved abstention. The minimum-label and two-class review
       conditions pass, while the byte-identical store, zero provider activity, and zero
       labels confirm that import and OPT-002 status remain separately gated.
+      The pending
+      [`review import receipt`](opt-002-review-import-receipt-2026-08-10.json) freezes one
+      atomic 12-assessment/11-label import and a read-only post-import gate report. It
+      preserves the abstention without a label and excludes response changes, providers,
+      rescoring, training, tuning, reserve activation, production-policy changes, and
+      OPT-002 promotion or closure.
 
    C. OPT-003 — Temporal validation — deferred — owner: ML evaluation — source:
       `../triage-accuracy-roadmap.md` — activate after meaningful chronological depth exists

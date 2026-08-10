@@ -61,6 +61,11 @@ The authorized review is now recorded in a separate
 (five actionable and six non-actionable) and one preserved abstention. The store remained
 byte-identical. Import, rescoring, tuning, reserve activation, and promotion remain
 separately gated.
+The pending
+[`review import receipt`](optimizations/opt-002-review-import-receipt-2026-08-10.json)
+freezes an atomic import of the 12 explicit assessments and only 11 decided manual labels,
+followed by a read-only gate report. The abstention remains label-free, and status changes,
+providers, rescoring, training, tuning, and production-policy changes remain excluded.
 
 ## Historical checkpoints
 

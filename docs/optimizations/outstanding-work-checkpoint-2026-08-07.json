@@ -48,5 +48,5 @@
     "Additional independently checked language/framework security-claim certificates.",
     "Any expansion of already closed bounded OPT scopes, which must be proposed as new work."
   ],
-  "next_execution": "Review and merge the OPT-002 bounded-review result, then freeze a separate receipt for any exact store import and gate assessment. The result records 11 decided projections across both classes and one abstention; providers, rescoring, tuning, reserve activation, import, and promotion remain unauthorized."
+  "next_execution": "Review and merge the OPT-002 review-import receipt, then obtain its exact authorization before atomically importing 12 assessments and 11 labels and computing the read-only gate report. The abstention, providers, rescoring, training, tuning, reserve activation, production-policy changes, and OPT-002 promotion remain separately gated."
 }
