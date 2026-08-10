@@ -1229,6 +1229,70 @@ def insert_triage_assessment(
         conn.close()
 
 
+def import_triage_review_batch(
+    assessments: list[TriageAssessment],
+    labels: list[TriageLabel],
+    config: Config | None = None,
+) -> tuple[list[int], list[int]]:
+    """Atomically append a frozen review batch without overwriting prior evidence."""
+    conn = get_connection(config)
+    finding_ids = [item.finding_id for item in assessments]
+    if len(finding_ids) != len(set(finding_ids)):
+        conn.close()
+        raise ValueError("review batch contains duplicate finding ids")
+    try:
+        with conn:
+            placeholders = ",".join("?" for _ in finding_ids)
+            existing = conn.execute(
+                f"SELECT finding_id FROM triage_assessment WHERE finding_id IN ({placeholders})",
+                finding_ids,
+            ).fetchall()
+            if existing:
+                raise RuntimeError("selected finding already has an assessment")
+            feature_rows = conn.execute(
+                f"SELECT finding_id, engagement, rule_id, fingerprint FROM triage_features "
+                f"WHERE finding_id IN ({placeholders})",
+                finding_ids,
+            ).fetchall()
+            features = {row["finding_id"]: row for row in feature_rows}
+            if len(features) != len(finding_ids):
+                raise RuntimeError("selected finding lacks unique triage features")
+            for label in labels:
+                if conn.execute(
+                    "SELECT 1 FROM triage_label WHERE engagement=? AND finding_fingerprint=?",
+                    (label.engagement, label.finding_fingerprint),
+                ).fetchone():
+                    raise RuntimeError("selected finding already has a label projection")
+            assessment_ids = []
+            for item in assessments:
+                feature = features[item.finding_id]
+                if item.engagement != feature["engagement"]:
+                    raise RuntimeError("assessment engagement drifted")
+                cur = conn.execute(
+                    "INSERT INTO triage_assessment "
+                    "(finding_id, engagement, outcome, disposition, rationale, analyst, "
+                    "material, classifier_eligible, dimensions) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    (item.finding_id, item.engagement, str(item.outcome),
+                     str(item.disposition) if item.disposition else None, item.rationale,
+                     item.analyst, int(item.material), int(item.classifier_eligible),
+                     json.dumps(item.dimensions)),
+                )
+                assessment_ids.append(int(cur.lastrowid))
+            label_ids = []
+            for item in labels:
+                cur = conn.execute(
+                    "INSERT INTO triage_label "
+                    "(engagement, rule_id, finding_fingerprint, actionable, note, source, updated_at) "
+                    "VALUES (?, ?, ?, ?, ?, ?, datetime('now'))",
+                    (item.engagement, item.rule_id, item.finding_fingerprint,
+                     int(item.actionable), item.note, str(item.source)),
+                )
+                label_ids.append(int(cur.lastrowid))
+        return assessment_ids, label_ids
+    finally:
+        conn.close()
+
+
 def list_triage_assessments(
     repo_id: str | None = None, config: Config | None = None
 ) -> list[TriageAssessment]:

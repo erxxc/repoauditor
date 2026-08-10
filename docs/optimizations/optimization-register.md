@@ -163,6 +163,12 @@ I. Evaluation and classifier maturity
       preserves the abstention without a label and excludes response changes, providers,
       rescoring, training, tuning, reserve activation, production-policy changes, and
       OPT-002 promotion or closure.
+      The authorized
+      [`review import result`](opt-002-review-import-result-2026-08-10.json) records one
+      atomic transaction: 12 assessments, 11 manual labels, five positive, six negative,
+      and one label-free abstention. The compatible cohort is now 47 labels across nine
+      genuine evaluation families with both classes represented, satisfying the frozen
+      data gate. OPT-002 remains open pending a separate promotion decision.
 
    C. OPT-003 — Temporal validation — deferred — owner: ML evaluation — source:
       `../triage-accuracy-roadmap.md` — activate after meaningful chronological depth exists

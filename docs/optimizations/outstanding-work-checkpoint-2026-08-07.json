@@ -48,5 +48,5 @@
     "Additional independently checked language/framework security-claim certificates.",
     "Any expansion of already closed bounded OPT scopes, which must be proposed as new work."
   ],
-  "next_execution": "Review and merge the OPT-002 review-import receipt, then obtain its exact authorization before atomically importing 12 assessments and 11 labels and computing the read-only gate report. The abstention, providers, rescoring, training, tuning, reserve activation, production-policy changes, and OPT-002 promotion remain separately gated."
+  "next_execution": "Review and merge the OPT-002 review-import result, then make a separate explicit promotion decision. The measured compatible cohort is 47 labels across nine genuine evaluation families with both classes represented; training, tuning, recalibration, production-policy changes, and OPT-002 promotion or closure remain unauthorized."
 }

@@ -66,6 +66,12 @@ The pending
 freezes an atomic import of the 12 explicit assessments and only 11 decided manual labels,
 followed by a read-only gate report. The abstention remains label-free, and status changes,
 providers, rescoring, training, tuning, and production-policy changes remain excluded.
+The authorized
+[`review import result`](optimizations/opt-002-review-import-result-2026-08-10.json)
+atomically added 12 assessments and 11 manual labels while preserving one label-free
+abstention. The measured compatible cohort is now 47 labels (24 positive, 23 negative)
+across nine genuine evaluation families, satisfying the frozen data-gate conditions.
+OPT-002 remains open pending a separate promotion decision.
 
 ## Historical checkpoints
 
