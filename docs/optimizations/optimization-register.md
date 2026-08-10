@@ -145,6 +145,12 @@ I. Evaluation and classifier maturity
       records one successful offline selection: 12 unique identities, six per primary
       family, with a byte-identical store and no forbidden output fields, network/provider
       activity, assessments, or labels. OPT-002 is now review-gated — DoD impact: none.
+      The pending
+      [`bounded review receipt`](opt-002-bounded-review-receipt-2026-08-08.json)
+      freezes digest-checked rendering of at most 20 adjacent lines for each selected
+      identity and explicit project-owner dispositions with abstention. It excludes
+      follow-up expansion, store writes, automatic labels, providers, rescoring, tuning,
+      reserve activation, and promotion.
 
    C. OPT-003 — Temporal validation — deferred — owner: ML evaluation — source:
       `../triage-accuracy-roadmap.md` — activate after meaningful chronological depth exists

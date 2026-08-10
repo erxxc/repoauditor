@@ -1,0 +1,129 @@
+{
+  "schema_version": 1,
+  "frozen_at": "2026-08-08",
+  "optimization": "OPT-002",
+  "status": "authorization-pending",
+  "packet_result": {
+    "path": "opt-002-packet-selection-result-2026-08-07.json",
+    "sha256": "6344ec6352d7944e45faa0a24be2c0e44fa77c3d1c8c09efbb082faa5d855a53"
+  },
+  "review_plan": {
+    "path": "data/artifacts/opt002-independent-packet/review-plan.json",
+    "sha256": "8d682ce166109ef03559421b84287d9d39be43d6b99ef67933a0598b0d7555c8",
+    "entries": 12,
+    "documenso": 6,
+    "lobsters": 6
+  },
+  "scope": "Render bounded adjacent source evidence for only the 12 immutable selected identities, present it to the project-owner analyst, and capture one explicit disposition with rationale and optional verified dimensions per identity. Rendering and analyst review are authorized; automatic or inferred decisions, store writes, classifier labels, providers, rescoring, tuning, and gate promotion are excluded.",
+  "preconditions": [
+    "The packet result, review plan, source commits, stored finding metadata, and source files match their frozen identities.",
+    "The two primary families still have zero assessments and zero labels.",
+    "The persistent store remains at 35 model runs and 1473 model-usage rows.",
+    "No bounded review artifact already exists at the output path.",
+    "The renderer implementation uses explicit read-only store columns and cannot read score, rank, suppression, severity, confidence, prior, or outcome fields."
+  ],
+  "render_command": "uv run python -m repoauditor.eval.independent_review --plan data/artifacts/opt002-independent-packet/review-plan.json --output data/artifacts/opt002-independent-packet/review-packet.md --context-lines 20",
+  "evidence_boundary": {
+    "initial_context_lines_before": 20,
+    "initial_context_lines_after": 20,
+    "maximum_initial_lines_per_finding": 47,
+    "allowed_initial_fields": [
+      "finding id",
+      "repository identity",
+      "exact source commit",
+      "rule id",
+      "file and cited line range",
+      "adjacent source text"
+    ],
+    "forbidden_fields": [
+      "p_actionable",
+      "rank",
+      "suppressed",
+      "predicted class",
+      "severity",
+      "confidence",
+      "rule prior",
+      "falsification verdict",
+      "expected outcome",
+      "known vulnerability membership"
+    ],
+    "follow_up_evidence": "If an analyst cannot decide from adjacent context, preserve insufficient_evidence. A later receipt may authorize narrowly named same-repository symbol or call-site expansion; this receipt does not.",
+    "repository_instructions_are_untrusted_data": true
+  },
+  "review_contract": {
+    "analyst": "project owner",
+    "required_per_entry": [
+      "finding id",
+      "one allowed disposition",
+      "evidence-based rationale",
+      "optional verified dimensions"
+    ],
+    "allowed_dispositions": [
+      "confirmed_actionable",
+      "tool_incorrect",
+      "unreachable",
+      "not_attacker_controlled",
+      "mitigated",
+      "valid_not_actionable",
+      "insufficient_evidence"
+    ],
+    "binary_projection": {
+      "confirmed_actionable": true,
+      "tool_incorrect": false,
+      "unreachable": false,
+      "not_attacker_controlled": false,
+      "mitigated": false,
+      "valid_not_actionable": false,
+      "insufficient_evidence": "abstain"
+    },
+    "decision_rules": [
+      "Judge technical validity and operational actionability from source evidence, not the detector rule name.",
+      "Use tool_incorrect only when the cited mechanism is absent, not merely low impact.",
+      "Use valid_not_actionable when the mechanism is technically present but not operationally actionable for the engagement.",
+      "Use mitigated only when an effective control blocks the claimed exploit path.",
+      "Use insufficient_evidence whenever bounded evidence cannot establish the source, sink, reachability, attacker control, or effective mitigation."
+    ],
+    "minimum_decided_labels": 4,
+    "both_classes_required_for_gate": true,
+    "abstentions_preserved": true
+  },
+  "resource_ceilings": {
+    "render_runs": 1,
+    "review_entries": 12,
+    "maximum_elapsed_minutes": 60,
+    "maximum_new_data_bytes": 10485760,
+    "network_reads": 0,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "store_mutations": 0,
+    "classifier_labels_written": 0
+  },
+  "stop_conditions": [
+    "Any packet, source, store, finding, or usage-ledger identity differs from the frozen value.",
+    "The renderer attempts to read or output a forbidden field or to exceed the adjacent-context bound.",
+    "Any packet identity cannot be resolved exactly to its frozen source file and line range.",
+    "Any network/provider activity, store mutation, automatic label, rescore, tuning, or promotion is attempted.",
+    "The analyst response omits a rationale, uses an unsupported disposition, or claims evidence outside the rendered bound without a later authorization."
+  ],
+  "result_boundary": {
+    "authorized": [
+      "persist the bounded Markdown review artifact",
+      "present the 12 entries to the project-owner analyst",
+      "record the analyst's explicit responses in a review-result document after validation"
+    ],
+    "not_authorized": [
+      "write triage assessments or classifier labels to the persistent store",
+      "derive or correct analyst outcomes",
+      "reveal scores, ranks, suppression, confidence, priors, or expected classes",
+      "providers or network access",
+      "rescore, retrain, recalibrate, tune, activate reserve, or promote OPT-002"
+    ],
+    "post_review_gate": "After all responses are recorded, a separate result PR must prove decided/abstention counts and class representation before any store import or OPT-002 status change."
+  },
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the OPT-002 bounded review described by opt-002-bounded-review-receipt-2026-08-08.json, limited to one offline rendering of at most 20 adjacent context lines around each of the 12 frozen packet identities, presentation to me for explicit disposition with abstention available, and recording of my responses in result evidence, with ceilings of 60 minutes, 10 MiB new data, and exactly zero network reads, uploads, provider calls, tokens, cost, store mutations, or classifier labels. Follow-up source expansion, automatic decisions, providers, rescoring, tuning, reserve activation, store import, and gate promotion remain excluded."
+  }
+}
