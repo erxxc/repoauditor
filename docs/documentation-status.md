@@ -55,6 +55,12 @@ The pending
 limits initial evidence to 20 adjacent lines around each citation and preserves explicit
 abstention. It authorizes no execution until approved and no store import, provider use,
 rescoring, tuning, reserve activation, or promotion.
+The authorized review is now recorded in a separate
+[`bounded review result`](optimizations/opt-002-bounded-review-result-2026-08-10.json): all
+12 identities received explicit project-owner responses, yielding 11 decided projections
+(five actionable and six non-actionable) and one preserved abstention. The store remained
+byte-identical. Import, rescoring, tuning, reserve activation, and promotion remain
+separately gated.
 
 ## Historical checkpoints
 

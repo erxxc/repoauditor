@@ -151,6 +151,12 @@ I. Evaluation and classifier maturity
       identity and explicit project-owner dispositions with abstention. It excludes
       follow-up expansion, store writes, automatic labels, providers, rescoring, tuning,
       reserve activation, and promotion.
+      The authorized
+      [`bounded review result`](opt-002-bounded-review-result-2026-08-10.json) records all
+      12 explicit responses: 11 decided projections (five actionable and six
+      non-actionable) plus one preserved abstention. The minimum-label and two-class review
+      conditions pass, while the byte-identical store, zero provider activity, and zero
+      labels confirm that import and OPT-002 status remain separately gated.
 
    C. OPT-003 — Temporal validation — deferred — owner: ML evaluation — source:
       `../triage-accuracy-roadmap.md` — activate after meaningful chronological depth exists
