@@ -198,6 +198,12 @@ I. Evaluation and classifier maturity
       exact commits of three outcome-blind product families: Chatwoot, Linkwarden, and
       Paperless-ngx. It stops after compatible persisted predictions; packet selection,
       review, assessments, labels, providers, tuning, and policy changes remain excluded.
+      The authorized [`wave-one attempt`](opt-003-wave-1-attempt-2026-08-10.json) froze the
+      exact 122-label model, then stopped before acquisition because required scanner
+      canaries failed. Gitleaks passed; Semgrep, supplemental Semgrep, pip-audit, and the OSV
+      positive control did not. The generic canary also attempted PyPI/OSV-backed checks
+      outside the GitHub-only boundary, recorded as a protocol breach. The store remained
+      byte-identical and no repository, prediction, assessment, or label was created.
 
    D. OPT-004 — Identical-input provider repeatability characterization — implemented —
       owner: evaluation engineering — source: `../convergence-evaluation.md`,

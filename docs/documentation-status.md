@@ -92,6 +92,12 @@ The pending
 freezes the current effective training corpus before exact-commit acquisition of Chatwoot,
 Linkwarden, and Paperless-ngx. It stops after persisted predictions and authorizes no packet
 selection, review, assessment, label, provider use, tuning, or policy change.
+The authorized
+[`wave-one attempt`](optimizations/opt-003-wave-1-attempt-2026-08-10.json) stopped before
+repository acquisition when scanner canaries failed. It also records that the generic
+canary attempted PyPI/OSV-backed checks outside the GitHub-only receipt boundary. The store
+remained byte-identical; no predictions or outcomes were persisted, and retry requires a
+corrected receipt.
 
 ## Historical checkpoints
 
