@@ -216,6 +216,10 @@ I. Evaluation and classifier maturity
       corpus, and persisted 449 compatible scores across the three exact-commit families.
       Assessments, labels, and the 1,473-row provider ledger remained unchanged. Wave one is
       now outcome-blind packet-gated.
+      The pending [`wave-one packet receipt`](opt-003-wave-1-packet-receipt-2026-08-11.json)
+      freezes an 18-entry balanced selection, six per family, over 363 eligible
+      production/deployment identities. The selector reads scoring-run presence but no
+      score, rank, expected class, or outcome; rendering and review remain separately gated.
 
    D. OPT-004 — Identical-input provider repeatability characterization — implemented —
       owner: evaluation engineering — source: `../convergence-evaluation.md`,

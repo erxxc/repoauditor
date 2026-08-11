@@ -108,6 +108,10 @@ The authorized
 records passing separated preflights, one new pre-acquisition model, three exact-commit
 product families, and 449 compatible persisted scores. No assessments, labels, provider
 usage, or review disclosure occurred; wave one is now packet-gated.
+The pending
+[`wave-one packet receipt`](optimizations/opt-003-wave-1-packet-receipt-2026-08-11.json)
+freezes a balanced 18-entry identity-only selection over 363 eligible candidates. Scores,
+ranks, expected classes, source rendering, review, and outcomes remain excluded.
 
 ## Historical checkpoints
 
