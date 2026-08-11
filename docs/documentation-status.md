@@ -130,6 +130,12 @@ The pending
 binds one atomic offline import of 18 assessments and 16 manual labels, preserving both
 abstentions as assessment-only. It authorizes no execution until separately approved and no
 second-wave work or OPT-003 status change.
+The authorized
+[`wave-one import result`](optimizations/opt-003-wave-1-import-result-2026-08-11.json)
+records one atomic import of 18 assessments and 16 labels, including one positive, 15
+negative, and two label-free abstentions. The leakage-safe prospective cohort now has 27
+decided labels across five families and two waves. OPT-003 remains open: 13 decided labels
+and three additional families are still required.
 
 ## Historical checkpoints
 

@@ -237,6 +237,12 @@ I. Evaluation and classifier maturity
       both abstentions without labels. Its read-only gate report must retain the measured
       13-label/three-family shortfall; second-wave activity and OPT-003 status changes remain
       separately gated.
+      The authorized
+      [`wave-one import result`](opt-003-wave-1-import-result-2026-08-11.json) records one
+      atomic transaction with 18 assessments, 16 manual labels, one positive, 15 negative,
+      and two label-free abstentions. The prospective cohort is now 27 decided labels across
+      five families and two waves. Both classes and the wave condition pass, but OPT-003
+      remains open pending 13 additional decided labels across three additional families.
 
    D. OPT-004 — Identical-input provider repeatability characterization — implemented —
       owner: evaluation engineering — source: `../convergence-evaluation.md`,
