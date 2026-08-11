@@ -103,6 +103,11 @@ The pending
 binds Semgrep logging inside the writable wave artifact directory and separates offline
 Semgrep/supplemental/Gitleaks controls from explicitly named PyPI/OSV advisory checks. It
 requires a new model after both pass and still stops before all review or outcomes.
+The authorized
+[`wave-one retry result`](optimizations/opt-003-wave-1-retry-result-2026-08-11.json)
+records passing separated preflights, one new pre-acquisition model, three exact-commit
+product families, and 449 compatible persisted scores. No assessments, labels, provider
+usage, or review disclosure occurred; wave one is now packet-gated.
 
 ## Historical checkpoints
 
