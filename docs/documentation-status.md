@@ -112,6 +112,10 @@ The pending
 [`wave-one packet receipt`](optimizations/opt-003-wave-1-packet-receipt-2026-08-11.json)
 freezes a balanced 18-entry identity-only selection over 363 eligible candidates. Scores,
 ranks, expected classes, source rendering, review, and outcomes remain excluded.
+The authorized
+[`wave-one packet result`](optimizations/opt-003-wave-1-packet-result-2026-08-11.json)
+records 18 unique identities split evenly across the three families, with no forbidden
+fields and a byte-identical store. Wave one now awaits a separately bounded review receipt.
 
 ## Historical checkpoints
 

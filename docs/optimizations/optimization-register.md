@@ -220,6 +220,9 @@ I. Evaluation and classifier maturity
       freezes an 18-entry balanced selection, six per family, over 363 eligible
       production/deployment identities. The selector reads scoring-run presence but no
       score, rank, expected class, or outcome; rendering and review remain separately gated.
+      The authorized [`packet result`](opt-003-wave-1-packet-result-2026-08-11.json)
+      records one balanced selection of 18 unique identities, six per family, with no
+      forbidden fields and a byte-identical store. Wave one is now bounded-review gated.
 
    D. OPT-004 — Identical-input provider repeatability characterization — implemented —
       owner: evaluation engineering — source: `../convergence-evaluation.md`,
