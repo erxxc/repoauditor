@@ -184,7 +184,14 @@ I. Evaluation and classifier maturity
 
    C. OPT-003 — Temporal validation — deferred — owner: ML evaluation — source:
       `../triage-accuracy-roadmap.md` — activate after meaningful chronological depth exists
-      — DoD impact: none.
+      — the dated
+      [`temporal validation protocol`](opt-003-temporal-validation-protocol-2026-08-10.json)
+      identifies only one leakage-safe prospective wave: 11 decided labels across two
+      families, scored on August 7 and reviewed on August 10. Earlier compatible labels
+      were outcome-known before scoring and remain retrospective only. Activation requires
+      40 prospective decided labels, eight families, both classes, and two separately
+      frozen prediction waves. Acquisition and execution remain separately gated — DoD
+      impact: none.
 
    D. OPT-004 — Identical-input provider repeatability characterization — implemented —
       owner: evaluation engineering — source: `../convergence-evaluation.md`,

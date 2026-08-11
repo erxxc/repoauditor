@@ -82,6 +82,11 @@ The authorized
 records deterministic 95% family-block ranges over 47 compatible labels and nine families.
 The store remained byte-identical, no threshold was selected, and OPT-002 is closed at its
 bounded descriptive scope.
+OPT-003 is now governed by a dated
+[`temporal validation protocol`](optimizations/opt-003-temporal-validation-protocol-2026-08-10.json).
+The chronology audit finds only 11 leakage-safe prospective decided labels across two
+families in one wave; earlier compatible labels remain retrospective. OPT-003 therefore
+stays data-gated while a separately authorized prospective acquisition is prepared.
 
 ## Historical checkpoints
 
