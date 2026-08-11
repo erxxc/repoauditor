@@ -192,6 +192,12 @@ I. Evaluation and classifier maturity
       40 prospective decided labels, eight families, both classes, and two separately
       frozen prediction waves. Acquisition and execution remain separately gated — DoD
       impact: none.
+      The pending
+      [`wave-one prediction receipt`](opt-003-wave-1-prediction-receipt-2026-08-10.json)
+      freezes one model before acquisition from the current 122-label effective corpus and
+      exact commits of three outcome-blind product families: Chatwoot, Linkwarden, and
+      Paperless-ngx. It stops after compatible persisted predictions; packet selection,
+      review, assessments, labels, providers, tuning, and policy changes remain excluded.
 
    D. OPT-004 — Identical-input provider repeatability characterization — implemented —
       owner: evaluation engineering — source: `../convergence-evaluation.md`,

@@ -87,6 +87,11 @@ OPT-003 is now governed by a dated
 The chronology audit finds only 11 leakage-safe prospective decided labels across two
 families in one wave; earlier compatible labels remain retrospective. OPT-003 therefore
 stays data-gated while a separately authorized prospective acquisition is prepared.
+The pending
+[`wave-one prediction receipt`](optimizations/opt-003-wave-1-prediction-receipt-2026-08-10.json)
+freezes the current effective training corpus before exact-commit acquisition of Chatwoot,
+Linkwarden, and Paperless-ngx. It stops after persisted predictions and authorizes no packet
+selection, review, assessment, label, provider use, tuning, or policy change.
 
 ## Historical checkpoints
 
