@@ -116,6 +116,10 @@ The authorized
 [`wave-one packet result`](optimizations/opt-003-wave-1-packet-result-2026-08-11.json)
 records 18 unique identities split evenly across the three families, with no forbidden
 fields and a byte-identical store. Wave one now awaits a separately bounded review receipt.
+The pending
+[`wave-one review receipt`](optimizations/opt-003-wave-1-review-receipt-2026-08-11.json)
+limits evidence to 20 adjacent source lines per identity and explicit dispositions with
+abstention. Scores, imports, second-wave work, and status changes remain excluded.
 
 ## Historical checkpoints
 
