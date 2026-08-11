@@ -231,6 +231,12 @@ I. Evaluation and classifier maturity
       records 16 decided responses (one positive, 15 negative) and two abstentions. Import
       remains separately gated; even after import, OPT-003 would still need 13 decided
       labels across at least three additional families.
+      The pending
+      [`wave-one import receipt`](opt-003-wave-1-import-receipt-2026-08-11.json) freezes one
+      atomic import of 18 project-owner assessments and 16 manual labels while preserving
+      both abstentions without labels. Its read-only gate report must retain the measured
+      13-label/three-family shortfall; second-wave activity and OPT-003 status changes remain
+      separately gated.
 
    D. OPT-004 — Identical-input provider repeatability characterization — implemented —
       owner: evaluation engineering — source: `../convergence-evaluation.md`,

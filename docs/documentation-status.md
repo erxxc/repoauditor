@@ -125,6 +125,11 @@ The authorized
 records 16 decided responses—one positive and 15 negative—and two abstentions. Import is
 separately gated, and OPT-003 will still require at least 13 decided labels across three new
 families after this wave is imported.
+The pending
+[`wave-one import receipt`](optimizations/opt-003-wave-1-import-receipt-2026-08-11.json)
+binds one atomic offline import of 18 assessments and 16 manual labels, preserving both
+abstentions as assessment-only. It authorizes no execution until separately approved and no
+second-wave work or OPT-003 status change.
 
 ## Historical checkpoints
 
