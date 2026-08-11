@@ -120,6 +120,11 @@ The pending
 [`wave-one review receipt`](optimizations/opt-003-wave-1-review-receipt-2026-08-11.json)
 limits evidence to 20 adjacent source lines per identity and explicit dispositions with
 abstention. Scores, imports, second-wave work, and status changes remain excluded.
+The authorized
+[`wave-one review result`](optimizations/opt-003-wave-1-review-result-2026-08-11.json)
+records 16 decided responses—one positive and 15 negative—and two abstentions. Import is
+separately gated, and OPT-003 will still require at least 13 decided labels across three new
+families after this wave is imported.
 
 ## Historical checkpoints
 

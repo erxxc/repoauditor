@@ -227,6 +227,10 @@ I. Evaluation and classifier maturity
       limits evidence to 20 adjacent lines for each identity and explicit project-owner
       dispositions with abstention. Scores, import, second-wave activity, and status changes
       remain excluded.
+      The authorized [`review result`](opt-003-wave-1-review-result-2026-08-11.json)
+      records 16 decided responses (one positive, 15 negative) and two abstentions. Import
+      remains separately gated; even after import, OPT-003 would still need 13 decided
+      labels across at least three additional families.
 
    D. OPT-004 — Identical-input provider repeatability characterization — implemented —
       owner: evaluation engineering — source: `../convergence-evaluation.md`,
