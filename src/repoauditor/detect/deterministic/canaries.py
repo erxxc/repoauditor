@@ -292,17 +292,31 @@ def _osv_canary(root: Path, timeout_seconds: int) -> ScannerCanaryResult:
     )
 
 
-def run_scanner_canaries(timeout_seconds: int = 180) -> ScannerCanaryReport:
+CANARY_RUNNERS = {
+    "semgrep": _semgrep_canary,
+    "semgrep-supplemental": _supplemental_semgrep_canary,
+    "gitleaks": _gitleaks_canary,
+    "pip-audit": _pip_audit_canary,
+    "osv-scanner": _osv_canary,
+}
+
+
+def run_scanner_canaries(
+    timeout_seconds: int = 180,
+    scanners: tuple[str, ...] | None = None,
+) -> ScannerCanaryReport:
     """Run isolated controls without ingesting source or opening the finding store."""
+    selected = tuple(CANARY_RUNNERS) if scanners is None else scanners
+    unknown = sorted(set(selected) - CANARY_RUNNERS.keys())
+    if unknown:
+        raise ValueError(f"unknown scanner canaries: {', '.join(unknown)}")
+    if not selected:
+        raise ValueError("at least one scanner canary is required")
+    if len(selected) != len(set(selected)):
+        raise ValueError("scanner canaries must be unique")
     with tempfile.TemporaryDirectory(prefix="repoauditor-scanner-canaries-") as tmp:
         root = Path(tmp)
-        results = [
-            _semgrep_canary(root, timeout_seconds),
-            _supplemental_semgrep_canary(root, timeout_seconds),
-            _gitleaks_canary(root, timeout_seconds),
-            _pip_audit_canary(root, timeout_seconds),
-            _osv_canary(root, timeout_seconds),
-        ]
+        results = [CANARY_RUNNERS[name](root, timeout_seconds) for name in selected]
     return ScannerCanaryReport(
         passed=all(result.passed for result in results),
         results=results,

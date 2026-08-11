@@ -97,14 +97,14 @@ def test_canary_orchestrator_never_persists_findings(monkeypatch):
         return _result(scanner)
 
     for name, scanner in (
-        ("_semgrep_canary", "semgrep"),
-        ("_supplemental_semgrep_canary", "semgrep-supplemental"),
-        ("_gitleaks_canary", "gitleaks"),
-        ("_pip_audit_canary", "pip-audit"),
-        ("_osv_canary", "osv-scanner"),
+        ("semgrep", "semgrep"),
+        ("semgrep-supplemental", "semgrep-supplemental"),
+        ("gitleaks", "gitleaks"),
+        ("pip-audit", "pip-audit"),
+        ("osv-scanner", "osv-scanner"),
     ):
-        monkeypatch.setattr(
-            canaries,
+        monkeypatch.setitem(
+            canaries.CANARY_RUNNERS,
             name,
             lambda root, timeout, scanner=scanner: result(root, scanner),
         )
@@ -122,3 +122,34 @@ def test_canary_orchestrator_never_persists_findings(monkeypatch):
     }
     assert seen_roots
     assert all(not root.exists() for root in seen_roots)
+
+
+def test_canary_orchestrator_can_select_offline_subset(monkeypatch):
+    called = []
+    monkeypatch.setitem(
+        canaries.CANARY_RUNNERS,
+        "semgrep",
+        lambda root, timeout: called.append("semgrep") or _result("semgrep"),
+    )
+    monkeypatch.setitem(
+        canaries.CANARY_RUNNERS,
+        "gitleaks",
+        lambda root, timeout: called.append("gitleaks") or _result("gitleaks"),
+    )
+
+    report = canaries.run_scanner_canaries(1, ("semgrep", "gitleaks"))
+
+    assert report.passed is True
+    assert called == ["semgrep", "gitleaks"]
+    assert [item.scanner for item in report.results] == ["semgrep", "gitleaks"]
+
+
+def test_canary_orchestrator_rejects_unknown_empty_and_duplicate_selection():
+    import pytest
+
+    with pytest.raises(ValueError, match="unknown scanner"):
+        canaries.run_scanner_canaries(1, ("unknown",))
+    with pytest.raises(ValueError, match="at least one"):
+        canaries.run_scanner_canaries(1, ())
+    with pytest.raises(ValueError, match="unique"):
+        canaries.run_scanner_canaries(1, ("gitleaks", "gitleaks"))

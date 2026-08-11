@@ -204,6 +204,12 @@ I. Evaluation and classifier maturity
       positive control did not. The generic canary also attempted PyPI/OSV-backed checks
       outside the GitHub-only boundary, recorded as a protocol breach. The store remained
       byte-identical and no repository, prediction, assessment, or label was created.
+      The pending
+      [`corrected retry receipt`](opt-003-wave-1-corrected-receipt-2026-08-11.json) binds
+      Semgrep logging to the writable retry artifact directory and adds explicit scanner
+      selection. Offline Semgrep/supplemental/Gitleaks controls are separated from named
+      PyPI/OSV advisory-host checks. A new model is required after both pass; the stopped
+      model, review, outcomes, providers, tuning, and policy changes remain excluded.
 
    D. OPT-004 — Identical-input provider repeatability characterization — implemented —
       owner: evaluation engineering — source: `../convergence-evaluation.md`,

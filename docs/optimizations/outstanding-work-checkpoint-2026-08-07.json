@@ -43,5 +43,5 @@
     "Additional independently checked language/framework security-claim certificates.",
     "Any expansion of already closed bounded OPT scopes, which must be proposed as new work."
   ],
-  "next_execution": "Review and merge the stopped OPT-003 wave-one attempt, diagnose the local Semgrep canary failures, and freeze a replacement receipt with offline-only Semgrep/supplemental/Gitleaks preflight plus separately explicit advisory-service boundaries. No repository was materialized and the stopped model may not be reused without new authorization."
+  "next_execution": "Review and merge the corrected OPT-003 wave-one retry receipt, then obtain its exact authorization before running the bound offline and separately networked advisory preflights. A new model may be trained only after both pass; the stopped model and all review/outcome activity remain excluded."
 }

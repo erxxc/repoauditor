@@ -98,6 +98,11 @@ repository acquisition when scanner canaries failed. It also records that the ge
 canary attempted PyPI/OSV-backed checks outside the GitHub-only receipt boundary. The store
 remained byte-identical; no predictions or outcomes were persisted, and retry requires a
 corrected receipt.
+The pending
+[`corrected retry receipt`](optimizations/opt-003-wave-1-corrected-receipt-2026-08-11.json)
+binds Semgrep logging inside the writable wave artifact directory and separates offline
+Semgrep/supplemental/Gitleaks controls from explicitly named PyPI/OSV advisory checks. It
+requires a new model after both pass and still stops before all review or outcomes.
 
 ## Historical checkpoints
 
