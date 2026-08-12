@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-08-12",
+  "optimization": "OPT-003",
+  "status": "stopped-before-commit-and-merge",
+  "authorization": "The project owner granted the exact authorization statement in opt-003-closure-merge-receipt-2026-08-12.json.",
+  "receipt": {
+    "path": "opt-003-closure-merge-receipt-2026-08-12.json",
+    "sha256": "29c7b8c7b2dfabae6fea75c319d3a07be250da49580d0a9b731816ce46a8b861"
+  },
+  "verified_before_stop": {
+    "working_branch": "codex/opt-003-wave-1-import-receipt",
+    "initial_head": "1e92bb90602e7bd6e52dbfd86e12e6c6be5f3f28",
+    "local_main": "4a6a4fff0f5d1fe9f8375b1cb41a611c8d0bf470",
+    "known_origin_main": "6cf17f0ba3ea430e01540882f9890f9b38975f9b",
+    "store_sha256": "a3d8e55feadf5860c079f1de18b698186afbae81ba6bf678717cdfe1f2cca11f",
+    "temporal_report_sha256": "9af17a9a7f5d0381ab255ef9f9fe706ad78ee177021c60dc7498b28ce564c093",
+    "temporal_result_sha256": "4477cb9306bc64cdea3698309cee9ae320c43d50084a95cc7d72ec555792d843"
+  },
+  "stop": {
+    "passed": false,
+    "stage": "full-offline-non-live-validation",
+    "command": "UV_CACHE_DIR=/tmp/repoauditor-uv-cache uv run --offline pytest -m 'not integration and not live' -q",
+    "passed_tests": 781,
+    "failed_tests": 3,
+    "deselected_tests": 36,
+    "elapsed_seconds": 99.58,
+    "failures": [
+      {
+        "test": "tests/test_documentation_current_state.py::test_documentation_authority_matches_canonical_lifecycle",
+        "cause": "The test hard-codes the superseded 31-closed/4-open summary and the prior four-item open set."
+      },
+      {
+        "test": "tests/test_opt005_lightweight_completion_receipt.py::test_closeout_reassessment_matches_canonical_ledger",
+        "cause": "The test requires an immutable 2026-08-07 OPT-005 reassessment snapshot to equal the current mutable canonical summary."
+      },
+      {
+        "test": "tests/test_optimization_status.py::test_status_ledger_matches_authoritative_register_ids_and_states",
+        "cause": "The test recognizes implemented or completed headings as closed but not the canonical word closed."
+      }
+    ],
+    "receipt_condition": "Any full offline non-live test fails.",
+    "disposition": "Fail closed. Do not commit, update local main, merge, or mark OPT-003 closed under this attempt. Restore the canonical status and descriptive lifecycle documents to their pre-closure open state."
+  },
+  "accounting": {
+    "final_store_sha256": "a3d8e55feadf5860c079f1de18b698186afbae81ba6bf678717cdfe1f2cca11f",
+    "store_byte_identical": true,
+    "branch_commits": 0,
+    "merge_commits": 0,
+    "local_main_updates": 0,
+    "network_reads": 0,
+    "network_uploads": 0,
+    "remote_pushes": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "store_mutations": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "rescores": 0,
+    "model_training_runs": 0
+  },
+  "restored_state": {
+    "opt_003_status": "open",
+    "optimization_summary": {"closed": 31, "open": 4, "total": 35},
+    "working_branch_unchanged": true,
+    "head_unchanged": true,
+    "local_main_unchanged": true
+  },
+  "recommended_next_step": "Freeze a corrected closure receipt that retains every original boundary while permitting only the three named lifecycle-test reconciliations. Do not alter immutable historical evidence to mimic the current ledger."
+}

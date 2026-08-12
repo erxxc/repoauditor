@@ -1,0 +1,124 @@
+{
+  "schema_version": 1,
+  "frozen_at": "2026-08-11",
+  "optimization": "OPT-003",
+  "status": "authorization-pending",
+  "review_result": {
+    "path": "opt-003-wave-1-review-result-2026-08-11.json",
+    "sha256": "c7ac0294108d414f0cfa4dbb08d0481b0c920bbf71e10b9ceb1b412889d0416d",
+    "responses": 18,
+    "decided": 16,
+    "abstentions": 2,
+    "binary_actionable": 1,
+    "binary_non_actionable": 15
+  },
+  "scope": "Atomically import only the 18 explicit project-owner responses from the digest-frozen OPT-003 wave-one review result as append-only triage assessments, project only the 16 decided responses into manual classifier labels, preserve both insufficient-evidence responses as assessment-only abstentions, and compute one read-only post-import temporal activation report. No response may be inferred, corrected, expanded, or replaced.",
+  "preconditions": [
+    "The review result, packet result, selected finding identities, triage features, frozen prediction run, and exact repository commits match their recorded digests and values.",
+    "The persistent store SHA-256 is 28fa29ad0660dd75f78ee69ee3d82b5d6a97beb4d265528f19e3ef91798bb3aa before execution.",
+    "The store contains 123 triage assessments, 129 triage labels, 38 triage model runs, and 1473 model-usage rows.",
+    "None of the 18 selected findings has an existing project-owner assessment or manual label projection for this review.",
+    "All 16 decided findings retain compatible predictions from the frozen wave-one scoring run; the two abstentions remain outside the binary classifier projection.",
+    "The pre-import leakage-safe prospective cohort remains 11 decided labels: five positive and six negative, across two evaluation families and one separately frozen prediction wave."
+  ],
+  "import_contract": {
+    "transaction": "single SQLite transaction covering all assessment inserts and label projections; any failed assertion or write rolls back the entire import",
+    "analyst": "project owner",
+    "assessment_rows": 18,
+    "manual_label_upserts": 16,
+    "material": false,
+    "classifier_eligible": true,
+    "disposition_projection": {
+      "confirmed_actionable": "true_positive/actionable=true",
+      "tool_incorrect": "false_positive/actionable=false",
+      "unreachable": "false_positive/actionable=false",
+      "not_attacker_controlled": "false_positive/actionable=false",
+      "mitigated": "false_positive/actionable=false",
+      "valid_not_actionable": "false_positive/actionable=false",
+      "insufficient_evidence": "uncertain/no label"
+    },
+    "rationale": "preserve each analyst rationale exactly",
+    "dimensions": "persist only the explicitly verified dimension names and statements from the result",
+    "created_at": "database transaction time",
+    "idempotence": "refuse execution if any selected project-owner assessment or manual projection already exists; never overwrite"
+  },
+  "expected_post_import": {
+    "triage_assessments": 141,
+    "triage_labels": 145,
+    "selected_assessments": 18,
+    "selected_manual_labels": 16,
+    "selected_abstentions": 2,
+    "prospective_decided_labels": 27,
+    "prospective_positive": 6,
+    "prospective_negative": 21,
+    "prospective_evaluation_families": 5,
+    "prospective_prediction_waves": 2,
+    "minimum_decided_labels": 40,
+    "minimum_evaluation_families": 8,
+    "minimum_prediction_waves": 2,
+    "both_classes_present": true,
+    "model_runs": 38,
+    "model_usage_rows": 1473
+  },
+  "gate_assessment": {
+    "mode": "offline and read-only after the committed import",
+    "must_report": [
+      "prospective decided-label count and positive/negative split",
+      "genuine evaluation-family count",
+      "separately frozen prediction-wave count",
+      "both preserved abstentions",
+      "exact prediction compatibility for every imported decided label",
+      "whether the protocol's 40-label, eight-family, both-class, and two-wave conditions pass"
+    ],
+    "expected_shortfall": {
+      "decided_labels": 13,
+      "evaluation_families": 3,
+      "prediction_waves": 0,
+      "both_classes": 0
+    },
+    "interpretation": "The import advances the prospective cohort but does not satisfy the 40-label/eight-family activation gate. OPT-003 remains open and data-gated; later acquisition, review, import, promotion, or closure requires separate authorization."
+  },
+  "resource_ceilings": {
+    "execution_runs": 1,
+    "maximum_elapsed_minutes": 10,
+    "maximum_new_data_bytes": 10485760,
+    "assessment_inserts": 18,
+    "manual_label_upserts": 16,
+    "other_store_mutations": 0,
+    "network_reads": 0,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "model_training_runs": 0,
+    "rescored_findings": 0
+  },
+  "stop_conditions": [
+    "Any result, packet, store, finding, feature, prediction, cohort, or usage-ledger precondition differs from the frozen value.",
+    "Any response would require interpretation, correction, additional source evidence, or a disposition not already explicit in the result.",
+    "Any selected finding already has the project-owner assessment or manual label projection covered by this receipt.",
+    "The import cannot complete as one atomic transaction or any expected row count differs before commit.",
+    "Either abstention would create a label, any decided response would receive the wrong binary projection, or any rationale/dimension would drift.",
+    "Any network/provider activity, rescore, training, tuning, recalibration, second-wave activity, status edit, or production-policy change is attempted."
+  ],
+  "result_boundary": {
+    "authorized_after_approval": [
+      "persist exactly 18 append-only assessments and 16 manual label projections in one transaction",
+      "persist one result artifact containing pre/post hashes, inserted identities, exact counts, and temporal-gate calculations",
+      "update descriptive ledgers to report the measured post-import shortfall without changing OPT-003 status"
+    ],
+    "not_authorized": [
+      "alter any analyst response or resolve either abstention",
+      "overwrite any existing assessment or manual label",
+      "providers, network access, rescoring, training, tuning, or recalibration",
+      "additional review, source expansion, packet selection, or second-wave acquisition",
+      "change optimization-status.json or promote/close OPT-003",
+      "change thresholds, classifier behavior, or production policy"
+    ],
+    "post_execution_gate": "A separate result PR must prove the exact transaction and measured temporal cohort. A later receipt must independently bind any acquisition needed to close the remaining 13-label/three-family shortfall."
+  },
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the OPT-003 wave-one review import and temporal gate assessment described by opt-003-wave-1-import-receipt-2026-08-11.json, limited to one atomic offline import of exactly 18 project-owner assessments and 16 corresponding manual classifier labels from the digest-frozen wave-one review result, preservation of the two insufficient-evidence responses as assessment-only abstentions, and one read-only post-import temporal gate report, with ceilings of 10 minutes, 10 MiB new data, 18 assessment inserts, 16 manual label upserts, and exactly zero other store mutations, network reads, uploads, provider calls, tokens, cost, rescoring, or model training. Response changes, additional review, source expansion, second-wave activity, tuning, recalibration, threshold selection, production-policy changes, and OPT-003 promotion or closure remain excluded."
+  }
+}

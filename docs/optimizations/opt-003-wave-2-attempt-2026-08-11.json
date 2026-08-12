@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-08-11",
+  "optimization": "OPT-003",
+  "status": "stopped-before-preflight",
+  "authorization": "The project owner granted the exact authorization statement in opt-003-wave-2-prediction-receipt-2026-08-11.json. Execution stopped on the first Semgrep process because the standalone version check omitted the mandatory workspace-bound SEMGREP_LOG_FILE binding.",
+  "receipt": {
+    "path": "opt-003-wave-2-prediction-receipt-2026-08-11.json",
+    "sha256": "9cf654cc93a132a75625555f9340817b34be84e5323f60b1e27180094ef70510"
+  },
+  "verified_before_stop": {
+    "protocol_sha256": "4251e3849e21eac84ac13f93b05a62b0bc94a4996881c9598f7ac9222edb3550",
+    "prior_import_result_sha256": "6120160290288343a051d0ff8836c8b15916dd068ee3690b7e751f51d32a57a0",
+    "initial_store_sha256": "a8f06e0b7e5201449711eaa71f429bb79f68ab638f9072f259f04cd93ea5e61d",
+    "effective_family_distinct_labels": 138,
+    "effective_label_identity_sha256": "c3bda6cd4f1f3b3fe37bcbaa5f3babb78a87b82d2bcf0fa586ef4da29f2ac393",
+    "wave_two_artifacts_absent": true
+  },
+  "stop": {
+    "passed": false,
+    "stage": "semgrep-version-precondition",
+    "command": "semgrep --version",
+    "required_binding": "SEMGREP_LOG_FILE=data/artifacts/opt003-wave-2/semgrep.log",
+    "observed_binding": "absent",
+    "attempted_write": "/Users/deathstar/.semgrep/semgrep.log",
+    "write_succeeded": false,
+    "exit_code": 1,
+    "failure": "PermissionError: operation not permitted while Semgrep initialized its default user log before printing the version",
+    "receipt_condition": "SEMGREP_LOG_FILE is absent, differs from the exact binding, or Semgrep attempts any write outside authorized workspace or temporary paths.",
+    "disposition": "Fail closed. Do not run either scanner preflight, train a model, acquire a source, or write a prediction under this authorization."
+  },
+  "accounting": {
+    "final_store_sha256": "a8f06e0b7e5201449711eaa71f429bb79f68ab638f9072f259f04cd93ea5e61d",
+    "store_byte_identical": true,
+    "wave_two_artifacts_created": 0,
+    "repositories_materialized": 0,
+    "scanner_canary_reports": 0,
+    "scanner_runs": 0,
+    "model_training_runs": 0,
+    "predictions_persisted": 0,
+    "triage_assessments": 141,
+    "triage_labels": 145,
+    "triage_model_runs": 38,
+    "model_usage_rows": 1473,
+    "network_reads": 0,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "human_reviews": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "ceiling_breaches": ["missing-semgrep-log-binding-before-version-check"]
+  },
+  "not_executed": {
+    "offline_canaries": true,
+    "advisory_canaries": true,
+    "model_training": true,
+    "source_acquisition": true,
+    "deterministic_scanning": true,
+    "feature_extraction": true,
+    "prediction_persistence": true,
+    "inventory_measurement": true,
+    "packet_selection": true,
+    "candidate_disclosure_for_review": true,
+    "source_rendering": true,
+    "human_review": true,
+    "assessment_or_label_import": true,
+    "rescoring": true,
+    "tuning": true,
+    "recalibration": true,
+    "threshold_selection": true,
+    "production_policy_change": true,
+    "opt_003_promotion_or_closure": true
+  },
+  "disposition": {
+    "opt_003_status": "open-wave-two-retry-gated",
+    "model_reuse": "not applicable; no wave-two model was trained",
+    "recommended_next_step": "Freeze a corrected retry receipt that requires creation of the authorized artifact directory and the exact SEMGREP_LOG_FILE binding before every Semgrep process, including the standalone version check. Retain all original training, source, network, resource, prediction-only, and zero-outcome boundaries."
+  }
+}

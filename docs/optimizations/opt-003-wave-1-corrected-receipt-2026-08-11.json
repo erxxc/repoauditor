@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "frozen_at": "2026-08-11",
+  "optimization": "OPT-003",
+  "status": "authorization-pending",
+  "supersedes_for_execution": "opt-003-wave-1-prediction-receipt-2026-08-10.json",
+  "stopped_attempt": {
+    "path": "opt-003-wave-1-attempt-2026-08-10.json",
+    "sha256": "bb583fa2d0b71e95fd8657f9018e0330dec2ac72cc445f533d8c2b6bb5177e8e"
+  },
+  "unchanged_scope": {
+    "source_and_training_contract": "All three exact source commits, evaluation families, the 122-label training cutoff/digest, prediction-only boundary, resource ceilings, and outcome exclusions remain exactly as frozen by opt-003-wave-1-prediction-receipt-2026-08-10.json at SHA-256 ac9116fc9a54da9ef711cbe58ca5125a2881df7f91d91b2231cf4dd6534782e0.",
+    "stopped_model_reuse": false,
+    "new_training_run_required": true
+  },
+  "corrected_binding": {
+    "SEMGREP_LOG_FILE": "data/artifacts/opt003-wave-1-retry/semgrep.log",
+    "requirement": "Set this environment variable on every Semgrep canary and repository detection process before Semgrep starts; the parent directory must be writable and created before execution.",
+    "semgrep_version": "1.170.0",
+    "rule_or_configuration_changes": false
+  },
+  "separated_preflight": {
+    "offline_command": "SEMGREP_LOG_FILE=data/artifacts/opt003-wave-1-retry/semgrep.log uv run repoauditor scanner-canaries --scanner semgrep --scanner semgrep-supplemental --scanner gitleaks --output data/artifacts/opt003-wave-1-retry/offline-canaries.json",
+    "offline_network_reads": 0,
+    "advisory_command": "SEMGREP_LOG_FILE=data/artifacts/opt003-wave-1-retry/semgrep.log uv run repoauditor scanner-canaries --scanner pip-audit --scanner osv-scanner --output data/artifacts/opt003-wave-1-retry/advisory-canaries.json",
+    "advisory_network_hosts": ["pypi.org", "api.osv.dev", "osv.dev"],
+    "ordering": "Both reports must pass before the new wave model is trained or any source is materialized.",
+    "filtered_canary_contract": "Only explicitly named scanner runners execute; unknown, empty, or duplicate selections fail before creating controls."
+  },
+  "retry_sequence": [
+    "Verify the stopped-attempt digest, original receipt digest, current byte-identical store, 122-label corpus digest, absent retry outputs, and exact Semgrep version.",
+    "Create the retry artifact directory and run the offline canary command with the corrected log binding.",
+    "Only after offline success, run the separately explicit advisory canaries against the three named advisory hosts.",
+    "Only after both reports pass, train and freeze one new model from the unchanged cutoff; never reuse the stopped model.",
+    "Materialize and process the original three exact source commits in original order, setting SEMGREP_LOG_FILE on every detection process.",
+    "Persist compatible predictions and a retry result, then stop before packet selection, review, assessments, or labels."
+  ],
+  "resource_ceilings": {
+    "repositories": 3,
+    "new_model_training_runs": 1,
+    "maximum_elapsed_minutes_per_repository": 180,
+    "maximum_total_elapsed_minutes": 600,
+    "maximum_new_data_bytes": 16106127360,
+    "allowed_network_hosts": ["github.com", "pypi.org", "api.osv.dev", "osv.dev"],
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "human_reviews": 0,
+    "assessments_written": 0,
+    "labels_written": 0
+  },
+  "stop_conditions": [
+    "SEMGREP_LOG_FILE is absent, differs from the exact binding, or Semgrep attempts any write outside authorized workspace/tmp paths.",
+    "Either separated canary report fails or contains a scanner not explicitly named by its command.",
+    "Any original store, training-corpus, source, commit, family, budget, or prediction-only precondition drifts.",
+    "The stopped model is loaded or any model is trained before both canary reports pass.",
+    "Any unlisted network host, provider, packet selection, candidate review disclosure, source rendering, human outcome, assessment, label, rescore, tuning, recalibration, threshold selection, or policy change is attempted."
+  ],
+  "result_boundary": "A separate retry-result PR must prove the exact log binding, separated canary membership and health, new-model identity, source/prediction timestamps, host accounting, and zero outcomes before any packet-selection receipt.",
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the corrected OPT-003 prospective prediction wave-one retry described by opt-003-wave-1-corrected-receipt-2026-08-11.json, retaining the original digest-frozen 122-label training cutoff and exact Chatwoot, Linkwarden, and Paperless-ngx commits, but requiring SEMGREP_LOG_FILE=data/artifacts/opt003-wave-1-retry/semgrep.log, an offline-only Semgrep/supplemental/Gitleaks preflight, a separately reported pip-audit/OSV preflight limited to pypi.org, api.osv.dev, and osv.dev, one newly trained model after both preflights pass, exact-commit acquisition, deterministic scanning, compatible prediction persistence, and one retry result, with ceilings of three repositories, one new model-training run, 180 minutes per repository, 600 minutes total, 15 GiB new data, the four named network hosts including github.com, and exactly zero provider calls, tokens, cost, human reviews, assessments, or labels. Reuse of the stopped model, packet selection, candidate disclosure for review, source rendering, a second wave, rescoring, tuning, recalibration, threshold selection, and production-policy changes remain excluded."
+  }
+}

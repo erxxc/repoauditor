@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-08-12",
+  "optimization": "OPT-003",
+  "status": "closed-bounded-temporal-validation",
+  "authorization": "The project owner authorized the final corrected closure and local integration retry in opt-003-closure-merge-final-retry-receipt-2026-08-12.json, retaining all prior boundaries and adding only the exact historical-gate assertion correction.",
+  "execution_receipt": {
+    "path": "opt-003-closure-merge-final-retry-receipt-2026-08-12.json",
+    "sha256": "9972eafa14dafa2ff0fcb16dbddad076f8bfb2f6b26cab2bf7d53faf346b9362"
+  },
+  "temporal_result": {
+    "path": "opt-003-temporal-report-result-2026-08-12.json",
+    "sha256": "4477cb9306bc64cdea3698309cee9ae320c43d50084a95cc7d72ec555792d843",
+    "decided_labels": 40,
+    "positive": 6,
+    "negative": 34,
+    "evaluation_families": 8,
+    "prediction_waves": 3,
+    "chronology_failures": 0,
+    "brier_score": 0.14465065130292426,
+    "brier_95_family_block_percentile": [0.045203757115197155, 0.2530361261308064],
+    "threshold_selected_or_recommended": false
+  },
+  "lifecycle": {
+    "optimization_status": "closed",
+    "gate": "none",
+    "next_priority": null,
+    "summary": {"closed": 32, "open": 3, "total": 35},
+    "remaining_open_priority_order": ["OPT-009", "OPT-014", "OPT-010"],
+    "closure_scope": "The bounded train-before/evaluate-after descriptive temporal-validation objective is complete. Broad uncertainty and the zero-positive wave-two slice remain explicit limitations."
+  },
+  "test_reconciliation": {
+    "historical_evidence_edited": false,
+    "changed_tests": [
+      "tests/test_documentation_current_state.py",
+      "tests/test_opt005_lightweight_completion_receipt.py",
+      "tests/test_optimization_status.py"
+    ],
+    "final_correction": "The immutable 2026-08-07 OPT-005 reassessment has current_execution_gate null; its test now asserts that frozen value while independently verifying canonical OPT-005 is closed and ungated."
+  },
+  "validation": {
+    "command": "UV_CACHE_DIR=/tmp/repoauditor-uv-cache uv run --offline pytest -m 'not integration and not live' -q",
+    "passed": true,
+    "passed_tests": 792,
+    "failed_tests": 0,
+    "deselected_tests": 36,
+    "elapsed_seconds": 93.12,
+    "json_validation": true,
+    "git_diff_check": true
+  },
+  "store": {
+    "initial_sha256": "a3d8e55feadf5860c079f1de18b698186afbae81ba6bf678717cdfe1f2cca11f",
+    "final_sha256": "a3d8e55feadf5860c079f1de18b698186afbae81ba6bf678717cdfe1f2cca11f",
+    "byte_identical": true
+  },
+  "integration_contract": {
+    "source_branch": "codex/opt-003-wave-1-import-receipt",
+    "initial_source_head": "1e92bb90602e7bd6e52dbfd86e12e6c6be5f3f28",
+    "branch_commit_message": "feat: complete OPT-003 temporal validation",
+    "target_branch": "main",
+    "initial_local_main": "4a6a4fff0f5d1fe9f8375b1cb41a611c8d0bf470",
+    "known_origin_main": "6cf17f0ba3ea430e01540882f9890f9b38975f9b",
+    "local_main_update": "fast-forward-only to known origin/main",
+    "merge": "one conflict-free local non-fast-forward merge commit",
+    "actual commit identifiers": "Reported in the post-merge handoff because a committed result cannot self-bind its containing commit hash.",
+    "remote_push": false,
+    "branch_deleted": false
+  },
+  "accounting": {
+    "branch_commits_authorized": 1,
+    "merge_commits_authorized": 1,
+    "network_reads": 0,
+    "network_uploads": 0,
+    "remote_pushes": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "store_mutations": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "rescored_findings": 0,
+    "model_training_runs": 0
+  },
+  "not_executed": {
+    "tuning": true,
+    "recalibration": true,
+    "threshold_selection_or_recommendation": true,
+    "production_policy_change": true,
+    "deployment": true,
+    "remote_push": true,
+    "branch_deletion": true
+  },
+  "disposition": {
+    "opt_003_complete": true,
+    "next_open_item": "OPT-009",
+    "next_open_item_gate": "evidence supporting in-family/out-of-family novelty as an investigation-depth trigger",
+    "future_temporal_expansion": "Any tuning, recalibration, production threshold, policy use, or expanded temporal study requires a new scope."
+  }
+}

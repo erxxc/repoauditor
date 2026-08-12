@@ -22,8 +22,9 @@ Progress:
 - [~] Phase 3 — collection infrastructure and the 40-label/eight-engagement activation
   floor are met; the preferred 100–200-label, broader-positive-family maturity target
   remains open
-- [~] Phase 4 — threshold/grouped mechanisms and dual adjudication reporting shipped;
-  real-data activation, uncertainty, and temporal depth remain open
+- [~] Phase 4 — threshold/grouped mechanisms, dual adjudication reporting, family-block
+  uncertainty, and bounded train-before/evaluate-after temporal validation shipped;
+  broader positive-family maturity and any production-threshold decision remain open
 - [ ] Phase 5 — deferred optimization; see gates below
 
 ## Current baseline
@@ -160,6 +161,14 @@ remains deferred pending additional evaluation-compatible scored evidence and ad
 held-out family breadth.
 
 ## Phase 4 — Validation maturity
+
+The bounded OPT-003 temporal evaluation completed on 2026-08-12 with 40 prospective
+decided outcomes across eight evaluation families and three prediction waves. All frozen
+predictions preceded their first assessments. The aggregate Brier score was 0.1447 with a
+broad 95% evaluation-family-block percentile range of 0.0452–0.2530. Fixed-threshold
+precision and recall remain descriptive; no threshold was selected or recommended, and
+wave two contained no positive outcomes. This closes temporal validation at its bounded
+scope without authorizing tuning, recalibration, or production-policy changes.
 
 At 40 labels, enable descriptive threshold tables. At 40 labels and 8 evaluation families,
 activate grouped validation and report held-out repositories, class counts, sample size, and

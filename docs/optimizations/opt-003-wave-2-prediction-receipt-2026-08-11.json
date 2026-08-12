@@ -1,0 +1,150 @@
+{
+  "schema_version": 1,
+  "frozen_at": "2026-08-11",
+  "optimization": "OPT-003",
+  "status": "authorization-pending",
+  "protocol": {
+    "path": "opt-003-temporal-validation-protocol-2026-08-10.json",
+    "sha256": "4251e3849e21eac84ac13f93b05a62b0bc94a4996881c9598f7ac9222edb3550"
+  },
+  "prior_gate_evidence": {
+    "path": "opt-003-wave-1-import-result-2026-08-11.json",
+    "sha256": "6120160290288343a051d0ff8836c8b15916dd068ee3690b7e751f51d32a57a0",
+    "prospective_decided_labels": 27,
+    "prospective_evaluation_families": 5,
+    "separately_frozen_prediction_waves": 2,
+    "remaining_decided_label_shortfall": 13,
+    "remaining_evaluation_family_shortfall": 3
+  },
+  "scope": "Create the second new OPT-003 prospective prediction wave: freeze one post-wave-one, pre-outcome model from the current effective training corpus, materialize and deterministically scan exactly three new outcome-blind product repositories, persist compatible predictions and timestamps, verify enough eligible inventory exists to support a later balanced 18-entry packet, and stop before packet selection, source rendering, human review, assessments, or labels.",
+  "training_cutoff": {
+    "cutoff": "2026-08-11T20:42:26-04:00",
+    "initial_store_sha256": "a8f06e0b7e5201449711eaa71f429bb79f68ab638f9072f259f04cd93ea5e61d",
+    "effective_family_distinct_labels": 138,
+    "effective_positive": 47,
+    "effective_negative": 91,
+    "effective_evaluation_families": 21,
+    "effective_label_identity_sha256": "c3bda6cd4f1f3b3fe37bcbaa5f3babb78a87b82d2bcf0fa586ef4da29f2ac393",
+    "digest_contract": "SHA-256 of canonical sorted tuples (evaluation family, rule id, finding fingerprint, actionable, source, created_at) after family-distinct reconciliation",
+    "immutability": "The wave-two model may use only this digest-frozen corpus, including the already imported wave-one outcomes. Any later assessment or label requires another wave and cannot enter this model."
+  },
+  "source_selection_contract": {
+    "selection_time": "2026-08-11T20:42:26-04:00",
+    "allowed_inputs": [
+      "public product purpose and deployability",
+      "distinct upstream repository identity",
+      "active default branch and exact current HEAD commit",
+      "different application and technology boundaries from prior prospective families"
+    ],
+    "forbidden_inputs": [
+      "security findings, advisories, issues, pull requests, scanner output, candidate counts, scores, ranks, labels, outcomes, target paths, or answer keys",
+      "archived products, forks, tutorials, benchmarks, deliberately vulnerable applications, and any existing acquisition or evaluation family"
+    ],
+    "remote_resolution": "Read-only git ls-remote --symref requests to github.com resolved only the default branch name and HEAD commit for each preselected repository. No source tree, security artifact, issue, pull request, or scanner output was read."
+  },
+  "frozen_sources": [
+    {
+      "order": 1,
+      "repo_id": "opt003-wave2-actual",
+      "evaluation_family": "independent-upstream:actualbudget/actual",
+      "repository": "actualbudget/actual",
+      "url": "https://github.com/actualbudget/actual.git",
+      "branch": "master",
+      "commit": "4dedf88e58a5c92478ac1d8eb909d216b242a59f",
+      "selection_basis": "Active deployable personal-finance product with accounts, budgets, synchronization, imports, reports, and multi-user server boundaries; selected without using security evidence or candidate output."
+    },
+    {
+      "order": 2,
+      "repo_id": "opt003-wave2-memos",
+      "evaluation_family": "independent-upstream:usememos/memos",
+      "repository": "usememos/memos",
+      "url": "https://github.com/usememos/memos.git",
+      "branch": "main",
+      "commit": "34e2a59a4a94176ad95cdb8ce0a93917f471795c",
+      "selection_basis": "Active deployable Go and web memo product with users, content, attachments, visibility, sharing, and API boundaries; selected without using security evidence or candidate output."
+    },
+    {
+      "order": 3,
+      "repo_id": "opt003-wave2-authentik",
+      "evaluation_family": "independent-upstream:goauthentik/authentik",
+      "repository": "goauthentik/authentik",
+      "url": "https://github.com/goauthentik/authentik.git",
+      "branch": "main",
+      "commit": "243ab69987ea095c6e61c1917e6ed92825ec427b",
+      "selection_basis": "Active deployable identity product with users, groups, providers, applications, policies, flows, and protocol integration boundaries; selected without using security evidence or candidate output."
+    }
+  ],
+  "separated_preflight": {
+    "semgrep_log_file": "data/artifacts/opt003-wave-2/semgrep.log",
+    "offline_command": "SEMGREP_LOG_FILE=data/artifacts/opt003-wave-2/semgrep.log uv run repoauditor scanner-canaries --scanner semgrep --scanner semgrep-supplemental --scanner gitleaks --output data/artifacts/opt003-wave-2/offline-canaries.json",
+    "offline_network_reads": 0,
+    "advisory_command": "SEMGREP_LOG_FILE=data/artifacts/opt003-wave-2/semgrep.log uv run repoauditor scanner-canaries --scanner pip-audit --scanner osv-scanner --output data/artifacts/opt003-wave-2/advisory-canaries.json",
+    "advisory_network_hosts": ["pypi.org", "api.osv.dev", "osv.dev"],
+    "ordering": "Both reports must pass before the new wave-two model is trained or any source is materialized.",
+    "filtered_canary_contract": "Only explicitly named scanner runners execute; unknown, empty, or duplicate selections fail before creating controls."
+  },
+  "prediction_inventory_contract": {
+    "minimum_eligible_identities_per_family": 6,
+    "minimum_total_eligible_identities": 18,
+    "eligible_scope": "Unique production or deployment identities with compatible persisted wave-two predictions; supporting examples, documentation, tests, CI, package-manager-only candidates, Gitleaks candidates, and already assessed identities are excluded.",
+    "measurement_boundary": "The prediction result may report aggregate eligible counts and a digest of the eligible inventory, but may not select or disclose candidate identities for review.",
+    "later_packet_boundary": "A separately authorized outcome-blind selector must choose six identities per family without reading score, rank, predicted class, expected outcome, threshold classification, assessment, or label fields.",
+    "gate_target": "A later 18-entry review packet is sized to obtain at least 13 decided labels across the three new families, but abstentions remain valid and no decided-label count is guaranteed or inferred before review. If the eventual import still misses either activation floor, OPT-003 remains open."
+  },
+  "execution_sequence": [
+    "Recompute and verify the protocol, prior import result, exact training-corpus digest, initial store identity, three exact source commits, absent wave-two outputs, and writable artifact paths before any store write or source transfer.",
+    "Create the wave-two artifact directory and run the explicitly filtered offline canaries with the workspace-bound Semgrep log.",
+    "Only after offline success, run the separately explicit advisory canaries against the three named advisory hosts.",
+    "Only after both reports pass, train and persist exactly one new wave-two model from the frozen 138-label cutoff before materializing any source; freeze its model, feature-schema, calibration, training-cutoff, and label identities.",
+    "Resolve each remote only to its exact frozen commit, materialize it under the frozen new repository identity, and record immutable source digests.",
+    "Run only deterministic scanners, preserving versions, configurations, applicability, status, failures, target counts, and raw artifact digests; bind SEMGREP_LOG_FILE on every Semgrep process.",
+    "Extract features and persist scores for eligible findings under the one frozen wave-two model, then prove every score timestamp precedes any review or outcome.",
+    "Measure only the aggregate eligible inventory contract, persist one immutable prediction-wave result, and stop before packet selection or candidate disclosure."
+  ],
+  "resource_ceilings": {
+    "repositories": 3,
+    "new_model_training_runs": 1,
+    "maximum_elapsed_minutes_per_repository": 180,
+    "maximum_total_elapsed_minutes": 600,
+    "maximum_new_data_bytes": 16106127360,
+    "allowed_network_hosts": ["github.com", "pypi.org", "api.osv.dev", "osv.dev"],
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "human_reviews": 0,
+    "assessments_written": 0,
+    "labels_written": 0
+  },
+  "stop_conditions": [
+    "Any protocol, prior-result, store, training-corpus, source, commit, family, budget, or prediction-only precondition differs from its frozen value.",
+    "SEMGREP_LOG_FILE is absent, differs from the exact binding, or Semgrep attempts any write outside authorized workspace or temporary paths.",
+    "Either separated canary report fails or contains a scanner not explicitly named by its command.",
+    "The wave-two model is not fully trained and frozen before source materialization, scanning, feature extraction, or scoring.",
+    "Any source cannot be resolved byte-exactly, any required scanner is unhealthy, or scoring identity differs across repositories.",
+    "Any score, finding, security outcome, target path, issue, pull request, or advisory influences source selection or repository order.",
+    "Any unlisted network host, provider, packet selection, candidate identity disclosure for review, source rendering, human outcome, assessment, label, rescore, tuning, recalibration, threshold selection, production-policy change, or OPT-003 closure is attempted.",
+    "Any family yields fewer than six eligible production or deployment identities; retain the completed prediction evidence and report the inventory shortfall, but do not propose or execute packet selection."
+  ],
+  "result_boundary": {
+    "authorized_after_approval": [
+      "passing separated scanner preflights",
+      "one frozen pre-outcome wave-two model",
+      "three exact-commit deterministic acquisitions",
+      "compatible persisted predictions and timestamps",
+      "aggregate eligible inventory counts and digest",
+      "one immutable prediction-wave result"
+    ],
+    "not_authorized": [
+      "packet selection or candidate identity disclosure for review",
+      "source-context rendering or human review",
+      "assessment or label import",
+      "providers",
+      "rescoring, tuning, recalibration, threshold selection, production-policy changes, or OPT-003 promotion or closure"
+    ],
+    "next_gate": "A result PR must prove source, model, training, score, chronology, inventory, host, and zero-outcome identities before a separate outcome-blind packet-selection receipt may be proposed."
+  },
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the OPT-003 prospective prediction wave two described by opt-003-wave-2-prediction-receipt-2026-08-11.json, limited to separated offline Semgrep, supplemental Semgrep, and Gitleaks canaries plus advisory pip-audit and OSV canaries; one model trained before acquisition from the digest-frozen 138-label effective corpus; exact-commit materialization and deterministic scanning of only actualbudget/actual at 4dedf88e58a5c92478ac1d8eb909d216b242a59f, usememos/memos at 34e2a59a4a94176ad95cdb8ce0a93917f471795c, and goauthentik/authentik at 243ab69987ea095c6e61c1917e6ed92825ec427b; compatible prediction persistence; aggregate verification of at least six eligible production or deployment identities per family; and one prediction-wave result, with ceilings of three repositories, one new model-training run, 180 minutes per repository, 600 minutes total, 15 GiB new data, only github.com, pypi.org, api.osv.dev, and osv.dev network access, and exactly zero provider calls, tokens, cost, human reviews, assessments, or labels. Packet selection, candidate identity disclosure for review, source rendering, rescoring, tuning, recalibration, threshold selection, production-policy changes, and OPT-003 promotion or closure remain excluded."
+  }
+}

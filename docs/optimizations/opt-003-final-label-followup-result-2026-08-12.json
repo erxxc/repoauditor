@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-08-12",
+  "optimization": "OPT-003",
+  "status": "completed-corrected-followup-review",
+  "authorization": "The project owner granted the exact authorization statement in opt-003-final-label-followup-corrected-receipt-2026-08-12.json.",
+  "execution_receipt": {
+    "path": "opt-003-final-label-followup-corrected-receipt-2026-08-12.json",
+    "sha256": "2f7d24e5fd523d058353092b814956ff90a5f94cff1d82f762baede5fa6aebf9"
+  },
+  "evidence": {
+    "path": "../../data/artifacts/opt003-wave-2-runtime-retry/finding-2036-followup-corrected.md",
+    "sha256": "0b6200169514c4f4648488cf44266d5c6de269e82854b808bbf5e6c9c8b77d07",
+    "bytes": 5689,
+    "repository": "opt003-wave2-actual",
+    "source_commit": "4dedf88e58a5c92478ac1d8eb909d216b242a59f",
+    "exact_symbol": "requireFileOwner",
+    "rendered_matches": 4,
+    "rendered_files": 1,
+    "source_locations": [
+      "packages/sync-server/src/app-sync.ts:119",
+      "packages/sync-server/src/app-sync.ts:129",
+      "packages/sync-server/src/app-sync.ts:242",
+      "packages/sync-server/src/app-sync.ts:276"
+    ],
+    "context_lines_before_maximum": 20,
+    "context_lines_after_maximum": 20
+  },
+  "response_artifact": {
+    "path": "../../data/artifacts/opt003-wave-2-runtime-retry/finding-2036-followup-response-template.md",
+    "sha256": "03e552663b7936d82d1e3a49055926e2f396bdc30ba3d698b9979475dfa39d8d",
+    "bytes": 801
+  },
+  "response": {
+    "finding_id": 2036,
+    "prior_assessment_id": 159,
+    "prior_disposition": "insufficient_evidence",
+    "disposition": "not_attacker_controlled",
+    "binary_projection": "non_actionable",
+    "rationale": "The original packet showed res.status(403); res.send(fileAccessError) on /user-create-key after requireFileOwner(...). The follow-up excerpts define requireFileOwner as returning null on owner/admin success or the literal 'file-access-not-allowed' otherwise. The same literal is the only non-null return from requireFileAccess. The 403 paths at lines 242-245 and 276-279 therefore send that constant string, not request-derived HTML. Direct-response-write XSS requires attacker-controlled markup in the body; that source is not present.",
+    "verified_dimensions": {
+      "source control of returned error value": "requireFileOwner returns only null or the literal 'file-access-not-allowed'; no request body or file metadata is copied into the error.",
+      "response behavior relevant to attacker-controlled markup": "res.send(fileAccessError) transmits that constant string after HTTP 403; no attacker-supplied markup is shown in the sent body."
+    },
+    "analyst": "project owner",
+    "abstained": false
+  },
+  "validation": {
+    "finding_id_matches": true,
+    "allowed_disposition": true,
+    "rationale_present": true,
+    "rationale_within_original_and_followup_evidence": true,
+    "forbidden_model_fields_supplied": false,
+    "automatic_decision": false,
+    "label_inferred_or_written": false
+  },
+  "accounting": {
+    "render_runs": 1,
+    "review_entries": 1,
+    "project_owner_responses_recorded": 1,
+    "new_evidence_and_response_bytes": 6490,
+    "new_data_ceiling_bytes": 5242880,
+    "initial_store_sha256": "06a3d078ecc537600ed877639595adfebc993f36252e8fe5d56da3402b7dfa9b",
+    "final_store_sha256": "06a3d078ecc537600ed877639595adfebc993f36252e8fe5d56da3402b7dfa9b",
+    "store_byte_identical": true,
+    "network_reads": 0,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "store_mutations": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "rescores": 0,
+    "model_training_runs": 0,
+    "ceiling_breaches": []
+  },
+  "not_executed": {
+    "assessment_or_label_import": true,
+    "temporal_gate_remeasurement": true,
+    "rescoring": true,
+    "training": true,
+    "tuning": true,
+    "recalibration": true,
+    "threshold_selection": true,
+    "production_policy_change": true,
+    "opt_003_promotion_or_closure": true,
+    "branch_merge": true
+  },
+  "disposition": {
+    "opt_003_status": "open-final-label-import-gated",
+    "recommended_next_step": "Freeze and separately authorize one atomic append-only reassessment for finding 2036 plus one corresponding non-actionable manual label, followed by a read-only temporal gate report. Do not change OPT-003 status or merge the branch under that import authorization."
+  }
+}

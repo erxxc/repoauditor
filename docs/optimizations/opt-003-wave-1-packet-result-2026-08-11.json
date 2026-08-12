@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-08-11",
+  "optimization": "OPT-003",
+  "status": "completed-outcome-blind-packet-selection",
+  "receipt": {"path": "opt-003-wave-1-packet-receipt-2026-08-11.json", "sha256": "ba9060256a65b015b105cf5fd5ee2007b6c04610d857a7389187be7aa86c982b"},
+  "preconditions": {
+    "prediction_result_sha256": "9440abc83b8f817d923fdc61bebbb00de7e52c56bb2dd282e36bb0799448a223",
+    "inventory_sha256": "213119ccebe71ba3cd7f7c78af7e0c9a3f0d6d7386e058235c6b6dbeab40975a",
+    "inventory_count": 363,
+    "initial_store_sha256": "28fa29ad0660dd75f78ee69ee3d82b5d6a97beb4d265528f19e3ef91798bb3aa",
+    "output_path_absent": true
+  },
+  "selection": {
+    "policy": "opt003-wave1-packet-v1",
+    "selection_runs": 1,
+    "packet_size": 18,
+    "unique_finding_ids": 18,
+    "unique_selection_keys": 18,
+    "chatwoot": 6,
+    "linkwarden": 6,
+    "paperless_ngx": 6,
+    "plan_path": "data/artifacts/opt003-wave-1-retry/review-plan.json",
+    "plan_bytes": 13260,
+    "plan_sha256": "24bbc7915561dc576a94a8d18b95a92e656fe95bda3b40b2b61ced2ff3ccb56d",
+    "forbidden_fields_present": []
+  },
+  "accounting": {
+    "final_store_sha256": "28fa29ad0660dd75f78ee69ee3d82b5d6a97beb4d265528f19e3ef91798bb3aa",
+    "store_byte_identical": true,
+    "new_data_kib": 16,
+    "new_data_ceiling_kib": 10240,
+    "network_reads": 0,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "store_mutations": 0,
+    "source_lines_rendered": 0,
+    "human_reviews": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "ceiling_breaches": []
+  },
+  "not_executed": {
+    "source_rendering": true,
+    "candidate_review_disclosure": true,
+    "human_review": true,
+    "assessment_import": true,
+    "label_import": true,
+    "second_wave": true,
+    "tuning": true,
+    "threshold_selection": true,
+    "production_policy_change": true
+  },
+  "disposition": {
+    "opt_003_status": "open-wave-one-review-gated",
+    "recommended_next_step": "Review and merge this packet result, then freeze a bounded source-rendering and analyst-review receipt for only these 18 immutable identities. Scores, ranks, expected classes, outcomes, and second-wave activity remain excluded."
+  }
+}

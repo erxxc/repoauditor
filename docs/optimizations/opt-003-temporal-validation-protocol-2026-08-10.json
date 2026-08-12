@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "frozen_at": "2026-08-10",
+  "optimization": "OPT-003",
+  "status": "protocol-frozen-data-gated",
+  "objective": "Measure train-before/evaluate-after classifier behavior on outcomes that were unknown when predictions were persisted, without relabeling retrospective scores as prospective evidence.",
+  "readiness_assessment": {
+    "compatible_scored_human_labels": 47,
+    "compatible_positive": 24,
+    "compatible_negative": 23,
+    "compatible_evaluation_families": 9,
+    "prospective_score_before_review_decided_labels": 11,
+    "prospective_positive": 5,
+    "prospective_negative": 6,
+    "prospective_evaluation_families": 2,
+    "prospective_score_date": "2026-08-07",
+    "prospective_review_date": "2026-08-10",
+    "prospective_collection_waves": 1,
+    "gate_met": false,
+    "reason": "Only the OPT-002 Documenso/Lobsters wave has compatible scores frozen before human outcomes. Earlier compatible labels were already known before their compatible scores were persisted and are retrospective evidence, not train-before/evaluate-after observations."
+  },
+  "temporal_identity": {
+    "prediction_precedes_review": "triage_score.scored_at must be earlier than the first authoritative assessment/label timestamp for the exact finding identity",
+    "training_cutoff": "Every model-training label must have an authoritative timestamp strictly earlier than the frozen model build and prediction wave",
+    "immutable_prediction": "Persist model name, version, feature schema, calibration, training-label identity digest, score, and score timestamp before packet selection or review",
+    "outcome_blinding": "Packet selection and reviewers may not receive score, rank, predicted class, expected outcome, or threshold classification",
+    "family_identity": "Apply evaluation_family_overrides before all counts and partitions; aliases, clones, and pre/post pairs remain one family"
+  },
+  "activation_floor": {
+    "minimum_prospective_decided_labels": 40,
+    "minimum_prospective_evaluation_families": 8,
+    "minimum_distinct_prediction_waves": 2,
+    "both_classes_required": true,
+    "abstentions_preserved": true,
+    "rationale": "The 40-label/eight-family floor matches Phase 4 descriptive maturity, while two separately frozen prediction waves prevent one acquisition event from being described as chronological depth."
+  },
+  "acquisition_sequence": [
+    "Freeze a dated training cutoff, effective family-distinct training-label digest, model/scoring identity, and untouched source-selection inputs before scanning or scoring.",
+    "Acquire genuinely new product-repository findings without using security outcomes, classifier scores, or target paths as source-selection inputs.",
+    "Persist compatible predictions and exact timestamps before selecting any review packet.",
+    "Freeze a bounded outcome-blind packet across independent evaluation families and preserve abstention.",
+    "Import explicit analyst outcomes only after every reviewed prediction identity and timestamp are verified unchanged.",
+    "Repeat with a second separately frozen prediction wave; never backdate, rescore, or pool an outcome-known score as prospective evidence.",
+    "After the activation floor passes, report fixed-threshold precision, recall, Brier score, class counts, family counts, and family-block uncertainty without selecting a production threshold."
+  ],
+  "fail_closed_rules": [
+    "Exclude any finding whose outcome, assessment, label, falsification verdict, or answer key was known before its prediction was frozen.",
+    "Exclude any score produced by a model trained on that finding's label or on a later label relative to the declared cutoff.",
+    "Do not treat repeated scoring, rescoring, aliases, clones, or related pre/post snapshots as additional temporal waves or families.",
+    "If either class, 40 decided labels, eight families, or two prediction waves is missing, retain the evidence but keep OPT-003 data-gated.",
+    "Do not tune, retrain, recalibrate, select a threshold, or change detection rules using an incomplete temporal evaluation wave."
+  ],
+  "authorization_boundary": {
+    "authorized_by_this_protocol": ["read-only chronology audit", "documentation", "offline contract tests"],
+    "not_authorized": ["repository acquisition", "scanning", "provider or network activity", "new model training", "rescoring", "packet selection", "human review", "store mutation", "threshold or policy changes"],
+    "next_approval": "A separate acquisition receipt must freeze the first new wave's sources, commits, model-training cutoff and digest, scoring identity, commands, selection contract, resource ceilings, and every network/provider boundary."
+  }
+}

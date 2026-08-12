@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-08-10",
+  "optimization": "OPT-002",
+  "status": "completed-atomic-review-import",
+  "authorization": "The project owner authorized one atomic offline import of exactly 12 project-owner assessments and 11 corresponding manual classifier labels from the digest-frozen bounded-review result, preservation of one insufficient-evidence response as an assessment-only abstention, and a read-only post-import gate report. All excluded activity in the receipt remained excluded.",
+  "execution_receipt": {
+    "path": "opt-002-review-import-receipt-2026-08-10.json",
+    "sha256": "19773cbb1b228001ef783a6001d5e463981754c4d9af733a5724350c0e233583"
+  },
+  "review_result": {
+    "path": "opt-002-bounded-review-result-2026-08-10.json",
+    "sha256": "7479b805240ddfdd19f34e5853a7686ce618ed20ecbf986f656dd74f29e3a54a"
+  },
+  "transaction": {
+    "execution_runs": 1,
+    "atomic": true,
+    "initial_store_sha256": "1f67635eb1458b93c3b9056f08377839f23d0726b0f3b92764f5791d2ca503b8",
+    "final_store_sha256": "d34e2ff9bf8946209686c47a15ed4428ada11c1b08afc05705be8b7adb3107eb",
+    "assessment_ids": [112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123],
+    "label_ids": [155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165],
+    "assessment_inserts": 12,
+    "manual_label_inserts": 11,
+    "other_store_mutations": 0
+  },
+  "measured_post_import": {
+    "triage_assessments": 123,
+    "triage_labels": 129,
+    "selected_assessments": 12,
+    "selected_true_positive": 5,
+    "selected_false_positive": 6,
+    "selected_uncertain": 1,
+    "selected_manual_labels": 11,
+    "selected_actionable_labels": 5,
+    "selected_non_actionable_labels": 6,
+    "selected_abstention_labels": 0,
+    "triage_model_runs": 35,
+    "model_usage_rows": 1473
+  },
+  "gate_report": {
+    "compatible_scored_human_labels": 47,
+    "compatible_positive": 24,
+    "compatible_negative": 23,
+    "compatible_engagements": 9,
+    "genuine_evaluation_families": 9,
+    "minimum_compatible_labels": 40,
+    "minimum_evaluation_families": 8,
+    "label_count_condition_met": true,
+    "family_condition_met": true,
+    "both_classes_present": true,
+    "data_gate_conditions_met": true,
+    "basis": "The frozen compatible baseline of 36 labels (19 positive, 17 negative) across seven families plus the exact 11 compatible imported labels (five positive, six negative) from two new independent upstream families."
+  },
+  "authorization_accounting": {
+    "network_reads": 0,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "rescored_findings": 0,
+    "model_training_runs": 0,
+    "response_changes": 0,
+    "additional_reviews": 0,
+    "ceiling_breaches": []
+  },
+  "not_executed": {
+    "reserve_activation": true,
+    "training": true,
+    "tuning": true,
+    "recalibration": true,
+    "production_policy_change": true,
+    "opt_002_promotion": true,
+    "opt_002_closure": true
+  },
+  "disposition": {
+    "opt_002_status": "open-promotion-decision-gated",
+    "recommended_next_step": "Review and merge this result evidence, then make a separate explicit scope decision on whether the satisfied data gate is sufficient to promote or close OPT-002."
+  }
+}

@@ -1,0 +1,110 @@
+{
+  "schema_version": 1,
+  "frozen_at": "2026-08-12",
+  "optimization": "OPT-003",
+  "status": "authorization-pending",
+  "temporal_result": {
+    "path": "opt-003-temporal-report-result-2026-08-12.json",
+    "sha256": "4477cb9306bc64cdea3698309cee9ae320c43d50084a95cc7d72ec555792d843",
+    "bounded_objective_complete": true,
+    "decided_labels": 40,
+    "positive": 6,
+    "negative": 34,
+    "evaluation_families": 8,
+    "prediction_waves": 3,
+    "chronology_failures": 0,
+    "brier_score": 0.14465065130292426,
+    "threshold_selected_or_recommended": false
+  },
+  "scope": "Close OPT-003 at its completed bounded temporal-validation scope, update only the canonical and descriptive lifecycle documents to reflect the measured gate and descriptive result, record one closure result, commit the accumulated OPT-003 wave-two implementation/evidence changes on the current branch, and integrate that branch into local main without network access or push.",
+  "closure_basis": [
+    "The protocol activation floor passes with exactly 40 decided prospective outcomes, eight genuine evaluation families, three separately frozen prediction waves, and both classes represented.",
+    "All 40 frozen predictions strictly precede their first assessments.",
+    "The protocol-required aggregate Brier score, fixed-threshold precision/recall, class/family/wave counts, per-wave summaries, and deterministic family-block uncertainty have been produced.",
+    "The result is explicitly descriptive, selects no threshold, and reports broad uncertainty plus a zero-positive wave-two slice without converting either into a policy claim."
+  ],
+  "authorized_document_changes": {
+    "optimization_status": {
+      "path": "optimization-status.json",
+      "updated_at": "2026-08-12",
+      "summary": {"closed": 32, "open": 3, "total": 35},
+      "opt_003": {"status": "closed", "gate": "none", "next_priority": null},
+      "remaining_priority_order": ["OPT-009", "OPT-014", "OPT-010"]
+    },
+    "descriptive_ledgers": [
+      "optimization-register.md",
+      "../documentation-status.md",
+      "outstanding-work-checkpoint-2026-08-07.json",
+      "../triage-accuracy-roadmap.md"
+    ],
+    "closure_result": "opt-003-closure-result-2026-08-12.json"
+  },
+  "git_preconditions": {
+    "working_branch": "codex/opt-003-wave-1-import-receipt",
+    "initial_head": "1e92bb90602e7bd6e52dbfd86e12e6c6be5f3f28",
+    "local_main": "4a6a4fff0f5d1fe9f8375b1cb41a611c8d0bf470",
+    "known_origin_main": "6cf17f0ba3ea430e01540882f9890f9b38975f9b",
+    "local_main_may_fast_forward_only_to_known_origin_main": true,
+    "network_fetch": false
+  },
+  "commit_and_merge_contract": {
+    "branch_commits": 1,
+    "branch_commit_message": "feat: complete OPT-003 temporal validation",
+    "allowed_commit_paths": [
+      "docs/documentation-status.md",
+      "docs/triage-accuracy-roadmap.md",
+      "docs/optimizations/optimization-register.md",
+      "docs/optimizations/optimization-status.json",
+      "docs/optimizations/outstanding-work-checkpoint-2026-08-07.json",
+      "docs/optimizations/opt-003-*.json",
+      "src/repoauditor/eval/semgrep_runtime.py",
+      "src/repoauditor/eval/temporal_*.py",
+      "tests/test_opt_003_*.py",
+      "tests/test_semgrep_runtime.py"
+    ],
+    "ignored_data_committed": false,
+    "target_branch": "main",
+    "update_local_main_to_known_origin_main": "fast-forward-only",
+    "merge_source": "codex/opt-003-wave-1-import-receipt",
+    "merge_strategy": "one local non-fast-forward merge commit; stop on conflict",
+    "remote_push": false,
+    "branch_deletion": false
+  },
+  "validation_contract": {
+    "full_offline_non_live_test_suite": true,
+    "json_validation": true,
+    "git_diff_check": true,
+    "store_sha256_before_and_after": "a3d8e55feadf5860c079f1de18b698186afbae81ba6bf678717cdfe1f2cca11f",
+    "optimization_status_consistency": true,
+    "clean_tracked_worktree_after_merge": true
+  },
+  "resource_ceilings": {
+    "maximum_elapsed_minutes": 30,
+    "maximum_new_data_bytes": 1048576,
+    "branch_commits": 1,
+    "merge_commits": 1,
+    "network_reads": 0,
+    "network_uploads": 0,
+    "remote_pushes": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "store_mutations": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "rescores": 0,
+    "model_training_runs": 0
+  },
+  "stop_conditions": [
+    "The temporal result, aggregate report, store, current branch, initial HEAD, local main, known origin/main, or scoped working-tree paths drift before execution.",
+    "Any full offline non-live test, JSON validation, documentation consistency check, or git diff check fails.",
+    "Any commit path falls outside the frozen allowlist or any ignored data artifact would be committed.",
+    "Local main cannot fast-forward exactly to the known origin/main commit, or branch integration produces a conflict.",
+    "Any network fetch/read, remote push, provider activity, store mutation, assessment, label, rescore, training, tuning, recalibration, threshold selection, production-policy change, or branch deletion is attempted."
+  ],
+  "completion_boundary": "After the scoped branch commit, local main fast-forward, one conflict-free local merge commit, clean tracked worktree, unchanged store digest, and final tests pass, OPT-003 is complete and locally merged. No remote push, deployment, tuning, threshold, or production-policy action is authorized.",
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the OPT-003 bounded closure and local branch integration described by opt-003-closure-merge-receipt-2026-08-12.json, limited to marking OPT-003 closed at its completed descriptive temporal-validation scope; updating optimization-status.json to 32 closed and three open items with OPT-009, OPT-014, and OPT-010 in remaining priority order; reconciling the named descriptive ledgers and roadmap; recording one closure result; committing only the frozen OPT-003 documentation, evaluation helpers, and tests on codex/opt-003-wave-1-import-receipt; fast-forwarding local main only to the already-known origin/main commit 6cf17f0ba3ea430e01540882f9890f9b38975f9b; and creating one conflict-free local merge commit from that branch into main after the full offline non-live suite passes, with ceilings of 30 minutes, 1 MiB new data, one branch commit, one merge commit, and exactly zero network reads, uploads, remote pushes, provider calls, tokens, cost, store mutations, assessments, labels, rescoring, or model training. Tuning, recalibration, threshold selection or recommendation, production-policy changes, deployment, branch deletion, and any unlisted file change remain excluded."
+  }
+}

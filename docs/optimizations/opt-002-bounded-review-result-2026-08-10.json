@@ -1,0 +1,211 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-08-10",
+  "optimization": "OPT-002",
+  "status": "completed-bounded-human-review",
+  "authorization": "The project owner authorized the OPT-002 bounded review described by opt-002-bounded-review-receipt-2026-08-08.json, limited to one offline rendering of at most 20 adjacent context lines around each of the 12 frozen packet identities, presentation to the project owner for explicit disposition with abstention available, and recording of those responses in result evidence, with ceilings of 60 minutes, 10 MiB new data, and exactly zero network reads, uploads, provider calls, tokens, cost, store mutations, or classifier labels. Follow-up source expansion, automatic decisions, providers, rescoring, tuning, reserve activation, store import, and gate promotion remained excluded.",
+  "execution_receipt": {
+    "path": "opt-002-bounded-review-receipt-2026-08-08.json",
+    "sha256": "e9c27aaeac2ec25be4e0928a5aa3495cae88865927bab56da972cd4935c30c61",
+    "merged_pr": 127
+  },
+  "preconditions": {
+    "review_plan_sha256": "8d682ce166109ef03559421b84287d9d39be43d6b99ef67933a0598b0d7555c8",
+    "packet_entries": 12,
+    "initial_store_sha256": "1f67635eb1458b93c3b9056f08377839f23d0726b0f3b92764f5791d2ca503b8",
+    "initial_model_runs": 35,
+    "initial_model_usage_rows": 1473,
+    "initial_selected_assessments": 0,
+    "initial_selected_labels": 0,
+    "output_path_absent": true
+  },
+  "render": {
+    "renderer": "repoauditor.eval.independent_review",
+    "render_runs": 1,
+    "context_lines_before": 20,
+    "context_lines_after": 20,
+    "path": "data/artifacts/opt002-independent-packet/review-packet.md",
+    "bytes": 21075,
+    "lines": 620,
+    "sha256": "07be649e3688369a09505588ba0a8163a38ab196ec065a77b399c0a7a2c75fd3",
+    "forbidden_fields_present": []
+  },
+  "analyst": "project owner",
+  "responses": [
+    {
+      "finding_id": 859,
+      "disposition": "confirmed_actionable",
+      "binary_projection": true,
+      "rationale": "The snippet shows a live window.parent.postMessage(..., '*') call. Target origin is the wildcard string, so any embedding parent receives the message. Payload is { action: 'field-unsigned', data: null }, so impact is limited, but the claimed wildcard-target mechanism is present and on an embed client path that intentionally talks to a parent frame.",
+      "verified_dimensions": {
+        "sink": "postMessage with target origin '*'",
+        "reachability": "guarded only by if (window.parent); no origin restriction in evidence"
+      }
+    },
+    {
+      "finding_id": 1170,
+      "disposition": "unreachable",
+      "binary_projection": false,
+      "rationale": "The hit is on migration-local AR stubs (class Story < ActiveRecord::Base; end, same for Domain) inside db/old_migrations/.... They are used for offline data backfill (Domain.create!(domain:, is_tracker:), Story.find_each), not as request-facing models accepting controller params. There is no evidence of a web/API mass-assignment path into these classes.",
+      "verified_dimensions": {
+        "source": "absent for attacker-controlled params (not shown)",
+        "reachability": "migration/deploy context only in the provided evidence"
+      }
+    },
+    {
+      "finding_id": 861,
+      "disposition": "confirmed_actionable",
+      "binary_projection": true,
+      "rationale": "Lines 255–261 send postMessage to window.parent with target '*' and data: String(err). That is the claimed wildcard-target mechanism, and the payload can include runtime error text. The same handler also shows a completed path that posts token, documentId, and recipientId with '*', which strengthens that this embed page treats parent messaging as open-origin.",
+      "verified_dimensions": {
+        "sink": "postMessage(..., '*') with String(err)",
+        "attacker_control": "any parent origin can receive messages once it embeds the page (parent is not validated in evidence)"
+      }
+    },
+    {
+      "finding_id": 1084,
+      "disposition": "mitigated",
+      "binary_projection": false,
+      "rationale": "The href is not a raw user URL. It is edit_story_path(story.short_id), a Rails path helper that emits an app route structure. The “variable in href” pattern matches only in the shallow sense of ERB interpolation; the helper, not unconstrained user text, determines the URL shape. No evidence of javascript:, open redirect, or raw URL injection.",
+      "verified_dimensions": {
+        "sink": "href=\"<%= ... %>\" present",
+        "mitigation": "Rails path helper constrains the value to a routed path"
+      }
+    },
+    {
+      "finding_id": 905,
+      "disposition": "tool_incorrect",
+      "binary_projection": false,
+      "rationale": "The cited line is a logger adapter: debug: (...args) => console.debug(`[${jobId}]`, ...args). That prefixes a message and forwards remaining arguments; it is not a user-controlled format string fed into a printf-style formatter. Classic “unsafe format string” (attacker supplies the format) is not shown.",
+      "verified_dimensions": {
+        "sink": "absent for format-string injection as claimed"
+      }
+    },
+    {
+      "finding_id": 1147,
+      "disposition": "mitigated",
+      "binary_projection": false,
+      "rationale": "href=\"<%= Routes.title_path story %>\" uses a route helper, not a free-form URL field. Same class of false risk as #1084: interpolation into href exists, but generation is framework-mediated. No evidence that the helper returns attacker-chosen schemes or open URLs.",
+      "verified_dimensions": {
+        "sink": "variable interpolation in href",
+        "mitigation": "Routes.title_path route helper"
+      }
+    },
+    {
+      "finding_id": 869,
+      "disposition": "confirmed_actionable",
+      "binary_projection": true,
+      "rationale": "onDocumentReady posts { action: 'document-ready', data: null } to window.parent with '*'. Wildcard target origin is explicit. Payload is null (low confidentiality impact), but the configuration mechanism the rule describes is present on the embed signing page.",
+      "verified_dimensions": {
+        "sink": "postMessage(..., '*')",
+        "reachability": "window.parent check only"
+      }
+    },
+    {
+      "finding_id": 1140,
+      "disposition": "insufficient_evidence",
+      "binary_projection": "abstain",
+      "rationale": "<%= raw excerpt_fragment_around_link(link.from_comment.markeddown_comment, story.url) %> is an unescaped HTML sink (raw). Input is comment-derived (markeddown_comment), which is a plausible user-content source. Whether that is exploitable depends on sanitization inside markeddown_comment / excerpt_fragment_around_link, which are not in the packet. Cannot defensibly confirm XSS or an effective sanitize path.",
+      "verified_dimensions": {
+        "sink": "raw(...) (escaping bypass)",
+        "source / mitigation": "not established from bounded evidence"
+      }
+    },
+    {
+      "finding_id": 884,
+      "disposition": "confirmed_actionable",
+      "binary_projection": true,
+      "rationale": "onDocumentError uses window.parent.postMessage({ action: 'document-error', data: null }, '*'). Wildcard target origin is present on the embed multisign route. Same established mechanism as the other Documenso embed findings.",
+      "verified_dimensions": {
+        "sink": "postMessage(..., '*')"
+      }
+    },
+    {
+      "finding_id": 1081,
+      "disposition": "tool_incorrect",
+      "binary_projection": false,
+      "rationale": "The markup is <ol class=\"stories list <%= action_name == “hidden” ? “show_hidden” : “” %>\">. The class attribute is properly double-quoted. The interpolated branches are the static strings “show_hidden” or “”, not free-form unquoted attribute content. The unquoted-attribute mechanism is not present in the shown source.",
+      "verified_dimensions": {
+        "sink": "absent (quoted attribute; static class tokens)"
+      }
+    },
+    {
+      "finding_id": 870,
+      "disposition": "confirmed_actionable",
+      "binary_projection": true,
+      "rationale": "onFieldSigned posts { action: 'field-signed', data } with target '*', and data is typed to include optional value and isBase64. That combines open-origin delivery with field content (e.g. signature/value material) to whatever page embeds the signing UI.",
+      "verified_dimensions": {
+        "sink": "postMessage(..., '*') with structured field payload",
+        "attacker_control": "malicious parent frame can receive signed-field data (no target-origin allowlist in evidence)"
+      }
+    },
+    {
+      "finding_id": 1148,
+      "disposition": "mitigated",
+      "binary_projection": false,
+      "rationale": "Same pattern as #1147: href=\"<%= Routes.title_path story %>\" for mobile comments. Route helper, not raw user URL. Variable-in-href tooling matches the ERB shape, but the path is framework-generated.",
+      "verified_dimensions": {
+        "sink": "interpolation in href",
+        "mitigation": "Routes.title_path helper"
+      }
+    }
+  ],
+  "validation": {
+    "responses": 12,
+    "unique_finding_ids": 12,
+    "unknown_finding_ids": [],
+    "missing_finding_ids": [],
+    "unsupported_dispositions": [],
+    "missing_rationales": [],
+    "decided_labels": 11,
+    "abstentions": 1,
+    "confirmed_actionable": 5,
+    "tool_incorrect": 2,
+    "unreachable": 1,
+    "not_attacker_controlled": 0,
+    "mitigated": 3,
+    "valid_not_actionable": 0,
+    "binary_actionable": 5,
+    "binary_non_actionable": 6,
+    "minimum_decided_labels": 4,
+    "minimum_decided_labels_met": true,
+    "both_classes_required": true,
+    "both_classes_present": true,
+    "abstentions_preserved": true
+  },
+  "authorization_accounting": {
+    "final_store_sha256": "1f67635eb1458b93c3b9056f08377839f23d0726b0f3b92764f5791d2ca503b8",
+    "store_byte_identical": true,
+    "final_model_runs": 35,
+    "final_model_usage_rows": 1473,
+    "final_selected_assessments": 0,
+    "final_selected_labels": 0,
+    "final_data_kib": 385796,
+    "new_data_kib": 24,
+    "new_data_ceiling_kib": 10240,
+    "network_reads": 0,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "store_mutations": 0,
+    "classifier_labels_written": 0,
+    "ceiling_breaches": []
+  },
+  "not_executed": {
+    "follow_up_source_expansion": true,
+    "automatic_decisions": true,
+    "store_import": true,
+    "classifier_labels": true,
+    "providers": true,
+    "rescoring": true,
+    "tuning": true,
+    "reserve_activation": true,
+    "gate_promotion": true
+  },
+  "disposition": {
+    "opt_002_status": "open-review-result-gated",
+    "bounded_review_complete": true,
+    "recommended_next_step": "Review and merge this result evidence, then separately authorize any exact store import and OPT-002 gate assessment. No import, rescoring, tuning, reserve activation, or promotion is implied by these counts."
+  }
+}

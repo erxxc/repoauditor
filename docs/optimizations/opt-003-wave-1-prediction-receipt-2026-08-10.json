@@ -1,0 +1,93 @@
+{
+  "schema_version": 1,
+  "frozen_at": "2026-08-10",
+  "optimization": "OPT-003",
+  "status": "authorization-pending",
+  "protocol": {
+    "path": "opt-003-temporal-validation-protocol-2026-08-10.json",
+    "sha256": "4251e3849e21eac84ac13f93b05a62b0bc94a4996881c9598f7ac9222edb3550"
+  },
+  "scope": "Create the first new OPT-003 prospective prediction wave: freeze one pre-outcome model from the current effective training corpus, materialize and deterministically scan exactly three outcome-blind product repositories, persist compatible predictions and timestamps, and stop before packet selection, source rendering, human review, or labels.",
+  "training_cutoff": {
+    "cutoff": "2026-08-10T23:59:59-04:00",
+    "initial_store_sha256": "d34e2ff9bf8946209686c47a15ed4428ada11c1b08afc05705be8b7adb3107eb",
+    "effective_family_distinct_labels": 122,
+    "effective_positive": 46,
+    "effective_negative": 76,
+    "effective_evaluation_families": 18,
+    "effective_label_identity_sha256": "b56131b57e949fb8512773bc28cedfae56f598bf2a9ae233088e9d3726202d87",
+    "digest_contract": "SHA-256 of canonical sorted tuples (evaluation family, rule id, finding fingerprint, actionable, source, created_at) after family-distinct reconciliation",
+    "immutability": "The wave model may use only this digest-frozen corpus. Any later assessment or label requires a new wave and cannot enter this model."
+  },
+  "frozen_sources": [
+    {
+      "order": 1,
+      "evaluation_family": "independent-upstream:chatwoot/chatwoot",
+      "repository": "chatwoot/chatwoot",
+      "url": "https://github.com/chatwoot/chatwoot.git",
+      "branch": "develop",
+      "commit": "9a9be2f919662b0408b1910be3a07c3f94fbbc6c",
+      "selection_basis": "Previously frozen but never activated OPT-002 reserve; deployed self-hostable Rails/Vue customer-support product with account, inbox, agent, team, conversation, and integration boundaries."
+    },
+    {
+      "order": 2,
+      "evaluation_family": "independent-upstream:linkwarden/linkwarden",
+      "repository": "linkwarden/linkwarden",
+      "url": "https://github.com/linkwarden/linkwarden.git",
+      "branch": "dev",
+      "commit": "4ce789dfb248a032e0f5a8af580fc3cdbc141c21",
+      "selection_basis": "Active deployable TypeScript collaborative bookmark and web-archive product with users, collections, member permissions, sharing, uploads, API keys, and external capture boundaries."
+    },
+    {
+      "order": 3,
+      "evaluation_family": "independent-upstream:paperless-ngx/paperless-ngx",
+      "repository": "paperless-ngx/paperless-ngx",
+      "url": "https://github.com/paperless-ngx/paperless-ngx.git",
+      "branch": "dev",
+      "commit": "855669ddf93e25fe5c45420781e191a7df63884d",
+      "selection_basis": "Active deployable Python/Django document-management product with sensitive document ingestion, users, permissions, export, OCR, storage, and integration boundaries."
+    }
+  ],
+  "selection_exclusions": [
+    "security findings, advisories, issues, pull requests, scanner output, finding counts, scores, ranks, labels, outcomes, target paths, or answer keys",
+    "archived products, forks, tutorials, benchmarks, deliberately vulnerable applications, and any existing acquisition/evaluation family"
+  ],
+  "execution_sequence": [
+    "Recompute and verify the exact training-corpus digest and initial store identity before any write or network transfer.",
+    "Train and persist exactly one wave model before materializing any source; freeze its complete model, feature-schema, calibration, training-cutoff, and training-label identities.",
+    "Resolve each remote only to its exact frozen commit, materialize it under a new repository identity, and record immutable source digests.",
+    "Run only deterministic scanners and deployment canaries; preserve scanner versions, applicability, status, failures, target counts, and raw artifact digests.",
+    "Extract features and persist scores for eligible findings under the one frozen wave model.",
+    "Persist a prediction-wave result containing exact score timestamps and eligible outcome-blind inventory counts, then stop."
+  ],
+  "resource_ceilings": {
+    "repositories": 3,
+    "model_training_runs": 1,
+    "maximum_elapsed_minutes_per_repository": 180,
+    "maximum_total_elapsed_minutes": 600,
+    "maximum_new_data_bytes": 16106127360,
+    "network_hosts": ["github.com"],
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "human_reviews": 0,
+    "assessments_written": 0,
+    "labels_written": 0
+  },
+  "stop_conditions": [
+    "Any training label, store, protocol, source commit, family identity, or selected repository differs from the frozen value.",
+    "The model is not fully trained and frozen before source materialization, scanning, feature extraction, or scoring.",
+    "A source cannot be resolved byte-exactly, a required scanner is unhealthy, or scoring identity differs across repositories.",
+    "Any score, finding, security outcome, or target path influences source selection or repository order.",
+    "Any provider call, unsupported network host, packet selection, evidence rendering, human review, assessment, label, rescore, tuning, recalibration, threshold selection, or production-policy change is attempted."
+  ],
+  "result_boundary": {
+    "authorized_after_approval": ["one frozen pre-outcome model", "three exact-commit deterministic acquisitions", "compatible persisted predictions and timestamps", "one immutable prediction-wave result"],
+    "not_authorized": ["packet selection", "candidate identity disclosure for review", "source-context rendering", "human review", "assessment or label import", "second prediction wave", "providers", "tuning, recalibration, threshold selection, or policy change"],
+    "next_gate": "A result PR must prove source/model/training/score identities and zero outcomes before a separate outcome-blind packet-selection receipt may be proposed."
+  },
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize OPT-003 prospective prediction wave one described by opt-003-wave-1-prediction-receipt-2026-08-10.json, limited to one model trained before acquisition from the digest-frozen 122-label effective corpus, exact-commit materialization and deterministic scanning of only chatwoot/chatwoot, linkwarden/linkwarden, and paperless-ngx/paperless-ngx, compatible feature extraction and prediction persistence, and one prediction-wave result, with ceilings of three repositories, one model-training run, 180 minutes per repository, 600 minutes total, 15 GiB new data, GitHub-only network access, and exactly zero provider calls, tokens, cost, human reviews, assessments, or labels. Packet selection, candidate disclosure for review, source rendering, a second wave, rescoring, tuning, recalibration, threshold selection, and production-policy changes remain excluded."
+  }
+}

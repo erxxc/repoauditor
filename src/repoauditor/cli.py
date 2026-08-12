@@ -1302,10 +1302,18 @@ def scanner_canaries(
         "--output",
         help="Optionally retain the JSON execution-health report at this path.",
     ),
+    scanner: list[str] | None = typer.Option(
+        None,
+        "--scanner",
+        help="Run only the named scanner canary; repeat for multiple scanners.",
+    ),
 ) -> None:
     """Run isolated positive and clean deterministic-scanner controls."""
     config = get_config()
-    report = run_scanner_canaries(config.detect.tool_timeout_seconds)
+    report = run_scanner_canaries(
+        config.detect.tool_timeout_seconds,
+        tuple(scanner) if scanner else None,
+    )
     payload = render_scanner_canaries(report)
     if output is not None:
         output.parent.mkdir(parents=True, exist_ok=True)

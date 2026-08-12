@@ -1,25 +1,15 @@
 {
   "schema_version": 1,
   "recorded_at": "2026-08-07",
-  "purpose": "Current derived checkpoint of all outstanding lifecycle work after completion of OPT-005 and OPT-011; must match optimization-status.json.",
+  "purpose": "Current derived checkpoint of all outstanding lifecycle work after completion of OPT-003; must match optimization-status.json.",
   "poc_definition_of_done": {
     "status": "complete",
     "accepted_at": "2026-07-28",
     "outstanding_acceptance_items": [],
     "scope_note": "Open optimizations are explicitly outside the accepted POC Definition of Done and do not retroactively reopen it."
   },
-  "optimization_summary": {"closed": 30, "open": 5, "total": 35},
+  "optimization_summary": {"closed": 32, "open": 3, "total": 35},
   "open_optimizations_in_priority_order": [
-    {
-      "id": "OPT-002",
-      "title": "Family-aware bootstrap ranges",
-      "gate": "adequate held-out family breadth with both classes"
-    },
-    {
-      "id": "OPT-003",
-      "title": "Temporal validation",
-      "gate": "meaningful chronological evaluation depth"
-    },
     {
       "id": "OPT-009",
       "title": "Novelty prioritization",
@@ -39,7 +29,7 @@
   "tuning_hold": {
     "active": true,
     "blockers": [
-      "Held-out classifier family/temporal evidence gates are not met.",
+      "The preferred 100–200-label and broader-positive-family maturity target remains unmet; the completed bounded temporal evaluation selected no production threshold.",
       "Applicable organization/incident data is still absent for OPT-014."
     ]
   },
@@ -48,5 +38,5 @@
     "Additional independently checked language/framework security-claim certificates.",
     "Any expansion of already closed bounded OPT scopes, which must be proposed as new work."
   ],
-  "next_execution": "Review and merge the OPT-002 bounded-review receipt, then obtain its exact authorization before rendering adjacent source context for the 12 frozen identities and collecting project-owner dispositions. Follow-up expansion, store import, providers, rescoring, tuning, reserve activation, and gate promotion remain unauthorized."
+  "next_execution": "Address OPT-009, the highest-priority remaining open item, only under its recorded evidence gate. OPT-003 is closed at its bounded descriptive temporal-validation scope; tuning, threshold selection, and production-policy changes require a new scope."
 }

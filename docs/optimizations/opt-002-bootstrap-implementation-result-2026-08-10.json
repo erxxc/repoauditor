@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-08-10",
+  "optimization": "OPT-002",
+  "status": "implemented",
+  "receipt_sha256": "c04689f2388abfef47194c907352aed0fa9ee78ee4e9140d826965871eda7ba1",
+  "implementation": {
+    "sampling_unit": "evaluation family",
+    "resamples": 2000,
+    "confidence_level": 0.95,
+    "seed": 2002,
+    "interval": "percentile",
+    "cli_surface": "repoauditor triage-stats",
+    "automatic_threshold_selection": false
+  },
+  "validation_cohort": {
+    "compatible_human_scored_labels": 47,
+    "positive": 24,
+    "negative": 23,
+    "engagements": 9,
+    "evaluation_families": 9,
+    "bootstrap_available": true
+  },
+  "observed_ranges": [
+    {"threshold": 0.0, "selected": 47, "precision": 0.511, "precision_95": [0.204, 0.746], "recall": 1.0, "recall_95": [1.0, 1.0]},
+    {"threshold": 0.1, "selected": 35, "precision": 0.543, "precision_95": [0.207, 0.786], "recall": 0.792, "recall_95": [0.600, 0.946]},
+    {"threshold": 0.2, "selected": 9, "precision": 0.556, "precision_95": [0.0, 1.0], "recall": 0.208, "recall_95": [0.0, 0.750]},
+    {"threshold": 0.3, "selected": 5, "precision": 0.2, "precision_95": [0.0, 1.0], "recall": 0.042, "recall_95": [0.0, 0.150]},
+    {"threshold": 0.4, "selected": 5, "precision": 0.2, "precision_95": [0.0, 1.0], "recall": 0.042, "recall_95": [0.0, 0.150]},
+    {"threshold": 0.5, "selected": 4, "precision": 0.0, "precision_95": [0.0, 0.0], "recall": 0.0, "recall_95": [0.0, 0.0]},
+    {"threshold": 0.6, "selected": 4, "precision": 0.0, "precision_95": [0.0, 0.0], "recall": 0.0, "recall_95": [0.0, 0.0]},
+    {"threshold": 0.7, "selected": 1, "precision": 0.0, "precision_95": [0.0, 0.0], "recall": 0.0, "recall_95": [0.0, 0.0]},
+    {"threshold": 0.8, "selected": 0, "precision": null, "precision_95": null, "recall": 0.0, "recall_95": [0.0, 0.0]},
+    {"threshold": 0.9, "selected": 0, "precision": null, "precision_95": null, "recall": 0.0, "recall_95": [0.0, 0.0]},
+    {"threshold": 1.0, "selected": 0, "precision": null, "precision_95": null, "recall": 0.0, "recall_95": [0.0, 0.0]}
+  ],
+  "accounting": {
+    "store_sha256_before": "d34e2ff9bf8946209686c47a15ed4428ada11c1b08afc05705be8b7adb3107eb",
+    "store_sha256_after": "d34e2ff9bf8946209686c47a15ed4428ada11c1b08afc05705be8b7adb3107eb",
+    "store_byte_identical": true,
+    "network_reads": 0,
+    "provider_calls": 0,
+    "store_mutations": 0,
+    "training_runs": 0,
+    "rescored_findings": 0
+  },
+  "disposition": {
+    "opt_002_status": "closed",
+    "reason": "The activated bounded scope is implemented and validated: family-block bootstrap ranges are deterministic, exposed descriptively, and fail closed below the family/class gate. Further uncertainty methods or policy use require a new scope decision."
+  }
+}

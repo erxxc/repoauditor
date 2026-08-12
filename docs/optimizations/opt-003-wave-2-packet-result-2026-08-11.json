@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-08-11",
+  "optimization": "OPT-003",
+  "status": "completed-outcome-blind-packet-selection",
+  "authorization": "The project owner authorized the exact wave-two outcome-blind packet selection after whitespace normalization of the wrapped statement, limited to one offline selection of 18 identities, six per frozen family, with zero source rendering, review, outcomes, providers, store mutation, policy or status changes, and branch merge deferred.",
+  "receipt": {
+    "path": "opt-003-wave-2-packet-receipt-2026-08-11.json",
+    "sha256": "31284f57e74caea38e0a5d2c8deda91de7456dce4b3fa64054dd4ea02bf972a0"
+  },
+  "preconditions": {
+    "prediction_result_sha256": "7ed9c69f4dfbbe37871b5db4e8b3a7d121a1200aa405d1f840e287dbb248b83a",
+    "inventory_sha256": "79464461322ea6b6b6b9ea26e7ab8044dcb2ed571c0c5cf7eecee3fce4b429d9",
+    "inventory_count": 249,
+    "initial_store_sha256": "df7950084af72ad5bb979b975bc63311845e5f0f739fe2adb61694075aae986d",
+    "output_path_absent": true
+  },
+  "selection": {
+    "policy": "opt003-wave2-packet-v1",
+    "selection_runs": 1,
+    "packet_size": 18,
+    "unique_finding_ids": 18,
+    "unique_selection_keys": 18,
+    "actual": 6,
+    "memos": 6,
+    "authentik": 6,
+    "plan_path": "data/artifacts/opt003-wave-2-runtime-retry/review-plan.json",
+    "plan_bytes": 13037,
+    "plan_sha256": "483eb11d6bd06e7bc9700cb1be342fd2cc1f34c1b0746f20a2c92cd2f80c0d4e",
+    "forbidden_fields_present": []
+  },
+  "accounting": {
+    "final_store_sha256": "df7950084af72ad5bb979b975bc63311845e5f0f739fe2adb61694075aae986d",
+    "store_byte_identical": true,
+    "new_data_bytes": 13037,
+    "new_data_ceiling_bytes": 10485760,
+    "network_reads": 0,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "store_mutations": 0,
+    "source_lines_rendered": 0,
+    "human_reviews": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "triage_assessments": 141,
+    "triage_labels": 145,
+    "model_usage_rows": 1473,
+    "ceiling_breaches": []
+  },
+  "not_executed": {
+    "source_rendering": true,
+    "candidate_review_disclosure": true,
+    "human_review": true,
+    "assessment_import": true,
+    "label_import": true,
+    "providers": true,
+    "rescoring": true,
+    "tuning": true,
+    "recalibration": true,
+    "threshold_selection": true,
+    "production_policy_change": true,
+    "opt_003_status_change": true,
+    "branch_merge": true
+  },
+  "disposition": {
+    "opt_003_status": "open-wave-two-review-gated",
+    "recommended_next_step": "Freeze a bounded source-rendering and project-owner review receipt for only the 18 immutable selected identities. Scores, ranks, expected classes, outcome import, providers, policy changes, OPT-003 status changes, and branch merge remain excluded."
+  }
+}
