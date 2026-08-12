@@ -57,6 +57,6 @@ def test_status_ledger_matches_authoritative_register_ids_and_states():
         start = match.start()
         heading = register[start:register.index("owner:", start)]
         if item["status"] == "closed":
-            assert "implemented" in heading or "completed" in heading
+            assert any(state in heading for state in ("implemented", "completed", "closed"))
         else:
             assert "deferred" in heading or "gated" in heading

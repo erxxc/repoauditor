@@ -35,16 +35,19 @@ def test_lightweight_completion_receipt_is_frozen_and_authorization_pending():
     assert "Neither protected" in receipt["protected_pair"]
 
 
-def test_closeout_reassessment_matches_canonical_ledger():
+def test_closeout_reassessment_remains_historical_and_opt005_is_closed():
     reassessment = json.loads(REASSESSMENT.read_text(encoding="utf-8"))
     ledger = json.loads(
         (ROOT / "docs/optimizations/optimization-status.json").read_text(encoding="utf-8")
     )
 
-    assert reassessment["optimization_summary"] == ledger["summary"]
+    assert reassessment["optimization_summary"] == {
+        "closed": 30, "open": 5, "total": 35,
+    }
+    assert reassessment["recorded_at"] == "2026-08-07"
     opt005 = next(item for item in ledger["items"] if item["id"] == "OPT-005")
-    if opt005["status"] == "open":
-        assert reassessment["current_execution_gate"]["authorization_pending"] is True
-    else:
-        assert reassessment["current_execution_gate"] is None
+    assert opt005["status"] == "closed"
+    assert opt005["gate"] == "none"
+    assert opt005["next_priority"] is None
+    assert reassessment["current_execution_gate"] is None
     assert reassessment["poc_definition_of_done"]["outstanding_acceptance_items"] == []

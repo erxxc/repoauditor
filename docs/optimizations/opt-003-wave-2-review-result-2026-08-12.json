@@ -1,0 +1,211 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-08-12",
+  "optimization": "OPT-003",
+  "status": "completed-bounded-human-review",
+  "receipt": {
+    "path": "opt-003-wave-2-review-receipt-2026-08-11.json",
+    "sha256": "a0afcc6dc0a390bd227f0343da3745cb9a70ddc1ecbbcd2de2d377e3643305e4"
+  },
+  "review_packet": {
+    "path": "data/artifacts/opt003-wave-2-runtime-retry/review-packet.md",
+    "sha256": "f8abdd0c2c64b4bae2a65d83886443c2c9d1801599212f787a068a46ed0af682",
+    "bytes": 32039,
+    "lines": 945
+  },
+  "response_evidence": {
+    "path": "data/artifacts/opt003-wave-2-runtime-retry/review-response-template.md",
+    "sha256": "5a1f09b00c9371e4e529fe6d8aeb96f283487dae9204ffaa22054d80fd702b5c",
+    "bytes": 15910,
+    "lines": 241
+  },
+  "analyst": "project owner",
+  "responses": [
+    {
+      "finding_id": 2010,
+      "disposition": "insufficient_evidence",
+      "binary_projection": "abstain",
+      "rationale": "The helper clearly builds a non-literal RegExp from its regex parameter, so the dynamic-pattern sink is present. The excerpt does not show any caller, registration of this function as a SQL UDF, or whether either argument can come from untrusted input. Without source and attacker-control evidence, exploitability cannot be established or ruled out.",
+      "verified_dimensions": {"sink": "new RegExp(regex)", "source / caller": "not shown"}
+    },
+    {
+      "finding_id": 2430,
+      "disposition": "insufficient_evidence",
+      "binary_projection": "abstain",
+      "rationale": "A hardcoded apiKey string is present in client-facing Docusaurus Algolia config. The packet does not establish whether this key is a privileged secret, a deliberately public search-only key, or used for any server-side privileged operation. Without privilege and secrecy evidence, an actionable secret-leak conclusion is not defensible.",
+      "verified_dimensions": {"sink": "literal apiKey in Algolia config", "privileges / secrecy": "not shown"}
+    },
+    {
+      "finding_id": 2434,
+      "disposition": "mitigated",
+      "binary_projection": false,
+      "rationale": "Although a dynamic RegExp is constructed, searchFilter is first escaped with a metacharacter replacement, so user-supplied search text is treated as a literal substring rather than an attacker-controlled pattern. The claimed unsafe non-literal-regexp path is blocked by that escaping.",
+      "verified_dimensions": {"sink": "new RegExp using escaped searchFilter", "mitigation": "metacharacter escape of searchFilter"}
+    },
+    {
+      "finding_id": 2152,
+      "disposition": "mitigated",
+      "binary_projection": false,
+      "rationale": "SQL text is assembled from a fixed id predicate with a placeholder; the identifier is bound via args to ExecContext, not interpolated into the query string. String joining of constant WHERE fragments does not establish SQL injection.",
+      "verified_dimensions": {"sink": "string-built SQL", "mitigation": "fixed predicate and parameterized delete.ID"}
+    },
+    {
+      "finding_id": 2315,
+      "disposition": "insufficient_evidence",
+      "binary_projection": "abstain",
+      "rationale": "The method signs a caller-supplied payload as a JWT and optionally encrypts it when encryption_key is set. The packet does not show what claims are placed in the payload, whether they are sensitive, or whether callers always encrypt. Presence of JWT encoding alone does not establish exposed sensitive data.",
+      "verified_dimensions": {"sink": "encode(payload, ...)", "optional_encryption": "when encryption_key is set", "payload_contents": "not shown"}
+    },
+    {
+      "finding_id": 2161,
+      "disposition": "mitigated",
+      "binary_projection": false,
+      "rationale": "The DELETE statement concatenates only the fixed predicate id = $1; the ID is supplied as a bound argument. No user-controlled SQL fragment is shown.",
+      "verified_dimensions": {"mitigation": "fixed $1 predicate and parameterized ID"}
+    },
+    {
+      "finding_id": 2163,
+      "disposition": "mitigated",
+      "binary_projection": false,
+      "rationale": "SET and WHERE clauses use fixed SQL with $1/$2 placeholders; status and ID are passed in args to QueryRowContext. Values are not concatenated into the SQL text.",
+      "verified_dimensions": {"mitigation": "fixed assignments and predicate with bound args"}
+    },
+    {
+      "finding_id": 2354,
+      "disposition": "valid_not_actionable",
+      "binary_projection": false,
+      "rationale": "The excerpt only shows pickle.dumps when writing schedule fields. The dangerous sink for this rule class is untrusted deserialization, which is not present here. Serialization alone is not an operationally actionable exploit path from this evidence.",
+      "verified_dimensions": {"sink_shown": "pickle.dumps only", "deserialization": "not in excerpt"}
+    },
+    {
+      "finding_id": 2398,
+      "disposition": "insufficient_evidence",
+      "binary_projection": "abstain",
+      "rationale": "pickle.loads on stored args, kwargs, and options is a real deserialization sink and is used on the schedule dispatch path. The packet does not show who can create or modify those stored bytes, so attacker control of the pickle blob cannot be established. A defensible confirmed or mitigated decision requires write-authority evidence that is absent here.",
+      "verified_dimensions": {"sink": "pickle.loads on schedule fields before actor send", "write_authority": "not shown"}
+    },
+    {
+      "finding_id": 2172,
+      "disposition": "mitigated",
+      "binary_projection": false,
+      "rationale": "Column names and placeholders are fixed string fragments; field values and the ID are bound through args. Dynamic SQL assembly does not include interpolated untrusted SQL.",
+      "verified_dimensions": {"mitigation": "fixed column fragments with placeholders and bound values"}
+    },
+    {
+      "finding_id": 2402,
+      "disposition": "insufficient_evidence",
+      "binary_projection": "abstain",
+      "rationale": "A literal Algolia apiKey appears in documentation-theme configuration. Privileges, whether the key is intended to be public, and any server-side use are not established, so an actionable secret finding cannot be confirmed.",
+      "verified_dimensions": {"sink": "literal apiKey in theme Algolia config", "privileges / secrecy": "not shown"}
+    },
+    {
+      "finding_id": 2160,
+      "disposition": "mitigated",
+      "binary_projection": false,
+      "rationale": "SET clauses use fixed column names plus generated placeholders; values and ID are appended to args and executed via QueryRowContext. No untrusted input is concatenated into SQL structure.",
+      "verified_dimensions": {"mitigation": "fixed columns, placeholders, and bound args"}
+    },
+    {
+      "finding_id": 2159,
+      "disposition": "mitigated",
+      "binary_projection": false,
+      "rationale": "The INSERT column list is a fixed string slice; values are passed as bound args with generated placeholders. String formatting assembles structure only, not data into SQL.",
+      "verified_dimensions": {"mitigation": "fixed columns, generated placeholders, and bound values"}
+    },
+    {
+      "finding_id": 2034,
+      "disposition": "tool_incorrect",
+      "binary_projection": false,
+      "rationale": "The call is console.log with a JavaScript template literal already interpolated, plus a second data argument. That is not a printf-style format string where an attacker supplies the format. Even without knowing the origin of method or endpoint, the unsafe-formatstring mechanism is absent.",
+      "verified_dimensions": {"sink": "absent for format-string injection", "call_shape": "template-literal logging"}
+    },
+    {
+      "finding_id": 1982,
+      "disposition": "unreachable",
+      "binary_projection": false,
+      "rationale": "The path joins occur inside a test-only helper in methods.test.ts used to stage mock budget files. The packet shows no production request path or remote attacker interface that invokes this helper.",
+      "verified_dimensions": {"location": "methods.test.ts test helper", "production_reachability": "not shown"}
+    },
+    {
+      "finding_id": 1997,
+      "disposition": "mitigated",
+      "binary_projection": false,
+      "rationale": "Requested static paths are normalized and resolved and compared against the resolved client-build root; paths outside that root receive HTTP 403 before net.fetch. The shown control blocks directory traversal out of the client-build tree.",
+      "verified_dimensions": {"sink": "path built from pathname", "mitigation": "resolve plus startsWith(clientBuildPath) gate returning 403"}
+    },
+    {
+      "finding_id": 1978,
+      "disposition": "unreachable",
+      "binary_projection": false,
+      "rationale": "The path.join for a mock budget directory lives only in the methods.test.ts test helper. No production exposure is shown in the packet.",
+      "verified_dimensions": {"location": "test helper", "production_reachability": "not shown"}
+    },
+    {
+      "finding_id": 2036,
+      "disposition": "insufficient_evidence",
+      "binary_projection": "abstain",
+      "rationale": "res.send(fileAccessError) is a direct response write on the 403 path. Whether that is XSS depends on whether fileAccessError contains attacker-controlled HTML or JavaScript and on content type. Construction of the error and the response content type are not in the packet, so the XSS claim cannot be confirmed or dismissed.",
+      "verified_dimensions": {"sink": "res.send(fileAccessError) after 403", "error_construction / content_type": "not shown"}
+    }
+  ],
+  "validation": {
+    "responses": 18,
+    "unique_finding_ids": 18,
+    "missing_finding_ids": [],
+    "unsupported_dispositions": [],
+    "missing_rationales": [],
+    "decided": 12,
+    "abstentions": 6,
+    "binary_actionable": 0,
+    "binary_non_actionable": 12,
+    "both_classes_present_in_this_review": false,
+    "confirmed_actionable": 0,
+    "tool_incorrect": 1,
+    "unreachable": 2,
+    "not_attacker_controlled": 0,
+    "mitigated": 8,
+    "valid_not_actionable": 1,
+    "insufficient_evidence": 6
+  },
+  "accounting": {
+    "initial_store_sha256": "df7950084af72ad5bb979b975bc63311845e5f0f739fe2adb61694075aae986d",
+    "final_store_sha256": "df7950084af72ad5bb979b975bc63311845e5f0f739fe2adb61694075aae986d",
+    "store_byte_identical": true,
+    "network_reads": 0,
+    "provider_calls": 0,
+    "store_mutations": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "ceiling_breaches": []
+  },
+  "not_executed": {
+    "follow_up_source_expansion": true,
+    "assessment_import": true,
+    "label_import": true,
+    "rescoring": true,
+    "tuning": true,
+    "recalibration": true,
+    "threshold_selection": true,
+    "production_policy_change": true,
+    "opt_003_status_change": true,
+    "branch_merge": true
+  },
+  "disposition": {
+    "opt_003_status": "open-wave-two-import-gated",
+    "prospective_after_import": {
+      "decided_labels": 39,
+      "positive": 6,
+      "negative": 33,
+      "evaluation_families": 8,
+      "prediction_waves": 3,
+      "both_classes_present": true
+    },
+    "remaining_activation_shortfall_after_import": {
+      "decided_labels": 1,
+      "evaluation_families": 0,
+      "prediction_waves": 0,
+      "both_classes": 0
+    },
+    "recommended_next_step": "Freeze and separately authorize one atomic import of 18 assessments and 12 non-actionable labels while preserving six abstentions without labels. After import, OPT-003 remains one prospective decided label short; do not close or merge the branch."
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-08-12",
+  "optimization": "OPT-003",
+  "status": "stopped-before-evidence-output",
+  "authorization": "The project owner granted the exact authorization statement in opt-003-final-label-followup-receipt-2026-08-12.json.",
+  "receipt": {
+    "path": "opt-003-final-label-followup-receipt-2026-08-12.json",
+    "sha256": "53ef41cac542aca83b33a17c1cb6afe0b5cc00a202989c0e63fc76bd73f4261e"
+  },
+  "renderer": {
+    "path": "../../src/repoauditor/eval/temporal_followup.py",
+    "sha256": "4db523fe673571dcce4a2fc3d2228771c8080d2ced1513dfc756b3d65956e2a7",
+    "render_runs": 1
+  },
+  "verified_before_stop": {
+    "store_sha256": "06a3d078ecc537600ed877639595adfebc993f36252e8fe5d56da3402b7dfa9b",
+    "finding_id": 2036,
+    "assessment_id": 159,
+    "assessment_disposition": "insufficient_evidence",
+    "repository": "opt003-wave2-actual",
+    "source_commit": "4dedf88e58a5c92478ac1d8eb909d216b242a59f",
+    "exact_symbol": "requireFileOwner"
+  },
+  "stop": {
+    "passed": false,
+    "stage": "bounded-exact-symbol-render",
+    "failure": "RuntimeError: exact-symbol search exceeded rendered-match ceiling",
+    "observed_boundary": "A fifth exact-symbol match was encountered among the deterministically ordered source files selected for rendering.",
+    "receipt_condition": "The exact symbol requires rendering more than four matches under the frozen renderer.",
+    "disposition": "Fail closed before writing the evidence output. Do not retry, truncate, broaden, present a review item, or record a project-owner disposition under this authorization."
+  },
+  "accounting": {
+    "final_store_sha256": "06a3d078ecc537600ed877639595adfebc993f36252e8fe5d56da3402b7dfa9b",
+    "store_byte_identical": true,
+    "evidence_output_created": false,
+    "review_entries_presented": 0,
+    "project_owner_responses_recorded": 0,
+    "network_reads": 0,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "store_mutations": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "rescores": 0,
+    "model_training_runs": 0
+  },
+  "not_executed": {
+    "source_evidence_presentation": true,
+    "human_disposition": true,
+    "assessment_or_label_import": true,
+    "rescoring": true,
+    "training": true,
+    "tuning": true,
+    "recalibration": true,
+    "threshold_selection": true,
+    "production_policy_change": true,
+    "opt_003_promotion_or_closure": true,
+    "branch_merge": true
+  },
+  "disposition": {
+    "opt_003_status": "open-one-prospective-label-gated",
+    "recommended_next_step": "Freeze a separate corrected receipt whose renderer deterministically selects at most four exact-symbol matches from at most two files instead of treating a fifth match as a reason to require broader rendering. Preserve the same repository, commit, symbol, context, zero-network, zero-store, abstention, and excluded-action boundaries."
+  }
+}

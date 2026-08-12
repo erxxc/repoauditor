@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "frozen_at": "2026-08-11",
+  "optimization": "OPT-003",
+  "status": "authorization-pending",
+  "supersedes_for_execution": "opt-003-wave-2-corrected-receipt-2026-08-11.json",
+  "prior_corrected_receipt": {
+    "path": "opt-003-wave-2-corrected-receipt-2026-08-11.json",
+    "sha256": "1ee5809362d53ad8b9e566a6d35d5f6ed0c1c4b59333bde8bcb8025d143c80fb"
+  },
+  "stopped_retry": {
+    "path": "opt-003-wave-2-corrected-attempt-2026-08-11.json",
+    "sha256": "965e55cc76e8611705f3c7015cd9656429ce9e8fb9a337dc4e1fc3538f2390d8"
+  },
+  "runtime_helper": {
+    "path": "../../src/repoauditor/eval/semgrep_runtime.py",
+    "sha256": "b908ac266f923f35fea290436e11959c11a49829e4566b89c444b25056a3a257",
+    "contract": "Create a fresh two-line Semgrep version cache containing the current integer timestamp and an empty JSON mapping; require an existing parent and refuse overwrite."
+  },
+  "unchanged_scope": {
+    "source_and_training_contract": "The original 138-label training cutoff and digest, exact Actual, Memos, and Authentik commits, six-eligible-identities-per-family contract, resource ceilings, four allowed hosts, prediction-only boundary, and every outcome exclusion remain unchanged.",
+    "model_trained_in_prior_attempts": false,
+    "source_materialized_in_prior_attempts": false,
+    "new_training_run_required": true
+  },
+  "retained_failed_artifact": {
+    "path": "data/artifacts/opt003-wave-2/semgrep.log",
+    "sha256": "cabc97dcc91310a4ae0469978210dec3796b0f21aae6f68a628e1625d86788e4",
+    "immutability": "Retain the stopped retry log unchanged. The runtime-corrected retry uses a new artifact directory and may not overwrite or delete this evidence."
+  },
+  "corrected_runtime": {
+    "artifact_directory": "data/artifacts/opt003-wave-2-runtime-retry",
+    "SEMGREP_LOG_FILE": "data/artifacts/opt003-wave-2-runtime-retry/semgrep.log",
+    "SEMGREP_VERSION_CACHE_PATH": "data/artifacts/opt003-wave-2-runtime-retry/semgrep-version-cache",
+    "version_import_command": "/opt/homebrew/Cellar/semgrep/1.170.0/libexec/bin/python -c 'from semgrep import __VERSION__; print(__VERSION__)'",
+    "expected_version": "1.170.0",
+    "seed_command": "UV_CACHE_DIR=/tmp/repoauditor-uv-cache uv run python -m repoauditor.eval.semgrep_runtime --output data/artifacts/opt003-wave-2-runtime-retry/semgrep-version-cache",
+    "requirement": "Create the new artifact directory, seed and verify the fresh workspace cache, and import-check the installed version without starting the Semgrep CLI. Prefix both exact Semgrep path variables on every later process that can invoke Semgrep.",
+    "forbidden_version_host": "semgrep.dev",
+    "rule_or_configuration_changes": false
+  },
+  "separated_preflight": {
+    "environment_prefix": "SEMGREP_LOG_FILE=data/artifacts/opt003-wave-2-runtime-retry/semgrep.log SEMGREP_VERSION_CACHE_PATH=data/artifacts/opt003-wave-2-runtime-retry/semgrep-version-cache",
+    "offline_command": "SEMGREP_LOG_FILE=data/artifacts/opt003-wave-2-runtime-retry/semgrep.log SEMGREP_VERSION_CACHE_PATH=data/artifacts/opt003-wave-2-runtime-retry/semgrep-version-cache uv run repoauditor scanner-canaries --scanner semgrep --scanner semgrep-supplemental --scanner gitleaks --output data/artifacts/opt003-wave-2-runtime-retry/offline-canaries.json",
+    "offline_network_reads": 0,
+    "advisory_command": "SEMGREP_LOG_FILE=data/artifacts/opt003-wave-2-runtime-retry/semgrep.log SEMGREP_VERSION_CACHE_PATH=data/artifacts/opt003-wave-2-runtime-retry/semgrep-version-cache uv run repoauditor scanner-canaries --scanner pip-audit --scanner osv-scanner --output data/artifacts/opt003-wave-2-runtime-retry/advisory-canaries.json",
+    "advisory_network_hosts": ["pypi.org", "api.osv.dev", "osv.dev"],
+    "ordering": "The helper digest, imported version, fresh local cache, and both separated reports must pass before the new wave-two model is trained or any source is materialized."
+  },
+  "retry_sequence": [
+    "Verify all receipt, stopped-attempt, helper, retained-log, byte-identical store, 138-label corpus, exact-source, and absent new-artifact identities.",
+    "Create only data/artifacts/opt003-wave-2-runtime-retry; do not delete or overwrite retained failure evidence.",
+    "Run the version import command, require exactly 1.170.0, then seed and parse-check the fresh workspace version cache before starting any Semgrep CLI process.",
+    "Run the explicitly filtered offline canaries with both exact Semgrep path variables and require zero network reads.",
+    "Only after offline success, run the separately explicit advisory canaries against the three named advisory hosts with the same two path variables.",
+    "Only after both reports pass, train and freeze one new model from the unchanged 138-label cutoff before materializing any source.",
+    "Materialize and process the three original exact source commits in original order, prefixing both exact Semgrep path variables on every detection process.",
+    "Persist compatible predictions, verify at least six eligible production or deployment identities per family, write one immutable retry result, and stop before packet selection or candidate disclosure."
+  ],
+  "resource_ceilings": {
+    "repositories": 3,
+    "new_model_training_runs": 1,
+    "maximum_elapsed_minutes_per_repository": 180,
+    "maximum_total_elapsed_minutes": 600,
+    "maximum_new_data_bytes": 16106127360,
+    "allowed_network_hosts": ["github.com", "pypi.org", "api.osv.dev", "osv.dev"],
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "human_reviews": 0,
+    "assessments_written": 0,
+    "labels_written": 0
+  },
+  "stop_conditions": [
+    "Any prior receipt, stopped-attempt, helper, retained-log, store, training-corpus, source, commit, family, budget, host, inventory, or prediction-only identity drifts.",
+    "The new artifact directory is not absent initially, retained failure evidence is changed, the helper overwrites a cache, or either Semgrep path variable is absent or differs on any Semgrep-capable process.",
+    "The import-only version command starts the Semgrep CLI, writes any file, contacts any host, or does not report exactly 1.170.0.",
+    "The fresh local cache is malformed, stale, outside the new artifact directory, or Semgrep reads or writes any other version cache.",
+    "Any process contacts semgrep.dev or another host outside github.com, pypi.org, api.osv.dev, and osv.dev.",
+    "Either separated canary report fails or contains a scanner not explicitly named by its command.",
+    "Any model is trained before all runtime and canary checks pass, any prior-attempt model is reused, or any source or scoring identity drifts.",
+    "Any provider, packet selection, candidate identity disclosure for review, source rendering, human outcome, assessment, label, rescore, tuning, recalibration, threshold selection, production-policy change, or OPT-003 closure is attempted.",
+    "Any family yields fewer than six eligible production or deployment identities; retain completed prediction evidence and report the inventory shortfall, but do not propose or execute packet selection."
+  ],
+  "result_boundary": "A separate runtime-corrected result must prove the local version import, cache and log confinement, separated canary membership and health, allowed-host accounting, one new model, exact sources, prediction chronology, aggregate eligible inventories, and zero outcomes before any packet-selection receipt.",
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the runtime-corrected OPT-003 prospective prediction wave-two retry described by opt-003-wave-2-runtime-corrected-receipt-2026-08-11.json, retaining the original digest-frozen 138-label training cutoff; exact Actual, Memos, and Authentik commits; aggregate six-eligible-identities-per-family contract; resource ceilings; only github.com, pypi.org, api.osv.dev, and osv.dev network hosts; prediction-only boundary; and zero-provider, zero-review, zero-assessment, and zero-label limits, but requiring retention of the prior failure log, a new data/artifacts/opt003-wave-2-runtime-retry directory, import-only verification of Semgrep 1.170.0 without starting its CLI, a fresh workspace-local version cache created by the digest-frozen semgrep_runtime helper, both SEMGREP_LOG_FILE and SEMGREP_VERSION_CACHE_PATH bound to that new directory on every Semgrep-capable process, no semgrep.dev contact, separated offline Semgrep/supplemental/Gitleaks and advisory pip-audit/OSV preflights, one newly trained model only after all runtime checks and preflights pass, three exact-commit deterministic acquisitions, compatible prediction persistence, aggregate inventory verification, and one runtime-corrected result. Packet selection, candidate identity disclosure for review, source rendering, rescoring, tuning, recalibration, threshold selection, production-policy changes, and OPT-003 promotion or closure remain excluded."
+  }
+}

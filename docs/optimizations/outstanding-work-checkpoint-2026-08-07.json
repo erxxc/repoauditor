@@ -1,20 +1,15 @@
 {
   "schema_version": 1,
   "recorded_at": "2026-08-07",
-  "purpose": "Current derived checkpoint of all outstanding lifecycle work after completion of OPT-005 and OPT-011; must match optimization-status.json.",
+  "purpose": "Current derived checkpoint of all outstanding lifecycle work after completion of OPT-003; must match optimization-status.json.",
   "poc_definition_of_done": {
     "status": "complete",
     "accepted_at": "2026-07-28",
     "outstanding_acceptance_items": [],
     "scope_note": "Open optimizations are explicitly outside the accepted POC Definition of Done and do not retroactively reopen it."
   },
-  "optimization_summary": {"closed": 31, "open": 4, "total": 35},
+  "optimization_summary": {"closed": 32, "open": 3, "total": 35},
   "open_optimizations_in_priority_order": [
-    {
-      "id": "OPT-003",
-      "title": "Temporal validation",
-      "gate": "meaningful chronological evaluation depth"
-    },
     {
       "id": "OPT-009",
       "title": "Novelty prioritization",
@@ -34,7 +29,7 @@
   "tuning_hold": {
     "active": true,
     "blockers": [
-      "Held-out classifier family/temporal evidence gates are not met.",
+      "The preferred 100–200-label and broader-positive-family maturity target remains unmet; the completed bounded temporal evaluation selected no production threshold.",
       "Applicable organization/incident data is still absent for OPT-014."
     ]
   },
@@ -43,5 +38,5 @@
     "Additional independently checked language/framework security-claim certificates.",
     "Any expansion of already closed bounded OPT scopes, which must be proposed as new work."
   ],
-  "next_execution": "Review and merge the OPT-003 wave-one import result, then freeze a separate outcome-blind acquisition receipt spanning at least three additional independent evaluation families and enough candidates to obtain at least 13 additional decided prospective labels."
+  "next_execution": "Address OPT-009, the highest-priority remaining open item, only under its recorded evidence gate. OPT-003 is closed at its bounded descriptive temporal-validation scope; tuning, threshold selection, and production-policy changes require a new scope."
 }

@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "frozen_at": "2026-08-11",
+  "optimization": "OPT-003",
+  "status": "authorization-pending",
+  "supersedes_for_execution": "opt-003-wave-2-prediction-receipt-2026-08-11.json",
+  "original_receipt": {
+    "path": "opt-003-wave-2-prediction-receipt-2026-08-11.json",
+    "sha256": "9cf654cc93a132a75625555f9340817b34be84e5323f60b1e27180094ef70510"
+  },
+  "stopped_attempt": {
+    "path": "opt-003-wave-2-attempt-2026-08-11.json",
+    "sha256": "a5a5f509d48184999b7b25611ebbef9b7ef70e6a2ddeab77c832203bd0e47aaa"
+  },
+  "unchanged_scope": {
+    "source_and_training_contract": "The 138-label training cutoff and digest, three exact source commits and family identities, prediction inventory contract, resource ceilings, allowed hosts, prediction-only boundary, and all outcome exclusions remain exactly as frozen by the original receipt.",
+    "model_trained_in_stopped_attempt": false,
+    "new_training_run_required": true,
+    "source_materialized_in_stopped_attempt": false
+  },
+  "corrected_semgrep_binding": {
+    "artifact_directory": "data/artifacts/opt003-wave-2",
+    "SEMGREP_LOG_FILE": "data/artifacts/opt003-wave-2/semgrep.log",
+    "version_command": "SEMGREP_LOG_FILE=data/artifacts/opt003-wave-2/semgrep.log semgrep --version",
+    "expected_version": "1.170.0",
+    "requirement": "Create the artifact directory before starting any Semgrep process. Export or prefix the exact SEMGREP_LOG_FILE binding on the standalone version check, every canary process that can invoke Semgrep, and every repository detection process.",
+    "rule_or_configuration_changes": false
+  },
+  "separated_preflight": {
+    "offline_command": "SEMGREP_LOG_FILE=data/artifacts/opt003-wave-2/semgrep.log uv run repoauditor scanner-canaries --scanner semgrep --scanner semgrep-supplemental --scanner gitleaks --output data/artifacts/opt003-wave-2/offline-canaries.json",
+    "offline_network_reads": 0,
+    "advisory_command": "SEMGREP_LOG_FILE=data/artifacts/opt003-wave-2/semgrep.log uv run repoauditor scanner-canaries --scanner pip-audit --scanner osv-scanner --output data/artifacts/opt003-wave-2/advisory-canaries.json",
+    "advisory_network_hosts": ["pypi.org", "api.osv.dev", "osv.dev"],
+    "ordering": "The bound version check and both separated reports must pass before the new wave-two model is trained or any source is materialized."
+  },
+  "retry_sequence": [
+    "Verify the original receipt and stopped-attempt digests, byte-identical store, 138-label corpus digest, unchanged exact source commits, and absence of wave-two artifacts.",
+    "Create data/artifacts/opt003-wave-2 before any Semgrep process starts.",
+    "Run the exact workspace-bound Semgrep version command and require version 1.170.0.",
+    "Run the explicitly filtered offline canaries with the exact workspace-bound Semgrep log.",
+    "Only after offline success, run the separately explicit advisory canaries against the three named advisory hosts.",
+    "Only after the version check and both reports pass, train and freeze one new model from the unchanged 138-label cutoff before materializing any source.",
+    "Materialize and process the three original exact source commits in original order, binding SEMGREP_LOG_FILE on every detection process.",
+    "Persist compatible predictions, verify at least six eligible production or deployment identities per family, write one immutable retry result, and stop before packet selection or candidate disclosure."
+  ],
+  "resource_ceilings": {
+    "repositories": 3,
+    "new_model_training_runs": 1,
+    "maximum_elapsed_minutes_per_repository": 180,
+    "maximum_total_elapsed_minutes": 600,
+    "maximum_new_data_bytes": 16106127360,
+    "allowed_network_hosts": ["github.com", "pypi.org", "api.osv.dev", "osv.dev"],
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "human_reviews": 0,
+    "assessments_written": 0,
+    "labels_written": 0
+  },
+  "stop_conditions": [
+    "The artifact directory does not exist before any Semgrep process starts, the exact SEMGREP_LOG_FILE binding is absent or different, or Semgrep attempts any write outside authorized workspace or temporary paths.",
+    "The bound version command does not report exactly 1.170.0.",
+    "Either separated canary report fails or contains a scanner not explicitly named by its command.",
+    "Any original receipt, stopped-attempt, store, training-corpus, source, commit, family, budget, host, prediction inventory, or prediction-only precondition drifts.",
+    "Any model is trained before the version check and both canary reports pass, or any stopped-attempt model is reused.",
+    "Any source cannot be resolved byte-exactly, any required scanner is unhealthy, or scoring identity differs across repositories.",
+    "Any unlisted network host, provider, packet selection, candidate identity disclosure for review, source rendering, human outcome, assessment, label, rescore, tuning, recalibration, threshold selection, production-policy change, or OPT-003 closure is attempted.",
+    "Any family yields fewer than six eligible production or deployment identities; retain completed prediction evidence and report the inventory shortfall, but do not propose or execute packet selection."
+  ],
+  "result_boundary": "A separate retry-result artifact must prove the bound version check, separated canary membership and health, new-model identity, exact sources, prediction chronology, aggregate eligible inventories, host accounting, and zero outcomes before any packet-selection receipt.",
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the corrected OPT-003 prospective prediction wave-two retry described by opt-003-wave-2-corrected-receipt-2026-08-11.json, retaining the original digest-frozen 138-label training cutoff; exact Actual, Memos, and Authentik commits; aggregate six-eligible-identities-per-family contract; resource ceilings; four named network hosts; prediction-only boundary; and zero-provider, zero-review, zero-assessment, and zero-label limits, but requiring creation of data/artifacts/opt003-wave-2 before any Semgrep process, SEMGREP_LOG_FILE=data/artifacts/opt003-wave-2/semgrep.log on the standalone semgrep --version check and every canary or repository detection process, exact Semgrep version 1.170.0, separated offline Semgrep/supplemental/Gitleaks and advisory pip-audit/OSV preflights, one newly trained model only after all preflights pass, three exact-commit deterministic acquisitions, compatible prediction persistence, aggregate inventory verification, and one retry result. Packet selection, candidate identity disclosure for review, source rendering, rescoring, tuning, recalibration, threshold selection, production-policy changes, and OPT-003 promotion or closure remain excluded."
+  }
+}
