@@ -1,0 +1,144 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-08-18",
+  "optimization": "OPT-009",
+  "status": "closed-bounded-negative-feasibility",
+  "authorization": "The project owner authorized the corrected bounded negative-feasibility closure and local integration retry in opt-009-closure-merge-corrected-retry-receipt-2026-08-18.json, retaining every original boundary and adding only the exact historical-checkpoint test reconciliation.",
+  "execution_receipt": {
+    "path": "opt-009-closure-merge-corrected-retry-receipt-2026-08-18.json",
+    "sha256": "37b8422780a299ec67cf7224c4556a8bab41d3dcfc2e6e818c851d5c292f40b2"
+  },
+  "stopped_attempt": {
+    "path": "opt-009-closure-merge-attempt-2026-08-18.json",
+    "sha256": "0891769af9c5b78f8b00f0aa1dd54bffc369fdfa5b2ed132a68cfecc4d0892a7",
+    "retained": true
+  },
+  "terminal_evidence": {
+    "existing_cohort_audit": {
+      "path": "opt-009-eligibility-audit-result-2026-08-12.json",
+      "sha256": "a04112757364412d272a83d5d29a6d8e9e0f5f8852bb99548759278f1511c36f",
+      "evidence_eligible_records": 0
+    },
+    "source_selection": {
+      "path": "opt-009-prospective-source-selection-result-2026-08-12.json",
+      "sha256": "2985f90110d2a40d9f2dbe45f2db166c351515e44182a251945edd4474dbca55",
+      "selected_primary_sources": 8,
+      "selected_reserve_sources": 4,
+      "used_security_or_outcome_inputs": false
+    },
+    "prospective_wave": {
+      "path": "opt-009-prospective-detection-wave-1-serialization-retry-result-2026-08-13.json",
+      "sha256": "f63321a143a1252124bd7c58f7bbcd3bf19bede738722311a49f0edc5663241f",
+      "activated_families": 2,
+      "minimum_eligible_groups_per_family": 8,
+      "families_meeting_capacity": 0,
+      "eligible_groups_by_family": [0, 0]
+    },
+    "instrument_qualification": {
+      "path": "opt-009-instrument-qualification-result-2026-08-13.json",
+      "sha256": "d04575d1d2e68d7a52119a19da4029576b2a9dbecd7f52b551e442ba9be4ee60",
+      "positive_schema_valid_findings": 1,
+      "positive_citation_valid_findings": 0,
+      "positive_gate_passed": false,
+      "negative_gate_passed": true
+    },
+    "citation_diagnosis": {
+      "path": "opt-009-citation-diagnosis-result-2026-08-13.json",
+      "sha256": "9852593e20e56fd9bad5f9e63c6dcf142733af2bd7b85d1c001e9afb3d031f67",
+      "display_prefix_recoverable_offline": true,
+      "provider_causal_pattern_reproduced": false,
+      "bounded_correction_supported": false
+    }
+  },
+  "terminal_interpretation": {
+    "conclusion": "OPT-009 is not justified and not feasible at its evaluated scope.",
+    "universal_impossibility_claim": false,
+    "basis": "The existing cohort had no leakage-safe evidence capacity; the two activated prospective families each had zero eligible OWASP groups against a frozen minimum of eight; the isolated positive instrument failed citation qualification; and the final diagnosis did not reproduce or support the proposed bounded correction.",
+    "future_work_boundary": "Any future semantic-novelty attempt requires a new lifecycle identity, newly frozen instrument, untouched source cohort, and separate authorization rather than reopening or tuning OPT-009."
+  },
+  "lifecycle": {
+    "optimization_status": "closed",
+    "gate": "none",
+    "next_priority": null,
+    "summary": {"closed": 33, "open": 2, "total": 35},
+    "remaining_open_priority_order": ["OPT-014", "OPT-010"]
+  },
+  "historical_checkpoint": {
+    "path": "outstanding-work-checkpoint-2026-08-07.json",
+    "sha256": "5161994703f9768f250cc2b7de4dfdcb4ac26632858495391843b9690291562c",
+    "byte_identical": true,
+    "recorded_summary": {"closed": 32, "open": 3, "total": 35},
+    "recorded_open_priority_order": ["OPT-009", "OPT-014", "OPT-010"],
+    "interpretation": "Immutable historical evidence, not a live derived checkpoint."
+  },
+  "test_reconciliation": {
+    "historical_evidence_edited": false,
+    "changed_tests": [
+      "tests/test_documentation_current_state.py",
+      "tests/test_outstanding_work_checkpoint.py"
+    ],
+    "additional_corrected_retry_change": "test_outstanding_work_checkpoint.py now verifies the dated checkpoint's recorded 32/3 state independently from the current 33/2 ledger."
+  },
+  "validation": {
+    "command": "SEMGREP_LOG_FILE=data/artifacts/opt009-wave-1-serialization-retry/semgrep.log SEMGREP_VERSION_CACHE_PATH=data/artifacts/opt009-wave-1-serialization-retry/semgrep-version-cache SEMGREP_SEND_METRICS=off .venv/bin/pytest -q -m 'not live'",
+    "passed": true,
+    "passed_tests": 870,
+    "failed_tests": 0,
+    "deselected_tests": 27,
+    "elapsed_seconds": 382.97,
+    "json_validation": true,
+    "git_diff_check": true,
+    "final_suite_with_closure_result_tests": "Run and reported in the post-merge handoff because this result must exist before its own contract tests can be collected."
+  },
+  "store": {
+    "initial_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "final_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "byte_identical": true
+  },
+  "integration_contract": {
+    "source_branch": "codex/opt-009-closure",
+    "source_branch_base": "296945be4497b9577b325ee1648cc700f9233a3c",
+    "branch_commit_message": "feat: close OPT-009 novelty feasibility study",
+    "target_branch": "main",
+    "initial_local_main": "296945be4497b9577b325ee1648cc700f9233a3c",
+    "merge": "one conflict-free local non-fast-forward merge commit",
+    "merge_commit_message": "Merge branch 'codex/opt-009-closure'",
+    "actual_commit_identifiers": "Reported in the post-merge handoff because a committed result cannot self-bind its containing commit hash.",
+    "remote_push": false,
+    "branch_deleted": false
+  },
+  "accounting": {
+    "source_branch_commits_authorized": 1,
+    "merge_commits_authorized": 1,
+    "network_reads": 0,
+    "network_uploads": 0,
+    "remote_pushes": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "production_store_mutations": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "rescored_findings": 0,
+    "model_training_runs": 0
+  },
+  "not_executed": {
+    "prompt_or_planner_correction": true,
+    "tuning": true,
+    "recalibration": true,
+    "threshold_selection_or_recommendation": true,
+    "production_policy_change": true,
+    "deployment": true,
+    "opt_014_execution": true,
+    "opt_010_execution": true,
+    "remote_push": true,
+    "branch_deletion": true
+  },
+  "disposition": {
+    "opt_009_complete": true,
+    "next_open_item": "OPT-014",
+    "next_open_item_gate": "sufficient evaluation and portfolio data",
+    "closure_scope": "bounded-negative-feasibility",
+    "future_expansion": "New work only; OPT-009 remains closed."
+  }
+}

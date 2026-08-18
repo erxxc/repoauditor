@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-009",
+  "status": "authorization-pending",
+  "frozen_at": "2026-08-12",
+  "protocol": {
+    "path": "opt-009-prospective-hybrid-protocol-2026-08-12.json",
+    "sha256": "d53d04f33d48ffcd43cfb995e3dc68abacabec30cf0bc6500132bc0439fce918"
+  },
+  "scope": "Select and persist exactly eight ordered primary and four ordered reserve independent public product repositories using only the protocol's outcome-blind public metadata, resolve one exact commit per selected repository, and stop before materialization, source inspection, scanning, provider use, candidate generation, or store activity.",
+  "selection_contract": {
+    "outputs": [
+      "repository owner/name, public clone URL, default branch, and exact 40-character commit",
+      "fork, archive, disabled, license, approximate size, primary language, and README-level deployable-product evidence",
+      "evaluation-family identity, stable source-identity digest, selection basis, primary or reserve role, and frozen order",
+      "aggregate proof of at least three language or framework ancestries and no existing evaluation-family collision"
+    ],
+    "forbidden_reads": [
+      "security advisories, CVEs, security issue or pull-request content, exploit reports, code search, source files beyond README and license metadata",
+      "RepoAuditor scanner output, LLM findings, candidate counts, target paths, scores, ranks, severity, confidence, labels, assessments, or outcomes"
+    ],
+    "no_materialization": "Remote resolution may read Git object identity and public metadata only. It may not clone, checkout, archive, or download a repository source tree."
+  },
+  "resource_ceilings": {
+    "selected_primary_repositories": 8,
+    "selected_reserve_repositories": 4,
+    "maximum_elapsed_minutes": 30,
+    "maximum_new_data_bytes": 5242880,
+    "network_hosts": ["github.com", "api.github.com"],
+    "uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "store_mutations": 0,
+    "source_code_files_rendered": 0,
+    "maximum_readme_and_license_documents": 24,
+    "human_reviews": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "models_trained": 0
+  },
+  "stop_conditions": [
+    "The protocol, eligibility audit, persistent store digest, or existing evaluation-family exclusion inventory drifts.",
+    "Exactly eight primaries and four reserves cannot be selected without a forbidden security or outcome input.",
+    "A repository is a fork, archive, disabled project, tutorial, benchmark, deliberately vulnerable project, starter template, existing upstream/evaluation family, or lacks deployable-product evidence.",
+    "The selected primaries do not cover at least three language or framework ancestries.",
+    "Any unsupported network host, source-tree materialization, source-code inspection, scanner, provider, store, review, label, training, ranking, threshold, or policy activity is attempted."
+  ],
+  "result_boundary": "One immutable metadata-only source-selection result must disclose all twelve source identities and exact commits for project-owner review. A later acquisition receipt must bind approved sources, prompts, provider ceilings, scanners, paths, and outputs before any source materialization or LLM call.",
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the OPT-009 prospective metadata-only source selection described by opt-009-prospective-source-selection-receipt-2026-08-12.json, limited to outcome-blind public GitHub metadata and exact-commit resolution for exactly eight ordered primary and four ordered reserve independent deployable-product repositories, persistence of one source-selection result, and review of those disclosed source identities, with ceilings of 30 minutes, 5 MiB new data, only github.com and api.github.com network access, and exactly zero uploads, provider calls, tokens, cost, repository materializations, source-code rendering beyond README and license metadata, scanners, store mutations, candidate generation, rankings, human finding reviews, assessments, labels, or model training. Security advisories, CVEs, security issues or pull requests, exploit reports, code search, source findings, candidate counts, scores, severity, confidence, outcomes, tuning, threshold selection, production-policy changes, OPT-009 promotion or closure, branch integration, and remote push remain excluded."
+  }
+}

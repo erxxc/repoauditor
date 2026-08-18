@@ -137,8 +137,12 @@ priorities here.
   Java SSRF now supports one direct `request.getParameter` to
   `new URL(...).openStream/openConnection` shape. Broader Java clients and mechanisms remain
   unsupported/incomplete.
-- [ ] Evaluate in-family/out-of-family novelty as an investigation-depth trigger. Do not
-  train a novelty prioritizer until enough manually reviewed LLM findings exist.
+- [x] Close the bounded in-family/out-of-family novelty feasibility study with its negative
+  result. The existing cohort supplied zero evidence-eligible records, both frozen
+  prospective families supplied zero of eight required eligible OWASP groups, and the
+  isolated instrument did not pass its positive citation gate. The final diagnosis did not
+  support a bounded correction. OPT-009 is not justified or feasible at this evaluated
+  scope, without making a universal impossibility claim; any future attempt is new work.
 
 ## P4 — quantitative enrichment
 
@@ -240,8 +244,9 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
      labels (18 positive, 40 negative) plus three abstentions across eight engagements.
 2. After adequate held-out family breadth exists, add family-aware bootstrap intervals.
 3. Add temporal validation only after sufficient chronological depth exists.
-4. Evaluate novelty as an investigation-depth trigger only after enough manually reviewed
-   LLM findings exist; do not train a novelty prioritizer earlier.
+4. Treat the OPT-009 novelty feasibility study as closed with a bounded negative result.
+   Any future semantic-novelty attempt requires a new lifecycle identity, newly frozen
+   instrument, and untouched source cohort; do not tune or reopen OPT-009.
 5. Run prior-predictive and held-out loss checks only after applicable organization/incident
    data exists; hierarchical priors remain behind that gate.
 

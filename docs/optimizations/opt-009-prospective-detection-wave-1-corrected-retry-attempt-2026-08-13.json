@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-009",
+  "status": "stopped-scanner-summary-serialization",
+  "recorded_at": "2026-08-13",
+  "receipt": {
+    "path": "opt-009-prospective-detection-wave-1-corrected-retry-receipt-2026-08-13.json",
+    "sha256": "6c67d7f4afc1c2c9f54cd741df3637ae28e1ca33ef223080bbc163d75e1cb4b3"
+  },
+  "attempt_evidence": {
+    "path": "../../data/artifacts/opt009-wave-1-corrected-retry/stopped-attempt.json",
+    "sha256": "12dd600bda6071020689e5d5b618af4ee7df0627b70f43a68c5f4079bfec058c"
+  },
+  "stop": {
+    "pipeline_run_id": 115,
+    "stage": "scan",
+    "reason": "Fresh scanner execution timestamps were datetime values and the stage summary persistence boundary did not convert them to JSON-compatible strings.",
+    "provider_requests_after_authorization": 0,
+    "action": "Stopped before semantic detection and before Miniflux acquisition."
+  },
+  "retained_evidence": {
+    "stopped_store_sha256": "e3cb8e9b129dd92f357cb937d5a5775f442b29f50aac40e19f94e667053315b7",
+    "offline_canaries_sha256": "a0066252f3082a3cde8cdbfcc8c9e701315e90162f4c0eb6a37ffc5f0945d4ed",
+    "advisory_canaries_sha256": "669f0d8f4ef0168ceceaadc10ab770527a768f7df07a42b778011fd8b0608beb",
+    "semgrep_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "scanner_health_validated_in_memory": true,
+    "scanner_health_durably_persisted": false
+  },
+  "store_accounting": {
+    "row_deltas": {
+      "pipeline_run": 1,
+      "stage_run": 3
+    },
+    "finding_delta": 0,
+    "model_usage_delta": 0,
+    "assessment_delta": 0,
+    "label_delta": 0,
+    "unexpected_changed_tables": []
+  },
+  "not_executed": {
+    "vikunja_owasp_resume": true,
+    "miniflux_acquisition": true,
+    "miniflux_mapping": true,
+    "miniflux_scanning": true,
+    "miniflux_provider_calls": true,
+    "capacity_measurement": true,
+    "candidate_disclosure": true,
+    "review": true,
+    "assessment_or_label_write": true,
+    "branch_integration": true
+  },
+  "disposition": {
+    "opt_009_status": "open-data-gated",
+    "corrected_wave_completed": false,
+    "new_serialization_retry_receipt_required": true
+  }
+}
