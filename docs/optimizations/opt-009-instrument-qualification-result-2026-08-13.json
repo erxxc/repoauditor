@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-009",
+  "status": "qualification-failed",
+  "recorded_at": "2026-08-13",
+  "receipt": {
+    "path": "opt-009-instrument-qualification-receipt-2026-08-13.json",
+    "sha256": "5eea5be08efb8ab89429211aa4a7be4f98a8c44ddcb0c708452b6e98b718ae24"
+  },
+  "execution_evidence": {
+    "offline_audit": {
+      "path": "../../data/artifacts/opt009-instrument-qualification/offline-audit.json",
+      "sha256": "02c3e48941da46b450caabbccbf0a16712f6cb60e1d45c74987a506762c78e41"
+    },
+    "aggregate_result": {
+      "path": "../../data/artifacts/opt009-instrument-qualification/result.json",
+      "sha256": "1602ace7014c3850fb57c0f898df5951847023c8fc9a1f74ce20c8db14b92b0d"
+    },
+    "scratch_store": {
+      "path": "../../data/artifacts/opt009-instrument-qualification/scratch.sqlite",
+      "sha256": "9c4a31f84097f5d268d5acc4026df15698220b2613d46b1e6b95c9d87b8380cd"
+    }
+  },
+  "offline_audit": {
+    "status": "passed",
+    "bound_digest_checks_passed": 12,
+    "completed_owasp_regions": 12,
+    "region_finding_count": 0,
+    "persisted_llm_origin_findings": 0,
+    "scripted_positive_parser_and_citation_check": "passed",
+    "scripted_empty_negative_check": "passed",
+    "bounded_canary_requests": "passed",
+    "aggregate_region_diagnostics": {
+      "production_path_regions": 11,
+      "ci_path_regions": 1,
+      "primary_sent_utf8_bytes": 244151,
+      "retrieval_sent_utf8_bytes": 418835,
+      "regions_where_retrieval_exceeded_primary": 10,
+      "primary_truncations": 1,
+      "retrieval_truncations": 3,
+      "selection_basis_persistence": "absent from completed stage summaries"
+    },
+    "interpretation": "The frozen local parser, citation canonicalizer, and request bounds functioned, but the retained semantic wave produced no findings and commonly transferred more retrieval than primary source content. These are instrument diagnostics, not candidate or outcome evidence."
+  },
+  "semantic_canary": {
+    "provider": "anthropic",
+    "model": "claude-opus-4-8",
+    "prompt_version": "owasp_v3+untrusted_repository_content_v1+detection_context_v2",
+    "attempts": 2,
+    "attempts_with_authoritative_usage": 2,
+    "unknown_usage_attempts": 0,
+    "provider_reported_tokens": 6964,
+    "known_dated_price_cost_status": "priced",
+    "known_dated_price_cost_usd": 0.039680,
+    "positive": {
+      "case": "BenchmarkTest00099",
+      "schema_valid_findings": 1,
+      "citation_valid_findings": 0,
+      "expected_anchor_matches": 0,
+      "qualification_gate_passed": false
+    },
+    "negative": {
+      "case": "BenchmarkTest00011",
+      "schema_valid_findings": 0,
+      "citation_valid_findings": 0,
+      "qualification_gate_passed": true
+    },
+    "interpretation": "The negative precision trap passed, but the positive returned one schema-valid candidate that failed citation validation and did not match the pre-frozen upstream anchor. The semantic detector therefore failed the predeclared qualification gate."
+  },
+  "isolation_and_resources": {
+    "production_store_before_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "production_store_after_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "production_store_unchanged": true,
+    "scratch_model_usage_rows": 2,
+    "scratch_validation_failure_rows": 0,
+    "raw_provider_outputs_persisted": 0,
+    "elapsed_seconds": 7.095,
+    "new_data_bytes": 367113,
+    "ceiling_breaches": []
+  },
+  "excluded_actions_accounting": {
+    "production_candidates_persisted": 0,
+    "candidate_identities_disclosed": 0,
+    "source_excerpts_persisted": 0,
+    "human_reviews": 0,
+    "assessments": 0,
+    "labels": 0,
+    "model_training_runs": 0,
+    "planner_or_prompt_changes": 0,
+    "remaining_primary_activations": 0,
+    "reserve_activations": 0,
+    "packet_selections": 0,
+    "optimization_status_changes": 0,
+    "branch_integrations": 0,
+    "remote_pushes": 0
+  },
+  "disposition": {
+    "opt_009_status": "open-data-gated",
+    "instrument_qualified": false,
+    "data_gate_cleared": false,
+    "planner_v2": "deferred",
+    "further_sources": "deferred",
+    "required_stop": true,
+    "next_step": "Do not spend additional prospective source or provider budget under the current instrument. Any further work requires a separate authorization for a non-cohort citation-failure diagnosis or a decision to close OPT-009 at this scope.",
+    "branch_merge": "deferred"
+  }
+}

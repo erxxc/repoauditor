@@ -15,12 +15,20 @@ def test_outstanding_checkpoint_closes_poc_dod_and_lists_every_open_opt():
         ROOT / "docs/optimizations/optimization-status.json"
     ).read_text(encoding="utf-8"))
 
-    expected = {item["id"] for item in status["items"] if item["status"] == "open"}
-    recorded = {item["id"] for item in checkpoint["open_optimizations_in_priority_order"]}
+    current_open = [
+        item["id"]
+        for item in sorted(
+            (item for item in status["items"] if item["status"] == "open"),
+            key=lambda item: item["next_priority"],
+        )
+    ]
+    recorded = [item["id"] for item in checkpoint["open_optimizations_in_priority_order"]]
     assert checkpoint["poc_definition_of_done"]["status"] == "complete"
     assert checkpoint["poc_definition_of_done"]["outstanding_acceptance_items"] == []
-    assert recorded == expected
-    assert checkpoint["optimization_summary"] == status["summary"]
+    assert recorded == ["OPT-009", "OPT-014", "OPT-010"]
+    assert checkpoint["optimization_summary"] == {"closed": 32, "open": 3, "total": 35}
+    assert status["summary"] == {"closed": 33, "open": 2, "total": 35}
+    assert current_open == ["OPT-014", "OPT-010"]
     assert checkpoint["tuning_hold"]["active"] is True
 
 

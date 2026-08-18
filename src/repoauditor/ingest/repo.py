@@ -201,13 +201,19 @@ def _prepare_git(
     if tmp.exists():
         shutil.rmtree(tmp)
     tmp.parent.mkdir(parents=True, exist_ok=True)
-    repo = Repo.clone_from(source, tmp, no_checkout=expected_commit is not None)
     if expected_commit is not None:
         try:
+            # Exact-commit evaluation acquisitions must not download unrelated history.
+            # Fetch only the approved object at depth one, then verify HEAD below.
+            repo = Repo.init(tmp)
+            remote = repo.create_remote("origin", source)
+            remote.fetch(expected_commit, depth=1, no_tags=True)
             repo.git.checkout(expected_commit)
         except BaseException:
             shutil.rmtree(tmp, ignore_errors=True)
             raise
+    else:
+        repo = Repo.clone_from(source, tmp)
     full_commit = repo.head.commit.hexsha.lower()
 
     def cleanup() -> None:

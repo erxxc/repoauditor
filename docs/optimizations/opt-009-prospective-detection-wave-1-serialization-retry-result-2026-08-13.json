@@ -1,0 +1,180 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-009",
+  "status": "complete-capacity-shortfall",
+  "recorded_at": "2026-08-13",
+  "receipt": {
+    "path": "opt-009-prospective-detection-wave-1-serialization-retry-receipt-2026-08-13.json",
+    "sha256": "335254c879dbee78475d42352aab33fa76ef9f80678ed88a973d8006006c4a72"
+  },
+  "execution_evidence": {
+    "path": "../../data/artifacts/opt009-wave-1-serialization-retry/result.json",
+    "sha256": "ae9c72b76ff64a8a2d0458453a85b9271e2b7d0a72bc28ded900dbbad2e32967"
+  },
+  "preflight_evidence": {
+    "offline": {
+      "path": "../../data/artifacts/opt009-wave-1-serialization-retry/offline-canaries.json",
+      "sha256": "a0066252f3082a3cde8cdbfcc8c9e701315e90162f4c0eb6a37ffc5f0945d4ed",
+      "status": "passed"
+    },
+    "advisory": {
+      "path": "../../data/artifacts/opt009-wave-1-serialization-retry/advisory-canaries.json",
+      "sha256": "82a2ba6c22a295facdb382d512f4b752f8b5a37ff25e57700029eafff7e4591e",
+      "status": "passed"
+    },
+    "semgrep": {
+      "version": "1.170.0",
+      "log_path": "../../data/artifacts/opt009-wave-1-serialization-retry/semgrep.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "log_bytes": 0
+    },
+    "stopped_state_backup": {
+      "path": "../../data/backups/repoauditor-opt009-wave1-serialization-retry.sqlite",
+      "sha256": "e3cb8e9b129dd92f357cb937d5a5775f442b29f50aac40e19f94e667053315b7"
+    }
+  },
+  "execution": {
+    "completed_at": "2026-08-13T17:03:20.582597Z",
+    "elapsed_seconds": 98.407,
+    "repositories_processed": 2,
+    "pipelines": [
+      {
+        "pipeline_run_id": 115,
+        "repository": "go-vikunja/vikunja",
+        "exact_commit": "9403ed15264e414605c523b0c16ef28703e9915e",
+        "status": "completed",
+        "resumed_in_place": true,
+        "completed_stages": ["ingest", "map", "scan", "detect"],
+        "map_provider_calls": 0,
+        "selected_regions": 6,
+        "reused_completed_regions": 3,
+        "new_completed_regions": 3,
+        "resume_plan_verified": true,
+        "maximum_region_utf8_bytes": 178614
+      },
+      {
+        "pipeline_run_id": 116,
+        "repository": "miniflux/v2",
+        "exact_commit": "106cdd09e1557222303f3ed1376e1dadf0638621",
+        "stored_commit": "106cdd09e155",
+        "status": "completed",
+        "new_pipeline": true,
+        "completed_stages": ["ingest", "map", "scan", "detect"],
+        "selected_regions": 6,
+        "new_completed_regions": 6,
+        "maximum_region_utf8_bytes": 74083
+      }
+    ]
+  },
+  "scanner_health": {
+    "persisted_before_provider_use": true,
+    "summary_serialization_policy": "opt009-stage-summary-json-v1",
+    "vikunja": {
+      "semgrep": "complete",
+      "semgrep-supplemental": "empty",
+      "gitleaks": "complete",
+      "pip-audit": "not-applicable",
+      "osv-scanner": "complete"
+    },
+    "miniflux": {
+      "semgrep": "complete",
+      "semgrep-supplemental": "empty",
+      "gitleaks": "complete",
+      "pip-audit": "not-applicable",
+      "osv-scanner": "complete"
+    },
+    "unhealthy_or_incomplete_scanners": 0
+  },
+  "provider_accounting": {
+    "provider": "anthropic",
+    "model": "claude-opus-4-8",
+    "new_calls": 10,
+    "new_calls_without_authoritative_usage": 0,
+    "new_provider_reported_tokens": 310314,
+    "new_known_dated_price_cost_usd": 1.598170,
+    "historical_attempts": 5,
+    "historical_known_provider_reported_tokens": 99846,
+    "historical_known_dated_price_cost_usd": 0.546170,
+    "historical_unknown_usage_attempts": 1,
+    "combined_attempts": 15,
+    "combined_known_provider_reported_tokens": 410160,
+    "combined_known_dated_price_cost_usd": 2.144340,
+    "complete_historical_cost_status": "unavailable",
+    "ceiling_breaches": []
+  },
+  "capacity": {
+    "policy": "opt009-prospective-owasp-capacity-v1",
+    "minimum_eligible_groups_per_family": 8,
+    "families_required": 2,
+    "families_meeting_capacity": 0,
+    "families": [
+      {
+        "evaluation_family": "independent-upstream:go-vikunja/vikunja",
+        "eligible_owasp_records": 0,
+        "eligible_deduplicated_issue_groups": 0,
+        "shortfall": 8
+      },
+      {
+        "evaluation_family": "independent-upstream:miniflux/v2",
+        "eligible_owasp_records": 0,
+        "eligible_deduplicated_issue_groups": 0,
+        "shortfall": 8
+      }
+    ],
+    "candidate_identities_disclosed": 0,
+    "interpretation": "The corrected bounded OWASP instrument completed but supplied no eligible production/deployment OWASP issue groups in either activated family. This is a prospective capacity shortfall, not an outcome or benefit estimate."
+  },
+  "store_accounting": {
+    "before_sha256": "e3cb8e9b129dd92f357cb937d5a5775f442b29f50aac40e19f94e667053315b7",
+    "after_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "row_deltas": {
+      "ingested_repo": 1,
+      "pipeline_run": 1,
+      "stage_run": 5,
+      "trust_boundary": 10,
+      "entity": 33,
+      "finding": 212,
+      "detection_region_run": 8,
+      "model_usage": 10
+    },
+    "unexpected_changed_tables": [],
+    "assessment_delta": 0,
+    "label_delta": 0
+  },
+  "resource_accounting": {
+    "additional_data_bytes": 19123309,
+    "additional_data_ceiling_bytes": 10726180695,
+    "additional_elapsed_minutes": 1.641,
+    "additional_elapsed_ceiling_minutes": 415,
+    "new_miniflux_pipelines": 1,
+    "resumed_vikunja_pipelines": 1,
+    "ceiling_breaches": []
+  },
+  "outcome_and_exclusion_accounting": {
+    "candidate_identities_disclosed": 0,
+    "source_rendered_for_review": false,
+    "observational_lens_calls": 0,
+    "falsification_calls": 0,
+    "normalization_calls": 0,
+    "human_reviews": 0,
+    "assessments": 0,
+    "labels": 0,
+    "model_training_runs": 0,
+    "novelty_scores_or_ranks": 0,
+    "reserve_activations": 0,
+    "remaining_primary_acquisitions": 0,
+    "packet_selections": 0,
+    "optimization_status_changes": 0,
+    "branch_integrations": 0,
+    "remote_pushes": 0
+  },
+  "disposition": {
+    "opt_009_status": "open-data-gated",
+    "data_gate_cleared": false,
+    "wave_one_runtime_completed": true,
+    "capacity_contract_satisfied": false,
+    "reserve_activation": "not authorized",
+    "next_step": "A separate outcome-blind source/capacity redesign receipt is required. It may not use candidate outcomes and cannot disclose existing candidate identities.",
+    "branch_merge": "deferred"
+  }
+}

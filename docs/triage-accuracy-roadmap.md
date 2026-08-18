@@ -208,8 +208,12 @@ remain explicitly unsupported/incomplete. Java adds one separately parsed local
 This is the current deterministic-certificate phase boundary. Additional client/framework
 enumeration and cross-file flow should resume only when corpus misses demonstrate a specific
 coverage need; the active offline priority returns to manufactured controls.
-Consider a separate novelty prioritizer only after enough manually reviewed LLM findings
-exist to show a held-out benefit.
+The bounded OPT-009 semantic-novelty feasibility study is closed with a negative result:
+neither the existing cohort nor two frozen prospective families supplied the predeclared
+evaluation capacity, and the isolated instrument did not qualify. This establishes only
+that OPT-009 was not justified or feasible at its evaluated scope, not that novelty
+prioritization is universally impossible. Any future attempt is newly scoped work with a
+new lifecycle identity and untouched evidence.
 
 ## Explicit non-goals
 

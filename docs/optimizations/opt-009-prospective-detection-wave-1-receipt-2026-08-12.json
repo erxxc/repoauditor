@@ -1,0 +1,180 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-009",
+  "status": "authorization-pending",
+  "frozen_at": "2026-08-12",
+  "protocol": {
+    "path": "opt-009-prospective-hybrid-protocol-2026-08-12.json",
+    "sha256": "d53d04f33d48ffcd43cfb995e3dc68abacabec30cf0bc6500132bc0439fce918"
+  },
+  "source_selection_result": {
+    "path": "opt-009-prospective-source-selection-result-2026-08-12.json",
+    "sha256": "2985f90110d2a40d9f2dbe45f2db166c351515e44182a251945edd4474dbca55"
+  },
+  "scope": "Run the first bounded prospective detection wave over only the first two approved primary sources. Materialize their exact commits, execute frozen scanner and runtime preflights, persist architecture and deterministic findings, run only the frozen OWASP LLM lens over at most six selected regions per repository, measure aggregate eligible deduplicated OWASP issue-group capacity, record provider usage and cost, and stop before novelty computation, ranking, packet selection, source rendering for review, human outcomes, or reserve activation.",
+  "staging_rationale": {
+    "full_primary_envelope_withheld": {
+      "repositories": 8,
+      "maximum_provider_calls": 600,
+      "maximum_provider_reported_tokens": 2000000,
+      "worst_case_dated_price_usd": 50.0
+    },
+    "wave_one_purpose": "Measure runtime health, public-source transfer, usage, and the protocol's eight-group-per-family capacity on two sources before authorizing the remaining six primaries or any reserve.",
+    "claim_boundary": "This is candidate collection and capacity evidence only. It cannot satisfy the eight-family data gate or establish novelty benefit."
+  },
+  "initial_state": {
+    "store": "data/repoauditor.db",
+    "store_sha256": "a3d8e55feadf5860c079f1de18b698186afbae81ba6bf678717cdfe1f2cca11f",
+    "config_path": "../../config.toml",
+    "config_sha256": "30d8837bdb63b56a50aefb0cd9bc18a0a7173ac86cd8581d4af6f2b2b21f3d09",
+    "existing_opt009_assessments": 0,
+    "existing_opt009_labels": 0
+  },
+  "activated_sources": [
+    {
+      "order": 1,
+      "repo_id": "opt009-wave1-vikunja",
+      "repository": "go-vikunja/vikunja",
+      "evaluation_family": "independent-upstream:go-vikunja/vikunja",
+      "url": "https://github.com/go-vikunja/vikunja.git",
+      "branch": "main",
+      "commit": "9403ed15264e414605c523b0c16ef28703e9915e",
+      "source_identity_sha256": "6842494be20fffc59fd9aa86d53f18db0bb94126dfa5254e09cf7551b1060921"
+    },
+    {
+      "order": 2,
+      "repo_id": "opt009-wave1-miniflux",
+      "repository": "miniflux/v2",
+      "evaluation_family": "independent-upstream:miniflux/v2",
+      "url": "https://github.com/miniflux/v2.git",
+      "branch": "main",
+      "commit": "106cdd09e1557222303f3ed1376e1dadf0638621",
+      "source_identity_sha256": "f57dffb412e68eb20638c55f11868b53806d49abd98b5ff1780456db4b0e2c4a"
+    }
+  ],
+  "runtime_and_scanner_contract": {
+    "artifact_directory": "data/artifacts/opt009-wave-1",
+    "create_artifact_directory_before_any_semgrep_capable_process": true,
+    "semgrep": {
+      "version": "1.170.0",
+      "version_verification": "Import semgrep.__VERSION__ with the installed interpreter without starting the Semgrep CLI.",
+      "runtime_helper": "../../src/repoauditor/eval/semgrep_runtime.py",
+      "runtime_helper_sha256": "b908ac266f923f35fea290436e11959c11a49829e4566b89c444b25056a3a257",
+      "semgrep_log_file": "data/artifacts/opt009-wave-1/semgrep.log",
+      "semgrep_version_cache_path": "data/artifacts/opt009-wave-1/semgrep-version-cache",
+      "environment_required_on_every_semgrep_capable_process": ["SEMGREP_LOG_FILE", "SEMGREP_VERSION_CACHE_PATH"],
+      "semgrep_dev_contacts": 0,
+      "pinned_ruleset_sha256": "e1fb774d43b23f8265ae07566a5e325763244df9ba6eb8cbefe51e3ce05540c4"
+    },
+    "offline_preflight": ["semgrep", "semgrep-supplemental", "gitleaks"],
+    "advisory_preflight": ["pip-audit", "osv-scanner"],
+    "known_prior_versions_to_verify": {
+      "gitleaks": "8.30.1",
+      "pip-audit": "pip-audit 2.10.1",
+      "osv-scanner": "osv-scanner version: 2.4.0"
+    },
+    "preflight_order": "Offline and advisory canaries must pass and exact versions must match before source materialization or provider transfer.",
+    "repository_scanners": ["semgrep", "semgrep-supplemental", "gitleaks", "pip-audit", "osv-scanner"],
+    "applicability": "Not-applicable is acceptable only with an explicit zero-target applicability record; unavailable, failed, malformed, or partial is a stop condition.",
+    "semgrep_network_policy": "Use only the digest-verified vendored rule archive and owned supplemental rules; no registry or semgrep.dev access."
+  },
+  "provider_and_detection_identity": {
+    "provider": "anthropic",
+    "network_host": "api.anthropic.com",
+    "model": "claude-opus-4-8",
+    "temperature": 0.0,
+    "maximum_output_tokens_per_call": 4096,
+    "timeout_seconds": 120.0,
+    "maximum_retries": 2,
+    "architecture_prompt": {
+      "version": "architecture_recovery_v2",
+      "implementation_path": "../../src/repoauditor/map/domain_map.py",
+      "implementation_sha256": "d0598d795b559b0d43db44170e460653288464d72b89fc1a92dfc5e5b6e9d07e"
+    },
+    "primary_lens": {
+      "name": "owasp",
+      "version": "owasp_v3+untrusted_repository_content_v1+detection_context_v2",
+      "prompt_path": "../../src/repoauditor/detect/lenses/owasp_v3.md",
+      "prompt_sha256": "d303fa95e6906af8553fe704b0215c788f132e038e7b7cb7810db35d15ef4172",
+      "prompt_security_path": "../../src/repoauditor/llm/prompts/untrusted_repository_content_v1.md",
+      "prompt_security_sha256": "f9af73ddaccae6c087f2bc4b0a629688b8084aa5960110f7482afbe9e8717383"
+    },
+    "ensemble_implementation_path": "../../src/repoauditor/detect/ensemble.py",
+    "ensemble_implementation_sha256": "b721b041f0a25c6397e1a9e62dd71654af5e2ca81a384e97eaf557494ef93e9a",
+    "maximum_selected_regions_per_repository": 6,
+    "active_lenses": ["owasp"],
+    "observational_lenses_not_activated": ["supply_chain", "agentic_surface"],
+    "observational_lens_basis": "They are frozen in the parent protocol but cannot enter its primary gate; omitting them reduces irrelevant provider transfer and does not alter OWASP prompts, region selection, or candidate eligibility.",
+    "falsification_calls": 0,
+    "normalization_calls": 0,
+    "candidate_rescore_policy": "The existing single-candidate broader-context re-score may run only for an OWASP candidate below the frozen 0.5 confidence gate and remains inside the per-run provider breakers.",
+    "public_data_transfer": "Only bounded source excerpts from the two public exact-commit snapshots, the frozen prompts, and validation retry text may be sent to api.anthropic.com. No assessments, labels, novelty reference, scores, ranks, secrets from local configuration, or unrelated repository data may be transmitted."
+  },
+  "execution_sequence": [
+    "Verify every bound receipt, protocol, helper, prompt, implementation, config, pricing, source, and initial-store digest before any write or network activity.",
+    "Create data/artifacts/opt009-wave-1, seed a fresh workspace-local Semgrep version cache, bind both required Semgrep environment variables, verify exact local scanner identities, then run separated offline and advisory canaries.",
+    "Create a byte-identical pre-mutation database backup after all preflights pass and before source materialization or store mutation.",
+    "Materialize only the two exact commits under new opt009-wave1 repository identities without history expansion, submodule recursion, dependency installation, builds, or execution of repository code.",
+    "For each source in frozen order, run ingest, architecture mapping, deterministic scanning, frozen region selection, and only the OWASP LLM lens under one new pipeline run and the per-run provider breakers.",
+    "Persist only acquisition provenance, pipeline/stage state, architecture entities, scanner and LLM findings, detection-region chronology, validation failures, and authoritative model usage required by those stages.",
+    "Measure aggregate eligible deduplicated OWASP issue-group counts per family without emitting candidate identities, source paths, snippets, severity, confidence, novelty, or ranks.",
+    "Persist one immutable detection-wave result with source/scanner/provider/store accounting and stop."
+  ],
+  "eligibility_capacity_measurement": {
+    "policy": "opt009-prospective-owasp-capacity-v1",
+    "minimum_groups_per_family": 8,
+    "eligible_only_if": [
+      "source_lens is owasp under the exact frozen prompt identity",
+      "production or deployment path tier",
+      "citation integrity passed against the exact snapshot",
+      "unique conservative same-issue group within the evaluation family",
+      "not generated, vendored, documentation, example, test, CI-only, package-hygiene-only, or secret-history-only evidence",
+      "no pre-existing assessment, label, answer key, or outcome"
+    ],
+    "aggregate_only": true,
+    "candidate_identity_disclosure": false,
+    "capacity_shortfall": "Retain all completed evidence, report the exact family shortfall, and stop. Reserve activation or any broadened region/lens budget requires a new receipt and cannot use outcomes."
+  },
+  "resource_ceilings": {
+    "repositories_materialized": 2,
+    "pipeline_runs": 2,
+    "maximum_elapsed_minutes_per_repository": 180,
+    "maximum_total_elapsed_minutes": 420,
+    "maximum_new_data_bytes": 10737418240,
+    "network_hosts": ["github.com", "pypi.org", "api.osv.dev", "osv.dev", "api.anthropic.com"],
+    "provider_calls_per_repository": 75,
+    "provider_calls_total": 150,
+    "provider_reported_tokens_per_repository": 250000,
+    "provider_reported_tokens_total": 500000,
+    "provider_cost_usd": 12.5,
+    "provider_cost_basis": "Worst-case price if all 500,000 provider-reported tokens were charged at the frozen 2026-08-01 Claude Opus 4.8 standard output rate of $25 per million; actual input tokens are $5 per million and authoritative usage is priced after every completed call.",
+    "pricing_path": "opt-006-provider-pricing-2026-08-01.json",
+    "pricing_sha256": "6d3004e55c577b968513d114fb986156798582017f809f8b09826035e7210649",
+    "human_reviews": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "models_trained": 0,
+    "novelty_scores_or_ranks": 0
+  },
+  "store_mutation_allowlist": [
+    "ingested_repo rows for the two new exact-commit identities",
+    "two new pipeline_run chains and their stage_run records",
+    "new trust_boundary and entity rows created by the two architecture maps",
+    "new deterministic-tool and OWASP-lens finding rows for only the two repository identities",
+    "new detection_region_run, validation_failure, corroboration, and model_usage rows caused by the authorized map and detect stages"
+  ],
+  "stop_conditions": [
+    "Any frozen input digest, source identity, exact commit, prompt, model, price snapshot, scanner identity, runtime binding, or initial store identity differs.",
+    "Any preflight is unavailable, unhealthy, partial, malformed, or contacts an unlisted host; retain preflight evidence and stop before acquisition or provider use.",
+    "An exact source cannot be materialized without history expansion, submodules, dependency installation, build execution, or repository-code execution.",
+    "A pipeline exceeds its 75-call or 250,000-token breaker, aggregate usage or dated-price cost reaches its ceiling, any provider attempt lacks authoritative usage, or any unlisted provider/model is used.",
+    "Any lens other than OWASP, any falsification/normalization call, or any source other than the two activated exact commits is attempted.",
+    "Any candidate identity, path, snippet, severity, confidence, novelty, rank, expected class, or outcome is disclosed by the aggregate measurement.",
+    "Any packet selection, source rendering for review, human review, assessment, label, novelty computation, ranking, tuning, recalibration, threshold selection, production-policy change, reserve activation, OPT-009 promotion or closure, branch integration, or remote push is attempted."
+  ],
+  "result_boundary": "A separate result must prove exact source trees, scanner/runtime health, bounded public-source provider transfer, authoritative usage and price accounting, permitted store mutations, aggregate OWASP capacity, and zero outcomes. Any later reserve activation, remaining-primary acquisition, novelty ranking, packet selection, review, import, benefit report, implementation, or closure requires separate authorization.",
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the OPT-009 prospective detection wave one described by opt-009-prospective-detection-wave-1-receipt-2026-08-12.json, limited to separated scanner/runtime preflights; exact-commit materialization without repository-code execution of only go-vikunja/vikunja at 9403ed15264e414605c523b0c16ef28703e9915e and miniflux/v2 at 106cdd09e1557222303f3ed1376e1dadf0638621; deterministic scanning, architecture mapping, and frozen OWASP-only LLM detection over at most six regions per repository; transmission to api.anthropic.com of only bounded public-source excerpts and frozen prompts; compatible provenance, findings, chronology, and authoritative usage persistence; aggregate outcome-blind verification of at least eight eligible deduplicated OWASP issue groups per family; and one detection-wave result, with ceilings of two repositories, 180 minutes per repository, 420 minutes total, 10 GiB new data, only github.com, pypi.org, api.osv.dev, osv.dev, and api.anthropic.com network hosts, 75 provider calls and 250,000 provider-reported tokens per repository, 150 calls and 500,000 tokens total, $12.50 maximum dated-price cost, and exactly zero repository-code execution, observational-lens calls, falsification or normalization calls, human reviews, assessments, labels, model training, novelty scores, or ranks. Reserve activation, remaining-primary acquisition, candidate identity disclosure, source rendering for review, packet selection, outcomes, tuning, recalibration, threshold selection, production-policy changes, OPT-009 promotion or closure, branch integration, and remote push remain excluded."
+  }
+}

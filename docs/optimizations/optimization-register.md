@@ -1,24 +1,22 @@
 # Optimization Register
 
-Status: authoritative post-MVP work list as of 2026-08-01. POC acceptance is complete.
+Status: authoritative post-MVP work list as of 2026-08-18. POC acceptance is complete.
 
 Current execution priorities
 
 OPT-035 publishes the canonical machine-readable lifecycle ledger at
-[`optimization-status.json`](optimization-status.json). It records 31 closed and 4 open
+[`optimization-status.json`](optimization-status.json). It records 33 closed and 2 open
 items. Every open item remains subject to its activation gate; priority does not waive it.
 The dated [`outstanding-work checkpoint`](outstanding-work-checkpoint-2026-08-07.json)
-records every open optimization, tuning blocker, and nonblocking future expansion before
-the next paid OPT-005 batch; the accepted POC Definition of Done remains complete.
+is immutable historical evidence of the 2026-08-07 state; it is not a live derived view.
+The accepted POC Definition of Done remains complete.
 
 | Priority | Open item | Gate |
 |---:|---|---|
-| 1 | OPT-003 — temporal validation | data |
-| 2 | OPT-009 — novelty prioritization | data |
-| 3 | OPT-014 — predictive checks and portfolio modeling | data |
-| 4 | OPT-010 — agentic falsification | safety and evaluation |
+| 1 | OPT-014 — predictive checks and portfolio modeling | data |
+| 2 | OPT-010 — agentic falsification | safety and evaluation |
 
-OPT-001, OPT-002, OPT-004 through OPT-008, OPT-011 through OPT-013, and OPT-015 through OPT-035 are closed at their approved scope. Optional
+OPT-001 through OPT-009, OPT-011 through OPT-013, and OPT-015 through OPT-035 are closed at their approved scope. Optional
 expansion of a closed bounded scope must be proposed as new work rather than silently
 reopening its lifecycle state.
 
@@ -562,9 +560,24 @@ III. Detection and falsification depth
       exploitability, and other Ruby loaders remain explicit non-claims. Further mechanism
       expansion requires new specific miss evidence. Implemented offline — DoD impact: none.
 
-   C. OPT-009 — In-family/out-of-family novelty prioritization — deferred/data-gated —
-      owner: AppSec/ML evaluation — source: `../project-priorities.md` — activate after
-      enough manually reviewed LLM findings demonstrate held-out benefit — DoD impact: none.
+   C. OPT-009 — In-family/out-of-family novelty prioritization — closed at bounded negative-
+      feasibility scope — owner: AppSec/ML evaluation — source:
+      `../project-priorities.md`. The outcome-blind existing-cohort audit found zero
+      evidence-eligible records. A frozen prospective protocol selected independent sources
+      without findings or outcomes, but its two activated exact-commit families each
+      produced zero eligible OWASP issue groups against the predeclared minimum of eight.
+      The isolated positive/negative instrument qualification then failed because the
+      positive returned a schema-valid but citation-invalid result. A final bounded citation
+      diagnosis proved display-prefix recovery was mechanically possible, but the provider
+      repeat returned an exact anchor and the clarification degraded to a different
+      nonverbatim citation, so it did not support that bounded correction. Further prompt,
+      planner, source, or provider experimentation would expand the frozen protocol post hoc
+      without evidence that it addresses the observed gate failure. OPT-009 is therefore
+      closed as not justified and not feasible at its evaluated scope. This is not a
+      universal impossibility claim; any future semantic-novelty attempt requires newly
+      frozen work, an untouched source cohort, and a separate lifecycle identity. The
+      [`closure result`](opt-009-closure-result-2026-08-18.json) binds the retained negative
+      evidence — DoD impact: none.
 
    D. OPT-010 — Agentic falsification — deferred — owner: AppSec architecture — source:
       `../agentic-escalation-gate.md` — activate only after every documented safety and

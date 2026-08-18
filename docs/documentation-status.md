@@ -1,6 +1,6 @@
 # Documentation status and authority
 
-Current as of **2026-08-12**.
+Current as of **2026-08-18**.
 
 Use this page to distinguish live project state from retained execution history. A dated
 receipt or result is not stale merely because it says an authorization was pending or an
@@ -10,14 +10,15 @@ step. They must not be interpreted as the current lifecycle state.
 ## Current authoritative state
 
 - [`optimizations/optimization-status.json`](optimizations/optimization-status.json) is the
-  machine-readable lifecycle authority: **32 closed, 3 open, 35 total**.
+  machine-readable lifecycle authority: **33 closed, 2 open, 35 total**.
 - [`optimizations/optimization-register.md`](optimizations/optimization-register.md) is the
   narrative authority for scope, owners, activation gates, and chronological outcomes.
 - [`project-priorities.md`](project-priorities.md) records current work sequencing.
 - [`optimizations/outstanding-work-checkpoint-2026-08-07.json`](optimizations/outstanding-work-checkpoint-2026-08-07.json)
-  is the current derived checkpoint and must match the lifecycle ledger.
+  is byte-identical historical evidence of the 2026-08-07 state; it is not a live derived
+  checkpoint and is not expected to match the current lifecycle ledger.
 
-The three open optimizations, in priority order, are OPT-009, OPT-014, and OPT-010. No paid
+The two open optimizations, in priority order, are OPT-014 and OPT-010. No paid
 provider execution is currently authorized. The outcome-blind, zero-provider OPT-002
 [`acquisition protocol`](optimizations/opt-002-independent-acquisition-protocol-2026-08-07.json)
 is frozen; its repository materialization, deterministic scan, scoring, and review packet
@@ -256,6 +257,19 @@ lifecycle reconciliation, validation, and local integration. OPT-003 is closed a
 bounded descriptive scope; tuning, recalibration, threshold selection or recommendation,
 and production-policy changes require a new scope.
 
+The authorized OPT-009 investigation is complete. The
+[`existing-cohort audit`](optimizations/opt-009-eligibility-audit-result-2026-08-12.json)
+found zero evidence-eligible LLM-origin records. The outcome-blind prospective wave then
+completed two exact-commit families but produced zero eligible OWASP issue groups in each
+against the frozen minimum of eight. Its isolated positive instrument failed citation
+qualification, and the final bounded diagnosis did not reproduce the proposed display-prefix
+cause or support a correction. The
+[`closure result`](optimizations/opt-009-closure-result-2026-08-18.json) therefore closes
+OPT-009 as not justified and not feasible at the evaluated scope while preserving all
+negative results. This does not claim semantic novelty prioritization is universally
+impossible. Any future attempt requires newly scoped work, a newly frozen instrument, an
+untouched source cohort, and a separate lifecycle identity.
+
 ## Historical checkpoints
 
 The following documents intentionally retain earlier counters or decisions and label their
@@ -267,6 +281,8 @@ observation date. Their historical sections are not current state:
   with later optimization outcomes annotated.
 - [`poc-acceptance-walkthrough-2026-07-28.md`](poc-acceptance-walkthrough-2026-07-28.md) —
   accepted POC walkthrough evidence.
+- [`optimizations/outstanding-work-checkpoint-2026-08-07.json`](optimizations/outstanding-work-checkpoint-2026-08-07.json)
+  — byte-identical lifecycle snapshot with the then-current 32-closed/3-open state.
 - dated acquisition, scan, comparison, and optimization protocol/result documents — exact
   observations at their recorded dates.
 
@@ -290,6 +306,7 @@ Notable supersessions:
 
 Current-state documents must state an `as of` date or point to the lifecycle ledger.
 Historical counters must be introduced as historical observations and paired with a current
-pointer when they can be mistaken for live status. Derived checkpoints must match the
-ledger's summary and exact open-ID set. Tests enforce these invariants; receipts remain
-immutable and are excluded from current-language assertions.
+pointer when they can be mistaken for live status. A document explicitly designated as a
+live derived checkpoint must match the ledger; dated immutable checkpoints retain their
+recorded summary and open-ID set. Tests enforce these invariants; receipts remain immutable
+and are excluded from current-language assertions.

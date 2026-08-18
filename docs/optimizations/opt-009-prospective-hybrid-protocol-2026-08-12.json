@@ -1,0 +1,255 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-009",
+  "protocol_id": "opt009-prospective-hybrid-v1",
+  "status": "protocol-frozen-source-selection-not-authorized",
+  "frozen_at": "2026-08-12",
+  "objective": "Test whether pre-outcome semantic novelty improves the yield of a fixed investigation budget for LLM-origin findings relative to the current severity-and-confidence ordering, using existing findings only for protocol development and new independent repositories for evidence.",
+  "completed_eligibility_audit": {
+    "path": "opt-009-eligibility-audit-result-2026-08-12.json",
+    "sha256": "a04112757364412d272a83d5d29a6d8e9e0f5f8852bb99548759278f1511c36f",
+    "observed_llm_origin_records": 63,
+    "evidence_eligible_records": 0,
+    "effect": "The existing cohort can exercise deterministic grouping, reference construction, ranking, and report plumbing but contributes no held-out outcomes."
+  },
+  "claim_boundary": {
+    "primary_question": "At a fixed budget of three LLM-origin findings per independent evaluation family, does a frozen semantic-novelty ordering surface more project-owner-confirmed actionable findings than the current severity-and-confidence ordering?",
+    "allowed_claim": "A descriptive held-out comparison of two frozen investigation orderings over the protocol cohort.",
+    "not_claimed": [
+      "calibrated probability of actionability",
+      "causal effectiveness outside the reviewed cohort",
+      "optimal novelty threshold or review budget",
+      "production readiness or permission to change queue policy",
+      "benefit for deterministic-tool findings",
+      "benefit for supply_chain or agentic_surface lenses"
+    ]
+  },
+  "hybrid_roles": {
+    "existing_protocol_development_corpus": {
+      "population": "The digest-frozen 63 source_lens finding records audited by opt009-existing-llm-eligibility-v1.",
+      "permitted_uses": [
+        "freeze and test normalization",
+        "construct the outcome-blind OWASP semantic reference inventory",
+        "test deterministic duplicate grouping, ranking, packet-union, and report schemas"
+      ],
+      "forbidden_uses": [
+        "held-out outcome evidence",
+        "benefit estimation",
+        "threshold tuning from assessment outcomes",
+        "review-count or family-count credit"
+      ]
+    },
+    "prospective_evidence_corpus": {
+      "target": "Eight independent production or deployment repository families with six decided OWASP-lens issue groups per family.",
+      "minimum_decided_issue_groups": 48,
+      "minimum_independent_evaluation_families": 8,
+      "minimum_decided_per_family": 6,
+      "minimum_confirmed_actionable": 8,
+      "minimum_decided_non_actionable": 8,
+      "minimum_in_family_stratum": 12,
+      "minimum_out_of_family_stratum": 12,
+      "chronology": "Every source identity, candidate identity, semantic reference digest, novelty score, stratum, baseline rank, novelty rank, and packet membership must be persisted before the first human assessment in its wave."
+    }
+  },
+  "source_selection": {
+    "primary_sources": 8,
+    "ordered_reserves": 4,
+    "selection_occurs_before_materialization_or_security_scanning": true,
+    "allowed_inputs": [
+      "public repository identity, default branch, exact commit, license, archive/fork state, and approximate repository size",
+      "README-level evidence that the repository is a deployable product or service",
+      "declared primary language and framework ancestry",
+      "absence from the frozen RepoAuditor acquisition and evaluation-family inventory"
+    ],
+    "required_breadth": [
+      "at least three distinct primary-language or framework ancestries across the eight primaries",
+      "no two repositories from the same upstream, fork, clone, pre/post pair, or product family",
+      "each repository exposes application, authorization, workflow, data, or service boundaries suitable for static investigation"
+    ],
+    "forbidden_inputs": [
+      "security advisories, CVEs, security issues, security pull requests, exploit reports, or answer keys",
+      "source-code inspection beyond README-level product/deployment metadata",
+      "scanner or LLM findings, candidate counts, target paths, severity, confidence, novelty, labels, or outcomes",
+      "inclusion of an intentionally vulnerable, benchmark, tutorial, starter-template, manufactured, or protected-holdout repository"
+    ],
+    "frozen_named_upstream_exclusions": [
+      "actualbudget/actual",
+      "aio-libs/aiohttp",
+      "apache/commons-text",
+      "apache/jspwiki",
+      "benoitc/gunicorn",
+      "chatwoot/chatwoot",
+      "codecov/codecov-node",
+      "django/django",
+      "documenso/documenso",
+      "dzikoysk/reposilite",
+      "encode/starlette",
+      "expressjs/express",
+      "goauthentik/authentik",
+      "guardian/html-janitor",
+      "hanami/hanami",
+      "javalin/javalin",
+      "jpadilla/pyjwt",
+      "juice-shop/juice-shop",
+      "koajs/koa",
+      "linkwarden/linkwarden",
+      "linxiaowu66/swagger-ui",
+      "lobsters/lobsters",
+      "lodash/lodash",
+      "owasp-benchmark/benchmarkpython",
+      "owasp/railsgoat",
+      "pallets/flask",
+      "paperless-ngx/paperless-ngx",
+      "parse-community/parse-server",
+      "perwendel/spark",
+      "plotly/plotly.js",
+      "rack/rack",
+      "saml-toolkits/ruby-saml",
+      "sinatra/sinatra",
+      "steveukx/git-js",
+      "twbs/bootstrap",
+      "usememos/memos",
+      "webgoat/webgoat",
+      "yahoo/serialize-javascript"
+    ],
+    "activation_of_reserves": "Activate reserves only in their frozen order when a primary cannot materialize at its exact commit, fails a required preflight, or yields fewer than eight eligible deduplicated OWASP-lens candidates. Candidate outcomes may never activate a reserve."
+  },
+  "frozen_detection_identity": {
+    "primary_evaluation_lens": {
+      "name": "owasp",
+      "prompt_version": "owasp_v3+untrusted_repository_content_v1+detection_context_v2",
+      "prompt_path": "../../src/repoauditor/detect/lenses/owasp_v3.md",
+      "prompt_sha256": "d303fa95e6906af8553fe704b0215c788f132e038e7b7cb7810db35d15ef4172"
+    },
+    "observational_lenses": [
+      {
+        "name": "supply_chain",
+        "prompt_version": "supply_chain_v1+untrusted_repository_content_v1+detection_context_v2",
+        "prompt_path": "../../src/repoauditor/detect/lenses/supply_chain_v1.md",
+        "prompt_sha256": "bee73ab750df774515293755dc1f7679cf3cce677d97fe7311f293502515a60e"
+      },
+      {
+        "name": "agentic_surface",
+        "prompt_version": "agentic_surface_v1+untrusted_repository_content_v1+detection_context_v2",
+        "prompt_path": "../../src/repoauditor/detect/lenses/agentic_surface_v1.md",
+        "prompt_sha256": "5a2343df83fba28a4511e575ed04bf0583e3490bd9b150afbdce42c62431cb49"
+      }
+    ],
+    "model": "claude-opus-4-8",
+    "temperature": 0.0,
+    "maximum_output_tokens_per_call": 4096,
+    "maximum_regions_per_repository": 6,
+    "interpretation": "Only OWASP-lens findings enter the primary comparison because the frozen reference has 61 OWASP records but only two supply-chain records and zero agentic-surface records. Observational lenses cannot satisfy the data or benefit gates."
+  },
+  "eligibility_and_grouping": {
+    "candidate_eligible_only_if": [
+      "source_lens equals owasp under the exact frozen prompt identity",
+      "production or deployment path tier",
+      "citation integrity validation passed against the exact source snapshot",
+      "no assessment, manual label, answer key, or known outcome existed before ranking",
+      "not generated, vendored, documentation, example, test, CI-only, package-hygiene-only, or secret-history-only evidence"
+    ],
+    "issue_grouping": "Within one evaluation family, conservatively collapse same-issue matches before ranking. One issue group contributes at most one review identity and one outcome.",
+    "representative": "Choose the lexicographically smallest stable identity hash within each group; do not use severity, confidence, novelty, or outcomes.",
+    "minimum_candidate_pool_per_activated_family": 8,
+    "shortfall_rule": "If fewer than eight groups remain, record the shortfall, activate the next frozen reserve, and exclude the short family from gate denominators without replacing candidates based on outcomes."
+  },
+  "novelty_definition": {
+    "reference": {
+      "population": "All 61 pre-cutoff OWASP source_lens finding records in inventory 6fd81f874cc201025fde1afd91b5e0f0196a2b0d7148a95ab90927a253b9c5a9, collapsed by the frozen normalization signature without reading assessments.",
+      "outcomes_read": false,
+      "reference_freezes_before_new_source_selection": true
+    },
+    "text_fields": ["source_lens", "title", "description"],
+    "forbidden_fields": [
+      "repository identity",
+      "file or line",
+      "citation snippet",
+      "severity or confidence",
+      "falsification status or reason",
+      "assessment, label, score, rank, suppression, prior, or known vulnerability"
+    ],
+    "normalization": "Unicode NFKC, casefold, replace non-alphanumeric runs with one space, discard numeric-only tokens, retain unique unigrams and adjacent bigrams from the normalized token sequence, then serialize the set in sorted order.",
+    "similarity": "Maximum Jaccard similarity between the candidate token set and any frozen reference token set.",
+    "novelty_score": "1 minus maximum similarity; higher means less similar to the pre-cutoff reference.",
+    "strata": {
+      "in_family": "maximum similarity greater than or equal to 0.35",
+      "guard_band": "maximum similarity greater than 0.15 and less than 0.35",
+      "out_of_family": "maximum similarity less than or equal to 0.15"
+    },
+    "threshold_policy": "The two similarity cut points are design constants with a guard band, not empirically optimized operating thresholds. They may not be changed after source selection. Primary benefit uses continuous novelty rank, not the strata cut points."
+  },
+  "frozen_comparison": {
+    "evaluation_unit": "Deduplicated OWASP-lens issue group within an independent evaluation family.",
+    "fixed_investigation_budget_per_family": 3,
+    "baseline_order": "Severity ordinal descending, model confidence descending, stable identity hash ascending; this reproduces the current untriaged fallback with an explicit deterministic tie-break.",
+    "novelty_order": "Novelty score descending, then the complete baseline order as tie-break.",
+    "review_packet_per_family": "Outcome-blind union of the top three baseline and top three novelty identities, filled to exactly six unique identities by stable identity hash if the union has fewer than six.",
+    "primary_outcome": "Project-owner disposition confirmed_actionable.",
+    "non_actionable_outcomes": [
+      "tool_incorrect",
+      "unreachable",
+      "not_attacker_controlled",
+      "mitigated",
+      "duplicate",
+      "valid_not_actionable"
+    ],
+    "abstention": "insufficient_evidence is retained, never imputed, and does not enter a decided denominator.",
+    "primary_metric": "Paired family-level and aggregate difference in confirmed-actionable yield among the top three novelty identities versus the top three baseline identities.",
+    "secondary_metrics": [
+      "top-three technically-valid yield, reported separately from actionability",
+      "overlap and discordant identity counts between the two orderings",
+      "continuous average precision over reviewed identities, descriptive only",
+      "counts by novelty stratum, repository family, and disposition"
+    ],
+    "uncertainty": "Two-thousand-resample 95% evaluation-family-block percentile interval with seed 2009 over the paired top-three actionable-yield difference."
+  },
+  "gates": {
+    "data_sufficiency": {
+      "all_required": true,
+      "conditions": [
+        "at least 48 decided issue groups across at least eight independent evaluation families",
+        "at least six decided issue groups per counted family",
+        "at least eight confirmed-actionable and eight decided non-actionable outcomes",
+        "at least twelve decided in-family and twelve decided out-of-family outcomes",
+        "zero chronology failures and at least twelve discordant top-three identity slots across the cohort"
+      ],
+      "effect": "Satisfying this gate permits the frozen held-out benefit report. It does not establish benefit or authorize implementation."
+    },
+    "held_out_benefit": {
+      "all_required": true,
+      "conditions": [
+        "the novelty ordering surfaces at least three more confirmed-actionable findings in aggregate at the same fixed family budgets",
+        "family wins exceed family losses by at least two, with ties retained",
+        "the family-block 95% interval lower bound is not below zero"
+      ],
+      "effect_if_met": "OPT-009 may proceed only to a separately authorized bounded implementation decision; no production policy changes are implied.",
+      "effect_if_not_met": "Retain the negative result and consider closing OPT-009 as not justified at this scope; do not tune cut points, alter the packet, or add post hoc endpoints."
+    }
+  },
+  "fail_closed_rules": [
+    "Any audit result, reference inventory, prompt, model, normalization, source, commit, family, ranking, packet, or chronology identity drifts.",
+    "Fewer than eight activated independent families can each supply eight eligible candidate groups after all frozen reserves are exhausted.",
+    "Any source or candidate is selected using security outcomes, findings, candidate counts other than the declared reserve trigger, or human dispositions.",
+    "Any ranking, packet, or novelty field is created or changed after the first assessment in its wave.",
+    "Any data-sufficiency condition fails; publish the shortfall without computing a gate-passing benefit claim.",
+    "Do not rescore, tune, recalibrate, change similarity cut points, select another budget, train a novelty model, or change production policy during collection or evaluation."
+  ],
+  "phase_authority": {
+    "authorized_by_this_protocol_freeze": [
+      "documentation",
+      "offline schema and contract tests",
+      "use of the existing ineligible cohort for protocol-development tests without outcomes"
+    ],
+    "not_authorized": [
+      "network metadata reads",
+      "repository selection or exact-commit resolution",
+      "materialization or scanning",
+      "provider calls or source transfer",
+      "candidate generation, persistence, ranking, packet selection, or disclosure",
+      "human review, assessments, or labels",
+      "model training, tuning, threshold selection, production policy, promotion, or closure"
+    ],
+    "next_approval": "The separate source-selection receipt freezes a metadata-only GitHub phase. Acquisition and LLM detection require a later receipt after exact repositories and commits are reviewed."
+  }
+}

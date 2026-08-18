@@ -8,6 +8,11 @@ import pytest
 
 from repoauditor.detect.ensemble import (
     CandidateFinding,
+    DETECTION_REGION_MAX_BYTES,
+    DETECTION_REQUEST_CONTENT_MAX_BYTES,
+    LensFindings,
+    _assert_provider_content_bound,
+    _bounded_detection_region,
     _retrieval_context,
     _retrieval_context_with_provenance,
 )
@@ -23,6 +28,7 @@ from repoauditor.sourcefiles import (
     is_test_source,
     iter_source_files,
     select_diverse_source_files,
+    read_numbered_bounded,
 )
 from repoauditor.store.models import Severity
 
@@ -100,6 +106,45 @@ def test_cross_file_context_records_path_blind_expansion_provenance(tmp_path):
         "symbol": "dispatch",
     }]
     assert all(item["file"] != "component_a.py" for item in provenance)
+
+
+def test_numbered_source_bound_is_utf8_exact_and_preserves_original_lines(tmp_path):
+    source = tmp_path / "large.py"
+    source.write_text("first = 'safe'\n" + "second = 'é'\n" * 100)
+
+    rendered, evidence = read_numbered_bounded(source, 120)
+
+    assert len(rendered.encode("utf-8")) <= 120
+    assert rendered.startswith("  1\tfirst = 'safe'\n  2\tsecond = 'é'")
+    assert evidence["truncated"] is True
+    assert evidence["original_bytes"] > evidence["sent_bytes"]
+    assert "remaining source evidence omitted" in rendered
+
+
+def test_detection_region_has_a_hard_provider_evidence_envelope(tmp_path):
+    source = tmp_path / "large.py"
+    source.write_text("payload = '" + ("x" * (DETECTION_REGION_MAX_BYTES * 2)) + "'\n")
+    index = RetrievalIndex().build(tmp_path)
+
+    region, provenance, evidence = _bounded_detection_region(
+        source, "large.py", index
+    )
+
+    assert len(region.encode("utf-8")) <= DETECTION_REGION_MAX_BYTES
+    assert region.startswith("# FILE: large.py\n1\tpayload = '")
+    assert provenance == []
+    assert evidence["policy"] == "detection_evidence_utf8_v1"
+    assert evidence["primary_truncated"] is True
+    assert evidence["region_sent_bytes"] == len(region.encode("utf-8"))
+
+
+def test_complete_structured_request_fails_before_provider_when_oversized():
+    with pytest.raises(ValueError, match="pre-provider UTF-8 byte bound"):
+        _assert_provider_content_bound(
+            "system",
+            "x" * DETECTION_REQUEST_CONTENT_MAX_BYTES,
+            LensFindings,
+        )
 
 
 def test_projection_reports_unbounded_and_bounded_work(tmp_config, tmp_path):

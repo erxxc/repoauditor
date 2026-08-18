@@ -1,0 +1,105 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-009",
+  "status": "citation-diagnosis-inconclusive",
+  "recorded_at": "2026-08-13",
+  "receipt": {
+    "path": "opt-009-citation-diagnosis-receipt-2026-08-13.json",
+    "sha256": "a5b085f5b35a07c4a0dee52808dced8619a12e998a61f4b4ce2f2e20ec0edbb8"
+  },
+  "execution_evidence": {
+    "offline_diagnosis": {
+      "path": "../../data/artifacts/opt009-citation-diagnosis/offline-diagnosis.json",
+      "sha256": "8a690a13392c1067f4a3bec21d11e0fe906d2ab72d0a38e767c045acdf6c96e4"
+    },
+    "aggregate_result": {
+      "path": "../../data/artifacts/opt009-citation-diagnosis/result.json",
+      "sha256": "840f71c7dc05f9f647fb9b3c8c2d63f0edcda8108c3d4f8349a551e041ee1a7b"
+    },
+    "scratch_store": {
+      "path": "../../data/artifacts/opt009-citation-diagnosis/scratch.sqlite",
+      "sha256": "eb9cf06cb02f927ed41635114f286b414590736f54d5179ebc59952943616ebb"
+    }
+  },
+  "offline_diagnosis": {
+    "status": "passed",
+    "bound_digest_checks_passed": 11,
+    "exact_unnumbered_citation_canonicalizes": true,
+    "display_prefixed_citation_fails_exact_canonicalization": true,
+    "prefix_only_removal_recovers_exact_citation": true,
+    "requests_within_frozen_bounds": true,
+    "production_store_unchanged": true,
+    "interpretation": "The display prefix can mechanically cause rejection, but this establishes only a possible failure mode. The provider comparison was required to determine whether it explained the observed semantic failure."
+  },
+  "provider_diagnosis": {
+    "provider": "anthropic",
+    "model": "claude-opus-4-8",
+    "attempts": 2,
+    "attempts_with_authoritative_usage": 2,
+    "unknown_usage_attempts": 0,
+    "provider_reported_tokens": 7334,
+    "known_dated_price_cost_status": "priced",
+    "known_dated_price_cost_usd": 0.046210,
+    "exact_frozen_repeat": {
+      "schema_valid_findings": 1,
+      "exact_citations": 1,
+      "display_prefix_recoverable_citations": 0,
+      "other_nonverbatim_citations": 0,
+      "ambiguous_citations": 0,
+      "absent_citations": 0,
+      "exact_anchor_matches": 1
+    },
+    "diagnostic_clarification": {
+      "schema_valid_findings": 1,
+      "exact_citations": 0,
+      "display_prefix_recoverable_citations": 0,
+      "other_nonverbatim_citations": 1,
+      "ambiguous_citations": 0,
+      "absent_citations": 0,
+      "exact_anchor_matches": 0
+    },
+    "diagnosis_success_gate": false,
+    "interpretation": "The exact frozen repeat returned a valid exact anchor rather than a display-prefix-recoverable citation, while the diagnostic clarification returned a different nonverbatim citation. The frozen causal pattern was therefore not reproduced, and the clarification did not improve citation validity. This is inconsistent provider behavior, not evidence supporting a bounded line-prefix correction."
+  },
+  "isolation_and_resources": {
+    "production_store_before_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "production_store_after_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "production_store_unchanged": true,
+    "scratch_model_usage_rows": 2,
+    "scratch_validation_failure_rows": 0,
+    "scratch_findings": 0,
+    "scratch_assessments": 0,
+    "scratch_labels": 0,
+    "scratch_model_runs": 0,
+    "raw_provider_output_bytes_persisted": 0,
+    "elapsed_seconds": 8.629,
+    "new_data_bytes": 368807,
+    "ceiling_breaches": []
+  },
+  "excluded_actions_accounting": {
+    "source_excerpts_persisted": 0,
+    "findings_persisted": 0,
+    "candidate_identities_disclosed": 0,
+    "human_reviews": 0,
+    "assessments": 0,
+    "labels": 0,
+    "model_training_runs": 0,
+    "production_prompt_or_rendering_changes": 0,
+    "planner_v2_changes": 0,
+    "remaining_primary_activations": 0,
+    "reserve_activations": 0,
+    "optimization_status_changes": 0,
+    "branch_integrations": 0,
+    "remote_pushes": 0
+  },
+  "disposition": {
+    "opt_009_status": "open-data-gated",
+    "bounded_correction_supported": false,
+    "recommendation": "close-opt009-at-current-scope",
+    "reason": "The final bounded diagnosis did not reproduce the proposed citation-prefix cause and the diagnostic clarification degraded citation validity. Additional prompt, planner, source, or provider experimentation would be post hoc expansion without a supported correction.",
+    "required_stop": true,
+    "closure": "not authorized by this receipt",
+    "branch_merge": "deferred",
+    "next_step": "A separate bounded closure and local integration receipt is required to close OPT-009, reconcile the optimization ledgers and roadmap, run the full offline non-live suite, and integrate only the authorized OPT-009 files."
+  }
+}
