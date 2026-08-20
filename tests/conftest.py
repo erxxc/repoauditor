@@ -17,15 +17,86 @@ from pathlib import Path
 import pytest
 
 
+# These historical/evaluation tests intentionally bind retained evidence under
+# the git-ignored data tree.  Keep the allowlist explicit so clean checkouts do
+# not silently broaden what the required fast lane omits.
+_LOCAL_EVIDENCE_TEST_FILES = frozenset(
+    {
+        "test_opt_002_bounded_review_result.py",
+        "test_opt_003_final_label_followup_result.py",
+        "test_opt_003_temporal_report_result.py",
+        "test_opt_003_wave_2_review_result.py",
+        "test_opt_009_citation_diagnosis.py",
+        "test_opt_009_citation_diagnosis_receipt.py",
+        "test_opt_009_citation_diagnosis_result.py",
+        "test_opt_009_closure_merge_attempt.py",
+        "test_opt_009_closure_merge_corrected_retry_receipt.py",
+        "test_opt_009_closure_merge_receipt.py",
+        "test_opt_009_closure_result.py",
+        "test_opt_009_corrected_retry_receipt.py",
+        "test_opt_009_detection_wave_1_result.py",
+        "test_opt_009_eligibility_audit.py",
+        "test_opt_009_instrument_qualification_receipt.py",
+        "test_opt_009_instrument_qualification_result.py",
+        "test_opt_009_novelty_instrument.py",
+        "test_opt_009_serialization_retry_receipt.py",
+        "test_opt_009_serialization_retry_result.py",
+        "test_opt_010_acquisition_instrument_qualification_wave_1.py",
+        "test_opt_010_architecture_mechanism_eligibility_final_retry_receipt.py",
+        "test_opt_010_bounded_negative_feasibility_closure.py",
+        "test_opt_010_bounded_negative_feasibility_closure_receipt.py",
+        "test_opt_010_java_ruby_scanner_cell_coverage_corrected_acceptance_receipt.py",
+        "test_opt_010_java_ruby_scanner_cell_coverage_corrected_acceptance_retry_receipt.py",
+        "test_opt_010_java_ruby_scanner_cell_coverage_receipt.py",
+        "test_opt_010_java_ruby_source_augmentation_acquisition.py",
+        "test_opt_010_java_ruby_source_augmentation_acquisition_screen_corrected_retry_receipt.py",
+        "test_opt_010_java_ruby_source_augmentation_acquisition_screen_final_retry_receipt.py",
+        "test_opt_010_java_ruby_source_augmentation_acquisition_screen_receipt.py",
+        "test_opt_010_java_ruby_source_augmentation_selection_receipt.py",
+        "test_opt_010_java_ssrf_retained_source_screen.py",
+        "test_opt_010_java_ssrf_retained_source_screen_receipt.py",
+        "test_opt_010_java_ssrf_supplemental_qualification.py",
+        "test_opt_010_java_ssrf_supplemental_rule_qualification_receipt.py",
+        "test_opt_010_offline_containment_foundation_receipt.py",
+        "test_opt_010_offline_readiness_audit_receipt.py",
+        "test_opt_010_outcome_blind_packet_paired_run.py",
+        "test_opt_010_prospective_source_selection.py",
+        "test_opt_010_prospective_source_selection_corrected_retry.py",
+        "test_opt_010_prospective_source_selection_receipt.py",
+        "test_opt_010_protected_cohort_design_receipt.py",
+        "test_opt_010_readiness_audit.py",
+        "test_opt_010_scanner_cell_coverage.py",
+        "test_opt_010_scanner_cell_coverage_acceptance.py",
+        "test_opt_010_supported_primary_augmentation_acceptance.py",
+        "test_opt_010_supported_primary_augmentation_corrected_acceptance_receipt.py",
+        "test_opt_010_supported_primary_augmentation_receipt.py",
+        "test_opt_014_acquisition_design.py",
+        "test_opt_014_descriptive_scope_closure.py",
+        "test_opt_014_descriptive_scope_closure_receipt.py",
+        "test_opt_014_eligibility_audit.py",
+        "test_opt_014_eligibility_audit_receipt.py",
+        "test_opt_014_prior_predictive.py",
+        "test_opt_014_prior_predictive_receipt.py",
+    }
+)
+_LOCAL_EVIDENCE_ROOT = Path(__file__).resolve().parents[1] / "data"
+
+
 def pytest_collection_modifyitems(config, items):
-    """Skip `live` tests unless REPOAUDITOR_LLM=live (they hit the real API)."""
-    if os.environ.get("REPOAUDITOR_LLM") == "live":
-        return
+    """Apply live and retained-local-evidence collection boundaries."""
+    live_enabled = os.environ.get("REPOAUDITOR_LLM") == "live"
     skip_live = pytest.mark.skip(
         reason="live test — set REPOAUDITOR_LLM=live to run against the real Anthropic API"
     )
+    skip_local_evidence = pytest.mark.skip(
+        reason="local evidence test — the git-ignored data tree is unavailable"
+    )
     for item in items:
-        if "live" in item.keywords:
+        if item.path.name in _LOCAL_EVIDENCE_TEST_FILES:
+            item.add_marker(pytest.mark.local_evidence)
+            if not _LOCAL_EVIDENCE_ROOT.exists():
+                item.add_marker(skip_local_evidence)
+        if not live_enabled and "live" in item.keywords:
             item.add_marker(skip_live)
 
 from repoauditor.config import Config, PathsConfig

@@ -59,4 +59,5 @@ markers = [
     "integration: exercises real scanner binaries, full calibration, or chart rendering.",
     "live: hits the real Anthropic API (opt in with REPOAUDITOR_LLM=live). Deselected by default.",
     "instrument: manufactured-solution instrument qualification control.",
+    "local_evidence: validates retained evidence in the git-ignored local data tree.",
 ]
