@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-08-18",
+  "optimization": "OPT-009",
+  "status": "stopped-full-suite-stale-historical-checkpoint-assertion",
+  "execution_receipt": {
+    "path": "opt-009-closure-merge-receipt-2026-08-18.json",
+    "sha256": "5ffc8d0786d49d74c8522c93ffc432e224044bb47efb4ece31c4c129b9a3da10"
+  },
+  "preflight": {
+    "passed": true,
+    "initial_branch": "main",
+    "initial_head": "296945be4497b9577b325ee1648cc700f9233a3c",
+    "initial_local_main": "296945be4497b9577b325ee1648cc700f9233a3c",
+    "known_origin_main": "6cf17f0ba3ea430e01540882f9890f9b38975f9b",
+    "bound_evidence_digests_passed": 5,
+    "worktree_allowlist_passed": true
+  },
+  "branch_state": {
+    "source_branch": "codex/opt-009-closure",
+    "source_branch_created_from": "296945be4497b9577b325ee1648cc700f9233a3c",
+    "source_branch_head": "296945be4497b9577b325ee1648cc700f9233a3c",
+    "source_branch_commits_created": 0,
+    "local_main": "296945be4497b9577b325ee1648cc700f9233a3c",
+    "local_main_advanced": false,
+    "merge_commits_created": 0,
+    "branch_deleted": false
+  },
+  "validation": {
+    "focused_pre_suite_command": ".venv/bin/pytest -q tests/test_documentation_current_state.py tests/test_optimization_status.py tests/test_opt_009_closure_merge_receipt.py",
+    "focused_pre_suite_passed": 10,
+    "full_suite_command": "SEMGREP_LOG_FILE=data/artifacts/opt009-wave-1-serialization-retry/semgrep.log SEMGREP_VERSION_CACHE_PATH=data/artifacts/opt009-wave-1-serialization-retry/semgrep-version-cache SEMGREP_SEND_METRICS=off .venv/bin/pytest -q -m 'not live'",
+    "full_suite_passed": 862,
+    "full_suite_failed": 1,
+    "full_suite_deselected": 27,
+    "full_suite_elapsed_seconds": 374.65,
+    "failed_test": "tests/test_outstanding_work_checkpoint.py::test_outstanding_checkpoint_closes_poc_dod_and_lists_every_open_opt",
+    "failed_assertion": "The immutable checkpoint's recorded open IDs were required to equal the current ledger's open IDs.",
+    "failed_test_file_sha256": "1557ad55068acf5f6862e8e8f001bc20a18894fddacb82a4b92c5ad737b45216",
+    "failure_interpretation": "The 2026-08-07 checkpoint correctly retains OPT-009, OPT-014, and OPT-010 with a 32-closed/3-open summary. The authorized closure would make the current ledger 33 closed and two open, so equality is a stale lifecycle assertion. The test was outside the original reconciliation allowlist and was not edited.",
+    "post_restore_focused_command": ".venv/bin/pytest -q tests/test_documentation_current_state.py tests/test_outstanding_work_checkpoint.py tests/test_optimization_status.py tests/test_opt_009_closure_merge_receipt.py",
+    "post_restore_focused_passed": 12
+  },
+  "restoration": {
+    "lifecycle_files_restored_to_pre_attempt_bytes": true,
+    "optimization_status": "open",
+    "summary": {"closed": 32, "open": 3, "total": 35},
+    "remaining_priority_order": ["OPT-009", "OPT-014", "OPT-010"],
+    "historical_checkpoint_edited": false,
+    "historical_checkpoint_sha256": "5161994703f9768f250cc2b7de4dfdcb4ac26632858495391843b9690291562c"
+  },
+  "store": {
+    "before_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "after_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "byte_identical": true
+  },
+  "accounting": {
+    "network_reads": 0,
+    "network_uploads": 0,
+    "remote_pushes": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "production_store_mutations": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "rescored_findings": 0,
+    "model_training_runs": 0,
+    "source_branch_commits": 0,
+    "merge_commits": 0
+  },
+  "disposition": {
+    "opt_009_closed": false,
+    "closure_result_recorded": false,
+    "commit_or_merge_permitted_after_failure": false,
+    "required_stop_observed": true,
+    "next_step": "A corrected receipt must explicitly authorize only the historical-checkpoint test reconciliation while retaining every original closure boundary."
+  }
+}

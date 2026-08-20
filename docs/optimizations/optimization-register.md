@@ -1,25 +1,19 @@
 # Optimization Register
 
-Status: authoritative post-MVP work list as of 2026-08-01. POC acceptance is complete.
+Status: authoritative post-MVP work list as of 2026-08-20. POC acceptance is complete.
 
 Current execution priorities
 
 OPT-035 publishes the canonical machine-readable lifecycle ledger at
-[`optimization-status.json`](optimization-status.json). It records 30 closed and 5 open
-items. Every open item remains subject to its activation gate; priority does not waive it.
+[`optimization-status.json`](optimization-status.json). It records 35 closed and zero open
+items. There is no remaining execution priority.
 The dated [`outstanding-work checkpoint`](outstanding-work-checkpoint-2026-08-07.json)
-records every open optimization, tuning blocker, and nonblocking future expansion before
-the next paid OPT-005 batch; the accepted POC Definition of Done remains complete.
+is immutable historical evidence of the 2026-08-07 state; it is not a live derived view.
+The accepted POC Definition of Done remains complete.
 
-| Priority | Open item | Gate |
-|---:|---|---|
-| 1 | OPT-002 — family-aware bootstrap ranges | data |
-| 2 | OPT-003 — temporal validation | data |
-| 3 | OPT-009 — novelty prioritization | data |
-| 4 | OPT-014 — predictive checks and portfolio modeling | data |
-| 5 | OPT-010 — agentic falsification | safety and evaluation |
+There are no open optimization items.
 
-OPT-001, OPT-004 through OPT-008, OPT-011 through OPT-013, and OPT-015 through OPT-035 are closed at their approved scope. Optional
+OPT-001 through OPT-035 are closed at their approved scope. Optional
 expansion of a closed bounded scope must be proposed as new work rather than silently
 reopening its lifecycle state.
 
@@ -96,7 +90,7 @@ I. Evaluation and classifier maturity
       does not activate OPT-002; benchmark acquisition is not reclassified as held-out
       evidence — DoD impact: none.
 
-   B. OPT-002 — Family-aware bootstrap ranges — deferred — owner: ML evaluation — source:
+   B. OPT-002 — Family-aware bootstrap ranges — implemented — owner: ML evaluation — source:
       `../triage-accuracy-roadmap.md` — activate after adequate held-out family breadth and
       both classes exist. The
       [`independent acquisition protocol`](opt-002-independent-acquisition-protocol-2026-08-07.json)
@@ -151,10 +145,219 @@ I. Evaluation and classifier maturity
       identity and explicit project-owner dispositions with abstention. It excludes
       follow-up expansion, store writes, automatic labels, providers, rescoring, tuning,
       reserve activation, and promotion.
+      The authorized
+      [`bounded review result`](opt-002-bounded-review-result-2026-08-10.json) records all
+      12 explicit responses: 11 decided projections (five actionable and six
+      non-actionable) plus one preserved abstention. The minimum-label and two-class review
+      conditions pass, while the byte-identical store, zero provider activity, and zero
+      labels confirm that import and OPT-002 status remain separately gated.
+      The pending
+      [`review import receipt`](opt-002-review-import-receipt-2026-08-10.json) freezes one
+      atomic 12-assessment/11-label import and a read-only post-import gate report. It
+      preserves the abstention without a label and excludes response changes, providers,
+      rescoring, training, tuning, reserve activation, production-policy changes, and
+      OPT-002 promotion or closure.
+      The authorized
+      [`review import result`](opt-002-review-import-result-2026-08-10.json) records one
+      atomic transaction: 12 assessments, 11 manual labels, five positive, six negative,
+      and one label-free abstention. The compatible cohort is now 47 labels across nine
+      genuine evaluation families with both classes represented, satisfying the frozen
+      data gate. OPT-002 remains open pending a separate promotion decision.
+      Gate satisfaction activates, rather than completes, the approved roadmap scope. The
+      pending [`bootstrap implementation receipt`](opt-002-bootstrap-implementation-receipt-2026-08-10.json)
+      freezes deterministic 2,000-resample, 95% percentile ranges using evaluation families
+      as sampling units. It preserves descriptive point estimates and excludes automatic
+      threshold selection, training, tuning, rescoring, policy changes, providers, and store
+      mutation.
+      The authorized
+      [`implementation result`](opt-002-bootstrap-implementation-result-2026-08-10.json)
+      reports deterministic 95% family-block ranges for all fixed thresholds over 47
+      compatible human labels and nine evaluation families. The CLI remains descriptive,
+      selects no threshold, and withholds ranges below the label/family/class gate. OPT-002
+      is closed at this bounded scope; further methods or policy use require new scope.
 
-   C. OPT-003 — Temporal validation — deferred — owner: ML evaluation — source:
+   C. OPT-003 — Temporal validation — closed — owner: ML evaluation — source:
       `../triage-accuracy-roadmap.md` — activate after meaningful chronological depth exists
-      — DoD impact: none.
+      — the dated
+      [`temporal validation protocol`](opt-003-temporal-validation-protocol-2026-08-10.json)
+      identifies only one leakage-safe prospective wave: 11 decided labels across two
+      families, scored on August 7 and reviewed on August 10. Earlier compatible labels
+      were outcome-known before scoring and remain retrospective only. Activation requires
+      40 prospective decided labels, eight families, both classes, and two separately
+      frozen prediction waves. Acquisition and execution remain separately gated — DoD
+      impact: none.
+      The pending
+      [`wave-one prediction receipt`](opt-003-wave-1-prediction-receipt-2026-08-10.json)
+      freezes one model before acquisition from the current 122-label effective corpus and
+      exact commits of three outcome-blind product families: Chatwoot, Linkwarden, and
+      Paperless-ngx. It stops after compatible persisted predictions; packet selection,
+      review, assessments, labels, providers, tuning, and policy changes remain excluded.
+      The authorized [`wave-one attempt`](opt-003-wave-1-attempt-2026-08-10.json) froze the
+      exact 122-label model, then stopped before acquisition because required scanner
+      canaries failed. Gitleaks passed; Semgrep, supplemental Semgrep, pip-audit, and the OSV
+      positive control did not. The generic canary also attempted PyPI/OSV-backed checks
+      outside the GitHub-only boundary, recorded as a protocol breach. The store remained
+      byte-identical and no repository, prediction, assessment, or label was created.
+      The pending
+      [`corrected retry receipt`](opt-003-wave-1-corrected-receipt-2026-08-11.json) binds
+      Semgrep logging to the writable retry artifact directory and adds explicit scanner
+      selection. Offline Semgrep/supplemental/Gitleaks controls are separated from named
+      PyPI/OSV advisory-host checks. A new model is required after both pass; the stopped
+      model, review, outcomes, providers, tuning, and policy changes remain excluded.
+      The authorized
+      [`retry result`](opt-003-wave-1-retry-result-2026-08-11.json) passed both separated
+      preflights, trained one new pre-acquisition Random Forest model on the exact 122-label
+      corpus, and persisted 449 compatible scores across the three exact-commit families.
+      Assessments, labels, and the 1,473-row provider ledger remained unchanged. Wave one is
+      now outcome-blind packet-gated.
+      The pending [`wave-one packet receipt`](opt-003-wave-1-packet-receipt-2026-08-11.json)
+      freezes an 18-entry balanced selection, six per family, over 363 eligible
+      production/deployment identities. The selector reads scoring-run presence but no
+      score, rank, expected class, or outcome; rendering and review remain separately gated.
+      The authorized [`packet result`](opt-003-wave-1-packet-result-2026-08-11.json)
+      records one balanced selection of 18 unique identities, six per family, with no
+      forbidden fields and a byte-identical store. Wave one is now bounded-review gated.
+      The pending [`wave-one review receipt`](opt-003-wave-1-review-receipt-2026-08-11.json)
+      limits evidence to 20 adjacent lines for each identity and explicit project-owner
+      dispositions with abstention. Scores, import, second-wave activity, and status changes
+      remain excluded.
+      The authorized [`review result`](opt-003-wave-1-review-result-2026-08-11.json)
+      records 16 decided responses (one positive, 15 negative) and two abstentions. Import
+      remains separately gated; even after import, OPT-003 would still need 13 decided
+      labels across at least three additional families.
+      The pending
+      [`wave-one import receipt`](opt-003-wave-1-import-receipt-2026-08-11.json) freezes one
+      atomic import of 18 project-owner assessments and 16 manual labels while preserving
+      both abstentions without labels. Its read-only gate report must retain the measured
+      13-label/three-family shortfall; second-wave activity and OPT-003 status changes remain
+      separately gated.
+      The authorized
+      [`wave-one import result`](opt-003-wave-1-import-result-2026-08-11.json) records one
+      atomic transaction with 18 assessments, 16 manual labels, one positive, 15 negative,
+      and two label-free abstentions. The prospective cohort is now 27 decided labels across
+      five families and two waves. Both classes and the wave condition pass, but OPT-003
+      remains open pending 13 additional decided labels across three additional families.
+      The pending
+      [`wave-two prediction receipt`](opt-003-wave-2-prediction-receipt-2026-08-11.json)
+      freezes the post-import 138-label effective corpus before exact-commit acquisition of
+      Actual, Memos, and Authentik. Separated scanner preflights must pass before one new
+      model is trained; each family must yield at least six eligible production/deployment
+      identities. Packet selection, review, outcomes, providers, tuning, policy changes,
+      and OPT-003 closure remain separately gated.
+      The authorized
+      [`wave-two attempt`](opt-003-wave-2-attempt-2026-08-11.json) stopped before preflight
+      when a standalone Semgrep version check omitted the required workspace-bound log and
+      attempted a denied write to the user log path. No artifact, model, source, prediction,
+      provider use, assessment, label, or store mutation occurred. The pending
+      [`corrected retry receipt`](opt-003-wave-2-corrected-receipt-2026-08-11.json) now
+      requires the artifact directory and exact log binding before every Semgrep process,
+      including the version check; all original scope and outcome exclusions remain fixed.
+      The authorized corrected retry also stopped before offline preflight: the bound log
+      succeeded, but Semgrep read and attempted to rewrite its separate default user version
+      cache. The denied write created only a retained workspace log; the store remained
+      byte-identical and no canary report, model, source, or prediction was created. The
+      pending [`runtime-corrected receipt`](opt-003-wave-2-runtime-corrected-receipt-2026-08-11.json)
+      replaces the CLI version check with an import-only check, seeds a fresh local cache,
+      and binds both Semgrep paths on every Semgrep-capable process. Original sources,
+      ceilings, allowed hosts, inventory target, and outcome exclusions remain unchanged.
+      The authorized
+      [`runtime-corrected result`](opt-003-wave-2-runtime-corrected-result-2026-08-11.json)
+      records passing confined runtime checks and separated scanner preflights, one new
+      pre-acquisition Random Forest model, three healthy exact-commit deterministic scans,
+      and 368 compatible persisted predictions. Aggregate-only measurement found 249
+      eligible production/deployment identities—60 Actual, 51 Memos, and 138 Authentik—so
+      every six-per-family packet-capacity condition passes. No candidate was selected or
+      disclosed, and assessments, labels, provider usage, and policy remain unchanged.
+      OPT-003 is now wave-two packet-gated.
+      The pending
+      [`wave-two packet receipt`](opt-003-wave-2-packet-receipt-2026-08-11.json)
+      freezes one offline, outcome-blind 18-entry selection with six identities from each
+      immutable Actual, Memos, and Authentik inventory. Scores, ranks, expected classes,
+      source rendering, review, outcomes, providers, store mutation, and status changes
+      remain excluded; branch merge remains deferred until OPT-003 is complete.
+      The authorized
+      [`wave-two packet result`](opt-003-wave-2-packet-result-2026-08-11.json)
+      records one balanced selection of 18 unique identities, six per family, with no
+      forbidden fields and a byte-identical store. No source was rendered and no candidate
+      was disclosed for review. OPT-003 is now wave-two bounded-review gated; branch merge
+      remains deferred.
+      The pending
+      [`wave-two review receipt`](opt-003-wave-2-review-receipt-2026-08-11.json)
+      limits evidence to 20 adjacent source lines before and after each selected citation
+      and explicit project-owner dispositions with abstention. Scores, import, providers,
+      status changes, and branch merge remain excluded.
+      The authorized
+      [`wave-two review result`](opt-003-wave-2-review-result-2026-08-12.json)
+      records 12 decided non-actionable responses and six abstentions. Import remains
+      separately gated. After the projected import, OPT-003 would have eight families,
+      three waves, and both classes, but only 39 decided prospective labels; it therefore
+      remains one decided label short. Status changes and branch merge remain excluded.
+      The pending
+      [`wave-two import receipt`](opt-003-wave-2-import-receipt-2026-08-12.json)
+      freezes one atomic import of 18 assessments and 12 non-actionable labels while
+      preserving six abstentions without labels. Its post-import gate report must retain
+      the measured one-label shortfall; OPT-003 status changes and branch merge remain
+      separately gated.
+      The authorized
+      [`wave-two import result`](opt-003-wave-2-import-result-2026-08-12.json)
+      records one atomic transaction with 18 assessments, 12 non-actionable labels, and six
+      label-free abstentions. The prospective cohort now has 39 decided labels (six
+      positive, 33 negative) across eight families and three waves. Family, wave, and class
+      conditions pass, but the 40-label floor remains one decided label short. OPT-003
+      remains open; status changes and branch merge remain excluded.
+      The authorized
+      [`final-label follow-up receipt`](opt-003-final-label-followup-receipt-2026-08-12.json)
+      froze one local exact-symbol expansion for existing abstention finding 2036. The
+      [`stopped attempt`](opt-003-final-label-followup-attempt-2026-08-12.json) encountered
+      a fifth match and failed closed before writing or presenting evidence; the store was
+      byte-identical and no response was recorded. The pending
+      [`corrected follow-up receipt`](opt-003-final-label-followup-corrected-receipt-2026-08-12.json)
+      instead freezes deterministic selection of only the first four exact matches, still
+      limited to two files and the immutable Actual snapshot. Import, status changes, and
+      branch merge remain separately gated.
+      The authorized
+      [`corrected follow-up result`](opt-003-final-label-followup-result-2026-08-12.json)
+      records four bounded matches in one file and the project owner's
+      `not_attacker_controlled` response for finding 2036. The store remains byte-identical.
+      The pending
+      [`final-label import receipt`](opt-003-final-label-import-receipt-2026-08-12.json)
+      freezes one append-only reassessment and one non-actionable manual label. Its expected
+      read-only gate report reaches 40 decided prospective labels, but status changes and
+      branch merge remain separately gated.
+      The authorized
+      [`final-label import result`](opt-003-final-label-import-result-2026-08-12.json)
+      records assessment 160 and manual non-actionable label 278 while preserving historical
+      abstention 159. Only the assessment and label tables changed, all prior rows were
+      retained, and the measured prospective cohort is now 40 decided labels (six positive,
+      34 negative) across eight families and three waves. The activation floor passes, but
+      OPT-003 remains open pending its required descriptive temporal evaluation. The pending
+      [`temporal report receipt`](opt-003-temporal-report-receipt-2026-08-12.json)
+      freezes aggregate Brier score, fixed-threshold precision/recall, per-wave summaries,
+      and deterministic family-block uncertainty without rescoring, threshold selection,
+      policy changes, status changes, or branch merge.
+      The authorized
+      [`temporal report result`](opt-003-temporal-report-result-2026-08-12.json)
+      verifies prediction-before-assessment chronology for all 40 identities and reports a
+      Brier score of 0.1447 with a 95% family-block percentile range of 0.0452–0.2530.
+      Fixed thresholds are descriptive only; none is selected or recommended. The bounded
+      temporal-validation objective is complete. The authorized
+      [`closure and local-merge receipt`](opt-003-closure-merge-receipt-2026-08-12.json)
+      led to a
+      [`closure attempt`](opt-003-closure-merge-attempt-2026-08-12.json) stopped before any
+      commit or merge because three lifecycle tests encoded superseded state. OPT-003 was
+      restored to open. The pending
+      [`corrected closure receipt`](opt-003-closure-merge-corrected-receipt-2026-08-12.json)
+      retained every closure boundary and permitted only those three test reconciliations.
+      Its authorized
+      [`corrected attempt`](opt-003-closure-merge-corrected-attempt-2026-08-12.json) stopped
+      before commit or merge because one assertion about the immutable OPT-005 snapshot's
+      already-null historical gate was inverted. OPT-003 was restored to open. The pending
+      [`final retry receipt`](opt-003-closure-merge-final-retry-receipt-2026-08-12.json)
+      permitted only that one-line assertion correction while retaining all prior
+      boundaries. The [`closure result`](opt-003-closure-result-2026-08-12.json) records
+      successful lifecycle reconciliation, validation, and local integration. OPT-003 is
+      closed at this bounded descriptive scope; any tuning, recalibration, threshold
+      selection or recommendation, or production-policy use requires a new scope.
 
    D. OPT-004 — Identical-input provider repeatability characterization — implemented —
       owner: evaluation engineering — source: `../convergence-evaluation.md`,
@@ -354,13 +557,41 @@ III. Detection and falsification depth
       exploitability, and other Ruby loaders remain explicit non-claims. Further mechanism
       expansion requires new specific miss evidence. Implemented offline — DoD impact: none.
 
-   C. OPT-009 — In-family/out-of-family novelty prioritization — deferred/data-gated —
-      owner: AppSec/ML evaluation — source: `../project-priorities.md` — activate after
-      enough manually reviewed LLM findings demonstrate held-out benefit — DoD impact: none.
+   C. OPT-009 — In-family/out-of-family novelty prioritization — closed at bounded negative-
+      feasibility scope — owner: AppSec/ML evaluation — source:
+      `../project-priorities.md`. The outcome-blind existing-cohort audit found zero
+      evidence-eligible records. A frozen prospective protocol selected independent sources
+      without findings or outcomes, but its two activated exact-commit families each
+      produced zero eligible OWASP issue groups against the predeclared minimum of eight.
+      The isolated positive/negative instrument qualification then failed because the
+      positive returned a schema-valid but citation-invalid result. A final bounded citation
+      diagnosis proved display-prefix recovery was mechanically possible, but the provider
+      repeat returned an exact anchor and the clarification degraded to a different
+      nonverbatim citation, so it did not support that bounded correction. Further prompt,
+      planner, source, or provider experimentation would expand the frozen protocol post hoc
+      without evidence that it addresses the observed gate failure. OPT-009 is therefore
+      closed as not justified and not feasible at its evaluated scope. This is not a
+      universal impossibility claim; any future semantic-novelty attempt requires newly
+      frozen work, an untouched source cohort, and a separate lifecycle identity. The
+      [`closure result`](opt-009-closure-result-2026-08-18.json) binds the retained negative
+      evidence — DoD impact: none.
 
-   D. OPT-010 — Agentic falsification — deferred — owner: AppSec architecture — source:
-      `../agentic-escalation-gate.md` — activate only after every documented safety and
-      evaluation prerequisite passes — DoD impact: none.
+   D. OPT-010 — Agentic falsification — closed at bounded negative-feasibility scope —
+      owner: AppSec architecture — source: `../agentic-escalation-gate.md`. The isolated,
+      disabled read-only containment facade qualified, and the paired protocol and
+      fail-closed invariants were frozen. The outcome-blind prospective path nevertheless
+      did not produce the predeclared four-family 40-identity packet: the initial screen
+      supplied 30 groups from two families; supported-primary augmentation reached capped
+      capacity 39 with two contributing families; retained Java scans added zero groups;
+      and the final Java/Ruby augmentation stopped under its strict scanner-health contract
+      after both Java subjects and before a complete Ruby screen. No paired G03b comparison,
+      empirical G04 recall evaluation, threshold, or production activation was reached.
+      OPT-010 is therefore not justified and not feasible at its evaluated scanner, data,
+      verifier, and paired-evaluation scope. This is neither a universal impossibility claim
+      nor evidence of production readiness. The qualified facade remains disabled and
+      disconnected; future agentic evaluation requires a new lifecycle identity and scope.
+      The [`closure result`](opt-010-bounded-negative-feasibility-closure-result-2026-08-20.json)
+      binds the retained evidence — DoD impact: none.
 
 IV. Quantitative enrichment
 
@@ -379,7 +610,8 @@ IV. Quantitative enrichment
       records `organization_all_event_v1`: one marked modeling unit, one IRIS frequency
       stream, neutral organization defaults or explicit `*` overrides, immutable historical
       semantics, and aligned simulation/audit/report surfaces. OPT-011 is closed; category
-      attribution and remediation deltas remain unavailable and OPT-014 remains data-gated.
+      attribution and remediation deltas remain unavailable at OPT-014's closed descriptive
+      scope and require newly governed work if revisited.
 
    B. OPT-012 — Dated cached EPSS/KEV enrichment — implemented — owner: threat-data
       engineering — source: `../prior-scope-roadmap.md`. The frozen
@@ -402,9 +634,19 @@ IV. Quantitative enrichment
       no distribution input or quantitative result changed. Implemented — DoD impact: none.
 
    D. OPT-014 — Prior-predictive checks, held-out validation, hierarchical priors,
-      backtesting, and portfolio optimization — deferred/data-gated — owner:
-      quantitative-methodology — source: `../prior-scope-roadmap.md` — activate only with
-      applicable organization/incident data — DoD impact: none.
+      backtesting, and portfolio optimization — closed at bounded descriptive scope — owner:
+      quantitative-methodology — source: `../prior-scope-roadmap.md`. The offline audit
+      found no eligible observed organization-period outcomes. The frozen 200,000-draw
+      prior-predictive report reproduced the configured neutral-baseline implications but
+      established no validation, calibration, representativeness, or decision-grade claim.
+      Bounded public and controlled-access discovery found no source satisfying the exact
+      commercial-rights, denominator, explicit-zero, incident-count, stable-key, version,
+      and lineage contract; this is not a universal data-impossibility claim. SEC/EDGAR is
+      retained only as an inactive material-disclosure-context reserve, and non-filing
+      periods are not zero-incident observations. The
+      [`closure result`](opt-014-descriptive-scope-closure-result-2026-08-18.json) binds the
+      evidence and requires any future outcome, disclosure, hierarchical, remediation, or
+      portfolio study to use a new lifecycle identity — DoD impact: none.
 
 V. Intake
 

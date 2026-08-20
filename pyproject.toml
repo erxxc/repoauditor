@@ -12,7 +12,7 @@ dependencies = [
     "httpx>=0.27",
     "pydantic>=2.7",
     "pyyaml>=6.0",
-    "gitpython>=3.1",
+    "gitpython>=3.1.58",
     "anthropic>=0.40",
     # triage/ + analyze/risk_quant.py. Classical ML + numerics only — no deep
     # learning (a CLAUDE.md constraint): scikit-learn, XGBoost, NumPy, SciPy,
@@ -59,4 +59,5 @@ markers = [
     "integration: exercises real scanner binaries, full calibration, or chart rendering.",
     "live: hits the real Anthropic API (opt in with REPOAUDITOR_LLM=live). Deselected by default.",
     "instrument: manufactured-solution instrument qualification control.",
+    "local_evidence: validates retained evidence in the git-ignored local data tree.",
 ]

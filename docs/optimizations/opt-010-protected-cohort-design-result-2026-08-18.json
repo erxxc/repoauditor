@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-010",
+  "status": "complete-prospective-metadata-source-discovery-required",
+  "recorded_at": "2026-08-18",
+  "authorization": "The project owner authorized one outcome-blind offline G02/G05 protected-cohort and subgroup eligibility design with aggregate-only local inventory classification and zero source selection, outcome access, agent execution, provider use, or production-store access beyond hashing.",
+  "execution_evidence": {
+    "receipt": {
+      "path": "docs/optimizations/opt-010-protected-cohort-design-receipt-2026-08-18.json",
+      "sha256": "692f3a5e56628855a8e449796a3fb7bff495e134b99a2e8d4b4b01178ce0c7a3"
+    },
+    "design": {
+      "path": "docs/optimizations/opt-010-protected-cohort-design-2026-08-18.json",
+      "sha256": "bb77f61d14051fb6c5443b30157a92089f8e3ecbf53cb20c69daa2adaa7b12b8"
+    },
+    "aggregate_artifact": {
+      "path": "docs/optimizations/opt-010-protected-cohort-eligibility-artifact-2026-08-18.json",
+      "sha256": "b052cce1856c7375a489ea1692dd025b8174c0e1419f831b93fad3a1c4268d3e"
+    },
+    "focused_tests": {
+      "passed": 13,
+      "failed": 0,
+      "status": "passed"
+    }
+  },
+  "store": {
+    "access": "before-and-after-hash-only",
+    "before_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "after_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "byte_identical": true,
+    "reads": 0,
+    "mutations": 0
+  },
+  "findings": {
+    "design_frozen": true,
+    "fully_specified_untouched_source_families": 0,
+    "bounded_documented_units": 25,
+    "historical_family_reference": 8,
+    "family_shortfall_against_historical_reference": 8,
+    "threshold_selected_or_recommended": false,
+    "OPT_036_admitted": false
+  },
+  "gate_state": {
+    "G02": "partial-contract-frozen-no-eligible-protected-cohort",
+    "G03a": "documented-pass-frozen-paired-comparison-protocol",
+    "G03b": "pending-separate-authorization-and-G02-G04-G05-G07-evidence",
+    "G04": "partial-recall-safety-needs-frozen-cohort-and-later-empirical-evidence",
+    "G05": "partial-contract-frozen-no-eligible-protected-subgroups",
+    "G06": "documented-pass-disabled-isolated-containment-foundation",
+    "G07": "partial-verifier-coverage-cannot-be-qualified-without-frozen-cohort"
+  },
+  "decision": {
+    "result_state": "prospective-metadata-source-discovery-required",
+    "OPT_010_status": "open-deferred",
+    "agentic_experiment_permitted": false,
+    "production_activation_permitted": false,
+    "smallest_next_prerequisite": "Separately authorize an outcome-blind metadata-only discovery and eligibility screen for genuinely untouched independent deployable-product source families, using a project-owner-set source ceiling and the frozen design contract; do not acquire repositories, inspect findings or outcomes, or select an adequacy threshold.",
+    "why_next": "The local documented inventory contributes zero fully specified untouched families under the frozen contract, so no later verifier-coverage, recall, or paired baseline qualification can be validly bound yet.",
+    "source_ceiling_recommended": null,
+    "adequacy_threshold_recommended": null
+  },
+  "accounting": {
+    "new_designs": 1,
+    "aggregate_artifacts": 1,
+    "result_documents": 1,
+    "focused_test_files": 1,
+    "network_reads": 0,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "schema_migrations": 0,
+    "repository_materializations": 0,
+    "repository_code_executions": 0,
+    "scanner_processes": 0,
+    "agentic_falsification_runs": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0,
+    "source_commits": 0,
+    "merge_commits": 0
+  }
+}

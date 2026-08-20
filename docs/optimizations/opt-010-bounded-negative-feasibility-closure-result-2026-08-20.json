@@ -1,0 +1,102 @@
+{
+  "schema_version": "opt010-bounded-negative-feasibility-closure-result-v1",
+  "optimization": "OPT-010",
+  "recorded_at": "2026-08-20",
+  "status": "closed-not-justified-and-not-feasible-at-evaluated-scope",
+  "interpretation": {
+    "evaluated_scope": [
+      "scanner qualification and strict scanner-health routing",
+      "outcome-blind prospective data capacity",
+      "supported deterministic verifier cells",
+      "frozen paired-evaluation prerequisites"
+    ],
+    "positive_retained_scope": [
+      "authoritative usage accounting",
+      "frozen paired protocol and fail-closed comparison invariants",
+      "qualified disabled and disconnected read-only containment facade",
+      "six exact prospective snapshots, retrieval indexes, and bounded architecture maps",
+      "qualified Java CWE-918 scratch-rule and Ruby CWE-502 pinned-default synthetic controls"
+    ],
+    "negative_or_unresolved_scope": [
+      "the initial exact-40 packet contract yielded 30 deduplicated groups from two families",
+      "supported-primary augmentation reached capped capacity 39 with two contributing families",
+      "retained Java source scans contributed zero Java groups",
+      "the final Java/Ruby augmentation stopped under strict scanner-health after both Java subjects and before a complete Ruby screen",
+      "no complete four-family packet, paired G03b result, empirical G04 recall result, threshold, or production activation was reached"
+    ],
+    "claims_not_made": [
+      "agentic falsification is universally impossible or valueless",
+      "the read-only facade improves correctness, precision, recall, latency, or cost",
+      "the prospective sources contain or do not contain actionable vulnerabilities",
+      "production activation, integration, or deployment is safe"
+    ],
+    "future_work_rule": "Future agentic evaluation, scanner-policy changes, verifier expansion, new sources, packet construction, paired runs, or production activation require a new lifecycle identity, scope, and authorization.",
+    "requested_closure_not_finalized": false
+  },
+  "lifecycle": {
+    "summary": {"closed": 35, "open": 0, "total": 35},
+    "opt_010": {"status": "closed", "gate": "none", "next_priority": null},
+    "remaining_priority": [],
+    "restored_after_stop": false
+  },
+  "preservation": {
+    "read_only_facade": "qualified-disabled-and-disconnected",
+    "historical_checkpoint_sha256": "5161994703f9768f250cc2b7de4dfdcb4ac26632858495391843b9690291562c",
+    "production_store_sha256_before": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "production_store_sha256_after": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "configuration_sha256": "c0f3a6569fb0d5c4f90464a5ce143ae8112b5918e261303c1d5acbf5b8a47680",
+    "configuration_schema_sha256": "e92d255470b83882fa46f88d4a7501ea6b0e44d7d58f00269ee48f455529c3d9",
+    "receipts_results_artifacts_helpers_implementations_edited": 0
+  },
+  "output_bindings": {
+    "optimization_status": {"path": "docs/optimizations/optimization-status.json", "sha256": "3853e9a046506cb908d293b3045f7488786e05e2cde13e5e70eac08e89e4f1f4"},
+    "optimization_register": {"path": "docs/optimizations/optimization-register.md", "sha256": "52f218f9c1fd5bbc54d73844cff2070b9a9535df537c7ededb16d7da0cd014ff"},
+    "documentation_status": {"path": "docs/documentation-status.md", "sha256": "0d809435c28946f81c18662594b6dd949d2f04f6e787a0bd5058457006fc034e"},
+    "project_priorities": {"path": "docs/project-priorities.md", "sha256": "262f00cca343fb9a48ca9f85db08a51f682b332b7d31ad27c22c1a6e74f00fac"},
+    "triage_accuracy_roadmap": {"path": "docs/triage-accuracy-roadmap.md", "sha256": "44ee0346ab25cd8f87fc807ca0ceb001fea23a7baebd467ef3c0e16a47580f74"},
+    "agentic_escalation_gate": {"path": "docs/agentic-escalation-gate.md", "sha256": "504c2e55d60b47ee2796b4e39666c178722288dd16b1e9ec8192e31155bbbf22"}
+  },
+  "historical_test_reconciliation": {
+    "allowed_files_changed": 7,
+    "immutable_historical_hashes_edited": 0,
+    "focused_tests_passed": 40,
+    "corrected_retry_additional_files_changed": 12,
+    "corrected_retry_focused_tests_passed": 66,
+    "final_retry_additional_files_changed": 1,
+    "final_retry_combined_focused_tests_passed": 76
+  },
+  "validation": {
+    "command": ".venv/bin/python -m pytest -q -m 'not live'",
+    "status": "passed-final-retry",
+    "passed": 1231,
+    "failed": 0,
+    "skipped": 2,
+    "deselected": 27,
+    "retained_original_stop": {"passed": 1204, "failed": 17, "skipped": 2, "deselected": 27},
+    "retained_corrected_retry_pre_suite_stop": {"passed": 3, "failed": 2}
+  },
+  "activity": {
+    "network_reads_or_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "keychain_or_credential_reads": 0,
+    "repository_materializations_or_code_executions": 0,
+    "scanner_processes": 0,
+    "production_store_reads_or_mutations": 0,
+    "schema_migrations": 0,
+    "assessments": 0,
+    "labels": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0,
+    "agentic_or_baseline_runs": 0,
+    "human_reviews": 0,
+    "outcomes_read": 0,
+    "workspace_branch_or_index_mutations": 0,
+    "commits": 0,
+    "merges": 0,
+    "pushes": 0,
+    "deployments": 0
+  },
+  "integration": "deferred-and-not-authorized"
+}

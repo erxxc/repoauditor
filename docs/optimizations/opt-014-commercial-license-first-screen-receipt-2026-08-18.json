@@ -1,0 +1,177 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-014",
+  "status": "authorization-pending",
+  "frozen_at": "2026-08-18",
+  "design": {
+    "path": "opt-014-independent-data-acquisition-design-2026-08-18.json",
+    "sha256": "af29a9bd3e1f644fd6ee115daccf59c6da166b45c668941a8f22b4416e09be15"
+  },
+  "prior_discovery": {
+    "path": "opt-014-metadata-source-discovery-result-2026-08-18.json",
+    "sha256": "3da5b5ce5be01b9bf302c4875203e78c3667cec904fd240a3c60ddc0ec6c997d"
+  },
+  "uk_canada_qualification": {
+    "path": "opt-014-uk-canada-access-codebook-qualification-result-2026-08-18.json",
+    "sha256": "72c041056415836b2bd1ae6325ae0301d994c9ada6636fa1bcca9c3abab5aa63"
+  },
+  "ukds_deferral": {
+    "path": "opt-014-ukds-registration-terms-qualification-deferral-2026-08-18.json",
+    "sha256": "4ff1cc6e73959e0336bccf99242821b00e6e170e908b66ebaf86c08397616152",
+    "state": "deferred-commercial-rights-uncertain",
+    "execution_started": false
+  },
+  "scope": "Conduct one low-effort outcome-blind commercial-license-first metadata screen. Reject a source before detailed schema review if its record-level terms are non-commercial, research-only, registration-only, permission-only, purchase-only, reciprocal/share-alike, field-of-use restricted, missing, or ambiguous. For sources with directly documented permissive commercial reuse, classify only their advertised organization-period denominator, explicit zero-event, incident-count, realized-cost, stable-key, provenance, lineage, format, size, and version metadata. Disclose at most eight screened identities, persist one aggregate result, and stop before ranking, source selection, acquisition, outcome access, or OPT-010 execution.",
+  "screen_contract": {
+    "license_gate_first": true,
+    "license_states": [
+      "documented-permissive-commercial-pass",
+      "documented-commercial-conditional",
+      "documented-commercial-fail",
+      "unresolved"
+    ],
+    "permissive_pass_rule": "Pass only direct official record-level terms equivalent to public domain, CC0, CC BY, Open Government Licence, or another explicit commercial-reuse grant that requires no registration, data-owner permission, payment, field-of-use limitation, non-commercial limitation, research-only limitation, or share-alike/reciprocal release obligation.",
+    "conditional_rule": "Classify CC BY-SA share-alike and any other commercially usable but reciprocal, product-distribution-sensitive, or downstream-obligation-bearing terms as documented-commercial-conditional; they do not pass this screen.",
+    "fail_rule": "Classify non-commercial, research-only, registration/EUL, data-owner permission, application, contact, purchase, payment, subscription, bespoke agreement, or explicit incompatible field-of-use terms as documented-commercial-fail.",
+    "unresolved_rule": "Missing, unclear, publication-only, site-only, repository-only, or non-record-level license wording remains unresolved and does not pass.",
+    "schema_review_only_after_pass": true,
+    "schema_requirements": [
+      "organization-period or organization-year statistical unit",
+      "explicit reconstructable target-population denominator",
+      "zero-event organization-periods under the same ascertainment process as positive periods",
+      "incident-count fields and versioned incident definitions",
+      "realized-loss or response-cost fields with currency, censoring, and missingness metadata when magnitude validation is claimed",
+      "stable deidentified or pseudonymous organization key and duplicate-control support",
+      "versioned provenance and deterministic overlap-exclusion support from IRIS, Advisen, VERIS, DBIR, NCSC, and other screened families",
+      "advertised record format, aggregate size, and immutable release identity"
+    ],
+    "candidate_states": [
+      "commercially-permissive-full-organization-period-candidate",
+      "commercially-permissive-magnitude-only-candidate",
+      "commercially-permissive-aggregate-context-only",
+      "commercial-license-pass-but-structurally-ineligible",
+      "license-conditional-screened-out",
+      "license-fail-screened-out",
+      "license-unresolved-screened-out"
+    ],
+    "full_candidate_rule": "A full candidate requires documented-permissive-commercial-pass plus every frequency, zero-period, identifier, version, provenance, and lineage requirement. Missing metadata is never inferred.",
+    "no_ranking_or_scoring": true
+  },
+  "bounded_source_funnel": {
+    "preexcluded_without_network": [
+      {
+        "identity": "UK Data Service study 9285",
+        "reason": "Registration and End User Licence path is already deferred for unresolved commercial compatibility."
+      },
+      {
+        "identity": "Statistics Canada CSCSC 2017 record 5244, detailed ID 359489",
+        "reason": "The fixed 2017 record-level access tier is not currently advertised."
+      }
+    ],
+    "fixed_order": [
+      "Previously frozen public research-data identities with an explicit license, beginning with VCDB and then other directly license-bearing frozen candidates.",
+      "Official GOV.UK or European Commission enterprise-cyber survey identities whose publication or record-level reuse license can be distinguished without reading outcomes.",
+      "Official U.S. Census enterprise cybersecurity survey or microdata catalog identities.",
+      "Official SEC cyber-incident reporting collection and issuer-population metadata identities.",
+      "Official HHS OCR breach-collection metadata only if record-level commercial reuse terms are directly documented.",
+      "At most two additional exact official identities surfaced within the enumerated hosts and source classes."
+    ],
+    "maximum_disclosed_identities": 8,
+    "maximum_new_identities": 4,
+    "maximum_documents_per_identity": 3,
+    "stop_after_first_full_candidate": false,
+    "reason_to_continue_after_full_candidate": "Complete the frozen bounded inventory without ranking candidates; source selection remains separate."
+  },
+  "outcome_blinding": {
+    "permitted_inputs": "Source identity, publisher, license, commercial-reuse terms, access requirements, unit, denominator, zero-period, field names, schema, provenance, lineage, version, format, and aggregate advertised size metadata only.",
+    "forbidden_inputs": "Records, samples, previews, incident totals, rates, loss values, quantiles, distributions, correlations, organization identities, model performance, prior agreement, and candidate apparent usefulness.",
+    "incidental_value_quarantine": "If a permitted page or search result co-mingles outcome values, do not transcribe, persist, compare, summarize, or use them; record only that quarantine occurred and stop reading that section."
+  },
+  "deterministic_funnel": [
+    "Verify the design, prior discovery, UK/Canada qualification, UKDS deferral, receipt, and production-store digest offline.",
+    "Apply the license-first gate to previously frozen candidate metadata without network reads where sufficient direct terms already exist.",
+    "Use public official metadata on exact enumerated hosts only for unresolved fixed families and at most four new exact identities.",
+    "Stop detailed review for each identity immediately unless the record-level license is a documented permissive commercial pass.",
+    "For license-pass identities only, classify the frozen structural schema requirements without records or outcomes.",
+    "Persist one aggregate result disclosing at most eight identities and stop. If no full candidate exists, record OPT-014 as operationally parked while lifecycle status remains open-data-gated and identify OPT-010 as the next work item without executing it."
+  ],
+  "allowed_reads": [
+    "Official public landing, catalog, release, license, terms, methodology, schema, questionnaire, codebook, provenance, lineage, version, format, and advertised-size metadata on exact enumerated hosts.",
+    "Public repository README, LICENSE, release, and file-name or schema metadata on github.com without opening raw data, records, source code, or notebooks.",
+    "Metadata-only search results restricted to exact enumerated hosts; an unlisted result or redirect may not be opened or used."
+  ],
+  "forbidden_actions": [
+    "Credentials, login, registration, account creation, terms or license acceptance, application, inquiry, contact, purchase, payment, subscription, restricted-data request, or protected portal access",
+    "Raw, row-level, sample, preview, extract, table, API-data response, archive, CSV, JSON, database, spreadsheet, SPSS, Stata, microdata, incident, organization, or source-record access",
+    "Outcome, incident-total, rate, loss-value, quantile, distribution, correlation, organization, model-performance, or prior-agreement inspection or persistence",
+    "Dataset code, notebook, query, API client, repository code, scanner, simulation, fitting, scoring, model, or translation-provider execution",
+    "Candidate ranking, source acquisition selection, adequacy threshold, cohort or holdout selection, linkage-key construction, deduplication implementation, evaluation, fitting, prior or methodology change",
+    "Production-store access or mutation, schema migration, assessment, label, training, rescoring, OPT-014 lifecycle change, OPT-010 execution, branch integration, remote push, or deployment"
+  ],
+  "resource_ceilings": {
+    "maximum_elapsed_minutes": 20,
+    "maximum_new_data_bytes": 5242880,
+    "maximum_candidate_identities": 8,
+    "maximum_new_candidate_identities": 4,
+    "maximum_metadata_documents": 24,
+    "maximum_result_documents": 1,
+    "network_hosts": [
+      "gov.uk",
+      "www.gov.uk",
+      "assets.publishing.service.gov.uk",
+      "ec.europa.eu",
+      "data.europa.eu",
+      "census.gov",
+      "www.census.gov",
+      "www2.census.gov",
+      "data.census.gov",
+      "sec.gov",
+      "www.sec.gov",
+      "data.sec.gov",
+      "hhs.gov",
+      "www.hhs.gov",
+      "ocrportal.hhs.gov",
+      "veriscommunity.net",
+      "github.com",
+      "zenodo.org"
+    ],
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "dataset_downloads": 0,
+    "raw_records_read": 0,
+    "registrations_applications_or_contacts": 0,
+    "purchases_payments_or_subscriptions": 0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "simulation_runs": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0
+  },
+  "result_contract": {
+    "states": [
+      "commercially-permissive-full-candidate-found",
+      "commercially-permissive-partial-or-context-only",
+      "no-commercially-permissive-eligible-candidate"
+    ],
+    "full_candidate_found": "Disclose the identity and remaining governance gaps, but do not rank, select, acquire, or clear the data gate.",
+    "no_full_candidate": "Record the bounded negative screen, mark OPT-014 operationally parked and still open-data-gated, and identify OPT-010 as next in work sequencing without changing the optimization lifecycle ledger or executing OPT-010.",
+    "bounded_negative_claim": "A negative result applies only to the screened identities, exact metadata, and frozen observation contract. It is not a universal claim that no commercially compatible source can exist."
+  },
+  "stop_conditions": [
+    "The design, prior discovery, UK/Canada result, UKDS deferral, frozen receipt, or production-store digest drifts.",
+    "A record-level commercial-use license is missing, ambiguous, non-commercial, research-only, reciprocal/share-alike, registration-only, permission-only, purchase-only, field-of-use restricted, or requires any agreement or action; classify and stop that source before schema review.",
+    "A required page redirects to or loads material from an unlisted host.",
+    "Resolving a gate requires login, registration, terms acceptance, application, contact, purchase, download, record access, outcome inspection, or an undocumented favorable inference.",
+    "The document, time, byte, identity, new-identity, or result ceiling would be exceeded.",
+    "Any ranking, source selection, acquisition, adequacy judgment, evaluation, store, model, policy, lifecycle, OPT-010, branch, remote, or deployment action is attempted."
+  ],
+  "result_boundary": "The result may disclose and classify at most eight source identities, report exact commercial-license and structural metadata states, and conditionally record OPT-014 as operationally parked with OPT-010 next in work sequencing. It may not select or acquire a source, inspect or disclose records or outcomes, clear the OPT-014 data gate, close or promote OPT-014, execute OPT-010, judge statistical adequacy, change a prior or methodology, alter the lifecycle ledger, or change production policy.",
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the OPT-014 low-effort commercial-license-first source screen described by opt-014-commercial-license-first-screen-receipt-2026-08-18.json, limited to one outcome-blind metadata screen of at most eight disclosed identities and four new identities; mandatory rejection before schema review of non-commercial, research-only, registration-only, permission-only, purchase-only, reciprocal or share-alike, field-of-use-restricted, missing, ambiguous, or otherwise non-permissive record-level terms; structural classification only after direct official public-domain, CC0, CC BY, Open Government Licence, or equivalent permissive commercial-reuse terms pass; quarantine of incidentally visible outcomes; and one aggregate result that, if no full organization-period candidate survives, records OPT-014 as operationally parked and still open-data-gated with OPT-010 next in work sequencing but unexecuted, with ceilings of 20 minutes, 5 MiB new data, 24 metadata documents, only gov.uk, www.gov.uk, assets.publishing.service.gov.uk, ec.europa.eu, data.europa.eu, census.gov, www.census.gov, www2.census.gov, data.census.gov, sec.gov, www.sec.gov, data.sec.gov, hhs.gov, www.hhs.gov, ocrportal.hhs.gov, veriscommunity.net, github.com, and zenodo.org network access, and exactly zero uploads, provider calls, tokens, cost, dataset downloads, raw record reads, registrations, applications, contacts, purchases, payments, subscriptions, production-store reads or mutations, assessments, labels, simulation runs, model training, or rescoring. Credentials, login, account creation, terms acceptance, protected portals, records, tables, APIs, previews, samples, outcomes, code or notebook execution, candidate ranking, source selection or acquisition, linkage-key construction, adequacy thresholds, cohort or holdout selection, evaluation, fitting, prior or methodology changes, production-policy changes, OPT-014 promotion or closure, optimization-ledger changes, OPT-010 execution, branch integration, remote push, and deployment remain excluded."
+  }
+}

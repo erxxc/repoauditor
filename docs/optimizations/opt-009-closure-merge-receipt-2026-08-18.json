@@ -1,0 +1,139 @@
+{
+  "schema_version": 1,
+  "frozen_at": "2026-08-18",
+  "optimization": "OPT-009",
+  "status": "authorization-pending",
+  "scope": "Close OPT-009 at its completed negative feasibility and instrument-diagnosis scope, reconcile current lifecycle and roadmap documents, record one closure result, move the existing uncommitted OPT-009 work from local main onto one new local closure branch without changing its base commit, commit only the frozen allowlist once, and create one conflict-free local non-fast-forward merge commit back into unchanged local main after the full offline non-live suite passes.",
+  "closure_basis": [
+    "The read-only audit of the pre-existing LLM cohort found zero evidence-eligible records for held-out novelty-benefit evaluation.",
+    "The frozen prospective protocol selected eight primary and four reserve sources without security or outcome inputs, but the completed first two exact-commit families each produced zero eligible OWASP issue groups against the predeclared minimum of eight.",
+    "The isolated positive/negative instrument qualification did not pass: the positive produced one schema-valid but citation-invalid result, while the negative correctly produced none.",
+    "The final bounded citation diagnosis proved a possible display-prefix mismatch offline but did not reproduce that causal pattern with the provider: the unchanged prompt returned one exact anchor and the clarification degraded to a nonverbatim citation.",
+    "No bounded correction is supported. Additional prompt, planner, provider, or source experimentation would expand the protocol post hoc without evidence that the change addresses the observed gate failure."
+  ],
+  "terminal_interpretation": "OPT-009 is closed as not justified and not feasible at the evaluated scope. This is a negative bounded-investigation result, not a universal claim that semantic novelty prioritization can never work. Any future attempt must be proposed as new work with a newly frozen instrument, untouched source cohort, and separate lifecycle identity rather than reopening or tuning OPT-009.",
+  "bound_evidence": {
+    "existing_cohort_audit": {
+      "path": "opt-009-eligibility-audit-result-2026-08-12.json",
+      "sha256": "a04112757364412d272a83d5d29a6d8e9e0f5f8852bb99548759278f1511c36f"
+    },
+    "source_selection": {
+      "path": "opt-009-prospective-source-selection-result-2026-08-12.json",
+      "sha256": "2985f90110d2a40d9f2dbe45f2db166c351515e44182a251945edd4474dbca55"
+    },
+    "prospective_wave": {
+      "path": "opt-009-prospective-detection-wave-1-serialization-retry-result-2026-08-13.json",
+      "sha256": "f63321a143a1252124bd7c58f7bbcd3bf19bede738722311a49f0edc5663241f"
+    },
+    "instrument_qualification": {
+      "path": "opt-009-instrument-qualification-result-2026-08-13.json",
+      "sha256": "d04575d1d2e68d7a52119a19da4029576b2a9dbecd7f52b551e442ba9be4ee60"
+    },
+    "citation_diagnosis": {
+      "path": "opt-009-citation-diagnosis-result-2026-08-13.json",
+      "sha256": "9852593e20e56fd9bad5f9e63c6dcf142733af2bd7b85d1c001e9afb3d031f67"
+    },
+    "production_store": {
+      "path": "../../data/repoauditor.db",
+      "sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a"
+    }
+  },
+  "authorized_lifecycle_changes": {
+    "optimization_status": {
+      "path": "optimization-status.json",
+      "updated_at": "2026-08-18",
+      "summary": {"closed": 33, "open": 2, "total": 35},
+      "opt_009": {"status": "closed", "gate": "none", "next_priority": null},
+      "remaining_priority_order": ["OPT-014", "OPT-010"]
+    },
+    "descriptive_documents": [
+      "optimization-register.md",
+      "../documentation-status.md",
+      "../project-priorities.md",
+      "../triage-accuracy-roadmap.md"
+    ],
+    "historical_checkpoint_policy": "outstanding-work-checkpoint-2026-08-07.json remains byte-identical historical evidence. Current documentation and tests must stop describing it as a live derived checkpoint or requiring equality with the 2026-08-18 ledger.",
+    "closure_result": "opt-009-closure-result-2026-08-18.json"
+  },
+  "git_preconditions": {
+    "initial_working_branch": "main",
+    "initial_head": "296945be4497b9577b325ee1648cc700f9233a3c",
+    "initial_local_main": "296945be4497b9577b325ee1648cc700f9233a3c",
+    "known_origin_main": "6cf17f0ba3ea430e01540882f9890f9b38975f9b",
+    "origin_main_is_older_than_local_main": true,
+    "network_fetch": false,
+    "new_source_branch": "codex/opt-009-closure",
+    "source_branch_base": "296945be4497b9577b325ee1648cc700f9233a3c",
+    "worktree_transfer": "Create the source branch directly from current local main while preserving the existing scoped dirty worktree; do not stash, reset, rebase, cherry-pick, or update from origin."
+  },
+  "commit_and_merge_contract": {
+    "source_branch_commits": 1,
+    "source_branch_commit_message": "feat: close OPT-009 novelty feasibility study",
+    "target_branch": "main",
+    "target_branch_must_remain_at": "296945be4497b9577b325ee1648cc700f9233a3c",
+    "merge_strategy": "one local non-fast-forward merge commit; stop on conflict",
+    "merge_commit_message": "Merge branch 'codex/opt-009-closure'",
+    "remote_push": false,
+    "branch_deletion": false,
+    "allowed_commit_paths": [
+      "docs/documentation-status.md",
+      "docs/project-priorities.md",
+      "docs/triage-accuracy-roadmap.md",
+      "docs/optimizations/optimization-register.md",
+      "docs/optimizations/optimization-status.json",
+      "docs/optimizations/opt-009-*.json",
+      "docs/optimizations/opt-009-*.md",
+      "src/repoauditor/detect/__init__.py",
+      "src/repoauditor/detect/ensemble.py",
+      "src/repoauditor/ingest/repo.py",
+      "src/repoauditor/sourcefiles.py",
+      "src/repoauditor/eval/novelty_*.py",
+      "tests/test_detection_planning.py",
+      "tests/test_deterministic.py",
+      "tests/test_ingest.py",
+      "tests/test_documentation_current_state.py",
+      "tests/test_opt_009_*.py"
+    ],
+    "ignored_data_committed": false
+  },
+  "validation_contract": {
+    "full_offline_non_live_test_suite": true,
+    "json_validation": true,
+    "git_diff_check": true,
+    "optimization_status_consistency": true,
+    "historical_checkpoint_unchanged": true,
+    "production_store_sha256_before_and_after": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "source_commit_contains_only_allowlisted_paths": true,
+    "target_main_unchanged_before_merge": true,
+    "clean_tracked_worktree_after_merge": true
+  },
+  "resource_ceilings": {
+    "maximum_elapsed_minutes": 45,
+    "maximum_new_data_bytes": 2097152,
+    "source_branch_commits": 1,
+    "merge_commits": 1,
+    "network_reads": 0,
+    "network_uploads": 0,
+    "remote_pushes": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "store_mutations": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "rescored_findings": 0,
+    "model_training_runs": 0
+  },
+  "stop_conditions": [
+    "Any bound evidence or production-store digest differs, current local main is not exactly 296945be4497b9577b325ee1648cc700f9233a3c before branch creation, or codex/opt-009-closure already exists at an unexpected identity.",
+    "Any lifecycle summary differs from 33 closed, two open, 35 total with OPT-014 then OPT-010 in remaining priority order.",
+    "Any full offline non-live test, JSON validation, lifecycle consistency test, historical-checkpoint test, git diff check, or allowlist check fails.",
+    "Any source commit path falls outside the frozen allowlist, ignored data would be committed, local main changes before merge, or integration produces a conflict.",
+    "Any network read, upload, remote push, provider activity, production-store mutation, assessment, label, rescore, model training, prompt or planner tuning, recalibration, threshold selection or recommendation, production-policy change, deployment, branch deletion, stash, reset, rebase, or cherry-pick is attempted."
+  ],
+  "completion_boundary": "After lifecycle reconciliation, one allowlisted source-branch commit, full offline non-live validation, one conflict-free local merge commit into unchanged main, clean tracked worktree, and a byte-identical production store, OPT-009 is closed and locally integrated. No remote push, deployment, prompt/planner correction, tuning, threshold, production policy, OPT-014 work, or OPT-010 work is authorized.",
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the OPT-009 bounded negative-feasibility closure and local integration described by opt-009-closure-merge-receipt-2026-08-18.json, limited to marking OPT-009 closed as not justified and not feasible at its evaluated scope while preserving every negative result and explicitly avoiding a universal impossibility claim; updating optimization-status.json to 33 closed and two open items in OPT-014, OPT-010 priority order; reconciling only optimization-register.md, documentation-status.md, project-priorities.md, triage-accuracy-roadmap.md, and the current-state documentation test while retaining the dated outstanding-work checkpoint unchanged as historical evidence; recording one closure result; creating local branch codex/opt-009-closure directly from unchanged local main 296945be4497b9577b325ee1648cc700f9233a3c with the existing scoped worktree; running the full offline non-live suite; committing only the frozen OPT-009 documentation, detector/acquisition bounds, evaluation helpers, and tests plus those lifecycle files once; and creating one conflict-free local non-fast-forward merge commit back into unchanged main, with ceilings of 45 minutes, 2 MiB new data, one source-branch commit, one merge commit, and exactly zero network reads, uploads, remote pushes, provider calls, tokens, cost, production-store mutations, assessments, labels, rescoring, or model training. Prompt or planner correction, tuning, recalibration, threshold selection or recommendation, production-policy changes, deployment, OPT-014 or OPT-010 execution, stash, reset, rebase, cherry-pick, branch deletion, and any unlisted file change remain excluded."
+  }
+}

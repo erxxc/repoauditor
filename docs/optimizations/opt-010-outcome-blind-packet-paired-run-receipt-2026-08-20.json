@@ -1,0 +1,166 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-010",
+  "status": "authorization-pending",
+  "objective": "Construct the frozen 40-identity supported packet from retained wave-one Semgrep evidence without outcomes and, only if the complete packet freezes successfully, execute both G03b arms blindly to terminal scratch observations under the qualified paired protocol, stopping before human review or empirical evaluation.",
+  "frozen_inputs": {
+    "wave_one_result": {
+      "path": "docs/optimizations/opt-010-prospective-acquisition-instrument-qualification-wave-1-runtime-identity-retry-result-2026-08-19.json",
+      "sha256": "e4eb2008eeb4ad2bbac3373aed24a58e3e7e321a0325cf0cb8a0b2887b61710e"
+    },
+    "architecture_mechanism_result": {
+      "path": "docs/optimizations/opt-010-architecture-mechanism-eligibility-corrected-retry-result-2026-08-20.json",
+      "sha256": "a639f3970c0b3bfee4dbf1cbf22bd17591191ae22ebba4e0a99b0e96efe06cd8"
+    },
+    "offline_foundation_result": {
+      "path": "docs/optimizations/opt-010-offline-paired-evaluation-foundation-result-2026-08-20.json",
+      "sha256": "bb3f990a17af7a407d69c8da52ef74c2434a43fffa5e0cc593b9f04127ef41d1"
+    },
+    "offline_foundation_artifact": {
+      "path": "docs/optimizations/opt-010-offline-paired-evaluation-foundation-artifact-2026-08-20.json",
+      "sha256": "0867b665edd271a3bc5797028998bca4cc34cae4a11de7e64db908b2853d258c"
+    },
+    "paired_protocol": {
+      "path": "docs/optimizations/opt-010-paired-evaluation-protocol-2026-08-20.json",
+      "sha256": "a19f0790bdf5bc9042fcd50e1fe029871e089aa48a32eb2e88cf56b24e91e874"
+    },
+    "wave_artifact_directory": "data/artifacts/opt010-acquisition-instrument-qualification-wave-1-runtime-identity-retry",
+    "architecture_artifact_directory": "data/artifacts/opt010-architecture-mechanism-eligibility",
+    "production_store_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a"
+  },
+  "frozen_instruments": {
+    "paired_foundation": {
+      "path": "src/repoauditor/eval/opt010_paired_foundation.py",
+      "sha256": "cffbf7f107ae70dc4fefa5520fc08f82f0a634cdeb2988f19bb1419ac88d5790"
+    },
+    "agent_prompt": {
+      "path": "src/repoauditor/eval/prompts/opt010_agent_qualification_v1.md",
+      "sha256": "a736559e3a3c27e6c2e194db181bc223867e16d98b8304c3f6c3f4c109f0a8bb"
+    },
+    "current_challenger": {
+      "path": "src/repoauditor/falsify/challenger.py",
+      "sha256": "ab50f969979c1fe2c2e961b78455bdf91e72fa7e9459c1291ec30f34aca9610c"
+    },
+    "structural_slicer": {
+      "path": "src/repoauditor/falsify/slicing.py",
+      "sha256": "f46e8c3eb7bc519efa9c64f11f226dc6fef944ac911373c3238e6615ca07f0df"
+    },
+    "independent_verifier": {
+      "path": "src/repoauditor/falsify/claims.py",
+      "sha256": "d534c9137236a1e37e2ae88072f24d69b1c6f516ab577175af4dbbf461ad41f6"
+    },
+    "semgrep_provenance": {
+      "path": "src/repoauditor/detect/deterministic/provenance.py",
+      "sha256": "1500114a953bfee20a03e85d95663ba9c689909d38a4c225a0507d64f70de679"
+    },
+    "sarif_parser": {
+      "path": "src/repoauditor/triage/features.py",
+      "sha256": "8007c655e0f578142a486cfcb857e91d4d39d214d60cd26bfa4c4f030d9106ed"
+    },
+    "provider_backend": {
+      "path": "src/repoauditor/llm/backends.py",
+      "sha256": "b71a108c1c51f25768b126fd1da08ee848f182ef1e7ba477a102506b728cb947"
+    },
+    "dated_pricing": {
+      "path": "src/repoauditor/analyze/provider_cost.py",
+      "sha256": "19e883c10382df4ca1cadd9eb791d96d779fa05033fe0f9ac4367e4640a93ac5",
+      "checked_at": "2026-08-01"
+    }
+  },
+  "pre_candidate_mechanism_mapping": {
+    "freeze_before_scanner_artifact_access": true,
+    "eligible_scanners": ["semgrep", "semgrep-supplemental"],
+    "cwe_mapping": {
+      "CWE-89": "sql_injection",
+      "CWE-77": "command_injection",
+      "CWE-78": "command_injection",
+      "CWE-918": "ssrf",
+      "CWE-502": "unsafe_deserialization"
+    },
+    "metadata_rule": "A SARIF result is eligible only when its canonical frozen rule metadata contains exactly one mapped CWE mechanism compatible with the subject's frozen language row. Rule names, messages, severity, confidence, source text, and result counts may not supply or alter mechanism membership.",
+    "scanner_exclusions": ["gitleaks", "pip-audit-direct-no-deps", "osv-scanner"],
+    "unsupported_languages": ["Go", "Rust"],
+    "unsupported_rule": "Go and Rust remain verifier_unsupported in the six-subject outer denominator and contribute no candidate to the paired packet."
+  },
+  "candidate_and_packet_contract": {
+    "artifact_access": "Read only normalized retained Semgrep and supplemental Semgrep SARIF plus already-frozen snapshot, retrieval-index, and architecture-map bindings. Do not read other scanner findings or any outcome source.",
+    "candidate_identity": "sha256 of protocol id, stable subject identity, canonical scanner and rule identity, canonical repository-relative path, line range, and frozen mechanism",
+    "deduplication": "Identical subject, canonical path, overlapping line range, and mechanism form one issue group; ties use stable identity hash only.",
+    "eligibility": "Only Python, TypeScript, Java, and Ruby candidates in the seven frozen mechanism cells with complete detector provenance, exact snapshot/index/map bindings, and independently constructible verifier input are eligible.",
+    "selection": "Exactly 40 issue-group identities selected outcome-blind by round-robin supported source family, mechanism, then stable identity hash; all four supported families contribute and no family contributes more than 20.",
+    "shortfall": "If exactly 40 cannot be frozen, persist only aggregate shortfall counts, disclose no partial packet, make zero provider calls, and stop without source or reserve activation.",
+    "persistence": "Persist the complete packet only inside the isolated scratch artifact directory using stable hashes and bounded source bindings. Do not disclose packet identities, source paths, excerpts, rule names, scores, severities, confidence, arm observations, or predicted states in the aggregate result."
+  },
+  "paired_execution": {
+    "conditional": "Execute only after the exact 40-identity packet and all immutable bindings pass and are durably frozen.",
+    "provider": "anthropic",
+    "model": "claude-opus-4-8",
+    "temperature": 0.0,
+    "maximum_output_tokens": 4096,
+    "credential": "Ephemerally load only macOS Keychain service repoauditor-anthropic into ANTHROPIC_API_KEY for the child process without output or persistence.",
+    "arm_order": "For each identity in frozen packet order, complete and persist the baseline terminal observation before running the agent arm; neither arm may access the other arm's output or any outcome.",
+    "baseline": "Use the frozen current challenger with persist_artifacts false, the exact snapshot, RetrievalIndex, scratch architecture map, maximum three iterations, verdict plus self-critique, and no schema, parse, transport, status, refusal, or other retry.",
+    "agent": "Use the frozen evaluation-only prompt and AgentReadOnlyTools facade, maximum three model iterations and twelve bounded local tool calls, and no schema, parse, transport, status, refusal, or other retry. If no safe terminal decision is produced, persist abstained.",
+    "request_maximum_utf8_bytes": 120000,
+    "source_transfer": "Transmit only the frozen prompts, schemas, candidate statement, and bounded public-source evidence for the current identity to api.anthropic.com.",
+    "usage": "After every provider attempt, persist authoritative or explicitly unavailable usage and latency in scratch. Unknown usage is never zero and stops further calls.",
+    "failure": "Any request, validation, usage, binding, budget, tool, or persistence failure produces a terminal failure for the current arm, stops all later provider calls, and preserves every frozen identity in the denominator.",
+    "blinding": "Persist validated arm outputs and chronology only in scratch. The aggregate result exposes only packet completeness, terminal-state counts by arm, total usage, total cost, and stop state—not identity-level or comparative performance information."
+  },
+  "execution": {
+    "artifact_directory": "data/artifacts/opt010-outcome-blind-packet-paired-run",
+    "helper": "src/repoauditor/eval/opt010_paired_wave.py",
+    "focused_test": "tests/test_opt_010_outcome_blind_packet_paired_run.py",
+    "result": "docs/optimizations/opt-010-outcome-blind-packet-paired-run-result-2026-08-20.json",
+    "sequence": [
+      "Verify all frozen inputs, instruments, store, branch, index, artifact absence, exact snapshot/index/map identities, and retained scanner-artifact inventory before writing.",
+      "Create the isolated artifact directory and durably freeze the CWE mechanism mapping before opening any scanner artifact.",
+      "Digest-bind and parse only retained Semgrep SARIF, derive and deduplicate eligible supported issue groups without source rendering or outcome access, and freeze exactly 40 by the outcome-blind selection contract or stop with aggregate shortfall.",
+      "Only after a complete packet freezes, verify the exact Keychain credential path and provider configuration, then run both arms under the frozen order, bounds, no-retry, usage, terminal, and blinding contract.",
+      "Write one aggregate outcome-blind result, verify the production store byte-identical, run focused non-live/result tests, and stop before review or evaluation."
+    ]
+  },
+  "resource_ceilings": {
+    "packet_identities": 40,
+    "provider_attempts": 360,
+    "public_source_transmissions": 360,
+    "provider_reported_tokens": 2500000,
+    "maximum_known_dated_price_cost_usd": 50.0,
+    "maximum_elapsed_minutes": 360,
+    "maximum_new_data_bytes": 52428800,
+    "allowed_network_hosts": ["api.anthropic.com"],
+    "other_network_reads_or_uploads": 0,
+    "repository_materializations": 0,
+    "repository_code_executions": 0,
+    "scanner_processes": 0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "schema_migrations": 0,
+    "human_reviews": 0,
+    "outcomes_read": 0,
+    "assessments": 0,
+    "labels": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0,
+    "workspace_branch_or_index_mutations": 0,
+    "commits": 0,
+    "merges": 0,
+    "pushes": 0,
+    "lifecycle_changes": 0
+  },
+  "stop_conditions": [
+    "Any frozen receipt, result, protocol, prompt, helper, scanner, parser, snapshot, retrieval index, architecture map, store, branch, index, artifact inventory, provider, credential, model, price, request, packet, or initially absent output identity drifts.",
+    "The mechanism mapping is not frozen before scanner-artifact access, any mechanism is inferred from result text or source, any outcome is accessed, or candidate selection consults counts beyond deterministic shortfall closure, scores, severity, confidence, predicted class, rank, or model output.",
+    "The packet is partial, any arm sees the other arm or an outcome, any identity lacks exactly one terminal observation per arm, any provider attempt lacks authoritative-or-unavailable usage, any call occurs after a failure or unavailable usage, or any resource ceiling is reached.",
+    "Any packet identity, source path, excerpt, rule identity, identity-level arm output, predicted class, comparative metric, or expected outcome appears in aggregate result evidence."
+  ],
+  "result_boundary": "This wave may freeze one outcome-blind packet and complete blinded terminal predictions for both arms. It cannot access or create human outcomes, calculate precision or recall, pass G03b or empirical G04, recommend activation, change policy, or close OPT-010.",
+  "excluded": [
+    "source or packet rendering to the project owner, human review, assessment, label, answer key, outcome, precision, recall, unique validated issue, cost-per-validated-issue, subgroup result, G03b or G04 decision, score, rank, severity, confidence, expected outcome, tuning, recalibration, resampling, threshold change, production policy or activation",
+    "remaining-primary or reserve acquisition, new scanning, alternate scanner or mechanism, unsupported-language admission, production-store persistence, existing production helper or prompt modification, OPT-014 or SEC/EDGAR reactivation, OPT-036 use, lifecycle change, branch integration, push, or deployment"
+  ],
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the OPT-010 outcome-blind packet construction and blinded paired run described by opt-010-outcome-blind-packet-paired-run-receipt-2026-08-20.json, limited first to freezing before scanner-artifact access the exact CWE-89 SQL-injection, CWE-77 and CWE-78 command-injection, CWE-918 SSRF, and CWE-502 unsafe-deserialization mapping; reading only the retained wave-one Semgrep and supplemental Semgrep SARIF without outcomes; deterministic supported-cell eligibility, stable issue-group deduplication, and outcome-blind selection of exactly 40 identities across all four supported source families while retaining Go and Rust as verifier-unsupported outer-denominator states; and only if the complete packet freezes, ephemerally loading the existing repoauditor-anthropic Keychain secret without output or persistence and running the frozen current baseline and evaluation-only read-only-tool agent blindly in packet order with exact snapshot, RetrievalIndex, architecture-map, prompt, schema, tool, three-iteration, twelve-tool-call, 120,000-byte request, no-retry, terminal-observation, authoritative-usage, fail-closed, and scratch-only persistence boundaries, followed by one aggregate outcome-blind result, with ceilings of 40 packet identities, 360 provider attempts and public-source transmissions, 2,500,000 provider-reported tokens, $50.00 known dated-price cost, 360 minutes, 50 MiB new data, only api.anthropic.com network access, and exactly zero other network activity, repository materializations or code executions, scanner processes, production-store reads or mutations, schema migrations, human reviews, outcomes, assessments, labels, model training, rescoring, workspace branch or index mutations, commits, merges, pushes, or lifecycle changes. Partial packet disclosure, source rendering to me, remaining-primary or reserve activation, new scanning, unsupported-language admission, cross-arm or outcome leakage, identity-level predictions or comparative metrics in result evidence, precision or recall calculation, G03b or empirical G04 decisions, tuning, recalibration, resampling, threshold changes, production-policy change or activation, OPT-010 promotion or closure, OPT-014 or SEC/EDGAR reactivation, OPT-036 use or change, integration, remote push, and deployment remain excluded."
+  }
+}

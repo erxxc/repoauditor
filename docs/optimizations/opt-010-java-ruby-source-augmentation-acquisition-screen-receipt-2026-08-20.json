@@ -1,0 +1,220 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-010",
+  "status": "authorization-pending",
+  "objective": "Acquire and scan only the four project-owner-approved Java and Ruby augmentation sources, then determine outcome-blind whether their aggregate supported-cell groups clear the frozen four-family packet-capacity prerequisite.",
+  "project_owner_source_review": {
+    "status": "approved",
+    "response": "Approved",
+    "approved_identities": 4,
+    "execution_authorized_by_review_alone": false
+  },
+  "frozen_inputs": {
+    "source_augmentation_selection_result": {
+      "path": "docs/optimizations/opt-010-java-ruby-source-augmentation-selection-result-2026-08-20.json",
+      "sha256": "5bdec1dc9cc80ba3f168d70078993941007e6549aa987c4cb4a41f41a45d12e2"
+    },
+    "retained_java_source_screen_result": {
+      "path": "docs/optimizations/opt-010-java-ssrf-retained-source-screen-result-2026-08-20.json",
+      "sha256": "cd3f6e3faaa9d8f962e81e6e95103336a7fed604b0d44881bf5b956e997169c1"
+    },
+    "retained_java_source_screen_artifact": {
+      "path": "data/artifacts/opt010-java-ssrf-retained-source-screen/screen-artifact.json",
+      "sha256": "a968c5570237590e92635a1f8c362204a2d5ed253eff649d216849abcaf6bb43"
+    },
+    "java_scratch_rule_qualification_result": {
+      "path": "docs/optimizations/opt-010-java-ssrf-supplemental-rule-qualification-result-2026-08-20.json",
+      "sha256": "b42cba99f93ba542fd0c9d0d14fe39fd2a442c53d19c623157f1d056a18d3bef"
+    },
+    "java_scratch_rule_qualification_artifact": {
+      "path": "data/artifacts/opt010-java-ssrf-supplemental-qualification/qualification-artifact.json",
+      "sha256": "ed207245b933ed41c5ceb198e6fba80585721cd69b6faf51cc006dc2ad195d84"
+    },
+    "qualified_java_scratch_rule": {
+      "path": "data/artifacts/opt010-java-ssrf-supplemental-qualification/candidate-rule.json",
+      "sha256": "03aa9e47ca6e38efa7970a24a8f682ebc2f98029285b11014e50b6cb46636210"
+    },
+    "base_capacity_result": {
+      "path": "docs/optimizations/opt-010-supported-primary-augmentation-corrected-acceptance-result-2026-08-20.json",
+      "sha256": "040d11c802fba031f17434c6271dee61bdfb4c7f1bde837d9021ca6b2557e955"
+    },
+    "base_capacity_artifact": {
+      "path": "data/artifacts/opt010-supported-primary-augmentation/acceptance-artifact.json",
+      "sha256": "d2cdd3a5d4a8b8244abd64fea04da44c819e600b611a8e580c75161ba7599e31"
+    },
+    "mechanism_mapping": {
+      "path": "data/artifacts/opt010-supported-primary-augmentation/mechanism-mapping.json",
+      "sha256": "5a954ed23a788d34dce0b36bda1b98ad3f8fe322915552f7d237fe57627218b0"
+    },
+    "production_store_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a"
+  },
+  "frozen_instruments": {
+    "semgrep_runtime": {
+      "path": "src/repoauditor/eval/semgrep_runtime.py",
+      "sha256": "b908ac266f923f35fea290436e11959c11a49829e4566b89c444b25056a3a257"
+    },
+    "acquisition_and_snapshot_helper": {
+      "path": "src/repoauditor/eval/opt010_acquisition_qualification.py",
+      "sha256": "fb75947e52a3ec5ff4219ca63c2cd747510821fca72b8237d30ed83471e6fa4c"
+    },
+    "metadata_parser_and_deduplicator": {
+      "path": "src/repoauditor/eval/opt010_paired_wave.py",
+      "sha256": "52ee4c59c41c6823afba07e2a4ac27f565125366159d1d78f7be43586ddad1eb"
+    },
+    "production_supplemental_ruleset": {
+      "path": "src/repoauditor/detect/deterministic/semgrep-supplemental.yml",
+      "sha256": "e3b5ce91d91dcf194eff6fd1a0cdb9b6214a31a71b661075534d919143017963"
+    }
+  },
+  "frozen_subjects": [
+    {
+      "order": 1,
+      "repository": "Suwayomi/Suwayomi-Server",
+      "exact_commit": "4b2c19abbc637dfd2c26b9b5eafd326ba92f91ee",
+      "stable_identity_sha256": "32a6c35ce90f7818d69da1ac87c5b672e969daba50ecfaf81f720f1213bc796c",
+      "language": "Java",
+      "mechanism": "ssrf",
+      "scanner": "qualified-scratch-java-ssrf"
+    },
+    {
+      "order": 2,
+      "repository": "codelibs/fess",
+      "exact_commit": "41f138b5b91af26413ae6cab05bb6acffa6611df",
+      "stable_identity_sha256": "9f6e322f1bb116d30ef5c417dbe99bf3aaa1ef3ba5ec296a9476c7d3236bd17e",
+      "language": "Java",
+      "mechanism": "ssrf",
+      "scanner": "qualified-scratch-java-ssrf"
+    },
+    {
+      "order": 3,
+      "repository": "Multiwoven/multiwoven",
+      "exact_commit": "0a68d209009f9009664e96ef1e5d1f23843781b2",
+      "stable_identity_sha256": "067c9c94d76c421ccb540eae192cc1cdfe70d89a5121258905359b405c4275f8",
+      "language": "Ruby",
+      "mechanism": "unsafe_deserialization",
+      "scanner": "pinned-default-semgrep"
+    },
+    {
+      "order": 4,
+      "repository": "docusealco/docuseal",
+      "exact_commit": "004a22c1c88109c7ba0b567df011a8cb13894001",
+      "stable_identity_sha256": "1ac9ce7c055dc18077aa032f4c44fd4edcffe008963b24d4134736703854d51e",
+      "language": "Ruby",
+      "mechanism": "unsafe_deserialization",
+      "scanner": "pinned-default-semgrep"
+    }
+  ],
+  "runtime_and_preflight_contract": {
+    "artifact_directory": "data/artifacts/opt010-java-ruby-source-augmentation-acquisition-screen",
+    "must_be_absent_before_authorization": true,
+    "semgrep_version": "1.170.0",
+    "installed_import_interpreter": "/opt/homebrew/Cellar/semgrep/1.170.0/libexec/bin/python",
+    "semgrep_log_file": "data/artifacts/opt010-java-ruby-source-augmentation-acquisition-screen/semgrep.log",
+    "semgrep_version_cache_path": "data/artifacts/opt010-java-ruby-source-augmentation-acquisition-screen/semgrep-version-cache",
+    "requirements": [
+      "Verify every frozen input, instrument, selected identity, exact commit, store, main-branch identity, empty index, runtime path, and initially absent output before writing, scanning, or network access.",
+      "Create the isolated artifact directory and copy the mechanism mapping and qualified Java scratch rule byte-for-byte before any Semgrep-capable process.",
+      "Perform one exact import-only Semgrep 1.170.0 check, seed a fresh local version cache, and bind SEMGREP_LOG_FILE and SEMGREP_VERSION_CACHE_PATH on every Semgrep-capable process.",
+      "Run separated positive and clean offline canaries for the qualified Java SSRF rule and pinned-default Ruby unsafe-deserialization cell. Stop on any failure; do not contact semgrep.dev, use registry resolution, install, downgrade, fall back, tune, or retry."
+    ]
+  },
+  "acquisition_and_scanner_contract": {
+    "sequence": "Only after all preflights and four canary processes pass, shallow-fetch the four subjects from github.com strictly in frozen order and stop before the next subject on any failed boundary.",
+    "acquisition": "Fetch only each exact commit into its stable-identity directory; verify detached HEAD and object identity; do not expand history, submodules, Git LFS, dependencies, archives, generated assets, or execute repository code.",
+    "snapshot_and_retrieval": "Create deterministic normalized snapshot and detector-input digests and one in-memory RetrievalIndex digest per subject. Persist only aggregate index statistics and digests outside the retained snapshot directories; do not expose retrieval results.",
+    "source_scans": "Run exactly one no-retry qualified scratch Java CWE-918 scan over each Java snapshot and exactly one no-retry pinned-default Semgrep scan over each Ruby snapshot. Retain raw SARIF and target reports only beneath the isolated artifact directory.",
+    "scanner_health": "Complete or valid empty output is acceptable. Unavailable, failed, partial, malformed, missing exact runtime/configuration/target provenance, or incomplete output stops the wave.",
+    "production_rules": "The scratch Java rule remains unpromoted and the production supplemental ruleset must remain byte-identical."
+  },
+  "aggregate_capacity_contract": {
+    "base": {
+      "metadata_compatible_results": 57,
+      "metadata_deduplicated_issue_groups": 48,
+      "by_supported_family": {
+        "Python": 29,
+        "TypeScript": 19,
+        "Java": 0,
+        "Ruby": 0
+      },
+      "capped_packet_capacity": 39,
+      "supported_families_contributing": 2
+    },
+    "mechanism_rule": "A new result is compatible only when canonical rule metadata contains exactly the frozen language-cell CWE mechanism: Java CWE-918 or Ruby CWE-502. Result text, rule names, severity, confidence, source, and expected performance cannot establish membership.",
+    "deduplication": "Use stable inclusive-transitive overlap grouping within exact subject, canonical relative path, and mechanism. Do not use SARIF fingerprints.",
+    "capacity_rule": "Add only the new Java and Ruby compatible-result and deduplicated-group counts to the frozen base; require every Python, TypeScript, Java, and Ruby family to contribute and sum(min(family_groups,20)) to be at least 40.",
+    "passing_route": "Record aggregate capacity feasibility and route only to a separately authorized architecture-map and candidate-specific verifier-eligibility gate for the new subjects; do not construct a packet.",
+    "failing_route": "Record bounded Java and/or Ruby source scarcity and return OPT-010 to prerequisite design without source substitution or further acquisition.",
+    "outcome_blinding": "Do not read or use security advisories, issues, pull requests, exploit reports, vulnerability databases, human responses, assessments, labels, outcomes, known-vulnerable identities, scores, ranks, predictions, or expected performance."
+  },
+  "execution": {
+    "helper": "src/repoauditor/eval/opt010_java_ruby_source_augmentation_acquisition.py",
+    "focused_test": "tests/test_opt_010_java_ruby_source_augmentation_acquisition.py",
+    "artifact": "data/artifacts/opt010-java-ruby-source-augmentation-acquisition-screen/aggregate-artifact.json",
+    "result": "docs/optimizations/opt-010-java-ruby-source-augmentation-acquisition-screen-result-2026-08-20.json",
+    "sequence": [
+      "Verify immutable bindings, approval, workspace, store, runtime, and output absence.",
+      "Create isolated runtime state and freeze copied mapping and scratch rule.",
+      "Run one import check and four separated offline cell canary scans.",
+      "Acquire, snapshot, index, and scan only the four exact subjects in order.",
+      "Persist one aggregate capacity artifact and result, verify all boundaries, and stop."
+    ]
+  },
+  "workspace_preflight": {
+    "branch": "main",
+    "committed_main": "1f1dba7a30a86d957510608c25e94077b15d2e8d",
+    "staged_paths": 0,
+    "preserve_existing_wip": true,
+    "branch_or_index_change_authorized": false
+  },
+  "resource_ceilings": {
+    "repositories": 4,
+    "runtime_import_checks": 1,
+    "logical_scanner_processes": 8,
+    "retrieval_index_builds": 4,
+    "maximum_elapsed_minutes_per_repository": 180,
+    "maximum_total_elapsed_minutes": 780,
+    "maximum_new_data_bytes": 16106127360,
+    "allowed_network_hosts": [
+      "github.com"
+    ],
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "keychain_or_credential_reads": 0,
+    "repository_code_executions": 0,
+    "dependency_resolutions_or_installations": 0,
+    "other_scanner_processes": 0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "schema_migrations": 0,
+    "human_finding_reviews": 0,
+    "outcomes_read": 0,
+    "assessments": 0,
+    "labels": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0,
+    "agentic_or_baseline_runs": 0,
+    "workspace_branch_or_index_mutations": 0,
+    "commits": 0,
+    "merges": 0,
+    "pushes": 0,
+    "lifecycle_changes": 0
+  },
+  "stop_conditions": [
+    "Any frozen input, instrument, source identity, exact commit, store, branch, index, runtime path, copied configuration, or initially absent output drifts.",
+    "Any preflight or canary fails; a scanner process lacks either runtime binding; semgrep.dev, registry rules, an unlisted tool or host, a retry, fallback, installation, downgrade, or rule change is attempted.",
+    "Any unlisted source, unsupported language, source substitution, provider, credential, production store, outcome source, repository code, dependency resolver or installer, human review, assessment, label, training, rescoring, git mutation, or lifecycle activity occurs.",
+    "Any normalized candidate or issue-group identity, subject-level finding count, path, rule beyond the frozen rule identities, symbol, excerpt, score, rank, prediction, expected outcome, or partial packet is persisted or disclosed, or any ceiling is reached."
+  ],
+  "excluded": [
+    "any other source, remaining primary or reserve activation, source substitution, production-rule editing or promotion, scratch-rule tuning, additional Java clients or Ruby mechanisms, new scanner rules, scanner retry, architecture recovery, provider or Keychain use, agentic or baseline execution",
+    "normalized candidate, issue-group, or packet persistence or disclosure; subject-level finding counts; source rendering; human finding review; outcomes; assessments; labels; precision; recall; G03b or G04 decisions",
+    "packet construction, threshold selection, training, rescoring, tuning, recalibration, production-policy changes, OPT-010 promotion or closure, OPT-014 or SEC/EDGAR reactivation, OPT-036 use or change, integration, push, and deployment"
+  ],
+  "result_boundary": "This gate may establish only whether these four approved sources supply aggregate Java and Ruby groups sufficient for the frozen four-family capacity prerequisite. It cannot establish finding validity, freeze or disclose a packet, run either comparison arm, evaluate precision or recall, change production policy, or close OPT-010.",
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the OPT-010 outcome-blind Java/Ruby source-augmentation acquisition and capacity screen described by opt-010-java-ruby-source-augmentation-acquisition-screen-receipt-2026-08-20.json, limited to separated offline runtime and Java CWE-918 scratch-rule and Ruby CWE-502 pinned-default Semgrep canaries; exact-commit shallow materialization without repository-code execution of only Suwayomi/Suwayomi-Server at 4b2c19abbc637dfd2c26b9b5eafd326ba92f91ee, codelibs/fess at 41f138b5b91af26413ae6cab05bb6acffa6611df, Multiwoven/multiwoven at 0a68d209009f9009664e96ef1e5d1f23843781b2, and docusealco/docuseal at 004a22c1c88109c7ba0b567df011a8cb13894001; deterministic snapshots, detector-input and RetrievalIndex digests; exactly one qualified scratch Java SSRF scan per Java subject and one pinned-default Semgrep scan per Ruby subject; aggregate stable issue-group deduplication and recomputation of the frozen four-family maximum-20-per-family 40-identity capacity prerequisite; one aggregate artifact and result; with ceilings of four repositories, one runtime import check, eight logical scanner processes, four retrieval indexes, 180 minutes per repository, 780 minutes total, 15 GiB new data, only github.com network access, and exactly zero uploads, provider calls, tokens, cost, Keychain or credential reads, repository-code executions, dependency resolutions or installations, other scanners, production-store reads or mutations, assessments, labels, training, rescoring, agentic or baseline runs, human finding reviews, outcomes, branch or index mutations, commits, merges, pushes, or lifecycle changes. Any other source, source substitution, production-rule editing or promotion, scratch-rule tuning or retry, architecture recovery, candidate or issue-group identity persistence or disclosure, subject-level finding counts, source rendering, packet construction, paired execution, precision, recall, G03b or G04 decisions, threshold selection, recalibration, production-policy changes, OPT-010 promotion or closure, integration, remote push, and deployment remain excluded."
+  }
+}

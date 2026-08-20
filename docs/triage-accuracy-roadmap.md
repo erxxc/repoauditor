@@ -8,7 +8,7 @@ The [prior-scope roadmap](prior-scope-roadmap.md) separately records future quan
 prior expansion; it does not change the current risk model.
 
 Status: **post-MVP optimization roadmap**. The implemented safeguards remain authoritative,
-but open maturity work is deferred in
+but remaining maturity ideas are non-lifecycle future work described in
 [`optimizations/optimization-register.md`](optimizations/optimization-register.md). Current
 MVP execution is tracked only in [`poc-recovery-plan.md`](poc-recovery-plan.md).
 
@@ -22,8 +22,9 @@ Progress:
 - [~] Phase 3 — collection infrastructure and the 40-label/eight-engagement activation
   floor are met; the preferred 100–200-label, broader-positive-family maturity target
   remains open
-- [~] Phase 4 — threshold/grouped mechanisms and dual adjudication reporting shipped;
-  real-data activation, uncertainty, and temporal depth remain open
+- [~] Phase 4 — threshold/grouped mechanisms, dual adjudication reporting, family-block
+  uncertainty, and bounded train-before/evaluate-after temporal validation shipped;
+  broader positive-family maturity and any production-threshold decision remain open
 - [ ] Phase 5 — deferred optimization; see gates below
 
 ## Current baseline
@@ -161,6 +162,14 @@ held-out family breadth.
 
 ## Phase 4 — Validation maturity
 
+The bounded OPT-003 temporal evaluation completed on 2026-08-12 with 40 prospective
+decided outcomes across eight evaluation families and three prediction waves. All frozen
+predictions preceded their first assessments. The aggregate Brier score was 0.1447 with a
+broad 95% evaluation-family-block percentile range of 0.0452–0.2530. Fixed-threshold
+precision and recall remain descriptive; no threshold was selected or recommended, and
+wave two contained no positive outcomes. This closes temporal validation at its bounded
+scope without authorizing tuning, recalibration, or production-policy changes.
+
 At 40 labels, enable descriptive threshold tables. At 40 labels and 8 evaluation families,
 activate grouped validation and report held-out repositories, class counts, sample size, and
 metric uncertainty. Add train-before/evaluate-after validation only after chronological
@@ -199,8 +208,30 @@ remain explicitly unsupported/incomplete. Java adds one separately parsed local
 This is the current deterministic-certificate phase boundary. Additional client/framework
 enumeration and cross-file flow should resume only when corpus misses demonstrate a specific
 coverage need; the active offline priority returns to manufactured controls.
-Consider a separate novelty prioritizer only after enough manually reviewed LLM findings
-exist to show a held-out benefit.
+The bounded OPT-009 semantic-novelty feasibility study is closed with a negative result:
+neither the existing cohort nor two frozen prospective families supplied the predeclared
+evaluation capacity, and the isolated instrument did not qualify. This establishes only
+that OPT-009 was not justified or feasible at its evaluated scope, not that novelty
+prioritization is universally impossible. Any future attempt is newly scoped work with a
+new lifecycle identity and untouched evidence.
+
+OPT-014 is likewise closed at a bounded evidence scope rather than held open indefinitely
+behind unavailable data. Its deterministic prior-predictive report establishes internal
+coherence of the configured anonymous neutral organization-year baseline, not predictive
+validation, calibration, representativeness, or portfolio readiness. The bounded public and
+controlled-access screens found no source meeting the frozen commercial-rights and full
+organization-period contract; that result is not a universal data-impossibility claim.
+SEC/EDGAR remains an inactive material-disclosure-context reserve, and non-filing periods
+are not zero-incident observations. Any future observed-outcome or portfolio study is new
+work with a separately frozen lifecycle, estimand, rights, data, and evaluation contract.
+
+OPT-010 is closed at a bounded negative-feasibility scope. The isolated read-only tool
+facade remains qualified, disabled, and disconnected, while the frozen prospective path
+failed to assemble its exact 40-identity packet across four supported families. It therefore
+did not proceed to paired G03b comparison, empirical G04 recall evaluation, thresholding, or
+production activation. This establishes neither universal impossibility nor production
+readiness. Any future agentic evaluation, scanner-policy change, verifier expansion, source
+augmentation, packet, paired run, or activation is new work under a separate lifecycle.
 
 ## Explicit non-goals
 

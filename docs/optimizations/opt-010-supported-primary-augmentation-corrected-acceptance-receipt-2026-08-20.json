@@ -1,0 +1,137 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-010",
+  "status": "authorization-pending",
+  "objective": "Accept the retained supported-primary augmentation attempt as immutable descriptive evidence, independently reproduce its aggregate metadata-capacity conclusion offline, and record a corrected bounded negative result without rerunning acquisition, scanners, or any live activity.",
+  "retained_attempt": {
+    "original_receipt": {
+      "path": "docs/optimizations/opt-010-supported-primary-augmentation-receipt-2026-08-20.json",
+      "sha256": "620889f2e5452ae161c3202778b4039d26eb4ba50f86ada6a9e4702bcf9170c8"
+    },
+    "nonqualifying_result": {
+      "path": "docs/optimizations/opt-010-supported-primary-augmentation-result-2026-08-20.json",
+      "sha256": "1f666a617f87b4f4bca51bbe243436fcc8bcb8892bafbc47afc3ab42f2e6a868"
+    },
+    "preflight_deviation": {
+      "path": "data/artifacts/opt010-supported-primary-augmentation/preflight-deviation.json",
+      "sha256": "f47e791d3c676235e72aedb5d22169d029451d6a04e6fe270b9d616d4e74ddff"
+    },
+    "augmentation_summary": {
+      "path": "data/artifacts/opt010-supported-primary-augmentation/augmentation-summary.json",
+      "sha256": "dac5dde25041ac3dc6eaa89c3cd3c3dff34d189b8475cf2664521625f17166a4"
+    },
+    "mechanism_mapping": {
+      "path": "data/artifacts/opt010-supported-primary-augmentation/mechanism-mapping.json",
+      "sha256": "5a954ed23a788d34dce0b36bda1b98ad3f8fe322915552f7d237fe57627218b0"
+    },
+    "semgrep_canary": {
+      "path": "data/artifacts/opt010-supported-primary-augmentation/canary-semgrep.json",
+      "sha256": "54cdc71c6c18450d9ca39e8c09a4dd2500738d873a13f4f965cbbf91853a8fd4"
+    },
+    "supplemental_semgrep_canary": {
+      "path": "data/artifacts/opt010-supported-primary-augmentation/canary-semgrep-supplemental.json",
+      "sha256": "31ce141852aae4a7630052dd04f859aecf3f419c6c70889426add621d81ecc65"
+    },
+    "facts": {
+      "initial_project_environment_import": "failed before any Semgrep CLI, scanner, network, or credential activity because the project .venv lacked the semgrep module",
+      "correct_installed_runtime_import": "passed for Semgrep 1.170.0 before canaries",
+      "canaries": "Semgrep and supplemental Semgrep positive-and-clean canaries passed with pinned provenance",
+      "subjects": "all four exact supported-language primary subjects materialized, indexed, and scanned",
+      "aggregate": "57 metadata-compatible results deduplicated to 48 groups; Python 29, TypeScript 19, Java 0, Ruby 0; capped capacity 39; two contributing families; provisional feasibility false",
+      "live_activity": "four github.com acquisitions, twelve logical scanner processes, four retrieval indexes, zero provider or credential activity",
+      "store": "byte-identical at SHA-256 468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a"
+    },
+    "interpretation": "The original result remains nonqualifying under its receipt. This corrected acceptance may rely on the retained evidence only after exact offline reproduction; it does not erase, rewrite, or retroactively cure the historical deviation."
+  },
+  "frozen_instruments": {
+    "augmentation_helper": {
+      "path": "src/repoauditor/eval/opt010_supported_primary_augmentation.py",
+      "sha256": "c2c5dc4da5438d434119b735e2e7eab497f69e15eaecbce26689680cc88b5a5e"
+    },
+    "augmentation_test": {
+      "path": "tests/test_opt_010_supported_primary_augmentation.py",
+      "sha256": "054b1c05b124e6f659fc5b1f88c2dbeee90cabbdc4bee08732bcdf67bac191a2"
+    },
+    "metadata_parser_and_deduplicator": {
+      "path": "src/repoauditor/eval/opt010_paired_wave.py",
+      "sha256": "52ee4c59c41c6823afba07e2a4ac27f565125366159d1d78f7be43586ddad1eb"
+    }
+  },
+  "offline_acceptance_contract": {
+    "preflight": "Verify every retained receipt, result, deviation, summary, mapping, canary, helper, test, production-store digest, main-branch identity, empty index, exact source HEAD, and initially absent corrected output before writing.",
+    "artifact_access": "Read only the retained Semgrep and supplemental Semgrep SARIF for the four original supported wave-one subjects and four retained augmentation subjects, retained aggregate JSON, and exact .git HEAD/object identity. Do not open snapshot source files, other scanner artifacts, retrieval contents, outcomes, or the production database.",
+    "reproduction": "Using the frozen mapping and parser, independently reproduce only aggregate metadata-compatible counts, inclusive-transitive issue-group deduplication counts, per-language and per-mechanism counts, contributing-family count, maximum-20-per-family capped capacity, provisional feasibility, and the scanner-artifact-set digest.",
+    "expected_result": {
+      "metadata_compatible_results": 57,
+      "metadata_deduplicated_issue_groups": 48,
+      "by_supported_family": {
+        "Java": 0,
+        "Python": 29,
+        "Ruby": 0,
+        "TypeScript": 19
+      },
+      "by_mechanism": {
+        "command_injection": 30,
+        "sql_injection": 18,
+        "ssrf": 0,
+        "unsafe_deserialization": 0
+      },
+      "supported_families_contributing": 2,
+      "capped_packet_capacity": 39,
+      "provisionally_feasible": false,
+      "scanner_artifact_set_sha256": "358372d74a08da7f2f078a1258b5f6f43acfecdaec5df907d688d3cf0f6ea568"
+    },
+    "acceptance_rule": "Accept the augmentation gate as completed-negative only if every retained binding and every expected aggregate reproduces exactly. Any drift stops without acceptance. The original nonqualifying result and deviation remain immutable historical evidence.",
+    "result_rule": "Persist one aggregate acceptance artifact and one corrected result. Neither may include candidate identities, source paths, rule identities, excerpts, scores, predictions, outcomes, or packet contents."
+  },
+  "execution": {
+    "helper": "src/repoauditor/eval/opt010_supported_primary_augmentation_acceptance.py",
+    "focused_test": "tests/test_opt_010_supported_primary_augmentation_acceptance.py",
+    "artifact": "data/artifacts/opt010-supported-primary-augmentation/acceptance-artifact.json",
+    "result": "docs/optimizations/opt-010-supported-primary-augmentation-corrected-acceptance-result-2026-08-20.json"
+  },
+  "resource_ceilings": {
+    "maximum_elapsed_minutes": 10,
+    "maximum_new_data_bytes": 2097152,
+    "network_reads_or_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "keychain_or_credential_reads": 0,
+    "repository_materializations": 0,
+    "repository_code_executions": 0,
+    "snapshot_source_file_reads": 0,
+    "scanner_processes": 0,
+    "retrieval_index_builds": 0,
+    "production_store_database_reads": 0,
+    "production_store_mutations": 0,
+    "schema_migrations": 0,
+    "human_reviews": 0,
+    "outcomes_read": 0,
+    "assessments": 0,
+    "labels": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0,
+    "agentic_or_baseline_runs": 0,
+    "workspace_branch_or_index_mutations": 0,
+    "commits": 0,
+    "merges": 0,
+    "pushes": 0,
+    "lifecycle_changes": 0
+  },
+  "stop_conditions": [
+    "Any retained evidence, instrument, exact source HEAD, scanner artifact, production-store digest, branch, index, or initially absent corrected output drifts.",
+    "Any expected aggregate value fails exact reproduction, any snapshot source or unlisted artifact is opened, or any candidate-level datum is persisted or disclosed.",
+    "Any network, provider, credential, scanner, repository-code, production-database, outcome, assessment, label, training, rescoring, agentic, git-mutation, or lifecycle activity occurs, or any ceiling is reached."
+  ],
+  "excluded": [
+    "editing, deleting, replacing, or reclassifying the original receipt, nonqualifying result, deviation chronology, summary, mapping, canaries, snapshots, scanner artifacts, or production store",
+    "new acquisition, scanning, source access, source rendering, retrieval building, architecture recovery, provider or Keychain use, candidate or packet persistence or disclosure, paired execution, review, outcomes, assessments, or labels",
+    "precision, recall, G03b or G04 decisions, threshold selection, training, rescoring, fitting, tuning, recalibration, production-policy changes, OPT-010 promotion or closure, lifecycle changes, integration, push, and deployment"
+  ],
+  "result_boundary": "A successful corrected acceptance establishes only that the retained supported-primary metadata augmentation reproducibly completed with a bounded negative capacity result. It does not establish verifier eligibility, packet completeness, paired-comparison performance, empirical recall, production readiness, or OPT-010 closure.",
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the OPT-010 supported-primary augmentation corrected offline acceptance described by opt-010-supported-primary-augmentation-corrected-acceptance-receipt-2026-08-20.json, accepting the immutable retained attempt with its initial project-.venv Semgrep import failure, later exact installed Semgrep 1.170.0 import and canary passes, four exact supported-primary acquisitions, twelve logical scanner processes, four retrieval indexes, aggregate 57 compatible results and 48 deduplicated groups, 39 capped capacity, two contributing families, zero provider or credential activity, and byte-identical production store, without retroactively qualifying or editing the original result; limited to one deterministic offline digest and aggregate reproduction over only the retained Semgrep and supplemental Semgrep SARIF, retained JSON evidence, and exact .git HEAD identities, followed only on exact reproduction by one aggregate acceptance artifact and one corrected completed-negative result, with ceilings of 10 minutes, 2 MiB new data, and exactly zero network reads or uploads, provider calls, tokens, cost, Keychain or credential reads, repository materializations or code executions, snapshot source-file reads, scanner processes, retrieval-index builds, production-database reads or mutations, assessments, labels, training, rescoring, agentic or baseline runs, human reviews, outcomes, branch or index mutations, commits, merges, pushes, or lifecycle changes. Original-evidence edits or deletion, new acquisition or scanning, source rendering, architecture recovery, candidate or packet persistence or disclosure, paired execution, precision, recall, G03b or G04 decisions, threshold selection, tuning, recalibration, production-policy changes, OPT-010 promotion or closure, integration, remote push, and deployment remain excluded."
+  }
+}

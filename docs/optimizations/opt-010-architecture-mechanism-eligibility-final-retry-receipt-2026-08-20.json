@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-010",
+  "status": "authorization-pending",
+  "objective": "Reconcile one historical receipt-test assertion after the authorized corrected-resume helper change, then resume the unchanged corrected architecture/mechanism execution from the exact retained pre-provider state.",
+  "retained_attempts": {
+    "original_receipt": {
+      "path": "docs/optimizations/opt-010-architecture-mechanism-eligibility-receipt-2026-08-20.json",
+      "sha256": "c46ab9f19aa0947f300cd22e2404a988e0d0f7b5b014885cf6b98e3cf6c33df0"
+    },
+    "original_stopped_result": {
+      "path": "docs/optimizations/opt-010-architecture-mechanism-eligibility-result-2026-08-20.json",
+      "sha256": "3f668f80b5a20629e5978c83ef746d5c40ea021958a1ede3f4ab529152578e77"
+    },
+    "corrected_retry_receipt": {
+      "path": "docs/optimizations/opt-010-architecture-mechanism-eligibility-corrected-retry-receipt-2026-08-20.json",
+      "sha256": "32f46ba07bbf5b02d29caca510bca91db1e3920d17d47e28fe2c157a60237ff5"
+    },
+    "corrected_helper": {
+      "path": "src/repoauditor/eval/opt010_architecture_eligibility.py",
+      "sha256": "3fe0fc7d95642dcd6694443a3289f89db853eceb5d658c31dcad83742efac154"
+    },
+    "corrected_focused_test": {
+      "path": "tests/test_opt_010_architecture_mechanism_eligibility.py",
+      "sha256": "5caf462c21645623886e9b2f6c04abd086be0006122353f5c4f8501e64e254e4"
+    },
+    "corrected_receipt_test_before_reconciliation": {
+      "path": "tests/test_opt_010_architecture_mechanism_eligibility_corrected_retry_receipt.py",
+      "sha256": "b2e64c0b20014f3ddd8b8d6947082cfec2f6097c1d2d1fadd365d72f46f7a695"
+    },
+    "mechanism_matrix": {
+      "path": "data/artifacts/opt010-architecture-mechanism-eligibility/mechanism-matrix.json",
+      "sha256": "734d7bc40e54323b5bee963110c92f445b05f28c795e25f23884ede1d0e57ec3"
+    },
+    "production_store_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "artifact_inventory": ["mechanism-matrix.json"],
+    "corrected_result_absent": true,
+    "offline_test_outcome": {
+      "passed": 15,
+      "failed": 1,
+      "failure": "The corrected receipt test compared the current authorized helper to the immutable pre-correction helper hash instead of treating that hash as historical evidence."
+    },
+    "provider_attempts": 0,
+    "source_transmissions": 0,
+    "provider_reported_tokens": 0,
+    "known_dated_price_cost_usd": 0.0,
+    "keychain_secret_reads": 0,
+    "production_store_mutations": 0,
+    "workspace_branch_or_index_mutations": 0
+  },
+  "permitted_reconciliation": {
+    "only_file": "tests/test_opt_010_architecture_mechanism_eligibility_corrected_retry_receipt.py",
+    "only_change": "For helper_before_correction and focused_test_before_correction, assert that the corrected receipt retains the exact historical hashes 57146df0dd7570e22392943bd12a2a9db20f910892107e7bcb1b63dd8f691bd4 and b01b10f21e326fce4fadf33b68d0454f41728a489ae6ba5c37774be1796ac9d4 without comparing those historical hashes to the now-authorized current files. Keep direct current-file digest checks for the original receipt, original stopped result, and original receipt test unchanged.",
+    "implementation_changes": 0,
+    "evidence_changes": 0
+  },
+  "resume": {
+    "command_mode": "corrected-resume",
+    "helper_change": "Use the already-authorized corrected helper byte-for-byte; no further helper or focused-test change is permitted.",
+    "credential_loading": "Ephemerally load only macOS Keychain service repoauditor-anthropic into ANTHROPIC_API_KEY for the child process, with no secret output or persistence.",
+    "provider_execution": "Retain every original and corrected source, model, prompt, schema, request, confidence-repass, usage, cost, time, data, host, stop, result, zero-activity, and exclusion boundary.",
+    "result": "docs/optimizations/opt-010-architecture-mechanism-eligibility-corrected-retry-result-2026-08-20.json"
+  },
+  "cumulative_resource_ceilings": {
+    "subjects": 6,
+    "provider_attempts": 12,
+    "provider_reported_tokens": 500000,
+    "maximum_known_dated_price_cost_usd": 7.5,
+    "maximum_elapsed_minutes": 45,
+    "maximum_new_data_bytes": 10485760,
+    "authorized_public_source_transmissions": 12,
+    "allowed_network_hosts": ["api.anthropic.com"],
+    "other_network_reads_or_uploads": 0,
+    "repository_materializations": 0,
+    "repository_code_executions": 0,
+    "scanner_processes": 0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "findings_or_candidates_created": 0,
+    "assessments": 0,
+    "labels": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0,
+    "human_reviews": 0,
+    "agentic_runs": 0,
+    "workspace_branch_or_index_mutations": 0,
+    "commits": 0,
+    "merges": 0,
+    "pushes": 0,
+    "lifecycle_changes": 0
+  },
+  "stop_conditions": [
+    "Any retained evidence, corrected helper, corrected focused test, matrix, artifact inventory, absent corrected result, store, branch, index, subject, snapshot, detector, retrieval, prompt, schema, model, pricing, host, or resource identity drifts.",
+    "Any file other than the single permitted receipt test is changed before live execution, or that test changes beyond the historical-versus-current assertion reconciliation.",
+    "The Keychain service or loading path differs, a secret is output or persisted, or a provider call occurs after any failure or unavailable usage.",
+    "Any original or corrected receipt ceiling, zero-activity boundary, result boundary, or exclusion is exceeded."
+  ],
+  "excluded": [
+    "any helper, focused-test, receipt, result, matrix, historical-evidence, implementation, prompt, schema, model, scanner, retrieval, slicer, verifier, configuration, policy, branch, index, lifecycle, or deployment change beyond the one named receipt-test reconciliation",
+    "alternate credentials, credential persistence or disclosure, provider fallback, general retry, scanner or finding access, candidate disclosure, source rendering to the project owner, outcomes, review, assessments, labels, scores, ranks, thresholds, paired G03b comparison, agentic falsification, G04 empirical recall evaluation, production activation, OPT-010 promotion or closure"
+  ],
+  "result_boundary": "A successful final retry may descriptively complete G02 and G05 and measure fixed G07 coverage, but cannot claim empirical safety, run paired comparison or recall evaluation, activate production behavior, or close OPT-010.",
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the final corrected OPT-010 architecture-map and concrete-mechanism eligibility retry described by opt-010-architecture-mechanism-eligibility-final-retry-receipt-2026-08-20.json, retaining every source, subject, mechanism-matrix, architecture prompt and schema, Anthropic Claude Opus 4.8, request, confidence-only repass, usage, provider, cost, time, data, api.anthropic.com-only host, result, zero-activity, and exclusion boundary from the original and corrected receipts; accepting the retained pre-provider attempts with the immutable original stopped result, exact matrix-only artifact state, authorized corrected helper and focused test, 15 passing and one failing offline test, zero Keychain secret reads, provider attempts, source transmissions, tokens, cost, store mutations, or workspace git mutations; permitting only reconciliation of tests/test_opt_010_architecture_mechanism_eligibility_corrected_retry_receipt.py so the pre-correction helper and focused-test hashes remain immutable historical receipt evidence instead of being compared to the now-authorized current files; and then, only if all offline tests pass, using the corrected helper byte-for-byte to ephemerally load the existing repoauditor-anthropic Keychain secret into ANTHROPIC_API_KEY without output or persistence, resume from the unchanged matrix-only artifact directory, execute at most one initial architecture call and one confidence-below-0.5 repass per subject with no other retry or call after failure or unavailable usage, preserve authoritative scratch usage, and write one corrected aggregate result, with cumulative ceilings of six subjects, 12 provider attempts and source transmissions, 500,000 provider-reported tokens, $7.50 known dated-price cost, 45 minutes, 10 MiB new data, only api.anthropic.com network access, and exactly zero other network activity, repository materializations or code executions, scanners, production-store reads or mutations, findings or candidates, assessments, labels, training, rescoring, reviews, agentic runs, workspace branch or index mutations, commits, merges, pushes, or lifecycle changes. Any other test, helper, evidence, implementation, credential, prompt, schema, model, source, result, policy, lifecycle, integration, deployment, paired G03b comparison, agentic falsification, G04 empirical recall evaluation, threshold selection, production activation, or OPT-010 promotion or closure remains excluded."
+  }
+}

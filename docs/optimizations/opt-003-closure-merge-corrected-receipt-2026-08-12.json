@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "frozen_at": "2026-08-12",
+  "optimization": "OPT-003",
+  "status": "authorization-pending",
+  "original_receipt": {
+    "path": "opt-003-closure-merge-receipt-2026-08-12.json",
+    "sha256": "29c7b8c7b2dfabae6fea75c319d3a07be250da49580d0a9b731816ce46a8b861"
+  },
+  "stopped_attempt": {
+    "path": "opt-003-closure-merge-attempt-2026-08-12.json",
+    "sha256": "70d38318e6f9dfd85dad28b2398c9a9983801cdcd75171f5d90b4539963336c2",
+    "branch_commits": 0,
+    "merge_commits": 0,
+    "status_restored_to_open": true
+  },
+  "scope": "Retry the original OPT-003 bounded closure and local integration with every original status, documentation, commit, merge, resource, zero-network, zero-store, and excluded-action boundary retained, plus narrowly reconcile only the three lifecycle tests that failed because their assertions encode superseded lifecycle state or reject the canonical closed heading word.",
+  "allowed_test_reconciliations": [
+    {
+      "path": "../../tests/test_documentation_current_state.py",
+      "change": "Replace the hard-coded 31-closed/4-open summary and prior open set with the authorized 32-closed/3-open summary and priority-ordered OPT-009, OPT-014, OPT-010 expectations; require the current authority document to state 32 closed, 3 open, 35 total."
+    },
+    {
+      "path": "../../tests/test_opt005_lightweight_completion_receipt.py",
+      "change": "Treat opt-closeout-reassessment-2026-08-07.json as immutable historical evidence instead of requiring its historical summary to equal the current ledger; continue verifying that canonical OPT-005 is closed and ungated."
+    },
+    {
+      "path": "../../tests/test_optimization_status.py",
+      "change": "Accept the literal word closed, in addition to implemented or completed, as a closed authoritative-register heading state."
+    }
+  ],
+  "retained_closure_contract": {
+    "optimization_status": {"closed": 32, "open": 3, "total": 35},
+    "opt_003": {"status": "closed", "gate": "none", "next_priority": null},
+    "remaining_priority_order": ["OPT-009", "OPT-014", "OPT-010"],
+    "descriptive_ledgers": [
+      "optimization-register.md",
+      "../documentation-status.md",
+      "outstanding-work-checkpoint-2026-08-07.json",
+      "../triage-accuracy-roadmap.md"
+    ],
+    "closure_result": "opt-003-closure-result-2026-08-12.json",
+    "branch_commit_message": "feat: complete OPT-003 temporal validation",
+    "target_branch": "main",
+    "known_origin_main": "6cf17f0ba3ea430e01540882f9890f9b38975f9b",
+    "merge_source": "codex/opt-003-wave-1-import-receipt",
+    "merge_strategy": "one conflict-free local non-fast-forward merge commit",
+    "remote_push": false,
+    "branch_deletion": false
+  },
+  "preconditions": [
+    "The original receipt, stopped attempt, temporal result, aggregate report, store, current branch, initial HEAD, local main, and known origin/main match their frozen values.",
+    "OPT-003 is restored to open with the 31-closed/4-open canonical summary, and neither the branch nor local main advanced during the stopped attempt.",
+    "The only full-suite failures are the exact three named stale lifecycle assertions recorded in the stopped attempt.",
+    "The three test changes remain limited to their stated lifecycle semantics and make no product, evaluation, scanner, store, policy, or historical-evidence change."
+  ],
+  "commit_allowlist_extension": [
+    "tests/test_documentation_current_state.py",
+    "tests/test_opt005_lightweight_completion_receipt.py",
+    "tests/test_optimization_status.py"
+  ],
+  "resource_ceilings": {
+    "maximum_elapsed_minutes": 30,
+    "maximum_new_data_bytes": 1048576,
+    "branch_commits": 1,
+    "merge_commits": 1,
+    "network_reads": 0,
+    "network_uploads": 0,
+    "remote_pushes": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "store_mutations": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "rescores": 0,
+    "model_training_runs": 0
+  },
+  "stop_conditions": [
+    "Any retained precondition or original closure boundary drifts.",
+    "Any file other than the original frozen allowlist plus the three exact test files is changed or committed.",
+    "Any full offline non-live test, JSON validation, documentation consistency check, or git diff check fails after the three reconciliations.",
+    "Local main cannot fast-forward exactly to the known origin/main commit or branch integration produces a conflict.",
+    "Any network activity, remote push, provider activity, store mutation, assessment, label, rescore, training, tuning, recalibration, threshold selection or recommendation, production-policy change, deployment, branch deletion, or historical-evidence rewrite is attempted."
+  ],
+  "completion_boundary": "After the three exact test reconciliations, authorized lifecycle updates, closure result, passing full offline suite, one scoped branch commit, local-main fast-forward to the known origin/main, one conflict-free local merge commit, unchanged store digest, and clean tracked worktree, OPT-003 is complete and locally merged. No remote push or production action is authorized.",
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the corrected OPT-003 bounded closure and local integration retry described by opt-003-closure-merge-corrected-receipt-2026-08-12.json, retaining every boundary of the original closure receipt and permitting only three additional test reconciliations: update test_documentation_current_state.py for the authorized 32-closed/3-open summary and OPT-009, OPT-014, OPT-010 priority order; update test_opt005_lightweight_completion_receipt.py so the immutable 2026-08-07 reassessment remains historical instead of equaling the current ledger; and update test_optimization_status.py to accept closed as a canonical closed register heading; then mark OPT-003 closed, reconcile the named ledgers and roadmap, record one closure result, commit only the original allowlist plus those three tests, fast-forward local main only to known origin/main 6cf17f0ba3ea430e01540882f9890f9b38975f9b, and create one conflict-free local merge commit, with ceilings of 30 minutes, 1 MiB new data, one branch commit, one merge commit, and exactly zero network reads, uploads, remote pushes, provider calls, tokens, cost, store mutations, assessments, labels, rescoring, or model training. Any other test or historical-evidence change, tuning, recalibration, threshold selection or recommendation, production-policy change, deployment, branch deletion, or unlisted file change remains excluded."
+  }
+}

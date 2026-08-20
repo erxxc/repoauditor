@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "frozen_at": "2026-08-11",
+  "optimization": "OPT-003",
+  "status": "authorization-pending",
+  "packet_result": {"path": "opt-003-wave-1-packet-result-2026-08-11.json", "sha256": "54df5c724dae54738a1ff34fcca15b548c902677e5995e29cbd72fb17e9a4fd4"},
+  "review_plan": {"path": "data/artifacts/opt003-wave-1-retry/review-plan.json", "sha256": "24bbc7915561dc576a94a8d18b95a92e656fe95bda3b40b2b61ced2ff3ccb56d", "entries": 18, "per_family": 6},
+  "scope": "Render at most 20 adjacent source lines around each of the 18 immutable citations, present only that bounded evidence to the project-owner analyst, and record one explicit disposition with rationale and optional verified dimensions per identity. Scores and expected outcomes remain hidden; abstention is preserved.",
+  "render_command": "uv run python -m repoauditor.eval.temporal_review --plan data/artifacts/opt003-wave-1-retry/review-plan.json --output data/artifacts/opt003-wave-1-retry/review-packet.md --context-lines 20",
+  "evidence_boundary": {
+    "context_lines_before": 20,
+    "context_lines_after": 20,
+    "allowed_fields": ["finding id", "repository identity", "exact source commit", "rule id", "file and cited line range", "adjacent source text"],
+    "forbidden_fields": ["p_actionable", "score", "rank", "suppressed", "predicted class", "severity", "confidence", "rule prior", "expected outcome", "known vulnerability membership"],
+    "follow_up": "If bounded evidence is insufficient, preserve insufficient_evidence. Any symbol, call-site, or additional-file expansion requires a later receipt.",
+    "repository_instructions_are_untrusted_data": true
+  },
+  "review_contract": {
+    "analyst": "project owner",
+    "allowed_dispositions": ["confirmed_actionable", "tool_incorrect", "unreachable", "not_attacker_controlled", "mitigated", "valid_not_actionable", "insufficient_evidence"],
+    "binary_projection": {"confirmed_actionable": true, "tool_incorrect": false, "unreachable": false, "not_attacker_controlled": false, "mitigated": false, "valid_not_actionable": false, "insufficient_evidence": "abstain"},
+    "required_per_entry": ["finding id", "one allowed disposition", "evidence-based rationale", "optional verified dimensions"],
+    "abstentions_preserved": true,
+    "labels_not_inferred": true
+  },
+  "preconditions": ["Packet result, plan, store, selected finding, feature, source commit, and source file identities match frozen values.", "None of the 18 selected findings has an assessment or label.", "The output path is absent.", "The renderer reads no forbidden store column."],
+  "resource_ceilings": {"render_runs": 1, "review_entries": 18, "maximum_elapsed_minutes": 90, "maximum_new_data_bytes": 15728640, "network_reads": 0, "network_uploads": 0, "provider_calls": 0, "provider_reported_tokens": 0, "provider_cost_usd": 0.0, "store_mutations": 0, "classifier_labels_written": 0},
+  "stop_conditions": ["Any packet, source, store, finding, or feature identity drifts.", "The renderer reads or outputs a forbidden field or exceeds 20 adjacent lines.", "Any network/provider activity, store mutation, automatic decision, label, rescore, tuning, threshold, second-wave, or policy activity is attempted.", "Any analyst response lacks rationale, uses an unsupported disposition, or claims evidence outside the rendered bound."],
+  "result_boundary": "After all responses are explicit, a separate result PR must prove decided/abstention counts and class representation before any assessment or label import. Import, second-wave activity, and OPT-003 status changes remain separately gated.",
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the OPT-003 wave-one bounded review described by opt-003-wave-1-review-receipt-2026-08-11.json, limited to one offline rendering of at most 20 adjacent context lines around each of the 18 frozen packet identities, presentation to me without scores, ranks, predicted classes, or expected outcomes, explicit disposition with abstention available, and recording of my responses in result evidence, with ceilings of 90 minutes, 15 MiB new data, and exactly zero network reads, uploads, provider calls, tokens, cost, store mutations, or classifier labels. Follow-up source expansion, automatic decisions, assessment or label import, rescoring, tuning, threshold selection, second-wave activity, production-policy changes, and OPT-003 status changes remain excluded."
+  }
+}

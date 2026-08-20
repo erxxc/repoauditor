@@ -1,0 +1,254 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-014",
+  "status": "swiss-controlled-access-feasibility-complete",
+  "recorded_at": "2026-08-18",
+  "receipt": {
+    "path": "opt-014-swiss-controlled-access-feasibility-receipt-2026-08-18.json",
+    "sha256": "0c2b6d6d28f81cc422a46d5b326922a651479c39d7728ddb9a6b8dad64c8f4fa",
+    "authorization_matched": true
+  },
+  "design": {
+    "path": "opt-014-independent-data-acquisition-design-2026-08-18.json",
+    "sha256": "af29a9bd3e1f644fd6ee115daccf59c6da166b45c668941a8f22b4416e09be15"
+  },
+  "swiss_discovery": {
+    "path": "opt-014-swiss-metadata-source-discovery-result-2026-08-18.json",
+    "sha256": "bb7dd8b4338565b004d56876cfb69eee735e08f57bd6e800863e160fd9f871de"
+  },
+  "pathway": {
+    "identity": "NCSC mandatory critical-infrastructure cyberattack administrative records plus FSO STATENT or an equivalent official enterprise population frame",
+    "qualification_basis": "official public access, governance, legal, confidentiality, linkage, schema, and data-protection metadata only",
+    "records_or_outcomes_accessed": false,
+    "application_contact_or_terms_activity": false
+  },
+  "outcome_blinding": {
+    "outcome_values_persisted": 0,
+    "outcome_distributions_persisted": 0,
+    "prior_agreement_inspected_or_used": false,
+    "incidental_value_quarantine": {
+      "activated": true,
+      "occurrences": [
+        "NCSC annual, semi-annual, and interim reporting search results co-mingled report totals and category shares with permitted administrative-collection metadata.",
+        "Unrelated NCSC incident-report search results co-mingled named incidents or record-level narratives with generic confidentiality wording."
+      ],
+      "handling": "No report total, rate, share, loss, organization, incident narrative, record, distribution, or comparison from those sections was transcribed, persisted, summarized, or used. Those result sections were quarantined and not opened as evidence."
+    }
+  },
+  "gate_counts": {
+    "total": 10,
+    "documented-pass": 0,
+    "documented-fail": 2,
+    "unresolved": 8
+  },
+  "gates": [
+    {
+      "gate_id": "G01",
+      "gate": "A public controlled-access route exists for eligible external research institutions.",
+      "state": "unresolved",
+      "evidence": [
+        "The Federal Council states that FSO data-linkage options exist for research purposes and are assigned tariffs under the revised statistics-fee ordinance.",
+        "The FSO statistical-business-register quality report limits register microdata to users authorized under the Business Register Ordinance, through BURWEB or lists, and does not advertise a general external-research route for STATENT microdata.",
+        "No public NCSC research-access route for mandatory-report records was identified."
+      ],
+      "official_urls": [
+        "https://www.admin.ch/en/newnsb/f1zWSNpVPekdwKPMGT9dd",
+        "https://www.bfs.admin.ch/bfsstatic/dam/assets/17624058/master"
+      ],
+      "blocking_requirement": "A pathway-specific institutional-eligibility and controlled-access procedure covering both NCSC mandatory records and an official enterprise frame is not publicly documented."
+    },
+    {
+      "gate_id": "G02",
+      "gate": "The research purpose can include independent statistical validation using confidential administrative cybersecurity records.",
+      "state": "unresolved",
+      "evidence": [
+        "Federal data-protection guidance permits federal-body processing for research, planning, or statistical purposes under conditions including early anonymization and non-identifying publication.",
+        "The NCSC public mandatory-reporting materials describe threat assessment, warnings, and support as uses of reports, but do not advertise independent external model-validation research as an authorized purpose."
+      ],
+      "official_urls": [
+        "https://www.edoeb.admin.ch/en/research-and-data-protection",
+        "https://www.ncsc.admin.ch/ncsc/en/home/meldepflicht/faq.html"
+      ],
+      "blocking_requirement": "A source-specific legal or administrative authorization for the frozen validation purpose remains absent from public metadata."
+    },
+    {
+      "gate_id": "G03",
+      "gate": "NCSC records can lawfully be disclosed to or processed for the research route without defeating statutory confidentiality or purpose limitation.",
+      "state": "unresolved",
+      "evidence": [
+        "NCSC states that mandatory reports are treated confidentially and that public warning use relies on anonymized, categorized, statistical recording.",
+        "NCSC documents forwarding to specified authorities when reporters explicitly request it, but does not document disclosure to external researchers or an FSO trusted-processing route.",
+        "The public legal-basis page defines the reporting obligation and implementing ordinance but does not expose a research-disclosure authorization."
+      ],
+      "official_urls": [
+        "https://www.ncsc.admin.ch/ncsc/en/home/meldepflicht/faq.html",
+        "https://www.ncsc.admin.ch/ncsc/en/home/meldepflicht/meldepflicht-vorgehen.html",
+        "https://www.ncsc.admin.ch/ncsc/en/home/meldepflicht/gesetzliche-grundlagen-mp.html"
+      ],
+      "blocking_requirement": "A direct official statement authorizing NCSC-to-FSO or NCSC-to-researcher processing for statistical validation is required."
+    },
+    {
+      "gate_id": "G04",
+      "gate": "An official enterprise or covered-operator denominator can be accessed or constructed for the same observation periods.",
+      "state": "unresolved",
+      "evidence": [
+        "The statistical business register freezes an annual frame and STATENT is published annually.",
+        "Register microdata access is restricted to Business Register Ordinance users.",
+        "NCSC public metadata describes covered classes and exemptions but does not publish a frozen list of all in-scope operators for each observation period."
+      ],
+      "official_urls": [
+        "https://www.bfs.admin.ch/bfsstatic/dam/assets/17624058/master",
+        "https://www.ncsc.admin.ch/ncsc/en/home/meldepflicht/faq.html"
+      ],
+      "blocking_requirement": "The same-period covered-operator universe, exemption history, and lawful frame access are not jointly documented."
+    },
+    {
+      "gate_id": "G05",
+      "gate": "Stable pseudonymous linkage keys or an authorized trusted-linkage service are publicly documented.",
+      "state": "unresolved",
+      "evidence": [
+        "FSO register metadata documents unique enterprise identifiers and current federal policy documents confirm general research-oriented data-linkage services.",
+        "The NCSC public reporting schema collects organization name and address but does not advertise a UID, a pseudonymous crosswalk, or transfer to an FSO trusted linkage service."
+      ],
+      "official_urls": [
+        "https://www.bfs.admin.ch/bfsstatic/dam/assets/17624058/master",
+        "https://www.admin.ch/en/newnsb/f1zWSNpVPekdwKPMGT9dd",
+        "https://www.ncsc.admin.ch/ncsc/en/home/meldepflicht/fragen_meldepflicht.html"
+      ],
+      "blocking_requirement": "A source-specific trusted-linkage authority, key definition, and separation-of-identifiers procedure are not public."
+    },
+    {
+      "gate_id": "G06",
+      "gate": "Non-reporting covered organization-periods can be represented as explicit zero-event observations without treating unknown compliance as zero.",
+      "state": "documented-fail",
+      "evidence": [
+        "NCSC explicitly states there is no active supervision of compliance and that it acts when it independently learns of an unreported attack.",
+        "Therefore absence of a report cannot distinguish a true zero-event organization-period from an unobserved reportable attack under the frozen observation contract."
+      ],
+      "official_urls": [
+        "https://www.ncsc.admin.ch/ncsc/en/home/meldepflicht/faq.html"
+      ],
+      "failure_reason": "The public ascertainment process does not support valid explicit zero-event organization-periods."
+    },
+    {
+      "gate_id": "G07",
+      "gate": "Incident counts and realized monetary-loss fields, including currency and censoring metadata, are advertised for controlled research use.",
+      "state": "documented-fail",
+      "evidence": [
+        "The mandatory-report e-mail schema captures organization identity, attack timing and type, attack vector, operational impact, and response measures.",
+        "It does not advertise a realized monetary-loss amount, currency, censoring threshold, or loss missingness field.",
+        "It also does not advertise an organization-period incident-count export for research."
+      ],
+      "official_urls": [
+        "https://www.ncsc.admin.ch/ncsc/en/home/meldepflicht/fragen_meldepflicht.html"
+      ],
+      "failure_reason": "The public schema cannot satisfy the frozen realized-loss observation contract even if controlled access were later granted."
+    },
+    {
+      "gate_id": "G08",
+      "gate": "Deidentification, disclosure review, secure-environment, output-export, retention, deletion, and onward-disclosure rules are compatible with the frozen OPT-014 design.",
+      "state": "unresolved",
+      "evidence": [
+        "Federal guidance requires early anonymization or pseudonymization, non-identifying research publications, and federal-body consent for onward disclosure.",
+        "No NCSC/FSO pathway-specific secure environment, disclosure review, output export, retention, deletion, or project-termination rules were identified."
+      ],
+      "official_urls": [
+        "https://www.edoeb.admin.ch/en/research-and-data-protection"
+      ],
+      "blocking_requirement": "General data-protection principles exist, but an enforceable source-specific control package is not public."
+    },
+    {
+      "gate_id": "G09",
+      "gate": "Record-level lineage and overlap controls can distinguish NCSC voluntary and mandatory reports and exclude overlap with frozen prior and comparison sources.",
+      "state": "unresolved",
+      "evidence": [
+        "NCSC public materials distinguish voluntary reports from mandatory reports at an aggregate conceptual level.",
+        "No record-level provenance identifiers, cross-system duplicate controls, or overlap-exclusion keys are publicly advertised."
+      ],
+      "official_urls": [
+        "https://www.ncsc.admin.ch/ncsc/en/home/meldepflicht/faq.html"
+      ],
+      "blocking_requirement": "The frozen independence and overlap-exclusion contract cannot be implemented from public lineage metadata."
+    },
+    {
+      "gate_id": "G10",
+      "gate": "Access terms, license, institutional eligibility, application steps, review authority, fees, and version controls are publicly documented.",
+      "state": "unresolved",
+      "evidence": [
+        "Current federal policy confirms that FSO linkage and register services can carry tariffs.",
+        "The business-register quality report identifies ordinance-based authorized users and annual frozen frames.",
+        "No combined NCSC/FSO pathway terms, external eligibility rules, application procedure, review authority, license, fee schedule, or release identity are publicly documented."
+      ],
+      "official_urls": [
+        "https://www.admin.ch/en/newnsb/f1zWSNpVPekdwKPMGT9dd",
+        "https://www.bfs.admin.ch/bfsstatic/dam/assets/17624058/master"
+      ],
+      "blocking_requirement": "Generic FSO service metadata is insufficient to establish a governed NCSC-record access contract."
+    }
+  ],
+  "decision": {
+    "overall_state": "not-publicly-actionable",
+    "opt_014_status": "open-data-gated",
+    "data_gate_cleared": false,
+    "source_selected_for_acquisition": false,
+    "adequacy_threshold_selected": false,
+    "result": "The Swiss controlled-access pathway is not publicly actionable under the frozen OPT-014 observation contract.",
+    "decisive_failures": [
+      "The mandatory-report collection cannot supply defensible zero-event organization-periods because compliance is not actively supervised.",
+      "The advertised reporting schema lacks realized monetary-loss amount, currency, censoring, and missingness fields."
+    ],
+    "unresolved_governance": "A lawful NCSC-to-FSO trusted-processing route, external research eligibility, same-period covered denominator, source-specific linkage keys, secure environment, output review, retention, license, and overlap controls are not publicly documented.",
+    "bounded_interpretation": "This is a negative public-metadata feasibility result for the evaluated NCSC-plus-STATENT pathway and frozen observation contract. It is not a claim that Swiss authorities could never authorize a different confidential research design or collect additional fields.",
+    "next_bounded_options": [
+      "Run the narrow UK and Statistics Canada access-and-codebook qualification, where the public survey schemas more closely match the frozen organization-period contract.",
+      "Close OPT-014 at its completed descriptive coherence and negative data-feasibility scope without a universal impossibility claim."
+    ]
+  },
+  "network_and_resource_accounting": {
+    "maximum_elapsed_minutes_respected": true,
+    "new_result_documents": 1,
+    "unique_allowed_host_metadata_documents_used_as_evidence": 8,
+    "allowed_network_hosts_contacted_for_evidence": [
+      "www.bfs.admin.ch",
+      "www.ncsc.admin.ch",
+      "www.admin.ch",
+      "www.fedlex.admin.ch",
+      "www.edoeb.admin.ch"
+    ],
+    "unlisted_links_followed": 0,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "dataset_downloads": 0,
+    "raw_dataset_table_cube_api_or_preview_requests": 0,
+    "raw_records_used": 0,
+    "applications_or_contacts": 0,
+    "outcome_values_persisted": 0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "simulation_runs": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0
+  },
+  "store": {
+    "access": "hash-only-no-database-open",
+    "before_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "after_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "byte_identical": true
+  },
+  "not_executed": {
+    "credentials_login_account_terms_application_contact_purchase_or_payment": true,
+    "restricted_portal_dataset_or_microdata_access": true,
+    "raw_record_table_cube_api_or_preview_access": true,
+    "linkage_key_construction_or_source_acquisition_selection": true,
+    "adequacy_threshold_cohort_or_holdout_selection": true,
+    "evaluation_fitting_simulation_or_resampling": true,
+    "prior_methodology_or_policy_change": true,
+    "opt_014_promotion_or_closure": true,
+    "opt_010_execution": true,
+    "branch_integration_remote_push_or_deployment": true
+  }
+}

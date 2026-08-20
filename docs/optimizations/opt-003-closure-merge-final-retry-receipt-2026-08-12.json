@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "frozen_at": "2026-08-12",
+  "optimization": "OPT-003",
+  "status": "authorization-pending",
+  "prior_corrected_receipt": {
+    "path": "opt-003-closure-merge-corrected-receipt-2026-08-12.json",
+    "sha256": "2c4a2c3520068dfee2c1fd591e702256943366c31d1fdb50ba9fd382cb541ef3"
+  },
+  "second_stopped_attempt": {
+    "path": "opt-003-closure-merge-corrected-attempt-2026-08-12.json",
+    "sha256": "abb4882e40672794dcc356b8d23f5c765920a5c9b279fd7e3b84fa68a9f3e0dc",
+    "passed_tests": 787,
+    "failed_tests": 1,
+    "branch_commits": 0,
+    "merge_commits": 0,
+    "status_restored_to_open": true
+  },
+  "scope": "Perform the final OPT-003 closure retry with every original and corrected receipt boundary retained. Correct only the inverted historical-gate assertion in the already authorized OPT-005 lifecycle test, then repeat the bounded lifecycle closure, complete offline validation, scoped branch commit, and local integration.",
+  "only_new_change": {
+    "path": "../../tests/test_opt005_lightweight_completion_receipt.py",
+    "old_assertion": "assert reassessment[\"current_execution_gate\"] is not None",
+    "new_assertion": "assert reassessment[\"current_execution_gate\"] is None",
+    "historical_evidence_edited": false
+  },
+  "retained_contract": {
+    "optimization_summary": {"closed": 32, "open": 3, "total": 35},
+    "opt_003": {"status": "closed", "gate": "none", "next_priority": null},
+    "remaining_priority_order": ["OPT-009", "OPT-014", "OPT-010"],
+    "branch": "codex/opt-003-wave-1-import-receipt",
+    "initial_head": "1e92bb90602e7bd6e52dbfd86e12e6c6be5f3f28",
+    "local_main": "4a6a4fff0f5d1fe9f8375b1cb41a611c8d0bf470",
+    "known_origin_main": "6cf17f0ba3ea430e01540882f9890f9b38975f9b",
+    "branch_commit_message": "feat: complete OPT-003 temporal validation",
+    "branch_commits": 1,
+    "merge_commits": 1,
+    "merge_strategy": "fast-forward local main to known origin/main, then one conflict-free local non-fast-forward merge commit",
+    "remote_push": false,
+    "branch_deletion": false,
+    "store_sha256": "a3d8e55feadf5860c079f1de18b698186afbae81ba6bf678717cdfe1f2cca11f"
+  },
+  "preconditions": [
+    "The prior corrected receipt, second stopped attempt, temporal result, store, branch, refs, and restored open lifecycle state match frozen values.",
+    "The previously authorized changes in the three named lifecycle tests remain present and uncommitted.",
+    "The only failing full-suite assertion is the exact inverted current_execution_gate assertion frozen above.",
+    "No commit, merge, local-main update, network action, or store mutation occurred in either stopped attempt."
+  ],
+  "resource_ceilings": {
+    "maximum_elapsed_minutes": 30,
+    "maximum_new_data_bytes": 1048576,
+    "branch_commits": 1,
+    "merge_commits": 1,
+    "network_reads": 0,
+    "network_uploads": 0,
+    "remote_pushes": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "store_mutations": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "rescores": 0,
+    "model_training_runs": 0
+  },
+  "stop_conditions": [
+    "Any precondition or retained original/corrected boundary drifts.",
+    "Any change beyond the frozen one-line correction and previously authorized closure/test allowlists is attempted.",
+    "Any full offline non-live test, JSON validation, documentation consistency check, scoped-path check, or git diff check fails.",
+    "Local main cannot fast-forward exactly to known origin/main or the local branch integration conflicts.",
+    "Any network activity, remote push, provider activity, store mutation, assessment, label, rescore, training, tuning, recalibration, threshold selection or recommendation, production-policy change, deployment, branch deletion, or historical-evidence edit is attempted."
+  ],
+  "completion_boundary": "After the one-line correction, authorized lifecycle updates, closure result, passing full offline suite, one scoped branch commit, exact local-main fast-forward, one conflict-free local merge commit, unchanged store digest, and clean tracked worktree, OPT-003 is complete and locally merged. No remote push or production action is authorized.",
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the final corrected OPT-003 closure and local integration retry described by opt-003-closure-merge-final-retry-receipt-2026-08-12.json, retaining every boundary and allowlist from the original and corrected closure receipts, limited additionally to changing only the inverted assertion in test_opt005_lightweight_completion_receipt.py from current_execution_gate is not None to current_execution_gate is None without editing the immutable historical evidence; then marking OPT-003 closed with 32 closed and three open items in OPT-009, OPT-014, OPT-010 priority order, reconciling the named ledgers and roadmap, recording one closure result, running the full offline non-live suite, committing the authorized files once, fast-forwarding local main only to known origin/main 6cf17f0ba3ea430e01540882f9890f9b38975f9b, and creating one conflict-free local merge commit, with ceilings of 30 minutes, 1 MiB new data, one branch commit, one merge commit, and exactly zero network reads, uploads, remote pushes, provider calls, tokens, cost, store mutations, assessments, labels, rescoring, or model training. Any other test or historical-evidence change, tuning, recalibration, threshold selection or recommendation, production-policy change, deployment, branch deletion, or unlisted file change remains excluded."
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-010",
+  "protocol_id": "opt010-g03a-paired-baseline-v1",
+  "status": "frozen-protocol-only-no-qualification-authority",
+  "frozen_at": "2026-08-18",
+  "arms": [
+    "current-bounded-falsifier",
+    "proposed-read-only-tool-agent"
+  ],
+  "pairing": {
+    "rule": "Both arms receive identical digest-frozen subjects, findings, snapshot commits, stored architecture evidence, deterministic index identity, context ceiling, and terminal observation contract.",
+    "unique_issue_identity": "A separately frozen stable issue-group identity is used for matched yield; neither arm may define or alter it.",
+    "outcome_blinding": "Outcomes remain unavailable until both arms have terminal predictions, abstentions, validation chronology, and authoritative or explicitly unknown usage."
+  },
+  "fixed_metrics": [
+    "unique validated issues",
+    "precision",
+    "recall",
+    "abstention coverage",
+    "provider latency",
+    "provider input, output, cache-read, and cache-write tokens",
+    "known dated-price cost",
+    "cost per uniquely validated issue"
+  ],
+  "fail_closed_rules": [
+    "Any arm with incomplete terminal observations blocks comparison.",
+    "Missing provider usage remains unknown and blocks token- or cost-based comparison; it is never assigned zero.",
+    "Unsupported pricing remains unavailable and blocks cost-based comparison.",
+    "Verifier unsupported or incomplete states remain abstentions and cannot be counted as validated issues.",
+    "Cohort or subgroup insufficiency remains explicit and cannot be repaired after outcomes are visible.",
+    "No pooled improvement can override a pre-frozen weak-subgroup safety failure.",
+    "No threshold, margin, cohort, subgroup floor, resampling plan, or decision rule is selected by this protocol-only foundation."
+  ],
+  "qualification_preconditions": [
+    "G01 documented-pass",
+    "G02 documented-pass",
+    "G03a documented-pass",
+    "G04 offline invariant portion documented-pass",
+    "G05 documented-pass",
+    "G06 documented-pass",
+    "G07 documented-pass",
+    "one later exact qualification receipt with cohort, metrics, decision rules, provider, token, cost, time, and data ceilings"
+  ],
+  "post_qualification_rule": "Production activation remains prohibited unless G03b and empirical recall safety pass under the later frozen qualification and every other gate remains documented-pass.",
+  "current_authority": {
+    "provider_calls": 0,
+    "agentic_runs": 0,
+    "baseline_executions": 0,
+    "cohort_selections": 0,
+    "outcomes_read": 0,
+    "thresholds_selected": 0,
+    "production_policy_changes": 0
+  }
+}

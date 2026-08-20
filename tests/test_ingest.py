@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 from git import Repo
+from git.remote import Remote
 from typer.testing import CliRunner
 
 from repoauditor import cli
@@ -111,6 +112,46 @@ def test_git_ingest_requires_exact_full_commit_when_declared(
             repo_id="wrong-frozen-source",
             expected_commit="0" * 40,
         )
+
+
+def test_remote_exact_commit_ingest_uses_a_shallow_fetch(
+    tmp_config, tmp_path, monkeypatch
+):
+    source = tmp_path / "source"
+    source.mkdir()
+    repo = Repo.init(source)
+    (source / "old.py").write_text("print('old')\n")
+    repo.index.add(["old.py"])
+    repo.index.commit("old history")
+    (source / "current.py").write_text("print('current')\n")
+    repo.index.add(["current.py"])
+    expected = repo.index.commit("approved snapshot").hexsha
+    remote = tmp_path / "remote.git"
+    Repo.clone_from(source, remote, bare=True)
+
+    observed: dict[str, object] = {}
+    original_fetch = Remote.fetch
+
+    def record_fetch(remote_value, *fetch_args, **fetch_kwargs):
+        observed["args"] = fetch_args
+        observed["kwargs"] = fetch_kwargs
+        return original_fetch(remote_value, *fetch_args, **fetch_kwargs)
+
+    monkeypatch.setattr(Remote, "fetch", record_fetch)
+    result = ingest_repo(
+        remote.as_uri(),
+        tmp_config,
+        repo_id="remote-exact",
+        expected_commit=expected,
+    )
+
+    assert result.commit == expected[:12]
+    assert (result.snapshot_path / "current.py").is_file()
+    assert observed == {
+        "args": (expected,),
+        "kwargs": {"depth": 1, "no_tags": True},
+    }
+    assert not (tmp_config.raw_dir / "remote-exact" / ".clone-tmp").exists()
 
 
 def test_plain_directory_rejects_expected_git_commit(tmp_config, fixture_repo):

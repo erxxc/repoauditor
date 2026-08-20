@@ -1,0 +1,202 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-010",
+  "status": "authorization-pending",
+  "objective": "Accept the retained Java/Ruby scanner-cell attempt as immutable descriptive evidence, independently reproduce its classifications offline, and record a corrected bounded negative result without importing a runtime, rerunning a scanner, or performing any live activity.",
+  "retained_attempt": {
+    "original_receipt": {
+      "path": "docs/optimizations/opt-010-java-ruby-scanner-cell-coverage-receipt-2026-08-20.json",
+      "sha256": "44aa37efa65627e6dd0b2f69743ba77b95ef0fe586217df558db987b7a064bab"
+    },
+    "nonqualifying_result": {
+      "path": "docs/optimizations/opt-010-java-ruby-scanner-cell-coverage-result-2026-08-20.json",
+      "sha256": "60922ca5e07eb808e8e71a7d3c7b65ae40d5fef489de306db877e5f5e755b6e6"
+    },
+    "coverage_artifact": {
+      "path": "data/artifacts/opt010-java-ruby-scanner-cell-coverage/coverage-artifact.json",
+      "sha256": "d632c4157def45b1ae0bde2a09c897284e8f0905ba2d274bde13d7f2fe0211bf"
+    },
+    "runtime_import_check": {
+      "path": "data/artifacts/opt010-java-ruby-scanner-cell-coverage/runtime-import-check.json",
+      "sha256": "463c35aa2f0810906eac408d3c10b7a5e75083e8e24232207f552f6979c4a839"
+    },
+    "fixture_manifest": {
+      "path": "data/artifacts/opt010-java-ruby-scanner-cell-coverage/fixture-manifest.json",
+      "sha256": "06f20f556824dcc13ff8c550d8b68c024f17b109575f6da3073f328d273a3b00"
+    },
+    "mechanism_mapping": {
+      "path": "data/artifacts/opt010-java-ruby-scanner-cell-coverage/mechanism-mapping.json",
+      "sha256": "5a954ed23a788d34dce0b36bda1b98ad3f8fe322915552f7d237fe57627218b0"
+    },
+    "retained_semgrep_canary": {
+      "path": "data/artifacts/opt010-supported-primary-augmentation/canary-semgrep.json",
+      "sha256": "54cdc71c6c18450d9ca39e8c09a4dd2500738d873a13f4f965cbbf91853a8fd4"
+    },
+    "retained_supplemental_canary": {
+      "path": "data/artifacts/opt010-supported-primary-augmentation/canary-semgrep-supplemental.json",
+      "sha256": "31ce141852aae4a7630052dd04f859aecf3f419c6c70889426add621d81ecc65"
+    },
+    "facts": {
+      "runtime": "the exact installed Semgrep 1.170.0 import-only check passed without starting the CLI",
+      "scanner_activity": "four ordered offline pinned-default Semgrep fixture scans completed; supplemental Semgrep was not run because Java and Ruby are outside its frozen applicability",
+      "java_ssrf": "positive valid with zero mapped results and clean valid with zero mapped results; descriptive classification coverage-gap",
+      "ruby_unsafe_deserialization": "positive valid with one mapped result and clean valid with zero mapped results; descriptive classification qualified-detectable",
+      "routing": "supplemental-rule-qualification-prerequisite",
+      "data_boundary": "7,841,236 retained bytes exceeded the original 2 MiB new-data ceiling",
+      "live_activity": "zero network, provider, credential, production-store database, assessment, label, training, rescoring, agentic, baseline, review, outcome, or workspace-git activity",
+      "store": "byte-identical at SHA-256 468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a"
+    },
+    "interpretation": "The original result remains stopped and nonqualifying under its receipt. This corrected acceptance may rely on retained evidence only after exact offline reproduction; it does not erase, edit, replace, or retroactively qualify the historical result."
+  },
+  "retained_scan_evidence": [
+    {
+      "order": 1,
+      "cell": "Java:ssrf",
+      "expectation": "positive",
+      "sarif": {
+        "path": "data/artifacts/opt010-java-ruby-scanner-cell-coverage/scans/01-java-positive/semgrep.sarif",
+        "sha256": "19d39807a1156187dabe3752bc9d7113fd0d8e3dc957b142f75013848b5b4ce2"
+      },
+      "target_report": {
+        "path": "data/artifacts/opt010-java-ruby-scanner-cell-coverage/scans/01-java-positive/semgrep-targets.json",
+        "sha256": "48b9fdf306dabedc347f6b61ae8ee02ded0edfa1dce4642be929e706f02485e3"
+      }
+    },
+    {
+      "order": 2,
+      "cell": "Java:ssrf",
+      "expectation": "clean",
+      "sarif": {
+        "path": "data/artifacts/opt010-java-ruby-scanner-cell-coverage/scans/02-java-clean/semgrep.sarif",
+        "sha256": "19d39807a1156187dabe3752bc9d7113fd0d8e3dc957b142f75013848b5b4ce2"
+      },
+      "target_report": {
+        "path": "data/artifacts/opt010-java-ruby-scanner-cell-coverage/scans/02-java-clean/semgrep-targets.json",
+        "sha256": "3c34276dfd625f03f16ffaf9e00569944dac6f5b1f928432e59984341d6736c9"
+      }
+    },
+    {
+      "order": 3,
+      "cell": "Ruby:unsafe_deserialization",
+      "expectation": "positive",
+      "sarif": {
+        "path": "data/artifacts/opt010-java-ruby-scanner-cell-coverage/scans/03-ruby-positive/semgrep.sarif",
+        "sha256": "864c32485e1af0ec54b2be3ab0db73b30cc3699a7171ed3e27abfbf5aa03b91b"
+      },
+      "target_report": {
+        "path": "data/artifacts/opt010-java-ruby-scanner-cell-coverage/scans/03-ruby-positive/semgrep-targets.json",
+        "sha256": "28ea840ada4fa7d3739c649663dffd4e5638997c7ee89e4593245ad4644723cd"
+      }
+    },
+    {
+      "order": 4,
+      "cell": "Ruby:unsafe_deserialization",
+      "expectation": "clean",
+      "sarif": {
+        "path": "data/artifacts/opt010-java-ruby-scanner-cell-coverage/scans/04-ruby-clean/semgrep.sarif",
+        "sha256": "19d39807a1156187dabe3752bc9d7113fd0d8e3dc957b142f75013848b5b4ce2"
+      },
+      "target_report": {
+        "path": "data/artifacts/opt010-java-ruby-scanner-cell-coverage/scans/04-ruby-clean/semgrep-targets.json",
+        "sha256": "92ce3e0778a1666b2de03f2d83886b6baefbde310a070c9c354252d1f1e53d31"
+      }
+    }
+  ],
+  "frozen_instruments": {
+    "coverage_helper": {
+      "path": "src/repoauditor/eval/opt010_scanner_cell_coverage.py",
+      "sha256": "fc0dc4177daa1ae0c34777e156f1461af53fb155f50bb969a1f2cd0848a0ca57"
+    },
+    "coverage_test": {
+      "path": "tests/test_opt_010_scanner_cell_coverage.py",
+      "sha256": "eef18f79392e6f2578fd7414d24f29f3bbc08ac3a7ba346d9cc47011d43f359d"
+    },
+    "metadata_parser": {
+      "path": "src/repoauditor/eval/opt010_paired_wave.py",
+      "sha256": "52ee4c59c41c6823afba07e2a4ac27f565125366159d1d78f7be43586ddad1eb"
+    }
+  },
+  "offline_acceptance_contract": {
+    "preflight": "Verify every retained receipt, result, aggregate artifact, runtime report, fixture manifest, mapping, canary, scan file, target report, and frozen instrument digest; verify the production-store digest, main branch, empty index, retained-evidence ceiling, and initially absent corrected outputs before writing.",
+    "artifact_access": "Read only the retained fixture manifest, runtime and canary JSON, coverage artifact, four Semgrep SARIF files, four target reports, frozen mechanism mapping, and frozen metadata parser. Do not open fixture source, repository source, other scanner output, production findings, outcomes, or the production database.",
+    "reproduction": "Using the frozen mapping and parser, independently reproduce each scan's validity and mapped-cell count, both cell classifications, supplemental applicability, routing, and an ordered retained-scan-set digest. Persist aggregate classifications and counts only.",
+    "expected_result": {
+      "cells": [
+        {
+          "cell": "Java:ssrf",
+          "positive_execution_valid": true,
+          "positive_mapped_results": 0,
+          "clean_execution_valid": true,
+          "clean_mapped_results": 0,
+          "classification": "coverage-gap"
+        },
+        {
+          "cell": "Ruby:unsafe_deserialization",
+          "positive_execution_valid": true,
+          "positive_mapped_results": 1,
+          "clean_execution_valid": true,
+          "clean_mapped_results": 0,
+          "classification": "qualified-detectable"
+        }
+      ],
+      "supplemental_applicability": {
+        "java": "not-applicable",
+        "ruby": "not-applicable"
+      },
+      "routing": "supplemental-rule-qualification-prerequisite"
+    },
+    "acceptance_rule": "Accept the scanner-cell gate as corrected completed-negative only if every retained binding and expected classification reproduces exactly and the retained evidence is no more than 8 MiB. Any drift stops without acceptance. The original nonqualifying result remains immutable historical evidence.",
+    "result_rule": "Persist one aggregate acceptance artifact and one corrected completed-negative result. Neither may include fixture or repository source, paths from SARIF, rule identities, excerpts, finding identities, candidates, scores, predictions, outcomes, or packet contents."
+  },
+  "execution": {
+    "helper": "src/repoauditor/eval/opt010_scanner_cell_coverage_acceptance.py",
+    "focused_test": "tests/test_opt_010_scanner_cell_coverage_acceptance.py",
+    "artifact": "data/artifacts/opt010-java-ruby-scanner-cell-coverage/acceptance-artifact.json",
+    "result": "docs/optimizations/opt-010-java-ruby-scanner-cell-coverage-corrected-acceptance-result-2026-08-20.json"
+  },
+  "resource_ceilings": {
+    "maximum_elapsed_minutes": 10,
+    "retained_evidence_bytes_maximum": 8388608,
+    "maximum_new_data_bytes": 1048576,
+    "network_reads_or_uploads": 0,
+    "runtime_import_checks": 0,
+    "scanner_or_canary_processes": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "keychain_or_credential_reads": 0,
+    "repository_materializations": 0,
+    "repository_or_source_reads": 0,
+    "repository_code_executions": 0,
+    "production_store_database_reads": 0,
+    "production_store_mutations": 0,
+    "schema_migrations": 0,
+    "human_reviews": 0,
+    "outcomes_read": 0,
+    "assessments": 0,
+    "labels": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0,
+    "agentic_or_baseline_runs": 0,
+    "workspace_branch_or_index_mutations": 0,
+    "commits": 0,
+    "merges": 0,
+    "pushes": 0,
+    "lifecycle_changes": 0
+  },
+  "stop_conditions": [
+    "Any retained evidence, instrument, production-store digest, branch, index, retained-evidence ceiling, or initially absent corrected output drifts.",
+    "Any expected scan validity, mapped-cell count, classification, supplemental applicability, routing, or aggregate digest fails exact reproduction; any fixture or repository source, unlisted artifact, finding identity, or candidate-level datum is opened, persisted, or disclosed.",
+    "Any network, runtime-import, scanner, canary, provider, credential, repository, production-database, outcome, assessment, label, training, rescoring, agentic, review, git-mutation, or lifecycle activity occurs, or any ceiling is reached."
+  ],
+  "excluded": [
+    "editing, deleting, replacing, or retroactively qualifying the original receipt, nonqualifying result, aggregate artifact, runtime report, fixture manifest, fixtures, mapping, canaries, scan evidence, target reports, instruments, or production store",
+    "runtime import, scanner or canary execution, new acquisition, repository or source access, source rendering, retrieval building, architecture recovery, provider or Keychain use, candidate or packet persistence or disclosure, paired execution, review, outcomes, assessments, or labels",
+    "new or edited scanner rules, supplemental-rule implementation or qualification, scanner configuration changes, installation, downgrade, retry, precision, recall, G03b or G04 decisions, threshold selection, training, rescoring, fitting, tuning, recalibration, production-policy changes, OPT-010 promotion or closure, lifecycle changes, integration, push, and deployment"
+  ],
+  "result_boundary": "A successful corrected acceptance establishes only that retained synthetic evidence reproducibly shows a Java SSRF pinned-default coverage gap, detectable Ruby unsafe deserialization, and a bounded prerequisite for separate Java SSRF supplemental-rule qualification. It does not establish real-source availability, finding correctness, empirical recall, packet feasibility, paired-arm performance, production readiness, or OPT-010 completion.",
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the OPT-010 Java/Ruby scanner-cell corrected offline acceptance described by opt-010-java-ruby-scanner-cell-coverage-corrected-acceptance-receipt-2026-08-20.json, accepting the immutable retained stopped attempt with exact Semgrep 1.170.0 runtime import, four ordered offline scans, Java SSRF coverage-gap, Ruby unsafe-deserialization qualified-detectable, supplemental Java/Ruby not-applicable, 7,841,236 retained bytes exceeding the original 2 MiB ceiling, zero network/provider/credential/store activity, and unchanged production store, without editing or retroactively qualifying the original result; limited to one deterministic offline digest and classification reproduction over only the retained fixture manifest, runtime/canary/coverage JSON, four Semgrep SARIF and target reports, and frozen parser, followed only on exact reproduction by one aggregate acceptance artifact and one corrected completed-negative result routing to separate Java SSRF supplemental-rule qualification, with ceilings of 10 minutes, 8 MiB retained evidence, 1 MiB new data, and exactly zero network reads or uploads, runtime imports, scanner or canary processes, provider calls, tokens, cost, Keychain or credential reads, repository or source access, production-database reads or mutations, assessments, labels, training, rescoring, agentic or baseline runs, human reviews, outcomes, branch or index mutations, commits, merges, pushes, or lifecycle changes. Original-evidence edits or deletion, new scanning, new or edited scanner rules, source rendering, candidate or packet activity, architecture recovery, paired execution, precision or recall claims, threshold selection, tuning, recalibration, production-policy changes, OPT-010 promotion or closure, integration, remote push, and deployment remain excluded."
+  }
+}

@@ -1,0 +1,128 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-014",
+  "status": "offline-audit-complete-observed-outcome-capacity-absent",
+  "recorded_at": "2026-08-18",
+  "receipt": {
+    "path": "opt-014-offline-eligibility-audit-receipt-2026-08-18.json",
+    "sha256": "e62b92373971b7b005f5f9472d6fcd6c364cf82543c39835d29610c95c106285"
+  },
+  "execution_evidence": {
+    "artifact": {
+      "path": "../../data/artifacts/opt014-eligibility-audit.json",
+      "sha256": "682e6f8e0e0c701e06abd762f63e00a7008a8957d904243c76ca13890a9d37a1",
+      "bytes": 5659
+    },
+    "helper": {
+      "path": "../../src/repoauditor/eval/quant_eligibility.py",
+      "sha256": "c1fd4b81bcd19c5962b0938d137bdb8433152c640d283ac582c6bda53de843de"
+    }
+  },
+  "aggregate_inventory": {
+    "ingested_repositories": 33,
+    "findings": 2876,
+    "assessments": 160,
+    "labels": 158,
+    "risk_scenarios": 8,
+    "simulation_runs": 2,
+    "scenario_inputs": 12,
+    "persisted_prior_sources": 9
+  },
+  "observed_outcome_capacity": {
+    "eligible_observed_organization_period_records": 0,
+    "organization_period_outcome_schema": false,
+    "incident_observation_schema": false,
+    "realized_loss_schema": false,
+    "time_stamped_intervention_schema": false,
+    "portfolio_unit_schema": false,
+    "portfolio_dependency_schema": false,
+    "portfolio_objective_schema": false,
+    "portfolio_constraint_schema": false
+  },
+  "model_output_classification": {
+    "risk_scenarios_by_methodology": {"legacy_per_finding_v1": 8},
+    "simulation_runs": 2,
+    "risk_scenarios_and_simulations_are_model_generated": true,
+    "eligible_as_validation_outcomes": false,
+    "finding_assessment_and_label_rows_are_incident_or_loss_outcomes": false,
+    "configured_or_persisted_priors_are_independent_outcomes": false
+  },
+  "prior_and_population_inventory": {
+    "configured_industry_priors_checked": 2,
+    "configured_industry_priors_with_complete_scope_metadata": 2,
+    "persisted_verified_prior_rows": 2,
+    "persisted_verified_rows_with_complete_scope_metadata": 0,
+    "company_revenue_band": "unknown",
+    "frequency_population_applicability_verified": false,
+    "interpretation": "The current configuration has complete source-scope metadata for descriptive plumbing, but unknown organization revenue and absent observed outcomes prevent predictive validation or target-population calibration. Historical persisted prior rows are not rewritten."
+  },
+  "capacity": {
+    "descriptive_prior_predictive_plumbing": "structurally-present",
+    "independent_held_out_validation_and_backtesting": "structurally-absent",
+    "hierarchical_cohorts": "structurally-absent",
+    "remediation_effect_analysis": "structurally-absent",
+    "portfolio_modeling": "structurally-absent"
+  },
+  "decision": {
+    "opt_014_status": "open-data-gated",
+    "data_gate_cleared": false,
+    "adequacy_threshold_selected": false,
+    "holdout_or_cohort_selected": false,
+    "model_or_prior_compared": false,
+    "basis": "The digest-frozen store has no eligible observed organization-period outcome schema or rows. Existing findings, human evidence, scenarios, simulations, and priors cannot be relabeled as independent incident/loss outcomes.",
+    "hybrid_recommendation": "Proceed only under separate authorization with a descriptive prior-predictive coherence report that does not claim validation. In parallel or afterward, decide whether a governed independent organization/incident data acquisition path is available. If no defensible acquisition path exists, bounded negative-feasibility closure remains available.",
+    "next_authorization_options": [
+      "bounded-descriptive-prior-predictive-coherence-report",
+      "governed-independent-organization-incident-data-acquisition-design",
+      "bounded-negative-feasibility-closure"
+    ]
+  },
+  "store": {
+    "open_mode": "sqlite-uri-mode-ro-plus-query-only",
+    "before_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "after_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "byte_identical": true
+  },
+  "validation": {
+    "pre_execution_focused_tests": 9,
+    "json_validation": true,
+    "artifact_matches_fresh_read_only_audit": true,
+    "identity_disclosure": 0,
+    "raw_outcome_values": 0
+  },
+  "accounting": {
+    "audit_runs": 1,
+    "elapsed_seconds": 0.8,
+    "new_artifact_bytes": 5659,
+    "network_reads": 0,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "production_store_mutations": 0,
+    "schema_migrations": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "simulation_runs": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0
+  },
+  "not_executed": {
+    "source_or_row_rendering": true,
+    "simulation_or_prior_predictive_generation": true,
+    "fitting_or_model_comparison": true,
+    "backtesting_or_resampling": true,
+    "holdout_or_cohort_selection": true,
+    "adequacy_threshold_selection": true,
+    "new_priors_or_hierarchical_estimation": true,
+    "category_allocation": true,
+    "remediation_effect_estimation": true,
+    "dependency_assumptions_or_portfolio_optimization": true,
+    "tuning_or_recalibration": true,
+    "production_policy_change": true,
+    "opt_014_status_change_or_closure": true,
+    "opt_010_execution": true,
+    "branch_integration_or_remote_push": true,
+    "deployment": true
+  }
+}

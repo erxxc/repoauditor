@@ -1,0 +1,151 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-014",
+  "status": "authorization-pending",
+  "frozen_at": "2026-08-18",
+  "design": {
+    "path": "opt-014-independent-data-acquisition-design-2026-08-18.json",
+    "sha256": "af29a9bd3e1f644fd6ee115daccf59c6da166b45c668941a8f22b4416e09be15"
+  },
+  "prior_discovery": {
+    "path": "opt-014-metadata-source-discovery-result-2026-08-18.json",
+    "sha256": "3da5b5ce5be01b9bf302c4875203e78c3667cec904fd240a3c60ddc0ec6c997d",
+    "full_tier_candidates": 1,
+    "acquisition_ready_candidates": 0,
+    "data_gate_cleared": false
+  },
+  "swiss_feasibility": {
+    "path": "opt-014-swiss-controlled-access-feasibility-result-2026-08-18.json",
+    "sha256": "1402809914f4056e0baf8b1772e678fc47c4ed69938ab0cf5d5558dbb0e873e8",
+    "overall_state": "not-publicly-actionable"
+  },
+  "scope": "Conduct one outcome-blind public-metadata-only access-and-codebook qualification of the fixed Statistics Canada 2017 Canadian Survey of Cyber Security and Cybercrime identity and the official UK Cyber Security Breaches Survey source family; disclose and classify at most four exact release or catalog identities; persist one aggregate qualification result; and stop before registration, application, terms acceptance, download, source selection, record access, or outcome inspection.",
+  "candidate_contract": {
+    "fixed_canadian_identity": {
+      "title": "Canadian Survey of Cyber Security and Cybercrime, 2017",
+      "publisher": "Statistics Canada",
+      "record_number": "5244",
+      "detailed_information_id": "359489",
+      "canonical_metadata_url": "https://www23.statcan.gc.ca/imdb/p2SV.pl?Function=getSurvey&Id=359489",
+      "identity_basis": "statistics-canada|CSCSC|2017|record-5244-id-359489"
+    },
+    "uk_family": {
+      "title": "Cyber Security Breaches Survey",
+      "publishers": [
+        "UK Department for Science, Innovation and Technology or its named predecessor department",
+        "UK Data Service as the official research-data catalog or distributor"
+      ],
+      "maximum_exact_release_or_catalog_identities": 3,
+      "identity_rule": "Only an official GOV.UK release identity and its directly corresponding UK Data Service catalog, documentation, or deposited-study identity may be disclosed."
+    },
+    "maximum_total_identities": 4,
+    "candidate_ranking": false,
+    "source_acquisition_selection": false
+  },
+  "qualification_contract": {
+    "gate_states": [
+      "documented-pass",
+      "documented-fail",
+      "unresolved"
+    ],
+    "per_identity_gates": [
+      "Stable official release, catalog, study, or survey identity and vintage are documented.",
+      "Enterprise or organization is the statistical unit and the observation period is explicit.",
+      "Target population, sampling frame, denominator construction, exclusions, and weighting metadata are documented.",
+      "Explicit zero-incident support and incident-count fields are documented in the questionnaire or variable catalog.",
+      "Realized cyberincident loss or response-cost fields, currency, period, censoring, and missingness metadata are documented.",
+      "Record-level format, advertised size, data dictionary or codebook, and stable organization or pseudonymous identifiers are documented.",
+      "Public-use, safeguarded, secure-lab, research-centre, or other controlled-access tier is documented without registration or application.",
+      "Institutional and researcher eligibility, jurisdiction or residency limits, permitted purpose, and review authority are documented.",
+      "License or data-use terms, attribution, retention, deletion, security, output review, onward-disclosure, and reidentification rules are documented.",
+      "Fees, expected access mechanism, version controls, and withdrawal or supersession rules are documented.",
+      "Publisher-stated provenance and record-level lineage can support overlap exclusion from IRIS, Advisen, VERIS, DBIR, NCSC, and the other candidate family.",
+      "The advertised access and schema are compatible with a later separately authorized frozen acquisition and held-out evaluation receipt."
+    ],
+    "evidence_rule": "Assign documented-pass or documented-fail only from direct official public wording. Missing, implied, outcome-derived, or ambiguous metadata remains unresolved; no favorable inference is permitted.",
+    "overall_states": [
+      "qualified-for-later-acquisition-receipt",
+      "conditionally-qualified",
+      "not-qualified"
+    ],
+    "overall_rule": "An identity is qualified only if every access, governance, unit, denominator, zero-period, incident-count, required-loss, version, and lineage gate required by the frozen design is a documented pass. Any mandatory documented failure makes it not-qualified; otherwise unresolved mandatory gates make it conditionally-qualified.",
+    "outcome_blinding": {
+      "permitted_inputs": "Only official identity, schema, questionnaire, variable, codebook, methodology, population, sampling, provenance, lineage, license, access, institutional eligibility, security, retention, disclosure-review, version, format, size, and fee metadata may affect qualification.",
+      "forbidden_inputs": "No incident totals, rates, loss values, quantiles, distributions, correlations, record identities, model performance, candidate ranking, or prior agreement may be inspected or used.",
+      "incidental_value_quarantine": "If a permitted page or search result co-mingles outcome values, do not transcribe, persist, compare, summarize, or use them; stop reading that section and record only that quarantine occurred.",
+      "translation_rule": "Use publisher-provided language variants or direct official wording only; no translation provider or uploaded text is authorized."
+    },
+    "deterministic_funnel": [
+      "Verify the frozen design, prior discovery, Swiss feasibility result, receipt, and production-store digest offline.",
+      "Resolve the fixed Statistics Canada 2017 survey identity, official questionnaire and variable metadata, and advertised access route first.",
+      "Resolve the official UK Cyber Security Breaches Survey release identity and only its directly corresponding UK Data Service catalog or deposited-study metadata second.",
+      "Assign each per-identity gate exactly one state without inspecting records or outcomes.",
+      "Persist one aggregate identity and gate inventory and stop before source selection or acquisition."
+    ]
+  },
+  "allowed_reads": [
+    "Official public landing, catalog, survey, release, methodology, sampling, questionnaire, variable-list, codebook, quality, provenance, lineage, license, privacy, access-tier, institutional-eligibility, security, retention, disclosure-review, fee, format, size, version, and withdrawal metadata on the exact enumerated hosts.",
+    "Metadata-only search results restricted to the exact enumerated hosts; an unlisted result or redirect may not be opened or used as evidence.",
+    "Document headers and relevant metadata sections only; outcome-bearing report sections, data tables, APIs, previews, samples, records, downloads, application portals, and authenticated systems remain excluded."
+  ],
+  "forbidden_actions": [
+    "Credentials, login, registration, account creation, cookie or terms acceptance beyond passive navigation, application, inquiry, contact, purchase, payment, restricted-data request, or protected portal access",
+    "Raw, row-level, sample, preview, extract, table, API-data response, archive, CSV, JSON, database, spreadsheet, microdata, incident, organization, or source-record access",
+    "Outcome, incident-total, rate, loss-value, quantile, distribution, correlation, performance, or prior-agreement inspection or persistence",
+    "Dataset code, notebook, query, API client, scanner, simulation, fitting, scoring, model, or translation-provider execution",
+    "Candidate ranking, source acquisition selection, adequacy threshold, cohort or holdout selection, linkage-key construction, deduplication implementation, evaluation, fitting, prior or methodology change",
+    "Production-store access or mutation, schema migration, assessment, label, training, rescoring, OPT-014 lifecycle change, OPT-010 execution, branch integration, remote push, or deployment"
+  ],
+  "resource_ceilings": {
+    "maximum_elapsed_minutes": 30,
+    "maximum_new_data_bytes": 10485760,
+    "maximum_candidate_identities": 4,
+    "maximum_metadata_documents": 40,
+    "maximum_result_documents": 1,
+    "network_hosts": [
+      "gov.uk",
+      "www.gov.uk",
+      "assets.publishing.service.gov.uk",
+      "ukdataservice.ac.uk",
+      "www.ukdataservice.ac.uk",
+      "doc.ukdataservice.ac.uk",
+      "discover.ukdataservice.ac.uk",
+      "beta.ukdataservice.ac.uk",
+      "datacatalogue.ukdataservice.ac.uk",
+      "statcan.gc.ca",
+      "www.statcan.gc.ca",
+      "www23.statcan.gc.ca",
+      "www150.statcan.gc.ca",
+      "www12.statcan.gc.ca",
+      "canada.ca",
+      "www.canada.ca"
+    ],
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "dataset_downloads": 0,
+    "raw_records_read": 0,
+    "registrations_applications_or_contacts": 0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "simulation_runs": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0
+  },
+  "stop_conditions": [
+    "The design, prior discovery, Swiss feasibility result, frozen receipt, or production-store digest drifts.",
+    "A required page redirects to or loads material from an unlisted host.",
+    "Resolving a gate requires login, registration, terms acceptance, application, contact, download, restricted material, record access, outcome inspection, or an undocumented favorable inference.",
+    "More than the fixed Canadian identity or three exact UK release or catalog identities would be disclosed.",
+    "The document, time, byte, identity, or result ceiling would be exceeded.",
+    "Any acquisition selection, adequacy judgment, evaluation, store, model, policy, lifecycle, branch, remote, or deployment action is attempted."
+  ],
+  "result_boundary": "The result may disclose and qualify at most four exact official identities, report aggregate gate states, and list access or codebook blockers. It may not inspect or disclose records or outcomes, register or apply for access, accept terms, select or acquire a source, clear the OPT-014 data gate, judge statistical adequacy, change a prior or methodology, or change OPT-014 status.",
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the OPT-014 UK and Canada outcome-blind access-and-codebook qualification described by opt-014-uk-canada-access-codebook-qualification-receipt-2026-08-18.json, limited to public identity, questionnaire, variable, codebook, methodology, population, sampling, provenance, lineage, license, access-tier, institutional-eligibility, security, retention, disclosure-review, version, format, size, and fee metadata for the fixed Statistics Canada 2017 Canadian Survey of Cyber Security and Cybercrime identity and at most three official GOV.UK or UK Data Service Cyber Security Breaches Survey release or catalog identities; classification of each frozen gate as documented pass, documented fail, or unresolved; quarantine of incidentally visible outcomes; and one aggregate qualification result, with ceilings of 30 minutes, 10 MiB new data, four identities, 40 metadata documents, only gov.uk, www.gov.uk, assets.publishing.service.gov.uk, ukdataservice.ac.uk, www.ukdataservice.ac.uk, doc.ukdataservice.ac.uk, discover.ukdataservice.ac.uk, beta.ukdataservice.ac.uk, datacatalogue.ukdataservice.ac.uk, statcan.gc.ca, www.statcan.gc.ca, www23.statcan.gc.ca, www150.statcan.gc.ca, www12.statcan.gc.ca, canada.ca, and www.canada.ca network access, and exactly zero uploads, provider calls, tokens, cost, dataset downloads, raw record reads, registrations, applications, contacts, production-store reads or mutations, assessments, labels, simulation runs, model training, or rescoring. Credentials, login, registration, account creation, terms acceptance, applications, inquiries, contact, purchase, payment, restricted-data requests, protected portals, records, tables, APIs, previews, samples, downloads, outcomes, linkage-key construction, candidate ranking, source acquisition selection, adequacy thresholds, cohort or holdout selection, evaluation, fitting, prior or methodology changes, production-policy changes, OPT-014 promotion or closure, OPT-010 execution, branch integration, remote push, and deployment remain excluded."
+  }
+}

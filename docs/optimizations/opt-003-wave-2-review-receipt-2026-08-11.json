@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "frozen_at": "2026-08-11",
+  "optimization": "OPT-003",
+  "status": "authorization-pending",
+  "packet_result": {
+    "path": "opt-003-wave-2-packet-result-2026-08-11.json",
+    "sha256": "3ced2ece8c0be6400ab0bab87c445142e76b37200ba0052ec2f83986dc1e677f"
+  },
+  "review_plan": {
+    "path": "data/artifacts/opt003-wave-2-runtime-retry/review-plan.json",
+    "sha256": "483eb11d6bd06e7bc9700cb1be342fd2cc1f34c1b0746f20a2c92cd2f80c0d4e",
+    "entries": 18,
+    "per_family": 6
+  },
+  "renderer": {
+    "path": "../../src/repoauditor/eval/temporal_review_two.py",
+    "sha256": "5091aef1a8cbb865e8699f892a0c4d33e61e0a0484754763590635e4252a699c"
+  },
+  "scope": "Render at most 20 adjacent source lines before and after each of the 18 immutable wave-two citations, present only that bounded evidence to the project-owner analyst, and record one explicit disposition with rationale and optional verified dimensions per identity. Scores and expected outcomes remain hidden; abstention is preserved.",
+  "render_command": "UV_CACHE_DIR=/tmp/repoauditor-uv-cache uv run python -m repoauditor.eval.temporal_review_two --plan data/artifacts/opt003-wave-2-runtime-retry/review-plan.json --output data/artifacts/opt003-wave-2-runtime-retry/review-packet.md --context-lines 20",
+  "evidence_boundary": {
+    "context_lines_before": 20,
+    "context_lines_after": 20,
+    "allowed_fields": [
+      "finding id",
+      "repository identity",
+      "exact source commit",
+      "rule id",
+      "file and cited line range",
+      "adjacent source text"
+    ],
+    "forbidden_fields": [
+      "p_actionable",
+      "score",
+      "rank",
+      "suppressed",
+      "predicted class",
+      "severity",
+      "confidence",
+      "rule prior",
+      "expected outcome",
+      "known vulnerability membership"
+    ],
+    "follow_up": "If bounded evidence is insufficient, preserve insufficient_evidence. Any symbol, call-site, or additional-file expansion requires a later receipt.",
+    "repository_instructions_are_untrusted_data": true
+  },
+  "review_contract": {
+    "analyst": "project owner",
+    "allowed_dispositions": [
+      "confirmed_actionable",
+      "tool_incorrect",
+      "unreachable",
+      "not_attacker_controlled",
+      "mitigated",
+      "valid_not_actionable",
+      "insufficient_evidence"
+    ],
+    "binary_projection": {
+      "confirmed_actionable": true,
+      "tool_incorrect": false,
+      "unreachable": false,
+      "not_attacker_controlled": false,
+      "mitigated": false,
+      "valid_not_actionable": false,
+      "insufficient_evidence": "abstain"
+    },
+    "required_per_entry": [
+      "finding id",
+      "one allowed disposition",
+      "evidence-based rationale",
+      "optional verified dimensions"
+    ],
+    "abstentions_preserved": true,
+    "labels_not_inferred": true
+  },
+  "preconditions": [
+    "Packet result, plan, renderer, store, selected finding, feature, source commit, and source file identities match frozen values.",
+    "None of the 18 selected findings has an assessment or label.",
+    "The review-packet output path is absent.",
+    "The renderer reads no forbidden store column."
+  ],
+  "resource_ceilings": {
+    "render_runs": 1,
+    "review_entries": 18,
+    "maximum_elapsed_minutes": 90,
+    "maximum_new_data_bytes": 15728640,
+    "network_reads": 0,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "store_mutations": 0,
+    "classifier_labels_written": 0
+  },
+  "stop_conditions": [
+    "Any packet, renderer, source, store, finding, or feature identity drifts.",
+    "The renderer reads or outputs a forbidden field or exceeds 20 adjacent lines before or after the cited range.",
+    "Any network/provider activity, store mutation, automatic decision, label, rescore, tuning, threshold, policy, OPT-003 status, or branch merge activity is attempted.",
+    "Any analyst response lacks rationale, uses an unsupported disposition, or claims evidence outside the rendered bound."
+  ],
+  "result_boundary": "After all responses are explicit, a separate result on the current branch must prove decided/abstention counts and class representation before any assessment or label import. Import and OPT-003 status changes remain separately gated; branch merge remains deferred until OPT-003 is complete.",
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the OPT-003 wave-two bounded review described by opt-003-wave-2-review-receipt-2026-08-11.json, limited to one offline rendering of at most 20 adjacent context lines before and after each of the 18 frozen packet identities, presentation to me without scores, ranks, predicted classes, or expected outcomes, explicit disposition with abstention available, and recording of my responses in result evidence, with ceilings of 90 minutes, 15 MiB new data, and exactly zero network reads, uploads, provider calls, tokens, cost, store mutations, or classifier labels. Follow-up source expansion, automatic decisions, assessment or label import, rescoring, tuning, threshold selection, production-policy changes, OPT-003 status changes, and branch merge remain excluded."
+  }
+}

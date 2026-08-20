@@ -1,0 +1,146 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-014",
+  "status": "authorization-pending",
+  "frozen_at": "2026-08-18",
+  "objective": "Close OPT-014 at its completed descriptive prior-predictive and bounded negative data-feasibility scope, preserve every limitation and the inactive SEC/EDGAR reserve, and leave OPT-010 as the sole open optimization without performing branch integration in the shared OPT-036 worktree.",
+  "frozen_evidence": {
+    "offline_eligibility_audit_result": {
+      "path": "docs/optimizations/opt-014-offline-eligibility-audit-result-2026-08-18.json",
+      "sha256": "95c4166f7002ff09ad5e5278d6417e21581d3d0a19ceef8398b7c2e21f9b6454"
+    },
+    "prior_predictive_coherence_result": {
+      "path": "docs/optimizations/opt-014-prior-predictive-coherence-result-2026-08-18.json",
+      "sha256": "fd5a690164420a89549ba005b228e75fc622ed4558ae0fe0ab97106d1ac47b7d"
+    },
+    "metadata_source_discovery_result": {
+      "path": "docs/optimizations/opt-014-metadata-source-discovery-result-2026-08-18.json",
+      "sha256": "3da5b5ce5be01b9bf302c4875203e78c3667cec904fd240a3c60ddc0ec6c997d"
+    },
+    "swiss_metadata_discovery_result": {
+      "path": "docs/optimizations/opt-014-swiss-metadata-source-discovery-result-2026-08-18.json",
+      "sha256": "bb7dd8b4338565b004d56876cfb69eee735e08f57bd6e800863e160fd9f871de"
+    },
+    "swiss_controlled_access_result": {
+      "path": "docs/optimizations/opt-014-swiss-controlled-access-feasibility-result-2026-08-18.json",
+      "sha256": "1402809914f4056e0baf8b1772e678fc47c4ed69938ab0cf5d5558dbb0e873e8"
+    },
+    "uk_canada_qualification_result": {
+      "path": "docs/optimizations/opt-014-uk-canada-access-codebook-qualification-result-2026-08-18.json",
+      "sha256": "72c041056415836b2bd1ae6325ae0301d994c9ada6636fa1bcca9c3abab5aa63"
+    },
+    "commercial_license_first_result": {
+      "path": "docs/optimizations/opt-014-commercial-license-first-screen-result-2026-08-18.json",
+      "sha256": "9af94242b348378a175528e3ceb4d4c8c01f1cccd6da4036ecc7ca895b47045a"
+    },
+    "sec_edgar_reserve": {
+      "path": "docs/optimizations/opt-014-sec-edgar-reserve-2026-08-18.json",
+      "sha256": "5b21cb52b7011165e0609796b3a007c1df2bb209460e343d718b68a7f5cb04d5"
+    },
+    "independent_data_acquisition_design": {
+      "path": "docs/optimizations/opt-014-independent-data-acquisition-design-2026-08-18.json",
+      "sha256": "af29a9bd3e1f644fd6ee115daccf59c6da166b45c668941a8f22b4416e09be15"
+    },
+    "optimization_status": {
+      "path": "docs/optimizations/optimization-status.json",
+      "sha256": "a8d33e0d3f27e686b120213689223fb29b83834245ffc2f0b147f33f7842c6fa"
+    },
+    "historical_checkpoint": {
+      "path": "docs/optimizations/outstanding-work-checkpoint-2026-08-07.json",
+      "sha256": "5161994703f9768f250cc2b7de4dfdcb4ac26632858495391843b9690291562c",
+      "must_remain_byte_identical": true
+    },
+    "production_store": {
+      "path": "data/repoauditor.db",
+      "sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+      "access": "before-and-after-hash-only",
+      "must_remain_byte_identical": true
+    }
+  },
+  "closure_contract": {
+    "terminal_interpretation": "OPT-014 is closed at its completed descriptive prior-predictive coherence and bounded data-feasibility scope. The configured neutral baseline is internally coherent, but no independent organization-period outcome data qualified; held-out validation, calibration, hierarchical estimation, remediation effects, and portfolio optimization were not completed or justified.",
+    "bounded_negative_claim": "The frozen public and controlled-access screens found no source that met the exact commercial-rights, organization-period denominator, explicit zero-period, incident-count, stable-key, version, and lineage contract. This is not a universal claim that qualifying data can never exist.",
+    "future_work_rule": "Any future observed-outcome, disclosure-frequency, negotiated-license, prospective-panel, hierarchical, remediation, or portfolio study is new work with a new lifecycle identity and separately frozen estimand, rights, data, and evaluation contract.",
+    "sec_edgar": {
+      "state": "inactive-reserve-preserved",
+      "permitted_future_role": "material cybersecurity disclosure context under a new lifecycle identity",
+      "prohibited_interpretation": "absence of an Item 1.05 filing is not a zero-incident organization-period",
+      "activation_authorized": false
+    },
+    "lifecycle_after_closure": {
+      "closed": 34,
+      "open": 1,
+      "total": 35,
+      "sole_open_item": "OPT-010",
+      "OPT_010_next_priority": 1,
+      "OPT_014_status": "closed",
+      "OPT_014_gate": "none",
+      "OPT_014_next_priority": null
+    }
+  },
+  "allowed_file_changes_after_authorization": [
+    "docs/optimizations/optimization-status.json",
+    "docs/optimizations/optimization-register.md",
+    "docs/documentation-status.md",
+    "docs/project-priorities.md",
+    "docs/triage-accuracy-roadmap.md",
+    "tests/test_documentation_current_state.py",
+    "tests/test_outstanding_work_checkpoint.py",
+    "docs/optimizations/opt-014-descriptive-scope-closure-result-2026-08-18.json"
+  ],
+  "exact_test_reconciliations": {
+    "tests/test_documentation_current_state.py": "Replace only the current 33-closed/2-open and OPT-014-then-OPT-010 assertions with 34-closed/1-open and sole-open OPT-010 assertions; preserve every immutable-checkpoint and no-provider assertion.",
+    "tests/test_outstanding_work_checkpoint.py": "Keep the checkpoint assertions byte-for-byte historical at 32 closed, three open, and OPT-009/OPT-014/OPT-010; replace only the current-ledger assertions with 34 closed, one open, and OPT-010."
+  },
+  "validation_contract": {
+    "focused_lifecycle_and_documentation_tests": [
+      "tests/test_documentation_current_state.py",
+      "tests/test_optimization_status.py",
+      "tests/test_outstanding_work_checkpoint.py",
+      "tests/test_opt_014_descriptive_scope_closure.py"
+    ],
+    "json_validation": true,
+    "git_diff_check": true,
+    "historical_checkpoint_unchanged": true,
+    "production_store_unchanged": true,
+    "full_offline_non_live_suite": "deferred-to-separate-branch-integration-receipt"
+  },
+  "resource_ceilings": {
+    "maximum_elapsed_minutes": 15,
+    "maximum_new_data_bytes": 1048576,
+    "network_reads": 0,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "schema_migrations": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "simulation_runs": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0,
+    "source_commits": 0,
+    "merge_commits": 0,
+    "remote_pushes": 0
+  },
+  "excluded": [
+    "SEC/EDGAR activation, filing or issuer metadata access, dataset acquisition, source selection, applications, contacts, purchases, or controlled-access activity",
+    "outcomes, filings, records, tables, APIs, previews, samples, loss values, incident counts, zero-period inference, fitting, validation, backtesting, resampling, simulation, model comparison, new priors, hierarchical estimation, remediation effects, dependency assumptions, or portfolio optimization",
+    "methodology, configuration, runtime, model, prior, production-policy, deployment, OPT-010 execution, or historical-evidence changes",
+    "branch creation, branch switching, worktrees, stash, reset, rebase, cherry-pick, source commits, merge commits, remote push, or branch deletion",
+    "any file change outside the exact allowlist"
+  ],
+  "stop_conditions": [
+    "Any frozen evidence, historical checkpoint, or production-store digest differs.",
+    "Closure would imply predictive validation, calibration, representativeness, portfolio readiness, or a universal impossibility claim.",
+    "The SEC/EDGAR reserve would be activated or absence of a filing would be treated as a zero-incident period.",
+    "Any allowed focused test or validation fails, or any unlisted file would need modification.",
+    "Any network, provider, source, outcome, store, simulation, model, policy, OPT-010, branch, commit, merge, push, or deployment activity would be required."
+  ],
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the OPT-014 bounded descriptive-scope closure described by opt-014-descriptive-scope-closure-receipt-2026-08-18.json, limited to closing OPT-014 at its completed descriptive prior-predictive coherence and bounded negative data-feasibility scope without claiming predictive validation, calibration, representativeness, portfolio readiness, or universal data impossibility; preserving SEC/EDGAR as an inactive material-disclosure-context reserve whose non-filing periods are not zero-incident observations; updating the lifecycle authority to 34 closed and one open item, OPT-010 at priority one; reconciling only optimization-status.json, optimization-register.md, documentation-status.md, project-priorities.md, triage-accuracy-roadmap.md, the two exact current-lifecycle test assertions, and one closure result while retaining the immutable 2026-08-07 checkpoint and production store byte-identical; and running only the focused lifecycle and documentation validation, with ceilings of 15 minutes, 1 MiB new data, and exactly zero network reads, uploads, provider calls, tokens, cost, production-store reads or mutations, schema migrations, assessments, labels, simulation runs, model training, rescoring, source commits, merge commits, remote pushes, or branch operations. SEC/EDGAR activation, source or outcome access, acquisition, fitting, validation, backtesting, new priors, hierarchical estimation, remediation effects, dependency assumptions, portfolio optimization, methodology or production-policy changes, OPT-010 execution, full-suite or branch integration, deployment, historical-evidence edits, and any unlisted file change remain excluded; full offline non-live validation and local integration remain separately gated until the shared OPT-036 worktree is resolved."
+  }
+}

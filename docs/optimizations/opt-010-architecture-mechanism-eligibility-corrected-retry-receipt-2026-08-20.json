@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-010",
+  "status": "authorization-pending",
+  "objective": "Resume the bounded architecture-map and concrete-mechanism eligibility gate only from the exact retained matrix-only pre-provider stop by correcting ephemeral credential loading, without expanding the original provider, source, result, or lifecycle authority.",
+  "retained_stopped_attempt": {
+    "original_receipt": {
+      "path": "docs/optimizations/opt-010-architecture-mechanism-eligibility-receipt-2026-08-20.json",
+      "sha256": "c46ab9f19aa0947f300cd22e2404a988e0d0f7b5b014885cf6b98e3cf6c33df0"
+    },
+    "stopped_result": {
+      "path": "docs/optimizations/opt-010-architecture-mechanism-eligibility-result-2026-08-20.json",
+      "sha256": "3f668f80b5a20629e5978c83ef746d5c40ea021958a1ede3f4ab529152578e77"
+    },
+    "original_receipt_test": {
+      "path": "tests/test_opt_010_architecture_mechanism_eligibility_receipt.py",
+      "sha256": "f8fd87242c0135eb56f23b4dd4f4fe30c47eff183c35f384df5c36b1c73c3fae"
+    },
+    "helper_before_correction": {
+      "path": "src/repoauditor/eval/opt010_architecture_eligibility.py",
+      "sha256": "57146df0dd7570e22392943bd12a2a9db20f910892107e7bcb1b63dd8f691bd4"
+    },
+    "focused_test_before_correction": {
+      "path": "tests/test_opt_010_architecture_mechanism_eligibility.py",
+      "sha256": "b01b10f21e326fce4fadf33b68d0454f41728a489ae6ba5c37774be1796ac9d4"
+    },
+    "artifact_directory": "data/artifacts/opt010-architecture-mechanism-eligibility",
+    "exact_artifact_inventory": [
+      {
+        "path": "mechanism-matrix.json",
+        "sha256": "734d7bc40e54323b5bee963110c92f445b05f28c795e25f23884ede1d0e57ec3"
+      }
+    ],
+    "provider_attempts": 0,
+    "source_transmissions": 0,
+    "provider_reported_tokens": 0,
+    "known_dated_price_cost_usd": 0.0,
+    "production_store_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "workspace_branch": "main",
+    "workspace_index_empty": true,
+    "keychain_presence_check": "The macOS Keychain service repoauditor-anthropic was present when checked without requesting or printing its secret value."
+  },
+  "permitted_correction": {
+    "implementation_change": "Change only src/repoauditor/eval/opt010_architecture_eligibility.py to add an explicit corrected-resume mode that requires the exact retained stopped result and one-file artifact inventory, preserves the matrix byte-for-byte, writes the corrected result to its separate path, and otherwise runs the original frozen helper unchanged.",
+    "focused_test_reconciliation": "Change only tests/test_opt_010_architecture_mechanism_eligibility.py to cover the fail-closed exact resume-state predicate and the final corrected aggregate result.",
+    "credential_loading": "For the corrected-resume process only, read the secret value of the existing macOS Keychain service repoauditor-anthropic with /usr/bin/security find-generic-password -w -s repoauditor-anthropic and bind it ephemerally as ANTHROPIC_API_KEY in that child process. Never print, log, persist, hash, count, or otherwise disclose the secret.",
+    "no_fallback": "If the exact Keychain item is absent, unreadable, empty, or rejected, stop without a provider retry or alternate credential source."
+  },
+  "retained_original_scope": {
+    "subjects": 6,
+    "provider": "anthropic",
+    "model": "claude-opus-4-8",
+    "prompt_version": "architecture_recovery_v2",
+    "mechanism_matrix": {
+      "Python": ["sql_injection", "command_injection", "ssrf"],
+      "TypeScript": ["command_injection", "ssrf"],
+      "Java": ["ssrf"],
+      "Ruby": ["unsafe_deserialization"],
+      "Go": [],
+      "Rust": []
+    },
+    "initial_context_characters": 60000,
+    "low_confidence_repass_context_characters": 240000,
+    "complete_request_maximum_utf8_bytes": 320000,
+    "call_policy": "One initial call and at most one confidence-below-0.5 repass per subject; no other retry and no call after any failure or unavailable usage.",
+    "allowed_network_hosts": ["api.anthropic.com"],
+    "corrected_result": "docs/optimizations/opt-010-architecture-mechanism-eligibility-corrected-retry-result-2026-08-20.json"
+  },
+  "execution_sequence": [
+    "Verify the corrected receipt, retained original receipt and result, original receipt test, pre-correction helper and focused test, exact one-file artifact inventory, production-store digest, main branch, empty index, six frozen snapshot/detector/retrieval identities, and absent corrected-result identity before modifying the helper or reading the Keychain secret.",
+    "Apply only the permitted corrected-resume helper and focused-test changes; run the original and corrected receipt tests plus focused offline tests.",
+    "Reverify the exact retained stopped state and byte-identical mechanism matrix, then ephemerally load the exact Keychain secret into the corrected-resume child process without output or persistence.",
+    "Execute the original bounded architecture recovery in frozen subject order, preserving authoritative scratch usage after every attempt and stopping after the first failure, unavailable usage, or ceiling breach.",
+    "Write one separate corrected aggregate result, verify the production store byte-identical, run the focused result tests, and stop."
+  ],
+  "cumulative_resource_ceilings": {
+    "subjects": 6,
+    "provider_attempts": 12,
+    "provider_reported_tokens": 500000,
+    "maximum_known_dated_price_cost_usd": 7.5,
+    "maximum_elapsed_minutes": 45,
+    "maximum_new_data_bytes": 10485760,
+    "authorized_public_source_transmissions": 12,
+    "allowed_network_hosts": ["api.anthropic.com"],
+    "other_network_reads_or_uploads": 0,
+    "repository_materializations": 0,
+    "repository_code_executions": 0,
+    "scanner_processes": 0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "findings_or_candidates_created": 0,
+    "assessments": 0,
+    "labels": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0,
+    "human_reviews": 0,
+    "agentic_runs": 0,
+    "workspace_branch_or_index_mutations": 0,
+    "commits": 0,
+    "merges": 0,
+    "pushes": 0,
+    "lifecycle_changes": 0
+  },
+  "stop_conditions": [
+    "Any retained receipt, result, test, helper, matrix, artifact-inventory, store, branch, index, subject, snapshot, detector, retrieval, prompt, schema, model, price, slicer, or verifier identity drifts.",
+    "The existing matrix is deleted, replaced, rewritten, or not the only retained artifact before resume, or any original stopped evidence is changed.",
+    "The Keychain command, service name, environment variable, provider, host, prompt, schema, request bounds, call policy, usage retention, corrected-result path, or resource ceiling differs.",
+    "Any secret value reaches output or persistence, any provider call occurs after a failure or unavailable usage, or any original or corrected exclusion is violated."
+  ],
+  "excluded": [
+    "deletion, replacement, or editing of the retained mechanism matrix, original receipt, original stopped result, original receipt test, or other historical evidence",
+    "alternate credentials, credential persistence or disclosure, provider fallback, general retry, scanner or finding access, candidate generation or disclosure, source rendering to the project owner, human review, assessment, label, outcome, score, rank, threshold, or expected-performance access",
+    "production-store architecture persistence, paired G03b comparison, agentic falsification, G04 empirical recall evaluation, G07 threshold selection, tuning, recalibration, production activation, OPT-010 promotion or closure, lifecycle changes, git integration, push, or deployment"
+  ],
+  "result_boundary": "A successful corrected retry may descriptively complete G02 and G05 and measure fixed G07 coverage. It cannot claim empirical safety, run either paired arm, select an adequacy threshold, activate production behavior, or close OPT-010.",
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the corrected OPT-010 architecture-map and concrete-mechanism eligibility retry described by opt-010-architecture-mechanism-eligibility-corrected-retry-receipt-2026-08-20.json, retaining the original six digest-frozen subjects, fixed language-to-mechanism matrix, architecture_recovery_v2 prompt and schema, Anthropic Claude Opus 4.8 model, request bounds, confidence-only repass rule, provider ceilings, api.anthropic.com-only network boundary, and all zero-activity and exclusion limits; accepting the retained stopped pre-provider attempt with its immutable original receipt and result, exact matrix-only artifact directory, zero provider attempts, zero source transmissions, zero tokens and cost, byte-identical production store, unchanged main branch, and empty index; and permitting only one corrected-resume change to the existing helper and focused test that preserves the matrix byte-for-byte, requires every frozen identity and the exact retained stop state to pass again, ephemerally loads the existing macOS Keychain service repoauditor-anthropic into ANTHROPIC_API_KEY for the child process without printing, logging, persisting, hashing, counting, or disclosing the secret, executes at most one initial architecture call and one confidence-below-0.5 repass per subject with no other retry or call after failure or unavailable usage, preserves authoritative scratch usage after every attempt, and writes one separate corrected aggregate result, with cumulative ceilings of six subjects, 12 provider attempts and public-source transmissions, 500,000 provider-reported tokens, $7.50 known dated-price cost, 45 minutes, 10 MiB new data, only api.anthropic.com network access, and exactly zero other network activity, repository materializations or code executions, scanner processes, production-store reads or mutations, findings or candidates, assessments, labels, model training, rescoring, human reviews, agentic runs, workspace branch or index mutations, commits, merges, pushes, or lifecycle changes. Alternate credentials, deletion or editing of retained evidence, scanner or finding access, candidate disclosure, source rendering to me, outcomes, review, production-store architecture persistence, paired G03b comparison, agentic falsification, G04 empirical recall evaluation, threshold selection or recommendation, tuning, recalibration, production activation, OPT-010 promotion or closure, remaining-source activation, OPT-014 or SEC/EDGAR reactivation, OPT-036 use or change, integration, and deployment remain excluded."
+  }
+}

@@ -1,0 +1,264 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-010",
+  "status": "authorization-pending",
+  "frozen_at": "2026-08-19",
+  "objective": "Materialize and qualify the first six outcome-blind protected primary source families, one per frozen language, using exact commits, deterministic scanners, a deterministic retrieval index, and aggregate-only verifier-eligibility accounting before any architecture provider call, agentic execution, outcome access, or review.",
+  "frozen_inputs": {
+    "source_selection_result": {
+      "path": "docs/optimizations/opt-010-prospective-source-selection-corrected-retry-result-2026-08-19.json",
+      "sha256": "df6e20287538d8ec2fe1cb2606ab7c85a47296c803e59273ae38acbe285f91a1"
+    },
+    "protected_cohort_design": {
+      "path": "docs/optimizations/opt-010-protected-cohort-design-2026-08-18.json",
+      "sha256": "bb77f61d14051fb6c5443b30157a92089f8e3ecbf53cb20c69daa2adaa7b12b8"
+    },
+    "baseline_comparison_protocol": {
+      "path": "docs/optimizations/opt-010-baseline-comparison-protocol-2026-08-18.json",
+      "sha256": "ac7872088d89950e27ffc2e733bc1282a9697d34d2a9add378fb35023c487133"
+    },
+    "production_store": {
+      "path": "data/repoauditor.db",
+      "sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+      "access": "before-and-after-hash-only"
+    }
+  },
+  "protected_wave": {
+    "protocol_version": "opt010-prospective-acquisition-instrument-qualification-v1",
+    "protection_timestamp": "2026-08-20T03:24:04Z",
+    "selection_digest_method": "sha256 of the newline-free compact JSON array of ordered {order,stable_identity_sha256} objects for primary orders one through six",
+    "selection_digest_sha256": "583772fe5f533aecaa306660783ff49d7ed0f84d5fc3f2d8cc09a08f7bb456d0",
+    "wave_basis": "The first primary in each of the six frozen language buckets is qualified before resources are spent on the second six primaries. Order is inherited unchanged from the reviewed metadata selection and is not based on source findings, candidate counts, scores, outcomes, or expected performance.",
+    "subjects": [
+      {
+        "order": 1,
+        "repository": "unslothai/unsloth",
+        "exact_commit": "489fab4a71f83dd4e02a430f560884c3d052c575",
+        "stable_identity_sha256": "1a1517101c0f8ee6e27ab189961f246bd5f7a8a9e70c5e0cae75132ba12f3bdd",
+        "language": "Python",
+        "mechanisms": [
+          "file, content, template, command, or data-processing boundaries",
+          "cross-service, integration, webhook, or outbound-request boundaries"
+        ]
+      },
+      {
+        "order": 2,
+        "repository": "amruthpillai/reactive-resume",
+        "exact_commit": "dbbab6fd7610cf1472d0e0377fc0e966faf7acda",
+        "stable_identity_sha256": "3fca500d6ca3d5ce0c0547bd7055e448d46f39d8ad49ab770683d0631f63b4d6",
+        "language": "TypeScript",
+        "mechanisms": [
+          "identity, authorization, role, or tenant boundaries",
+          "file, content, template, command, or data-processing boundaries"
+        ]
+      },
+      {
+        "order": 3,
+        "repository": "0xJacky/nginx-ui",
+        "exact_commit": "f1b8d846eab834daf6a95e30e3d02d329fdcb0d4",
+        "stable_identity_sha256": "3476b18f12ad5bdd4e7c89c0aa5249cb2d97e2f7697f73ac4ef4d052d6195378",
+        "language": "Go",
+        "mechanisms": [
+          "identity, authorization, role, or tenant boundaries",
+          "file, content, template, command, or data-processing boundaries"
+        ]
+      },
+      {
+        "order": 4,
+        "repository": "theonedev/onedev",
+        "exact_commit": "89e2f09b7b0cd9682a32a8b4a1ed863f791570ea",
+        "stable_identity_sha256": "7808d7614a6ab1fe0f5d8ad3e16eaff4a44477cc2b7be4296ea2e7caa2dc181b",
+        "language": "Java",
+        "mechanisms": [
+          "identity, authorization, role, or tenant boundaries",
+          "business workflows and state transitions",
+          "cross-service, integration, webhook, or outbound-request boundaries"
+        ]
+      },
+      {
+        "order": 5,
+        "repository": "pglombardo/PasswordPusher",
+        "exact_commit": "c8fd1dc18fc55b570c2acc06ded6b37f05da6ee5",
+        "stable_identity_sha256": "a7f7b694aa9c4b90dc6ec650283ce10f25f214a52a0e1a280a0cd4b4ff9299bc",
+        "language": "Ruby",
+        "mechanisms": [
+          "identity, authorization, role, or tenant boundaries",
+          "business workflows and state transitions",
+          "file, content, template, command, or data-processing boundaries"
+        ]
+      },
+      {
+        "order": 6,
+        "repository": "SinTan1729/chhoto-url",
+        "exact_commit": "7d36ccbd585bd326adfff45982bb0a4d760287c1",
+        "stable_identity_sha256": "5d499169e2daafc100b54798d3e12f43627130324ed98d438804ff2cbc3f6342",
+        "language": "Rust",
+        "mechanisms": [
+          "identity, authorization, role, or tenant boundaries",
+          "business workflows and state transitions",
+          "cross-service, integration, webhook, or outbound-request boundaries"
+        ]
+      }
+    ],
+    "identity_slots": [
+      "source_family_id",
+      "repository_identity",
+      "exact_commit",
+      "snapshot_sha256",
+      "detector_input_sha256",
+      "architecture_map_sha256",
+      "protocol_version",
+      "protection_timestamp",
+      "selection_digest"
+    ],
+    "architecture_map_slot_rule": "Record architecture_map_sha256 as pending-separate-provider-authorization. Do not synthesize, infer, or silently omit the slot; this wave cannot make a subject fully eligible for G02, G05, or paired comparison."
+  },
+  "frozen_implementation": {
+    "semgrep_runtime_helper": {
+      "path": "src/repoauditor/eval/semgrep_runtime.py",
+      "sha256": "b908ac266f923f35fea290436e11959c11a49829e4566b89c444b25056a3a257"
+    },
+    "scanner_canaries": {
+      "path": "src/repoauditor/detect/deterministic/canaries.py",
+      "sha256": "8e93fcb7c568cc32f7d0c00062d24b01e98279d8370e49f933459f262012d497"
+    },
+    "scanner_execution_inventory": {
+      "path": "src/repoauditor/detect/deterministic/execution.py",
+      "sha256": "582ee2c12f75d340bf1fdc50b4d1d9fa684b95c8742570ad9fe583739c6b7d77"
+    },
+    "scanner_provenance": {
+      "path": "src/repoauditor/detect/deterministic/provenance.py",
+      "sha256": "1500114a953bfee20a03e85d95663ba9c689909d38a4c225a0507d64f70de679"
+    },
+    "vendored_semgrep_archive": {
+      "path": "src/repoauditor/detect/deterministic/semgrep-default.yml.gz",
+      "file_sha256": "100b29f7ea523d3a30895e5c34daa35bb1d6d668684fcf5be27d827c46415fc1",
+      "uncompressed_ruleset_sha256": "e1fb774d43b23f8265ae07566a5e325763244df9ba6eb8cbefe51e3ce05540c4"
+    },
+    "supplemental_semgrep_rules": {
+      "path": "src/repoauditor/detect/deterministic/semgrep-supplemental.yml",
+      "sha256": "e3b5ce91d91dcf194eff6fd1a0cdb9b6214a31a71b661075534d919143017963"
+    },
+    "retrieval_index": {
+      "path": "src/repoauditor/detect/retrieval/index.py",
+      "sha256": "c440666998bc0898453acc309d23a10b13e95a41360ec23f911e0410da357c08"
+    },
+    "source_file_inventory": {
+      "path": "src/repoauditor/sourcefiles.py",
+      "sha256": "133f5b71bb12ecc42921fc62f45836b306e6121d78fdf1cfdcb4c41de18174cc"
+    },
+    "structural_slicer": {
+      "path": "src/repoauditor/falsify/slicing.py",
+      "sha256": "f46e8c3eb7bc519efa9c64f11f226dc6fef944ac911373c3238e6615ca07f0df"
+    },
+    "structural_claim_verifier": {
+      "path": "src/repoauditor/falsify/claims.py",
+      "sha256": "d534c9137236a1e37e2ae88072f24d69b1c6f516ab577175af4dbbf461ad41f6"
+    }
+  },
+  "runtime_and_preflight_contract": {
+    "artifact_directory": "data/artifacts/opt010-acquisition-instrument-qualification-wave-1",
+    "must_be_absent_before_authorization": true,
+    "semgrep_version": "1.170.0",
+    "pip_audit_version": "2.10.1",
+    "osv_scanner_version": "2.3.8",
+    "gitleaks_version": "8.30.1",
+    "semgrep_log_file": "data/artifacts/opt010-acquisition-instrument-qualification-wave-1/semgrep.log",
+    "semgrep_version_cache_path": "data/artifacts/opt010-acquisition-instrument-qualification-wave-1/semgrep-version-cache",
+    "requirements": [
+      "Verify every frozen receipt, source, store, implementation, tool, rule, workspace, and initially absent artifact-directory identity before any write, scanner, or network process.",
+      "Create the artifact directory before any Semgrep-capable process; import-check exact Semgrep 1.170.0 without starting its CLI and seed a fresh workspace-local version cache with the frozen helper.",
+      "Bind SEMGREP_LOG_FILE and SEMGREP_VERSION_CACHE_PATH to the new artifact directory on every Semgrep-capable canary, test, or repository process.",
+      "Run separated offline Semgrep, supplemental Semgrep, and Gitleaks positive-and-clean canaries before advisory pip-audit and OSV positive-and-clean canaries.",
+      "Require every canary and exact tool-version check to pass before acquisition; do not contact semgrep.dev or use registry rules."
+    ]
+  },
+  "acquisition_and_qualification_contract": {
+    "sequence": "Process subjects strictly in frozen order and stop before the next subject on any failed boundary.",
+    "acquisition": "For each subject, shallow-fetch only its exact commit from github.com into its stable-identity directory; verify HEAD and object identity; do not expand history, submodules, Git LFS, dependencies, archives, generated assets, or repository code.",
+    "snapshot": "Create a deterministic normalized file inventory and snapshot digest excluding .git metadata; persist the exact detector-input digest and bind every scanner and retrieval operation to that snapshot.",
+    "scanners": [
+      "semgrep",
+      "semgrep-supplemental",
+      "gitleaks",
+      "pip-audit",
+      "osv-scanner"
+    ],
+    "scanner_health": "Complete, empty, or explicit zero-target not-applicable with valid applicability evidence is acceptable. Unavailable, failed, partial, malformed, disabled, missing provenance, or incomplete inventory is a terminal failure retained in the denominator.",
+    "retrieval": "Build the frozen RetrievalIndex over each exact snapshot without exposing query results; persist only its content digest and aggregate file, function, language-mode, and lexical-fallback counts.",
+    "verifier_eligibility": "Using only frozen language and pre-outcome mechanism metadata plus instrument-declared support, report aggregate supported, unsupported, and unresolved applicability counts. Do not create a finding, claim, certificate, score, or adequacy decision and do not infer a mechanism from scanner output.",
+    "terminal_states": [
+      "completed",
+      "failed",
+      "timed_out",
+      "budget_exhausted",
+      "parser_failed",
+      "verifier_failed",
+      "abstained",
+      "not_applicable"
+    ],
+    "artifact_rule": "Exact public snapshots and raw local scanner artifacts may be retained only beneath the new artifact directory for independent reproducibility; the result and test may contain aggregate counts and digests but no finding identity, source path, symbol, excerpt, secret, dependency identity, advisory identity, or scanner-record detail.",
+    "outcome_blinding": "No security advisory, issue, pull request, exploit report, CVE source, human disposition, assessment, label, known vulnerability answer, or expected-performance input may be used to select, exclude, replace, reorder, or interpret a subject."
+  },
+  "authorized_outputs_after_authorization": [
+    "data/artifacts/opt010-acquisition-instrument-qualification-wave-1",
+    "src/repoauditor/eval/opt010_acquisition_qualification.py",
+    "tests/test_opt_010_acquisition_instrument_qualification_wave_1.py",
+    "docs/optimizations/opt-010-prospective-acquisition-instrument-qualification-wave-1-result-2026-08-19.json"
+  ],
+  "resource_ceilings": {
+    "repositories_materialized": 6,
+    "scanner_processes_maximum": 35,
+    "retrieval_index_builds": 6,
+    "maximum_elapsed_minutes_per_repository": 180,
+    "maximum_elapsed_minutes_total": 900,
+    "maximum_new_data_bytes": 21474836480,
+    "allowed_network_hosts": [
+      "github.com",
+      "pypi.org",
+      "api.osv.dev",
+      "osv.dev"
+    ],
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "repository_code_executions": 0,
+    "dependency_installations": 0,
+    "agentic_falsification_runs": 0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "schema_migrations": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0,
+    "human_finding_reviews": 0,
+    "source_commits": 0,
+    "merge_commits": 0,
+    "remote_pushes": 0,
+    "branch_or_index_operations": 0,
+    "lifecycle_changes": 0
+  },
+  "stop_conditions": [
+    "Any frozen receipt, source identity, commit, stable hash, selection digest, production-store hash, implementation digest, tool version, rule digest, workspace, or initially absent artifact-directory identity drifts.",
+    "Any Semgrep-capable process lacks either workspace-local runtime binding, contacts semgrep.dev, uses registry rules, or any separated canary fails.",
+    "Any repository cannot be shallow-materialized at its exact commit without history, submodule, LFS, dependency, build, or repository-code expansion.",
+    "Any scanner inventory is unavailable, failed, partial, malformed, disabled, missing provenance, or incomplete except for explicit valid zero-target not-applicable status.",
+    "Any snapshot, scanner, or retrieval process exceeds its frozen subject, elapsed, data, network-host, process-count, or zero-activity ceiling.",
+    "Any finding identity, path, symbol, excerpt, secret, dependency, advisory, candidate, score, rank, severity, confidence, prediction, expected outcome, or raw scanner record is persisted outside the isolated artifact directory or disclosed by the aggregate result.",
+    "Any provider, architecture recovery, agentic arm, baseline comparison, human review, assessment, label, model training, rescoring, threshold, policy, lifecycle, branch, index, commit, merge, push, or deployment action is attempted."
+  ],
+  "excluded": [
+    "the remaining six primary identities and all four reserves, replacement sources, source reselection, reserve activation, and any reordered wave",
+    "architecture recovery or architecture-map completion, provider or model calls, prompts, planner changes, agentic falsification, paired baseline execution, G03b qualification, or empirical recall evaluation",
+    "candidate or cohort packet selection, finding identity disclosure, source rendering, human review, assessments, labels, outcomes, answer keys, scores, ranks, severity, confidence, priors, or expected performance",
+    "adequacy or performance threshold selection or recommendation, fitting, training, tuning, recalibration, production-policy changes, OPT-010 activation, promotion, or closure",
+    "OPT-014 or SEC/EDGAR reactivation, OPT-036 use or change, lifecycle changes, full-suite execution, branch or index operations, staging, commits, merges, pushes, integration, or deployment"
+  ],
+  "result_boundary": "One separately authorized execution may retain exact public snapshots and raw local scanner evidence under the isolated artifact directory and publish one aggregate qualification result proving exact acquisition, runtime health, scanner terminal states, snapshot and detector-input digests, retrieval-index coverage, verifier-eligibility coverage, store immutability, and zero live or outcome activity. It cannot complete the architecture-map identity slot, make G02, G05, or G07 pass, authorize paired comparison, or advance OPT-010 lifecycle status.",
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the OPT-010 prospective acquisition and offline instrument-qualification wave one described by opt-010-prospective-acquisition-instrument-qualification-wave-1-receipt-2026-08-19.json, limited to separated scanner/runtime preflights; exact-commit shallow materialization without repository-code execution of only unslothai/unsloth at 489fab4a71f83dd4e02a430f560884c3d052c575, amruthpillai/reactive-resume at dbbab6fd7610cf1472d0e0377fc0e966faf7acda, 0xJacky/nginx-ui at f1b8d846eab834daf6a95e30e3d02d329fdcb0d4, theonedev/onedev at 89e2f09b7b0cd9682a32a8b4a1ed863f791570ea, pglombardo/PasswordPusher at c8fd1dc18fc55b570c2acc06ded6b37f05da6ee5, and SinTan1729/chhoto-url at 7d36ccbd585bd326adfff45982bb0a4d760287c1; deterministic snapshot, detector-input, and RetrievalIndex digests; frozen language and mechanism metadata; five-scanner execution and aggregate scanner, retrieval, and verifier-eligibility inventory; retention of exact public snapshots and raw scanner artifacts only in the isolated wave directory; and one aggregate result, with ceilings of six repositories, 35 scanner processes, 180 minutes per repository, 900 minutes total, 20 GiB new data, only github.com, pypi.org, api.osv.dev, and osv.dev network hosts, and exactly zero uploads, provider calls, tokens, cost, repository-code executions, dependency installations, agentic runs, production-store reads or mutations, assessments, labels, model training, rescoring, human finding reviews, branch or index operations, commits, merges, pushes, or lifecycle changes. The remaining six primaries and all reserves, architecture recovery, provider use, agentic or paired-baseline execution, candidate or packet selection, finding identity disclosure, source rendering, outcomes, review, tuning, threshold selection or recommendation, production-policy changes, OPT-010 activation, promotion or closure, OPT-014 or SEC/EDGAR reactivation, OPT-036 use or change, integration, and deployment remain excluded."
+  }
+}

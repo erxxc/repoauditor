@@ -1,0 +1,195 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-010",
+  "status": "authorization-pending",
+  "frozen_at": "2026-08-18",
+  "activation_gate": {
+    "path": "../agentic-escalation-gate.md",
+    "sha256": "6ec12b12918c7449866b47b96564d3a815a4efda67739e643aee7cf609e43cfe",
+    "recorded_status": "deferred pending measurement prerequisites"
+  },
+  "optimization_status": {
+    "path": "optimization-status.json",
+    "sha256": "a8d33e0d3f27e686b120213689223fb29b83834245ffc2f0b147f33f7842c6fa",
+    "status": "open",
+    "gate": "safety-and-evaluation"
+  },
+  "opt_014_handoff": {
+    "path": "opt-014-commercial-license-first-screen-result-2026-08-18.json",
+    "sha256": "9af94242b348378a175528e3ceb4d4c8c01f1cccd6da4036ecc7ca895b47045a",
+    "execution_state": "operationally-parked",
+    "next_work_item": "OPT-010"
+  },
+  "sec_edgar_reserve": {
+    "path": "opt-014-sec-edgar-reserve-2026-08-18.json",
+    "sha256": "5b21cb52b7011165e0609796b3a007c1df2bb209460e343d718b68a7f5cb04d5",
+    "state": "commercially-permissive-structurally-limited-reserve",
+    "selected_or_acquired": false
+  },
+  "production_store": {
+    "path": "../../data/repoauditor.db",
+    "sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "mode": "aggregate-read-only"
+  },
+  "frozen_implementation": {
+    "config": {
+      "path": "../../config.toml",
+      "sha256": "30d8837bdb63b56a50aefb0cd9bc18a0a7173ac86cd8581d4af6f2b2b21f3d09"
+    },
+    "challenger": {
+      "path": "../../src/repoauditor/falsify/challenger.py",
+      "sha256": "ab50f969979c1fe2c2e961b78455bdf91e72fa7e9459c1291ec30f34aca9610c"
+    },
+    "claims": {
+      "path": "../../src/repoauditor/falsify/claims.py",
+      "sha256": "d534c9137236a1e37e2ae88072f24d69b1c6f516ab577175af4dbbf461ad41f6"
+    },
+    "slicing": {
+      "path": "../../src/repoauditor/falsify/slicing.py",
+      "sha256": "f46e8c3eb7bc519efa9c64f11f226dc6fef944ac911373c3238e6615ca07f0df"
+    },
+    "retrieval_index": {
+      "path": "../../src/repoauditor/detect/retrieval/index.py",
+      "sha256": "c440666998bc0898453acc309d23a10b13e95a41360ec23f911e0410da357c08"
+    }
+  },
+  "scope": "Conduct one deterministic offline readiness audit of OPT-010's seven frozen activation prerequisites using only aggregate read-only production-store measurements, current configuration, implementation, tests, and immutable documentation. Classify authoritative usage accounting, protected evaluation cohort, baseline comparison, recall safety, cohort breakdown, read-only tools, and independent verification as documented-pass, partial, documented-fail, or unresolved; persist one aggregate artifact and one descriptive result; and stop before implementing or running an agentic falsifier, selecting an evaluation cohort, changing prompts or tools, or making provider calls.",
+  "readiness_contract": {
+    "gate_states": [
+      "documented-pass",
+      "partial",
+      "documented-fail",
+      "unresolved"
+    ],
+    "gates": [
+      {
+        "gate_id": "G01",
+        "name": "authoritative-usage-accounting",
+        "required_evidence": "Every current model-backed path has authoritative per-attempt usage and latency, durable logical-run aggregation, explicit unknown usage, and dated model-cost support without treating missing usage as zero."
+      },
+      {
+        "gate_id": "G02",
+        "name": "protected-evaluation-cohort",
+        "required_evidence": "A sufficiently broad, independently frozen real-world cohort exists outside prompt development and training, with immutable subjects and complete terminal observations."
+      },
+      {
+        "gate_id": "G03",
+        "name": "baseline-comparison",
+        "required_evidence": "The current bounded falsifier and proposed agent can be compared on unique issues, precision, recall, abstention coverage, latency, provider tokens, and cost per uniquely validated issue under one frozen protocol."
+      },
+      {
+        "gate_id": "G04",
+        "name": "recall-safety",
+        "required_evidence": "True vulnerabilities cannot be silently suppressed; unresolved cases remain reviewable and the protected evaluation design can bound recall regressions."
+      },
+      {
+        "gate_id": "G05",
+        "name": "cohort-breakdown",
+        "required_evidence": "Family, mechanism, language, and detector metadata are explicit and protected cohort sizes are sufficient to prevent pooled gains from hiding weak subgroups."
+      },
+      {
+        "gate_id": "G06",
+        "name": "read-only-tools",
+        "required_evidence": "A configuration-driven, provenance-recorded tool allowlist exposes only indexed source, bounded slices, callers, references, and stored architecture evidence; repository execution, arbitrary network, and checkout mutation are impossible."
+      },
+      {
+        "gate_id": "G07",
+        "name": "independent-verification",
+        "required_evidence": "Agent claims bind to immutable snapshots and a separately versioned deterministic verifier reconstructs supported facts without consuming producer evidence, with mechanism coverage adequate for the proposed evaluation cohort."
+      }
+    ],
+    "pass_rule": "A gate is documented-pass only when all of its required evidence is directly supported by current immutable code, tests, configuration, documentation, or aggregate store measurements. Missing or insufficient evidence is partial or unresolved; no favorable inference is permitted.",
+    "activation_rule": "A provider-backed agentic falsification experiment remains prohibited unless all seven gates are documented-pass under a later separately authorized activation receipt.",
+    "claim_boundary": "Readiness classification is not an agentic experiment, correctness claim, prompt comparison, cohort selection, threshold recommendation, or production-policy change."
+  },
+  "aggregate_store_contract": {
+    "allowed_measurements": [
+      "counts of findings by falsification status, source family, explicitly stored mechanism, language, and detector metadata availability",
+      "counts of usable manual labels and abstentions by evaluation family without identity disclosure",
+      "counts of pipeline and provider attempts with known versus unknown usage and terminal versus incomplete status",
+      "counts of protected or independently frozen evaluation subjects and complete paired observations already named in immutable documentation",
+      "counts of persisted structural claims and deterministic verification states by supported mechanism category"
+    ],
+    "forbidden_measurements": [
+      "finding, repository, organization, person, incident, assessment, label, or source-record identities",
+      "descriptions, excerpts, file paths, symbols, source code, raw model output, prompts, outcomes, scores, confidence, ranks, or individual usage rows",
+      "new joins or filters that choose an evaluation cohort, candidate, mechanism, threshold, or prompt based on observed performance"
+    ],
+    "store_rule": "Use read-only SQLite access, aggregate in memory, persist only aggregate counts and availability states, hash the store before and after, and fail if the digest changes."
+  },
+  "implementation_audit_contract": {
+    "allowed": [
+      "static inspection of the frozen challenger loop, retrieval index, slicing, structural claims, configuration, migrations, and directly relevant tests",
+      "inventory of configuration-driven iteration, context, candidate, token, and tool bounds without changing values",
+      "inventory of supported deterministic verifier mechanisms and explicitly unsupported cases",
+      "verification that unresolved and deferred findings remain represented and reviewable",
+      "one pure read-only helper and focused tests that reproduce the aggregate audit"
+    ],
+    "forbidden": [
+      "prompt, planner, challenger, retrieval, slicing, claim, verifier, model, configuration, migration, CLI, or production-policy changes",
+      "new tool implementation, repository materialization, source indexing, source rendering, source expansion, code execution, scanner execution, or network access",
+      "manufactured, benchmark, protected, or production agentic runs; model calls; baseline experiments; resampling; thresholding; or cohort selection"
+    ]
+  },
+  "allowed_file_changes": [
+    "src/repoauditor/eval/opt010_readiness.py",
+    "tests/test_opt_010_readiness_audit.py",
+    "docs/optimizations/opt-010-offline-readiness-audit-artifact-2026-08-18.json",
+    "docs/optimizations/opt-010-offline-readiness-audit-result-2026-08-18.json"
+  ],
+  "deterministic_funnel": [
+    "Verify all frozen document, implementation, reserve, receipt, and production-store digests offline.",
+    "Run focused existing non-live tests for usage accounting, falsification budgets, retrieval, slicing, claims, convergence, abstention preservation, and aggregate cohort metadata without provider or network access.",
+    "Execute one pure aggregate read-only readiness helper against the frozen production store and frozen implementation paths.",
+    "Assign each of G01 through G07 exactly one readiness state and record direct aggregate evidence and blockers.",
+    "Persist one aggregate artifact and one descriptive result, verify the production-store digest is unchanged, and stop.",
+    "If every gate passes, recommend only a separately authorized bounded experiment receipt; otherwise enumerate the smallest offline or evidence prerequisites and keep OPT-010 deferred."
+  ],
+  "resource_ceilings": {
+    "maximum_elapsed_minutes": 10,
+    "maximum_new_data_bytes": 1048576,
+    "maximum_new_helpers": 1,
+    "maximum_new_test_files": 1,
+    "maximum_aggregate_artifacts": 1,
+    "maximum_result_documents": 1,
+    "network_reads": 0,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "repository_materializations": 0,
+    "repository_code_executions": 0,
+    "scanner_processes": 0,
+    "agentic_falsification_runs": 0,
+    "production_store_reads": "aggregate-read-only",
+    "production_store_mutations": 0,
+    "schema_migrations": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0
+  },
+  "result_contract": {
+    "states": [
+      "ready-for-separately-authorized-bounded-experiment",
+      "offline-remediation-or-evidence-needed",
+      "not-ready"
+    ],
+    "result_rule": "Ready requires seven documented-pass gates. Partial, failed, or unresolved gates prohibit an experiment and must produce a minimal prerequisite inventory without implementing it.",
+    "sec_edgar_visibility": "The OPT-014 SEC/EDGAR reserve remains bound and visible but is not an OPT-010 evaluation source, tool input, cohort, or outcome under this audit.",
+    "lifecycle_rule": "The audit may not promote or close OPT-010, reopen active OPT-014 work, or alter the optimization ledger."
+  },
+  "stop_conditions": [
+    "Any bound document, code, configuration, reserve, receipt, or production-store digest drifts.",
+    "A test or helper attempts network access, provider use, repository materialization, source rendering, scanner execution, repository code execution, or production-store mutation.",
+    "An aggregate query would expose an identity, description, path, symbol, excerpt, prompt, raw output, outcome, score, confidence, rank, or individual usage row.",
+    "A gate cannot be classified without selecting a cohort, choosing a threshold, changing code or policy, or running an agentic or provider-backed experiment.",
+    "An unlisted file would change or the time, byte, helper, test, artifact, or result ceiling would be exceeded.",
+    "Any OPT-010 activation, promotion, closure, live experiment, OPT-014 acquisition, branch integration, remote push, or deployment action is attempted."
+  ],
+  "result_boundary": "The audit may report aggregate evidence and exact readiness states for the seven frozen gates, preserve SEC/EDGAR as an inactive OPT-014 reserve, and propose the smallest next prerequisite. It may not render source, identify findings or repositories, select a protected cohort, run or implement an agent, call a provider, compare prompts or models, tune thresholds, mutate the store, change production policy, activate or close OPT-010, reopen OPT-014 acquisition, alter the lifecycle ledger, integrate a branch, push remotely, or deploy.",
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the OPT-010 offline readiness audit described by opt-010-offline-readiness-audit-receipt-2026-08-18.json, limited to one deterministic aggregate-only read-only audit of the frozen production store, agentic escalation gate, current configuration, bounded falsifier, retrieval, slicing, structural-claim verifier, migrations, and directly relevant non-live tests; classification of authoritative usage accounting, protected evaluation cohort, baseline comparison, recall safety, cohort breakdown, read-only tools, and independent verification as documented-pass, partial, documented-fail, or unresolved; one pure helper, one focused test file, one aggregate artifact, and one descriptive result; preservation of SEC/EDGAR as an inactive OPT-014 reserve; and recommendation only of the smallest separately gated next prerequisite, with ceilings of 10 minutes, 1 MiB new data, and exactly zero network reads, uploads, provider calls, tokens, cost, repository materializations, repository-code executions, scanner processes, agentic falsification runs, production-store mutations, schema migrations, assessments, labels, model training, or rescoring. Finding, repository, organization, person, incident, assessment, label, and source-record identities; descriptions, excerpts, paths, symbols, source code, raw model output, prompts, outcomes, scores, confidence, ranks, individual usage rows, source rendering, cohort or candidate selection, prompt or planner changes, tool implementation, baseline experiments, resampling, threshold selection or recommendation, production-policy changes, OPT-010 activation, promotion, or closure, OPT-014 acquisition, optimization-ledger changes, branch integration, remote push, and deployment remain excluded."
+  }
+}

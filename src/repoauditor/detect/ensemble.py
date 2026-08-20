@@ -17,7 +17,9 @@ survive. Severity from a lens is a *relative* signal, never treated as absolute.
 from __future__ import annotations
 
 import logging
+import json
 from concurrent.futures import ThreadPoolExecutor
+from dataclasses import dataclass
 from pathlib import Path
 
 from pydantic import BaseModel, Field
@@ -31,7 +33,7 @@ from ..llm.prompt_security import (
     secure_system_prompt,
 )
 from ..map import ArchitectureMap, load_architecture
-from ..sourcefiles import iter_source_files, read_numbered
+from ..sourcefiles import iter_source_files, read_numbered_bounded, truncate_utf8
 from ..store import db
 from ..store.models import (
     DetectionRegionRun,
@@ -66,6 +68,11 @@ LENS_PROMPT_VERSIONS: dict[str, str] = {
 }
 PROMPT_VERSION = "+".join(LENS_PROMPT_VERSIONS[name] for name in LENSES)
 CITATION_INTEGRITY_VERSION = "citation_integrity_v1"
+DETECTION_EVIDENCE_BOUND_VERSION = "detection_evidence_utf8_v1"
+PRIMARY_EVIDENCE_MAX_BYTES = 160_000
+RETRIEVAL_EVIDENCE_MAX_BYTES = 64_000
+DETECTION_REGION_MAX_BYTES = 240_000
+DETECTION_REQUEST_CONTENT_MAX_BYTES = 320_000
 _LENS_DIR = Path(__file__).parent / "lenses"
 _LENS_PROMPTS: dict[str, str] = {
     name: (_LENS_DIR / filename).read_text() for name, filename in LENSES.items()
@@ -186,6 +193,42 @@ def _retrieval_context(
     )[0]
 
 
+def _bounded_detection_region(
+    path: Path,
+    relative_file: str,
+    index: RetrievalIndex,
+) -> tuple[str, list[dict[str, str | int]], dict[str, int | bool | str]]:
+    """Build one citation-preserving region under a hard UTF-8 byte ceiling."""
+    primary, primary_evidence = read_numbered_bounded(
+        path, PRIMARY_EVIDENCE_MAX_BYTES
+    )
+    retrieval, provenance = _retrieval_context_with_provenance(
+        index, relative_file, path.read_text(errors="replace")
+    )
+    retrieval_original_bytes = len(retrieval.encode("utf-8"))
+    retrieval, retrieval_truncated = truncate_utf8(
+        retrieval, RETRIEVAL_EVIDENCE_MAX_BYTES
+    )
+    unbounded_region = f"# FILE: {relative_file}\n{primary}{retrieval}"
+    region, hard_truncated = truncate_utf8(
+        unbounded_region, DETECTION_REGION_MAX_BYTES
+    )
+    sent_bytes = len(region.encode("utf-8"))
+    if sent_bytes > DETECTION_REGION_MAX_BYTES:
+        raise RuntimeError("detection evidence byte bound was not enforced")
+    return region, provenance, {
+        "policy": DETECTION_EVIDENCE_BOUND_VERSION,
+        "primary_original_bytes": int(primary_evidence["original_bytes"]),
+        "primary_sent_bytes": int(primary_evidence["sent_bytes"]),
+        "primary_truncated": bool(primary_evidence["truncated"]),
+        "retrieval_original_bytes": retrieval_original_bytes,
+        "retrieval_sent_bytes": len(retrieval.encode("utf-8")),
+        "retrieval_truncated": retrieval_truncated,
+        "region_sent_bytes": sent_bytes,
+        "hard_truncated": hard_truncated,
+    }
+
+
 def _is_test_path(path: str) -> bool:
     normalized = "/" + path.replace("\\", "/").lower().strip("/") + "/"
     return "/test/" in normalized or "/tests/" in normalized or "/spec/" in normalized
@@ -223,11 +266,82 @@ class DetectionRun(list[Finding]):
         self.context_expansions = context_expansions or []
 
 
+@dataclass(frozen=True)
+class DeterministicDetection:
+    """Durable scanner output that can be validated before any semantic call."""
+
+    candidates: list[CandidateFinding]
+    findings: list[Finding]
+    sarif_path: Path | None
+    semgrep_status: str | None
+    scanner_statuses: dict[str, str]
+    scanner_failures: dict[str, str]
+    scanner_executions: list[dict]
+
+
+def run_deterministic_detection(
+    repo_id: str,
+    config: Config | None = None,
+    *,
+    artifact_path: Path | None = None,
+) -> DeterministicDetection:
+    """Run and persist deterministic scanners independently of provider detection."""
+    config = config or get_config()
+    snapshot_path, commit = latest_snapshot(config, repo_id)
+    architecture = load_architecture(repo_id, commit, config)
+    artifact_path = artifact_path or (
+        config.resolve(config.paths.data_dir)
+        / "artifacts" / repo_id / commit / "detect" / "semgrep.sarif"
+    )
+    if config.detect.run_deterministic_tools:
+        result = _run_deterministic_adapters(snapshot_path, config, artifact_path)
+        candidates, sarif_path, semgrep_status = result[:3]
+        statuses = result[3] if len(result) >= 5 else {}
+        failures = result[4] if len(result) >= 5 else {}
+        executions = result[5] if len(result) >= 6 else []
+    else:
+        from .deterministic import DETERMINISTIC_SCANNERS, SastAdapter
+        from .deterministic.execution import ScannerExecution
+
+        sast = SastAdapter(sarif_output_path=artifact_path)
+        sast.write_empty_artifact("disabled")
+        candidates = []
+        sarif_path, semgrep_status = artifact_path, sast.run_status
+        statuses = {name: "disabled" for name in DETERMINISTIC_SCANNERS}
+        failures = {}
+        executions = [
+            ScannerExecution(
+                scanner=name,
+                status="disabled",
+                applicable=None,
+                output_valid=False,
+                finding_count=0,
+                target_count=0,
+                target_count_basis="disabled",
+            ).model_dump()
+            for name in DETERMINISTIC_SCANNERS
+        ]
+    findings = [
+        _persist_tool_candidate(candidate, repo_id, architecture, config)
+        for candidate in candidates
+    ]
+    return DeterministicDetection(
+        candidates=candidates,
+        findings=findings,
+        sarif_path=sarif_path,
+        semgrep_status=semgrep_status,
+        scanner_statuses=statuses,
+        scanner_failures=failures,
+        scanner_executions=executions,
+    )
+
+
 def run_ensemble(
     repo_id: str,
     config: Config | None = None,
     llm: LLMClient | None = None,
     index: RetrievalIndex | None = None,
+    deterministic: DeterministicDetection | None = None,
 ) -> DetectionRun:
     """Run the three-lens ensemble over an ingested + mapped repo; persist candidates.
 
@@ -242,54 +356,14 @@ def run_ensemble(
     architecture = load_architecture(repo_id, commit, config)
     index = index or RetrievalIndex().build(snapshot_path)
 
-    persisted: list[Finding] = []
-    artifact_path = (
-        config.resolve(config.paths.data_dir)
-        / "artifacts" / repo_id / commit / "detect" / "semgrep.sarif"
-    )
-    sarif_path = None
-    semgrep_status = None
-    tool_candidates: list[CandidateFinding] = []
-    scanner_statuses: dict[str, str] = {}
-    scanner_failures: dict[str, str] = {}
-    scanner_executions: list[dict] = []
-    if config.detect.run_deterministic_tools:
-        adapter_result = _run_deterministic_adapters(
-            snapshot_path, config, artifact_path
-        )
-        # Test/scripted adapters historically returned the three-field public contract.
-        # Preserve that seam while production adapters attach execution diagnostics.
-        tool_candidates, sarif_path, semgrep_status = adapter_result[:3]
-        if len(adapter_result) >= 5:
-            scanner_statuses, scanner_failures = adapter_result[3:5]
-        if len(adapter_result) >= 6:
-            scanner_executions = adapter_result[5]
-        for cand in tool_candidates:
-            persisted.append(_persist_tool_candidate(cand, repo_id, architecture, config))
-    else:
-        from .deterministic import DETERMINISTIC_SCANNERS, SastAdapter
-
-        sast = SastAdapter(sarif_output_path=artifact_path)
-        sast.write_empty_artifact("disabled")
-        sarif_path, semgrep_status = artifact_path, sast.run_status
-        scanner_statuses = {
-            name: "disabled"
-            for name in DETERMINISTIC_SCANNERS
-        }
-        from .deterministic.execution import ScannerExecution
-
-        scanner_executions = [
-            ScannerExecution(
-                scanner=name,
-                status="disabled",
-                applicable=None,
-                output_valid=False,
-                finding_count=0,
-                target_count=0,
-                target_count_basis="disabled",
-            ).model_dump()
-            for name in DETERMINISTIC_SCANNERS
-        ]
+    deterministic = deterministic or run_deterministic_detection(repo_id, config)
+    persisted: list[Finding] = list(deterministic.findings)
+    tool_candidates = deterministic.candidates
+    sarif_path = deterministic.sarif_path
+    semgrep_status = deterministic.semgrep_status
+    scanner_statuses = deterministic.scanner_statuses
+    scanner_failures = deterministic.scanner_failures
+    scanner_executions = deterministic.scanner_executions
 
     projection = project_detection_work(
         snapshot_path, config, lens_count=len(LENSES)
@@ -308,19 +382,14 @@ def run_ensemble(
     for planned_region in planned:
         path = planned_region.path
         rel = planned_region.relative_path
-        file_text = read_numbered(path)
-        retrieval_text, retrieval_provenance = _retrieval_context_with_provenance(
-            index, rel, path.read_text(errors="replace")
+        region, retrieval_provenance, evidence_bound = _bounded_detection_region(
+            path, rel, index
         )
-        if retrieval_provenance:
-            context_expansions.append({
-                "primary_file": rel,
-                "related": retrieval_provenance,
-            })
-        region = (
-            f"# FILE: {rel}\n{file_text}"
-            f"{retrieval_text}"
-        )
+        context_expansions.append({
+            "primary_file": rel,
+            "related": retrieval_provenance,
+            "evidence_bound": evidence_bound,
+        })
 
         for lens in _LENS_PROMPTS:
             region_run = db.start_detection_region(
@@ -426,14 +495,37 @@ def _call_lens(
         prompt_version = LENS_PROMPT_VERSIONS[lens]
     except KeyError as exc:
         raise ValueError(f"unknown detection lens: {lens}") from exc
+    if len(region.encode("utf-8")) > DETECTION_REGION_MAX_BYTES:
+        raise ValueError("detection region exceeds the provider evidence byte bound")
+    system = secure_system_prompt(prompt)
+    user = delimit_repository_evidence(region)
+    _assert_provider_content_bound(system, user, LensFindings)
     return llm.call(
         module="detect",
         prompt_version=prompt_version,
-        system=secure_system_prompt(prompt),
-        user=delimit_repository_evidence(region),
+        system=system,
+        user=user,
         schema=LensFindings,
         context=context,
     )
+
+
+def _assert_provider_content_bound(
+    system: str, user: str, schema: type[BaseModel]
+) -> int:
+    """Fail locally before transfer when complete structured-call content is too large."""
+    schema_json = json.dumps(
+        schema.model_json_schema(), sort_keys=True, separators=(",", ":")
+    )
+    content_bytes = sum(
+        len(item.encode("utf-8")) for item in (system, user, schema_json)
+    )
+    if content_bytes > DETECTION_REQUEST_CONTENT_MAX_BYTES:
+        raise ValueError(
+            "detect request content exceeds the pre-provider UTF-8 byte bound: "
+            f"{content_bytes}/{DETECTION_REQUEST_CONTENT_MAX_BYTES}"
+        )
+    return content_bytes
 
 
 def _same_file(candidate: str, actual: str) -> bool:
@@ -659,14 +751,19 @@ def _resolve_confidence(cand, lens, prompt, index, repo_id, llm, threshold):
     extra = "\n\n# --- broader retrieval (re-score) ---\n" + "\n\n".join(
         f"# {i.symbol} ({i.file}:{i.line_start})\n{i.source}" for i in similar
     )
+    rescore_evidence, _ = truncate_utf8(
+        f"Re-score this single candidate with the added context.\n"
+        f"citation:\n{cand.citation_snippet}{extra}",
+        DETECTION_REGION_MAX_BYTES,
+    )
+    rescore_system = secure_system_prompt(prompt)
+    rescore_user = delimit_repository_evidence(rescore_evidence)
+    _assert_provider_content_bound(rescore_system, rescore_user, LensFindings)
     rescore = llm.call(
         module="detect",
         prompt_version=f"{LENS_PROMPT_VERSIONS[lens]}+rescore",
-        system=secure_system_prompt(prompt),
-        user=delimit_repository_evidence(
-            f"Re-score this single candidate with the added context.\n"
-            f"citation:\n{cand.citation_snippet}{extra}"
-        ),
+        system=rescore_system,
+        user=rescore_user,
         schema=LensFindings,
         context={"stage": "detect", "repo_id": repo_id, "lens": lens, "rescore": True},
     )

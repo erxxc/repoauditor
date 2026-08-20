@@ -21,16 +21,23 @@ def test_documentation_authority_matches_canonical_lifecycle():
     checkpoint = _json(CHECKPOINT)
     authority = (DOCS / "documentation-status.md").read_text(encoding="utf-8")
     open_ids = [
-        item["id"] for item in ledger["items"] if item["status"] == "open"
+        item["id"]
+        for item in sorted(
+            (item for item in ledger["items"] if item["status"] == "open"),
+            key=lambda item: item["next_priority"],
+        )
     ]
 
-    assert ledger["summary"] == {"closed": 30, "open": 5, "total": 35}
-    assert open_ids == ["OPT-002", "OPT-003", "OPT-009", "OPT-010", "OPT-014"]
-    assert checkpoint["optimization_summary"] == ledger["summary"]
-    assert {
+    assert ledger["summary"] == {"closed": 35, "open": 0, "total": 35}
+    assert open_ids == []
+    assert checkpoint["optimization_summary"] == {"closed": 32, "open": 3, "total": 35}
+    assert [
         item["id"] for item in checkpoint["open_optimizations_in_priority_order"]
-    } == set(open_ids)
-    assert "30 closed, 5 open, 35 total" in authority
+    ] == ["OPT-009", "OPT-014", "OPT-010"]
+    assert "35 closed, 0 open, 35 total" in authority
+    assert "no remaining execution priority" in authority
+    assert "byte-identical historical evidence" in authority
+    assert "not expected to match the current lifecycle ledger" in authority
     assert "No paid" in authority and "provider execution is currently authorized" in authority
 
 

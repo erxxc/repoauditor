@@ -1,0 +1,156 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-009",
+  "status": "stopped-provider-usage-unavailable-after-oversized-prompt",
+  "recorded_at": "2026-08-13",
+  "receipt": {
+    "path": "opt-009-prospective-detection-wave-1-receipt-2026-08-12.json",
+    "sha256": "e3c930f9ef2cc9de89b26c7e23c0e0fd52e8d455a6efcac8a32635048048b1e4"
+  },
+  "result_evidence": {
+    "path": "../../data/artifacts/opt009-wave-1/execution-summary.json",
+    "sha256": "b99cbf3f9df522b7ca1cee82dbf20ece6a2e86d317a17b825ea8ae49680e8055"
+  },
+  "preflight_evidence": {
+    "offline": {
+      "path": "../../data/artifacts/opt009-wave-1/offline-canaries.json",
+      "sha256": "a0066252f3082a3cde8cdbfcc8c9e701315e90162f4c0eb6a37ffc5f0945d4ed",
+      "status": "passed"
+    },
+    "advisory": {
+      "path": "../../data/artifacts/opt009-wave-1/advisory-canaries.json",
+      "sha256": "e97d2334c1f84ef48058b3e888b9bbdc36d622ae609c02f2e2fe4d80f0306b4f",
+      "status": "passed"
+    },
+    "semgrep_log": {
+      "path": "../../data/artifacts/opt009-wave-1/semgrep.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e464b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "initial_store_backup": {
+      "path": "../../data/backups/repoauditor-opt009-wave1.sqlite",
+      "sha256": "a3d8e55feadf5860c079f1de18b698186afbae81ba6bf678717cdfe1f2cca11f"
+    }
+  },
+  "execution": {
+    "started_at": "2026-08-13T14:23:29Z",
+    "stopped_at": "2026-08-13T14:24:53Z",
+    "elapsed_seconds": 84,
+    "completed_source": {
+      "repository": "go-vikunja/vikunja",
+      "repo_id": "opt009-wave1-vikunja",
+      "exact_commit": "9403ed15264e414605c523b0c16ef28703e9915e",
+      "stored_commit": "9403ed15264e",
+      "snapshot_tree_sha256": "e473b67328b693bf2afb263115de5e8b9033e6522f52aaa84663894d97596d8f",
+      "snapshot_file_count": 1943,
+      "snapshot_bytes": 25269671,
+      "pipeline_run_id": 114,
+      "pipeline_status": "failed",
+      "failed_stage": "detect",
+      "architecture_map_completed": true,
+      "completed_owasp_regions": 3,
+      "failed_owasp_regions": 1,
+      "partial_owasp_findings": 0,
+      "deterministic_findings": 141
+    },
+    "unattempted_source": {
+      "repository": "miniflux/v2",
+      "repo_id": "opt009-wave1-miniflux",
+      "commit": "106cdd09e1557222303f3ed1376e1dadf0638621",
+      "materialized": false,
+      "pipeline_runs": 0,
+      "provider_attempts": 0
+    }
+  },
+  "stop": {
+    "stage": "detect",
+    "attempt": "fourth OWASP region",
+    "reason": "Anthropic rejected the request before processing because the prompt was approximately 2,206,280 tokens, above the provider's 1,000,000-token context limit.",
+    "usage_treatment": "The provider diagnostic prompt size is not treated as authoritative billed usage. The attempt has a persisted usage_available=false row.",
+    "receipt_condition": "Any provider attempt lacks authoritative usage.",
+    "action": "Stopped immediately; retained completed evidence; did not acquire or scan Miniflux."
+  },
+  "provider_accounting": {
+    "provider": "anthropic",
+    "model": "claude-opus-4-8",
+    "attempts": 5,
+    "calls_with_authoritative_usage": 4,
+    "calls_without_authoritative_usage": 1,
+    "known_reported_tokens": 99846,
+    "known_dated_price_cost_usd": 0.546170,
+    "complete_cost_status": "unavailable",
+    "per_repository_call_ceiling": 75,
+    "per_repository_token_ceiling": 250000,
+    "aggregate_call_ceiling": 150,
+    "aggregate_token_ceiling": 500000,
+    "aggregate_cost_ceiling_usd": 12.5
+  },
+  "capacity": {
+    "policy": "opt009-prospective-owasp-capacity-v1",
+    "status": "not-measured",
+    "partial_eligible_groups": 0,
+    "minimum_groups_per_family": 8,
+    "interpretation": "Detection did not complete, so the partial zero is neither a family capacity result nor evidence to activate a reserve."
+  },
+  "repository_scanner_evidence": {
+    "deterministic_findings_persisted": 141,
+    "semgrep_sarif_sha256": "21b8c2bd1cc0e650b7fc28b69c9ed99bd606479ef1f0d5b18c999307e201c5d0",
+    "supplemental_semgrep_sarif_sha256": "63b80ef867d948249f7ddbf86e550bdab11b6cb6c1b4c52463d0b68709503aae",
+    "aggregate_scanner_status": "not-durably-retained",
+    "limitation": "The existing ensemble returns repository scanner execution records only after all LLM regions finish. The provider interruption therefore prevented the caller from validating and persisting those per-repository status records. No claim of complete repository scanner health is made."
+  },
+  "store_accounting": {
+    "initial_sha256": "a3d8e55feadf5860c079f1de18b698186afbae81ba6bf678717cdfe1f2cca11f",
+    "stopped_sha256": "37477530a7a2ffd6404dfd51d3631db6bfe46edb6f5ba719b660da92584d2239",
+    "row_deltas": {
+      "ingested_repo": 1,
+      "pipeline_run": 1,
+      "stage_run": 3,
+      "trust_boundary": 8,
+      "entity": 34,
+      "finding": 141,
+      "detection_region_run": 4,
+      "model_usage": 5
+    },
+    "unexpected_changed_tables": [],
+    "assessment_inserts": 0,
+    "label_inserts": 0
+  },
+  "resource_accounting": {
+    "repositories_materialized": 1,
+    "pipeline_runs": 1,
+    "new_data_bytes_through_result_artifact": 27427464,
+    "new_data_ceiling_bytes": 10737418240,
+    "elapsed_minutes": 1.4,
+    "total_elapsed_ceiling_minutes": 420,
+    "ceiling_breaches": []
+  },
+  "excluded_actions_accounting": {
+    "repository_code_executions": 0,
+    "observational_lens_calls": 0,
+    "falsification_calls": 0,
+    "normalization_calls": 0,
+    "human_reviews": 0,
+    "assessments": 0,
+    "labels": 0,
+    "model_training_runs": 0,
+    "novelty_scores_or_ranks": 0,
+    "candidate_identities_disclosed": 0,
+    "source_rendered_for_review": false,
+    "reserve_activations": 0,
+    "optimization_status_changes": 0,
+    "branch_integrations": 0,
+    "remote_pushes": 0
+  },
+  "required_correction_before_retry": {
+    "context_bound": "Apply a deterministic pre-provider size bound to every selected detection region and its retrieval context, preserving line-numbered citation integrity and the frozen six-region selection.",
+    "scanner_chronology": "Persist and validate repository scanner execution health before any provider request, so a scanner stop condition cannot be discovered only after semantic detection.",
+    "usage_policy": "Explicitly define treatment of provider-rejected requests that return no billable usage metadata.",
+    "authorization": "A new corrected receipt is required before any retry, Miniflux acquisition, further provider call, broadened context handling, or capacity conclusion."
+  },
+  "disposition": {
+    "opt_009_status": "open-data-gated",
+    "wave_one_completed": false,
+    "branch_merge": "deferred"
+  }
+}

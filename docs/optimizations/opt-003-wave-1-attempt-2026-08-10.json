@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-08-10",
+  "optimization": "OPT-003",
+  "status": "stopped-before-acquisition",
+  "receipt": {
+    "path": "opt-003-wave-1-prediction-receipt-2026-08-10.json",
+    "sha256": "ac9116fc9a54da9ef711cbe58ca5125a2881df7f91d91b2231cf4dd6534782e0"
+  },
+  "completed": {
+    "training_runs": 1,
+    "effective_labels": 122,
+    "effective_label_sha256": "b56131b57e949fb8512773bc28cedfae56f598bf2a9ae233088e9d3726202d87",
+    "model_name": "randomforest",
+    "model_version": "1.9.0",
+    "calibration": "isotonic",
+    "split_strategy": "engagement_grouped",
+    "evaluation_families": 17,
+    "model_artifact_sha256": "a38844dff0bfe9da7dd191b41db31913e85617b250285d70a3c4b6c08e56e7cb",
+    "model_metadata_sha256": "23d181f8590029df5142358d2adeaf52023894ef27207f92a0d3ebb555f03c4d"
+  },
+  "stop": {
+    "stage": "pre-acquisition scanner canaries",
+    "canary_report_sha256": "1096c7a27f2f1864223384eeaa7a43f396ea7e1ab79bd8e747a40e7473aee8db",
+    "passed": false,
+    "scanner_results": {
+      "semgrep": "failed before producing valid output",
+      "semgrep-supplemental": "failed before producing valid output",
+      "gitleaks": "passed positive and clean controls",
+      "pip-audit": "failed with no JSON output",
+      "osv-scanner": "positive control failed; clean control was not applicable"
+    },
+    "reason": "Required deterministic scanner health did not pass, so the receipt required stopping before any repository materialization.",
+    "semgrep_root_cause": "Semgrep 1.170.0 attempted to open /Users/deathstar/.semgrep/semgrep.log, which is outside the writable workspace sandbox, and raised PermissionError. A retry can direct SEMGREP_LOG_FILE to a receipt-authorized writable artifact path without changing scanner version or rules.",
+    "network_boundary_incident": "The generic scanner-canary command attempted PyPI Advisory Database and OSV.dev-backed checks even though the receipt allowed GitHub-only network access. Those checks failed and no repository acquisition followed. This attempted unsupported-host activity is recorded as a protocol boundary breach; a replacement receipt must explicitly separate offline scanner canaries from any authorized advisory-service canaries."
+  },
+  "accounting": {
+    "initial_store_sha256": "d34e2ff9bf8946209686c47a15ed4428ada11c1b08afc05705be8b7adb3107eb",
+    "final_store_sha256": "d34e2ff9bf8946209686c47a15ed4428ada11c1b08afc05705be8b7adb3107eb",
+    "store_byte_identical": true,
+    "new_data_kib": 36556,
+    "new_data_ceiling_kib": 15728640,
+    "repositories_materialized": 0,
+    "predictions_persisted": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "human_reviews": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "ceiling_breaches": ["generic canary attempted unsupported PyPI/OSV network hosts"]
+  },
+  "not_executed": {
+    "chatwoot_materialization": true,
+    "linkwarden_materialization": true,
+    "paperless_materialization": true,
+    "deterministic_repository_scans": true,
+    "feature_extraction": true,
+    "prediction_persistence": true,
+    "packet_selection": true,
+    "human_review": true,
+    "outcome_import": true
+  },
+  "disposition": {
+    "opt_003_status": "open-execution-retry-gated",
+    "model_reuse": "not authorized; the stopped model artifact is retained as attempt evidence",
+    "recommended_next_step": "Diagnose the local Semgrep failures and freeze a replacement receipt whose preflight runs only offline Semgrep, supplemental Semgrep, and Gitleaks controls. Treat pip-audit and OSV applicability/network validation separately and explicitly before any retry."
+  }
+}

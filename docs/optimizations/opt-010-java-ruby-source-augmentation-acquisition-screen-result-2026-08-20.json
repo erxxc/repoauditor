@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-010",
+  "status": "stopped-preflight-unfrozen-ruby-instrument-bindings",
+  "interpretation": "The authorized source-augmentation acquisition and capacity screen stopped before runtime, scanner, artifact-directory, or network activity because the immutable receipt did not digest-bind the existing Ruby CWE-502 positive and clean fixtures, corrected qualification evidence, pinned-default Semgrep provenance, or adapter required by its own frozen canary contract. No source or outcome evidence was accessed and the original receipt was not modified.",
+  "preflight": {
+    "authorized_statement_matched": true,
+    "frozen_inputs_verified_before_defect": true,
+    "workspace_branch": "main",
+    "workspace_head": "1f1dba7a30a86d957510608c25e94077b15d2e8d",
+    "index_empty": true,
+    "artifact_directory_created": false,
+    "missing_digest_bindings": [
+      "corrected Ruby scanner-cell qualification result and acceptance artifact",
+      "frozen Ruby CWE-502 positive and clean fixtures and manifest",
+      "pinned-default Semgrep adapter and provenance"
+    ],
+    "routing": "separately-authorized-corrected-retry-with-existing-local-bindings-only"
+  },
+  "boundaries": {
+    "original_receipt_edited": false,
+    "helper_or_scanner_implementation_created_or_changed": false,
+    "source_or_repository_access": 0,
+    "candidate_or_issue_group_identities_persisted_or_disclosed": 0,
+    "packet_constructed": false,
+    "g03b_decided": false,
+    "g04_decided": false,
+    "opt010_status_changed": false
+  },
+  "resource_accounting": {
+    "elapsed_seconds": 0.231,
+    "new_data_bytes": 2676,
+    "runtime_import_checks": 0,
+    "logical_scanner_processes": 0,
+    "repositories_materialized": 0,
+    "retrieval_index_builds": 0,
+    "network_reads": 0,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "keychain_or_credential_reads": 0,
+    "repository_code_executions": 0,
+    "dependency_resolutions_or_installations": 0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "assessments": 0,
+    "labels": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0,
+    "agentic_or_baseline_runs": 0,
+    "human_finding_reviews": 0,
+    "outcomes_read": 0,
+    "workspace_branch_or_index_mutations": 0,
+    "commits": 0,
+    "merges": 0,
+    "pushes": 0,
+    "lifecycle_changes": 0
+  },
+  "production_store": {
+    "expected_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "after_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "byte_identical": true
+  }
+}

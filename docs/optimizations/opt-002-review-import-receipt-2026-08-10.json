@@ -1,0 +1,113 @@
+{
+  "schema_version": 1,
+  "frozen_at": "2026-08-10",
+  "optimization": "OPT-002",
+  "status": "authorization-pending",
+  "review_result": {
+    "path": "opt-002-bounded-review-result-2026-08-10.json",
+    "sha256": "7479b805240ddfdd19f34e5853a7686ce618ed20ecbf986f656dd74f29e3a54a",
+    "responses": 12,
+    "decided": 11,
+    "abstentions": 1,
+    "binary_actionable": 5,
+    "binary_non_actionable": 6
+  },
+  "scope": "Atomically import only the 12 explicit project-owner responses from the digest-frozen OPT-002 bounded-review result as append-only triage assessments, project only the 11 decided responses into manual classifier labels, preserve the insufficient-evidence response as an assessment-only abstention, and compute a read-only post-import OPT-002 gate report. No response may be inferred, corrected, expanded, or replaced.",
+  "preconditions": [
+    "The review result, review plan, selected finding identities, triage features, and frozen scoring identity match their recorded digests and values.",
+    "The persistent store SHA-256 is 1f67635eb1458b93c3b9056f08377839f23d0726b0f3b92764f5791d2ca503b8 before execution.",
+    "The store contains 111 triage assessments, 118 triage labels, 35 triage model runs, and 1473 model-usage rows.",
+    "None of the 12 selected findings has an existing assessment and none has an existing manual label projection.",
+    "All 12 selected findings remain classifier-eligible under the frozen xgboost 3.3.0, feature-schema sha256:89450a98dd4cdc1c, isotonic scoring identity.",
+    "The pre-import compatible cohort remains 36 labels: 19 positive, 17 negative, across seven genuine evaluation families."
+  ],
+  "import_contract": {
+    "transaction": "single SQLite transaction covering all assessment inserts and label projections; any failed assertion or write rolls back the entire import",
+    "analyst": "project owner",
+    "assessment_rows": 12,
+    "manual_label_upserts": 11,
+    "material": false,
+    "classifier_eligible": true,
+    "disposition_projection": {
+      "confirmed_actionable": "true_positive/actionable=true",
+      "tool_incorrect": "false_positive/actionable=false",
+      "unreachable": "false_positive/actionable=false",
+      "mitigated": "false_positive/actionable=false",
+      "insufficient_evidence": "uncertain/no label"
+    },
+    "rationale": "preserve each analyst rationale exactly",
+    "dimensions": "persist only the explicitly verified dimension names and statements from the result",
+    "created_at": "database transaction time",
+    "idempotence": "refuse execution if any selected assessment or manual projection already exists; never overwrite"
+  },
+  "expected_post_import": {
+    "triage_assessments": 123,
+    "triage_labels": 129,
+    "selected_assessments": 12,
+    "selected_manual_labels": 11,
+    "selected_abstentions": 1,
+    "compatible_scored_human_labels": 47,
+    "compatible_positive": 24,
+    "compatible_negative": 23,
+    "compatible_engagements": 9,
+    "minimum_compatible_labels": 40,
+    "minimum_evaluation_families": 8,
+    "both_classes_present": true,
+    "model_runs": 35,
+    "model_usage_rows": 1473
+  },
+  "gate_assessment": {
+    "mode": "offline and read-only after the committed import",
+    "must_report": [
+      "compatible decided label count and positive/negative split",
+      "compatible engagement and genuine evaluation-family counts",
+      "the preserved abstention",
+      "exact scoring identity compatibility for every imported decided label",
+      "whether the protocol's 40-label, eight-family, and both-class conditions pass"
+    ],
+    "interpretation": "Passing the data gate permits a later promotion decision; it does not itself change optimization-status.json, train, tune, rescore, recalibrate, activate reserve evidence, or alter production policy."
+  },
+  "resource_ceilings": {
+    "execution_runs": 1,
+    "maximum_elapsed_minutes": 10,
+    "maximum_new_data_bytes": 10485760,
+    "assessment_inserts": 12,
+    "manual_label_upserts": 11,
+    "other_store_mutations": 0,
+    "network_reads": 0,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "model_training_runs": 0,
+    "rescored_findings": 0
+  },
+  "stop_conditions": [
+    "Any result, plan, store, finding, feature, score, cohort, or usage-ledger precondition differs from the frozen value.",
+    "Any response would require interpretation, correction, additional source evidence, or a disposition not already explicit in the result.",
+    "Any selected finding already has an assessment or manual label projection.",
+    "The import cannot complete as one atomic transaction or any expected row count differs before commit.",
+    "The abstention would create a label, any decided response would receive the wrong binary projection, or any rationale/dimension would drift.",
+    "Any network/provider activity, rescore, training, tuning, recalibration, reserve activation, status edit, or production-policy change is attempted."
+  ],
+  "result_boundary": {
+    "authorized_after_approval": [
+      "persist exactly 12 append-only assessments and 11 manual label projections in one transaction",
+      "persist one result artifact containing pre/post hashes, inserted identities, exact counts, and gate calculations",
+      "update descriptive ledgers to report the measured post-import gate without changing OPT-002 status"
+    ],
+    "not_authorized": [
+      "alter any analyst response or resolve the abstention",
+      "overwrite any existing assessment or manual label",
+      "providers, network access, rescoring, training, tuning, or recalibration",
+      "reserve activation or additional review",
+      "change optimization-status.json or promote/close OPT-002",
+      "change thresholds, classifier behavior, or production policy"
+    ],
+    "post_execution_gate": "A separate result PR must prove the exact transaction and measured cohort. Any OPT-002 promotion or closure requires a later explicit scope decision after that result is reviewed."
+  },
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the OPT-002 review import and gate assessment described by opt-002-review-import-receipt-2026-08-10.json, limited to one atomic offline import of exactly 12 project-owner assessments and 11 corresponding manual classifier labels from the digest-frozen bounded-review result, preservation of the one insufficient-evidence response as an assessment-only abstention, and a read-only post-import gate report, with ceilings of 10 minutes, 10 MiB new data, 12 assessment inserts, 11 manual label upserts, and exactly zero other store mutations, network reads, uploads, provider calls, tokens, cost, rescoring, or model training. Response changes, additional review, reserve activation, tuning, recalibration, production-policy changes, and OPT-002 promotion or closure remain excluded."
+  }
+}

@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "frozen_at": "2026-08-18",
+  "optimization": "OPT-014",
+  "status": "authorization-pending",
+  "protocol": {
+    "path": "opt-014-offline-eligibility-audit-protocol-2026-08-18.json",
+    "sha256": "103fab4713ef82c170a5f5cb6894bd5bc554ff683cc6d88b6defb4237699d141"
+  },
+  "scope": "Run one aggregate-only offline read-only audit of the digest-frozen production store, current risk-quant configuration and priors, and the two named quantitative methodology documents to determine whether structurally eligible organization/incident evidence exists for any later OPT-014 evaluation path.",
+  "preconditions": {
+    "branch": "main",
+    "head": "1f1dba7a30a86d957510608c25e94077b15d2e8d",
+    "production_store": {
+      "path": "../../data/repoauditor.db",
+      "sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a"
+    },
+    "optimization_status": {
+      "status": "open",
+      "gate": "data",
+      "next_priority": 1
+    },
+    "network_required": false
+  },
+  "authorized_files": {
+    "helper": "../../src/repoauditor/eval/quant_eligibility.py",
+    "tests": [
+      "../../tests/test_opt_014_eligibility_audit.py",
+      "../../tests/test_opt_014_eligibility_audit_receipt.py"
+    ],
+    "artifact": "../../data/artifacts/opt014-eligibility-audit.json",
+    "result": "opt-014-offline-eligibility-audit-result-2026-08-18.json"
+  },
+  "authorized_observations": [
+    "SQLite table and column names, declared constraints, aggregate row counts, aggregate methodology-version counts, and aggregate null/completeness counts.",
+    "Configured prior population, effective-date, data-vintage, aleatory-representation, and epistemic-status completeness.",
+    "Configured organization revenue-band applicability state.",
+    "Aggregate structural availability of organization-period outcomes, incident counts, realized losses, observation windows, cohort dimensions, time-stamped interventions, portfolio units, dependency evidence, objectives, and constraints.",
+    "Aggregate classification of current simulations and findings as ineligible model-generated or finding evidence rather than observed incident/loss outcomes."
+  ],
+  "result_contract": {
+    "identity_disclosure": 0,
+    "raw_outcome_values": 0,
+    "capacity_states": ["structurally-present", "structurally-absent"],
+    "data_gate_may_be_cleared": false,
+    "adequacy_threshold_may_be_selected": false,
+    "holdout_or_cohort_may_be_selected": false,
+    "next_step": "One result must recommend a separately authorized evaluation protocol if observed capacity is present, or a choice among descriptive prior-predictive diagnostics, governed data acquisition, and bounded closure if it is absent."
+  },
+  "resource_ceilings": {
+    "maximum_elapsed_minutes": 10,
+    "maximum_new_data_bytes": 1048576,
+    "audit_runs": 1,
+    "network_reads": 0,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "production_store_mutations": 0,
+    "schema_migrations": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "simulation_runs": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0
+  },
+  "stop_conditions": [
+    "Any protocol, production-store, configuration, priors, methodology-document, lifecycle, branch, or HEAD precondition differs from its frozen value.",
+    "The store cannot be opened read-only or its before/after digest differs.",
+    "Any row identity, raw finding, assessment, label, incident, loss, source content, score, or simulation value would be emitted.",
+    "Any simulation, prior-predictive generation, fit, model comparison, backtest, resample, holdout selection, cohort selection, threshold selection, or portfolio optimization is attempted.",
+    "Any network activity, provider activity, store mutation, schema migration, assessment, label, training, rescore, new prior, category allocation, remediation-effect estimate, dependency assumption, policy change, OPT-014 status change, OPT-010 execution, branch integration, remote push, or deployment is attempted.",
+    "Any resource ceiling is reached or a focused offline test, JSON validation, digest check, or aggregate accounting invariant fails."
+  ],
+  "completion_boundary": "After one aggregate audit artifact and one bound descriptive result are persisted with passing focused tests and a byte-identical production store, stop. OPT-014 remains open and data-gated; no predictive report, acquisition, fitting, policy, lifecycle, branch, or deployment action is authorized.",
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the OPT-014 offline data-eligibility and instrument audit described by opt-014-offline-eligibility-audit-receipt-2026-08-18.json, limited to one aggregate-only read-only audit of the digest-frozen production store, current risk-quant configuration and priors, and the frozen prior-scope and organization-frequency methodology documents; aggregate schema, row-count, methodology, population-metadata, and completeness inspection; structural classification of capacity for descriptive prior-predictive plumbing, independent held-out validation and backtesting, hierarchical cohorts, remediation-effect analysis, and portfolio modeling; one helper, focused tests, aggregate artifact, and descriptive result; with ceilings of 10 minutes, 1 MiB new data, and exactly zero network reads, uploads, provider calls, tokens, cost, production-store mutations, schema migrations, assessments, labels, simulation runs, model training, or rescoring. Row identities, raw findings or outcomes, source rendering, simulation or prior-predictive generation, fitting, model comparison, backtesting, resampling, holdout or cohort selection, adequacy thresholds, new priors, category allocation, remediation-effect estimates, dependency assumptions, portfolio optimization, tuning, recalibration, threshold selection or recommendation, production-policy changes, OPT-014 promotion or closure, OPT-010 execution, branch integration, remote push, and deployment remain excluded."
+  }
+}

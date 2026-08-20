@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-009",
+  "status": "authorization-pending",
+  "created_at": "2026-08-13",
+  "scope": "Perform one final non-cohort diagnosis of the failed OPT-009 positive semantic canary. First prove offline how displayed line-number prefixes interact with exact citation canonicalization; then, only if all offline integrity checks pass, make one no-retry exact frozen-prompt repeat and one no-retry diagnostic-clarification call over the same pre-frozen OWASP Benchmark positive. Persist only aggregate citation-validation and deterministic transformation-category counts, usage, cost, and a close-or-correct recommendation; stop without changing the production instrument or OPT-009 status.",
+  "retained_evidence": {
+    "qualification_result": {
+      "path": "opt-009-instrument-qualification-result-2026-08-13.json",
+      "sha256": "d04575d1d2e68d7a52119a19da4029576b2a9dbecd7f52b551e442ba9be4ee60"
+    },
+    "qualification_execution": {
+      "path": "../../data/artifacts/opt009-instrument-qualification/result.json",
+      "sha256": "1602ace7014c3850fb57c0f898df5951847023c8fc9a1f74ce20c8db14b92b0d"
+    },
+    "qualification_scratch_store": {
+      "path": "../../data/artifacts/opt009-instrument-qualification/scratch.sqlite",
+      "sha256": "9c4a31f84097f5d268d5acc4026df15698220b2613d46b1e6b95c9d87b8380cd"
+    },
+    "production_store": {
+      "path": "../../data/repoauditor.db",
+      "sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a"
+    }
+  },
+  "frozen_inputs": {
+    "provider": "anthropic",
+    "model": "claude-opus-4-8",
+    "lens": "owasp",
+    "prompt_version": "owasp_v3+untrusted_repository_content_v1+detection_context_v2",
+    "owasp_prompt": {
+      "path": "../../src/repoauditor/detect/lenses/owasp_v3.md",
+      "sha256": "d303fa95e6906af8553fe704b0215c788f132e038e7b7cb7810db35d15ef4172"
+    },
+    "ensemble": {
+      "path": "../../src/repoauditor/detect/ensemble.py",
+      "sha256": "7f0657bb2f9eef23fac79bc393259f5294daf8f4252e046ec4995e184bde31a1"
+    },
+    "source_rendering": {
+      "path": "../../src/repoauditor/sourcefiles.py",
+      "sha256": "133f5b71bb12ecc42921fc62f45836b306e6121d78fdf1cfdcb4c41de18174cc"
+    },
+    "benchmark_ground_truth": {
+      "path": "../../tests/fixtures/owasp_benchmark_py/expected_findings.json",
+      "sha256": "e495debbd254a35b57bd0c8dc3beea063bc6b022b80b2581dc5762e97b3df22d"
+    },
+    "benchmark_positive": {
+      "case": "BenchmarkTest00099",
+      "path": "../../tests/fixtures/owasp_benchmark_py/snapshot/testcode/BenchmarkTest00099.py",
+      "sha256": "70a1ae553181b4ea78e6dec87c0c7ca73fdf1a9babbfeec062ea3465a8e64f8c",
+      "expected_citation_anchor": "cur.execute(sql)"
+    },
+    "diagnostic_clarification": {
+      "path": "opt-009-citation-diagnostic-clarification-2026-08-13.md",
+      "sha256": "55ce4c55ad08e4b184d906505a8f56d6f841bd38bdc8369d1b5cee3794614ecf",
+      "production_eligible": false
+    },
+    "maximum_region_utf8_bytes": 240000,
+    "maximum_complete_request_utf8_bytes": 320000,
+    "provider_retries": 0
+  },
+  "offline_diagnosis": {
+    "network_reads": 0,
+    "production_store_mode": "read-only",
+    "required_checks": [
+      "verify every retained, instrument, benchmark, diagnostic, pricing, and production-store digest",
+      "prove an exact unnumbered benchmark citation canonicalizes under the frozen boundary",
+      "prove the same citation with the displayed NUMBER<TAB> prefix fails exact canonicalization",
+      "prove deterministic removal of only the displayed NUMBER<TAB> prefix recovers the exact citation without changing source code characters",
+      "prove both prospective diagnostic requests fit the frozen region and complete-content byte ceilings",
+      "prove the production store remains byte-identical"
+    ],
+    "pass_gate": "Every check must pass before provider use. Otherwise persist one offline-only inconclusive result recommending closure and stop with zero provider attempts."
+  },
+  "provider_diagnosis": {
+    "artifact_directory": "../../data/artifacts/opt009-citation-diagnosis",
+    "scratch_store": "../../data/artifacts/opt009-citation-diagnosis/scratch.sqlite",
+    "source": "Only the numbered public source of BenchmarkTest00099 may be transmitted.",
+    "call_one": "Use the exact frozen OWASP prompt and schema once, with no retry. Classify each schema-valid citation in memory as exact, display-prefix-recoverable, other-nonverbatim, ambiguous, or absent, then discard raw output.",
+    "call_two": "Only if call one records authoritative usage, append the frozen diagnostic-only clarification to the exact system prompt and call the same source and schema once, with no retry. Apply the same aggregate in-memory classification and discard raw output.",
+    "ground_truth_transfer": false,
+    "raw_output_persistence": false,
+    "finding_persistence": false,
+    "diagnosis_success_gate": "A bounded line-prefix diagnosis is supported only if the exact frozen repeat has no exact citation, at least one citation becomes exact after removal of only displayed NUMBER<TAB> prefixes, and the clarified call returns at least one exact citation matching the pre-frozen upstream sink anchor. Any other pattern is inconclusive.",
+    "success_effect": "Recommend, but do not implement, a separately versioned prompt/rendering correction followed by fresh non-cohort qualification. Planner v2 and source activation remain deferred.",
+    "inconclusive_effect": "Recommend closing OPT-009 at its current scope. Closure and branch integration remain separately authorized actions."
+  },
+  "resource_ceilings": {
+    "elapsed_minutes": 20,
+    "new_data_bytes": 10485760,
+    "network_hosts": ["api.anthropic.com"],
+    "uploads": 0,
+    "provider_attempts": 2,
+    "provider_reported_tokens": 30000,
+    "known_dated_price_cost_usd": 0.5,
+    "scratch_model_usage_inserts": 2,
+    "scratch_validation_failure_inserts": 2,
+    "production_store_mutations": 0,
+    "repository_materializations": 0,
+    "scanner_processes": 0,
+    "human_reviews": 0,
+    "assessments": 0,
+    "labels": 0,
+    "model_training_runs": 0
+  },
+  "pricing": {
+    "path": "opt-006-provider-pricing-2026-08-01.json",
+    "sha256": "6d3004e55c577b968513d114fb986156798582017f809f8b09826035e7210649"
+  },
+  "stop_conditions": [
+    "Any bound digest differs, the offline diagnosis fails, or the production store changes.",
+    "Any host other than api.anthropic.com is contacted or any source other than BenchmarkTest00099 is transmitted.",
+    "Any retry, third provider attempt, ground-truth transfer, raw-output persistence, source excerpt persistence, or finding persistence is attempted.",
+    "An attempt lacks authoritative usage, reported tokens exceed 30,000, known dated-price cost exceeds $0.50, elapsed time exceeds 20 minutes, or new data exceeds 10 MiB.",
+    "Any production prompt, rendering, citation, planner, threshold, source selection, policy, optimization status, branch, or remote state is changed."
+  ],
+  "result_boundary": "One aggregate diagnosis result may identify only deterministic citation-format categories, call-level schema/exact/anchor counts, authoritative usage, cost, resource compliance, store immutability, and either bounded-correction-supported or inconclusive-close-recommended. It may not disclose raw citations, source excerpts, candidate identities, severity, confidence, rationales, or prospective outcomes; implement a correction; clear the data gate; close OPT-009; merge; or push.",
+  "authorization": {
+    "required_statement": "I authorize the OPT-009 final citation diagnosis described by opt-009-citation-diagnosis-receipt-2026-08-13.json, limited first to one offline exact-citation versus displayed-line-prefix canonicalization audit over the frozen BenchmarkTest00099 positive and production-store immutability check, and only if every offline gate passes, one no-retry repeat using the exact frozen OWASP prompt followed, only with authoritative first-call usage, by one no-retry call over the same public source with the frozen diagnostic-only line-prefix clarification; in-memory aggregate classification of citations as exact, display-prefix-recoverable, other-nonverbatim, ambiguous, or absent; scratch-only usage and sanitized validation chronology; and one aggregate diagnosis result recommending either a separately authorized bounded correction or OPT-009 closure, with ceilings of 20 minutes, 10 MiB new data, only api.anthropic.com network access, at most two provider attempts, 30,000 provider-reported tokens, $0.50 known dated-price cost, two scratch model-usage inserts, two scratch validation-failure inserts, and exactly zero production-store mutations, repository materializations, scanner processes, human reviews, assessments, labels, or model training. Ground-truth transfer, raw provider-output or source-excerpt persistence, finding or candidate persistence or disclosure, retries, production prompt or rendering changes, planner v2, remaining-primary or reserve activation, rescoring, tuning, recalibration, threshold selection, packet selection, production-policy changes, OPT-009 status change or closure, branch integration, and remote push remain excluded."
+  }
+}

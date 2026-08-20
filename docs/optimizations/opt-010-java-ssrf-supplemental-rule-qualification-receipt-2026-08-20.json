@@ -1,0 +1,308 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-010",
+  "status": "authorization-pending",
+  "objective": "Qualify one isolated RepoAuditor-owned Java Spring RestTemplate SSRF signal against six frozen synthetic controls without modifying or promoting the production supplemental ruleset.",
+  "frozen_inputs": {
+    "scanner_cell_acceptance_result": {
+      "path": "docs/optimizations/opt-010-java-ruby-scanner-cell-coverage-corrected-acceptance-result-2026-08-20.json",
+      "sha256": "51239ba31b8473dd683cb9e75ac4c32a5d8b9362d0a1b4cf6e4775dd2cb0bca4"
+    },
+    "scanner_cell_acceptance_artifact": {
+      "path": "data/artifacts/opt010-java-ruby-scanner-cell-coverage/acceptance-artifact.json",
+      "sha256": "0228a7fca978a9a9f0df40fd2d50cf1a46ac373011c2f0796e04bce791a2af6c"
+    },
+    "retained_java_positive_fixture": {
+      "path": "data/artifacts/opt010-java-ruby-scanner-cell-coverage/fixtures/java-ssrf-positive/FetchController.java",
+      "sha256": "4d83374879c245d526aead0982e48452749e4bdd6ac4d229f1effd2bb6bece13"
+    },
+    "retained_java_clean_fixture": {
+      "path": "data/artifacts/opt010-java-ruby-scanner-cell-coverage/fixtures/java-ssrf-clean/FetchController.java",
+      "sha256": "8fd196b4b983531c9c5f13ca8998829148d4f5e8738c49e86776fe9de1db32a4"
+    },
+    "production_supplemental_ruleset": {
+      "path": "src/repoauditor/detect/deterministic/semgrep-supplemental.yml",
+      "sha256": "e3b5ce91d91dcf194eff6fd1a0cdb9b6214a31a71b661075534d919143017963"
+    },
+    "production_store_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a"
+  },
+  "frozen_instruments": {
+    "semgrep_runtime": {
+      "path": "src/repoauditor/eval/semgrep_runtime.py",
+      "sha256": "b908ac266f923f35fea290436e11959c11a49829e4566b89c444b25056a3a257"
+    },
+    "sast_adapter": {
+      "path": "src/repoauditor/detect/deterministic/sast_adapter.py",
+      "sha256": "ff7790a1df8aa9cd01752b9865db2578165e9b4a7d83faed3b21023510ca7893"
+    },
+    "semgrep_provenance": {
+      "path": "src/repoauditor/detect/deterministic/provenance.py",
+      "sha256": "1500114a953bfee20a03e85d95663ba9c689909d38a4c225a0507d64f70de679"
+    }
+  },
+  "candidate_rule_contract": {
+    "scratch_only": true,
+    "production_ruleset_edited": false,
+    "path": "data/artifacts/opt010-java-ssrf-supplemental-qualification/candidate-rule.json",
+    "canonical_json_sha256": "03aa9e47ca6e38efa7970a24a8f682ebc2f98029285b11014e50b6cb46636210",
+    "rule": {
+      "id": "repoauditor.java.spring.security.tainted-resttemplate-url",
+      "languages": [
+        "java"
+      ],
+      "severity": "WARNING",
+      "message": "A Spring request value reaches a RestTemplate URL argument. Review host allowlisting, attacker control, reachability, and exploitability; this match is not an automatic SSRF disposition.",
+      "metadata": {
+        "cwe": [
+          "CWE-918: Server-Side Request Forgery (SSRF)"
+        ],
+        "category": "security",
+        "confidence": "MEDIUM",
+        "technology": [
+          "java",
+          "spring"
+        ],
+        "source": "repoauditor-supplemental-opt010-qualification-v1"
+      },
+      "mode": "taint",
+      "pattern-sources": [
+        {
+          "patterns": [
+            {
+              "pattern-either": [
+                {
+                  "pattern-inside": "$METHODNAME(..., @$REQ(...) $TYPE $SOURCE,...) {\n  ...\n}"
+                },
+                {
+                  "pattern-inside": "$METHODNAME(..., @$REQ $TYPE $SOURCE,...) {\n  ...\n}"
+                }
+              ]
+            },
+            {
+              "metavariable-regex": {
+                "metavariable": "$REQ",
+                "regex": "^(RequestBody|PathVariable|RequestParam|RequestHeader|CookieValue|ModelAttribute)$"
+              }
+            },
+            {
+              "focus-metavariable": "$SOURCE"
+            }
+          ]
+        },
+        {
+          "pattern": "(HttpServletRequest $REQUEST).getParameter(...)"
+        }
+      ],
+      "pattern-sinks": [
+        {
+          "patterns": [
+            {
+              "pattern-either": [
+                {
+                  "pattern": "(RestTemplate $REST).getForObject($URL, ...)"
+                },
+                {
+                  "pattern": "(RestTemplate $REST).getForEntity($URL, ...)"
+                },
+                {
+                  "pattern": "(RestTemplate $REST).exchange($URL, ...)"
+                }
+              ]
+            },
+            {
+              "focus-metavariable": "$URL"
+            }
+          ]
+        }
+      ]
+    },
+    "claim": "The candidate detects only a synthetic mechanism signal in which a frozen Spring request source reaches one of three RestTemplate URL-argument forms.",
+    "not_a_claim": [
+      "Every match is exploitable SSRF.",
+      "Every matched URL is attacker-controlled at runtime.",
+      "The matched call is reachable in a deployed product.",
+      "The candidate estimates production precision or recall.",
+      "The candidate covers Java HTTP clients other than the three frozen RestTemplate forms."
+    ]
+  },
+  "frozen_control_contract": {
+    "freeze_before_runtime_or_scanner_activity": true,
+    "ordered_controls": [
+      {
+        "order": 1,
+        "id": "retained-request-param-uri-positive",
+        "expectation": "raised-exactly-once",
+        "path": "controls/01-retained-request-param-uri-positive/FetchController.java",
+        "source_lines": [
+          "import java.net.URI;",
+          "import org.springframework.web.bind.annotation.GetMapping;",
+          "import org.springframework.web.bind.annotation.RequestParam;",
+          "import org.springframework.web.client.RestTemplate;",
+          "",
+          "class FetchController {",
+          "  @GetMapping(\"/fetch\")",
+          "  String fetch(@RequestParam String url) {",
+          "    return new RestTemplate().getForObject(URI.create(url), String.class);",
+          "  }",
+          "}"
+        ]
+      },
+      {
+        "order": 2,
+        "id": "retained-fixed-uri-clean",
+        "expectation": "absent",
+        "path": "controls/02-retained-fixed-uri-clean/FetchController.java",
+        "source_lines": [
+          "import org.springframework.web.client.RestTemplate;",
+          "",
+          "class FetchController {",
+          "  private static final String HEALTH_URL = \"https://example.invalid/health\";",
+          "  String fetchHealth() {",
+          "    return new RestTemplate().getForObject(HEALTH_URL, String.class);",
+          "  }",
+          "}"
+        ]
+      },
+      {
+        "order": 3,
+        "id": "request-param-direct-positive",
+        "expectation": "raised-exactly-once",
+        "path": "controls/03-request-param-direct-positive/DirectController.java",
+        "source_lines": [
+          "import org.springframework.web.bind.annotation.GetMapping;",
+          "import org.springframework.web.bind.annotation.RequestParam;",
+          "import org.springframework.web.client.RestTemplate;",
+          "",
+          "class DirectController {",
+          "  @GetMapping(\"/direct\")",
+          "  String fetch(@RequestParam String url) {",
+          "    return new RestTemplate().getForObject(url, String.class);",
+          "  }",
+          "}"
+        ]
+      },
+      {
+        "order": 4,
+        "id": "servlet-parameter-entity-positive",
+        "expectation": "raised-exactly-once",
+        "path": "controls/04-servlet-parameter-entity-positive/ServletController.java",
+        "source_lines": [
+          "import jakarta.servlet.http.HttpServletRequest;",
+          "import org.springframework.web.client.RestTemplate;",
+          "",
+          "class ServletController {",
+          "  String fetch(HttpServletRequest request) {",
+          "    String url = request.getParameter(\"url\");",
+          "    return new RestTemplate().getForEntity(url, String.class).getBody();",
+          "  }",
+          "}"
+        ]
+      },
+      {
+        "order": 5,
+        "id": "assigned-constant-clean",
+        "expectation": "absent",
+        "path": "controls/05-assigned-constant-clean/ConfiguredClient.java",
+        "source_lines": [
+          "import org.springframework.web.client.RestTemplate;",
+          "",
+          "class ConfiguredClient {",
+          "  String fetch() {",
+          "    String url = \"https://example.invalid/health\";",
+          "    return new RestTemplate().getForObject(url, String.class);",
+          "  }",
+          "}"
+        ]
+      },
+      {
+        "order": 6,
+        "id": "request-param-no-network-sink-clean",
+        "expectation": "absent",
+        "path": "controls/06-request-param-no-network-sink-clean/EchoController.java",
+        "source_lines": [
+          "import org.springframework.web.bind.annotation.RequestParam;",
+          "",
+          "class EchoController {",
+          "  String echo(@RequestParam String url) {",
+          "    return url;",
+          "  }",
+          "}"
+        ]
+      }
+    ],
+    "acceptance_rule": "All three positive controls must contain exactly one result from the exact candidate rule with exactly CWE-918 metadata. All three clean controls must contain zero results. Every execution must be complete or empty with one scanned target, exact Semgrep 1.170.0 identity, the exact scratch-rule digest, and no parse, scan, or provenance error.",
+    "failure_policy": "Retain and report any parse failure, scanner failure, provenance drift, missing or duplicate positive match, or clean-control match. Do not edit the candidate, controls, expectations, or acceptance rule, and do not retry within this gate."
+  },
+  "runtime_contract": {
+    "artifact_directory": "data/artifacts/opt010-java-ssrf-supplemental-qualification",
+    "must_be_absent_before_authorization": true,
+    "semgrep_version": "1.170.0",
+    "installed_import_interpreter": "/opt/homebrew/Cellar/semgrep/1.170.0/libexec/bin/python",
+    "semgrep_binary": "/opt/homebrew/bin/semgrep",
+    "semgrep_log_file": "data/artifacts/opt010-java-ssrf-supplemental-qualification/semgrep.log",
+    "semgrep_version_cache_path": "data/artifacts/opt010-java-ssrf-supplemental-qualification/semgrep-version-cache",
+    "requirements": [
+      "Verify every frozen input, instrument, production ruleset, store, branch, empty index, exact installed interpreter and binary path, and initially absent output before writing.",
+      "Create the isolated artifact directory and persist the exact candidate rule, all six controls, and one digest manifest before any Semgrep-capable process.",
+      "Bind SEMGREP_LOG_FILE and SEMGREP_VERSION_CACHE_PATH to the isolated directory for the one import-only runtime check and all six scanner processes; seed a fresh version cache with the frozen helper.",
+      "Do not probe the project .venv, run a standalone Semgrep CLI version command, use registry rules, contact semgrep.dev, install or downgrade a tool, run a general canary, or retry."
+    ]
+  },
+  "execution": {
+    "helper": "src/repoauditor/eval/opt010_java_ssrf_supplemental_qualification.py",
+    "focused_test": "tests/test_opt_010_java_ssrf_supplemental_qualification.py",
+    "artifact": "data/artifacts/opt010-java-ssrf-supplemental-qualification/qualification-artifact.json",
+    "result": "docs/optimizations/opt-010-java-ssrf-supplemental-rule-qualification-result-2026-08-20.json",
+    "sequence": [
+      "Verify immutable bindings and absence.",
+      "Freeze the scratch candidate, six controls, and manifest.",
+      "Perform one import-only exact-runtime check without starting the Semgrep CLI.",
+      "Run exactly six ordered scratch-rule scans with no retry.",
+      "Persist one aggregate qualification artifact and result, verify all boundaries, and stop."
+    ]
+  },
+  "resource_ceilings": {
+    "maximum_elapsed_minutes": 10,
+    "maximum_new_data_bytes": 5242880,
+    "runtime_import_checks": 1,
+    "logical_scanner_processes": 6,
+    "network_reads_or_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "keychain_or_credential_reads": 0,
+    "repository_materializations": 0,
+    "repository_or_production_source_reads": 0,
+    "repository_code_executions": 0,
+    "production_store_database_reads": 0,
+    "production_store_mutations": 0,
+    "schema_migrations": 0,
+    "human_reviews": 0,
+    "outcomes_read": 0,
+    "assessments": 0,
+    "labels": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0,
+    "agentic_or_baseline_runs": 0,
+    "workspace_branch_or_index_mutations": 0,
+    "commits": 0,
+    "merges": 0,
+    "pushes": 0,
+    "lifecycle_changes": 0
+  },
+  "stop_conditions": [
+    "Any frozen input, instrument, production supplemental ruleset, store, branch, index, installed runtime, candidate, control, manifest, or initially absent output drifts.",
+    "The candidate or controls are not durable before runtime activity; the exact import fails; any scan is retried, partial, malformed, or uses a non-scratch configuration; or any acceptance criterion fails.",
+    "Any network, provider, credential, repository, production-source, production-database, outcome, assessment, label, training, rescoring, agentic, review, git-mutation, lifecycle, or production-ruleset activity occurs, or any ceiling is reached."
+  ],
+  "excluded": [
+    "editing the production supplemental ruleset, scanner adapter, provenance, runtime, parser, existing evidence, retained synthetic controls, production store, configuration, CLI, pipeline, or lifecycle",
+    "repository acquisition or source access, production finding or candidate generation, packet construction, source rendering to the project owner, architecture recovery, provider or Keychain use, paired execution, review, outcomes, assessments, and labels",
+    "candidate-rule tuning or retry, additional controls, other Java HTTP clients, production-rule promotion, retained-source rescanning, precision, recall, G03b or G04 decisions, threshold selection, training, rescoring, fitting, recalibration, production-policy changes, OPT-010 promotion or closure, integration, push, and deployment"
+  ],
+  "result_boundary": "A qualified result establishes only that the exact scratch rule recognizes all six frozen synthetic controls with exact provenance. It does not modify the production ruleset, establish real-source availability, finding correctness, precision, recall, packet feasibility, paired-arm performance, production readiness, or OPT-010 completion.",
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the OPT-010 offline Java SSRF supplemental-rule qualification described by opt-010-java-ssrf-supplemental-rule-qualification-receipt-2026-08-20.json, limited to one scratch-only frozen RepoAuditor Java Spring RestTemplate CWE-918 taint rule; three exact positive and three exact clean synthetic controls frozen before scanner activity; one exact import-only Semgrep 1.170.0 check using /opt/homebrew/Cellar/semgrep/1.170.0/libexec/bin/python with fresh isolated SEMGREP_LOG_FILE and SEMGREP_VERSION_CACHE_PATH bindings; exactly six ordered offline scratch-rule scans with exact rule, CWE, target, version, configuration-digest, and provenance validation and no retry; one aggregate artifact and qualification result; and byte-identical production supplemental ruleset and production store, with ceilings of 10 minutes, 5 MiB new data, one runtime import check, six logical scanner processes, and exactly zero network reads or uploads, provider calls, tokens, cost, Keychain or credential reads, repository materializations or production-source reads, repository-code executions, production-database reads or mutations, assessments, labels, training, rescoring, agentic or baseline runs, human reviews, outcomes, branch or index mutations, commits, merges, pushes, or lifecycle changes. Production-rule editing or promotion, candidate tuning or retry, additional controls or Java HTTP clients, retained-source rescanning, finding or packet activity, source rendering, architecture recovery, paired execution, precision, recall, G03b or G04 decisions, threshold selection, recalibration, production-policy changes, OPT-010 promotion or closure, integration, remote push, and deployment remain excluded."
+  }
+}

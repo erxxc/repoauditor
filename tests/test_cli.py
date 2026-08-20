@@ -766,7 +766,7 @@ def test_scanner_canaries_cli_writes_report_and_fails_closed(
     monkeypatch.setattr(
         cli,
         "run_scanner_canaries",
-        lambda timeout: SimpleNamespace(passed=True),
+        lambda timeout, scanners=None: SimpleNamespace(passed=True),
     )
     monkeypatch.setattr(
         cli,
@@ -774,9 +774,10 @@ def test_scanner_canaries_cli_writes_report_and_fails_closed(
         lambda report: '{"schema_version":1,"passed":true}\n',
     )
 
-    passed = runner.invoke(
-        cli.app, ["scanner-canaries", "--output", str(report_path)]
-    )
+    passed = runner.invoke(cli.app, [
+        "scanner-canaries", "--output", str(report_path),
+        "--scanner", "semgrep", "--scanner", "gitleaks",
+    ])
 
     assert passed.exit_code == 0, passed.output
     assert report_path.read_text() == '{"schema_version":1,"passed":true}\n'
@@ -784,7 +785,7 @@ def test_scanner_canaries_cli_writes_report_and_fails_closed(
     monkeypatch.setattr(
         cli,
         "run_scanner_canaries",
-        lambda timeout: SimpleNamespace(passed=False),
+        lambda timeout, scanners=None: SimpleNamespace(passed=False),
     )
     failed = runner.invoke(cli.app, ["scanner-canaries"])
 

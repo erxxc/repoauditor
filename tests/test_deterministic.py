@@ -16,7 +16,7 @@ from pathlib import Path
 import pytest
 
 import repoauditor.detect.ensemble as ensemble_module
-from repoauditor.detect import run_ensemble
+from repoauditor.detect import run_deterministic_detection, run_ensemble
 from repoauditor.detect.ensemble import CandidateFinding
 from repoauditor.detect.deterministic import SastAdapter, ScaAdapter, SecretsAdapter
 from repoauditor.detect.deterministic.execution import ScannerExecution
@@ -809,6 +809,31 @@ def test_ensemble_can_run_lens_only_when_tools_disabled(tmp_config, scripted_llm
 
     findings = db.list_findings(repo_id, cfg)
     assert findings and all(f.source_tool is None for f in findings)  # lens-only
+
+
+def test_precomputed_scanner_evidence_prevents_a_second_scanner_run(
+    tmp_config, scripted_llm, monkeypatch
+):
+    db.init_db(tmp_config)
+    cfg = tmp_config.model_copy(
+        update={"detect": tmp_config.detect.model_copy(
+            update={"run_deterministic_tools": False})})
+    repo_id = _ingest_and_map(cfg, scripted_llm)
+    deterministic = run_deterministic_detection(repo_id, cfg)
+
+    def unexpected_scanner_run(*_args, **_kwargs):
+        raise AssertionError("semantic detection reran deterministic scanners")
+
+    monkeypatch.setattr(
+        ensemble_module, "run_deterministic_detection", unexpected_scanner_run
+    )
+    result = run_ensemble(
+        repo_id, cfg, llm=scripted_llm, deterministic=deterministic
+    )
+
+    assert result.scanner_statuses
+    assert set(result.scanner_statuses.values()) == {"disabled"}
+    assert result.completed_region_calls > 0
 
 
 def test_completed_detection_regions_are_reused_without_model_calls(

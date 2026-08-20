@@ -1,0 +1,135 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-08-12",
+  "optimization": "OPT-003",
+  "status": "completed-atomic-final-label-import",
+  "authorization": "The project owner authorized one atomic offline append-only import for finding 2036 that preserved assessment 159, appended one project-owner not_attacker_controlled reassessment, inserted one corresponding non-actionable manual classifier label, and produced one read-only temporal gate report. All excluded activity remained excluded.",
+  "execution_receipt": {
+    "path": "opt-003-final-label-import-receipt-2026-08-12.json",
+    "sha256": "a0944b49ac58b711582fb7831880195b1cb9fa2699d6a1764402488e81d5671d"
+  },
+  "followup_result": {
+    "path": "opt-003-final-label-followup-result-2026-08-12.json",
+    "sha256": "d48a93550223e298ac6fb650ca19d40f703c0fc1a649072122dec419fcd8ade7"
+  },
+  "transaction": {
+    "execution_runs": 1,
+    "atomic": true,
+    "append_only": true,
+    "initial_store_sha256": "06a3d078ecc537600ed877639595adfebc993f36252e8fe5d56da3402b7dfa9b",
+    "pre_import_backup": "../../data/backups/repoauditor-opt003-final-label-import.sqlite",
+    "pre_import_backup_sha256": "06a3d078ecc537600ed877639595adfebc993f36252e8fe5d56da3402b7dfa9b",
+    "final_store_sha256": "a3d8e55feadf5860c079f1de18b698186afbae81ba6bf678717cdfe1f2cca11f",
+    "import_output": "../../data/artifacts/opt003-wave-2-runtime-retry/finding-2036-followup-import-result.json",
+    "import_output_sha256": "dca6bee109be33375baac3ad58479a25441ee9590def13545ea36c6d03626b7b",
+    "assessment_id": 160,
+    "label_id": 278,
+    "assessment_inserts": 1,
+    "assessment_updates": 0,
+    "assessment_deletes": 0,
+    "manual_label_inserts": 1,
+    "non_actionable_label_inserts": 1,
+    "label_updates": 0,
+    "label_deletes": 0,
+    "other_store_mutations": 0,
+    "prior_abstention_preserved": true,
+    "only_changed_tables": {
+      "triage_assessment": {
+        "before": 159,
+        "after": 160,
+        "all_prior_rows_byte_equal": true
+      },
+      "triage_label": {
+        "before": 157,
+        "after": 158,
+        "all_prior_rows_byte_equal": true
+      }
+    },
+    "unchanged_table_count": 28
+  },
+  "inserted_evidence": {
+    "assessment": {
+      "id": 160,
+      "finding_id": 2036,
+      "engagement": "opt003-wave2-actual",
+      "outcome": "false_positive",
+      "disposition": "not_attacker_controlled",
+      "analyst": "project owner",
+      "material": false,
+      "classifier_eligible": true
+    },
+    "label": {
+      "id": 278,
+      "engagement": "opt003-wave2-actual",
+      "rule_id": "javascript.express.security.audit.xss.direct-response-write.direct-response-write",
+      "finding_fingerprint": "65d056668c3a8375",
+      "actionable": false,
+      "source": "manual"
+    },
+    "preserved_assessment": {
+      "id": 159,
+      "finding_id": 2036,
+      "outcome": "uncertain",
+      "disposition": "insufficient_evidence",
+      "analyst": "project owner"
+    }
+  },
+  "measured_post_import": {
+    "triage_assessments": 160,
+    "triage_labels": 158,
+    "triage_model_runs": 41,
+    "model_usage_rows": 1473,
+    "finding_2036_assessments": 2,
+    "finding_2036_manual_labels": 1
+  },
+  "temporal_gate_report": {
+    "prospective_decided_labels": 40,
+    "prospective_positive": 6,
+    "prospective_negative": 34,
+    "genuine_evaluation_families": 8,
+    "separately_frozen_prediction_waves": 3,
+    "minimum_decided_labels": 40,
+    "minimum_evaluation_families": 8,
+    "minimum_prediction_waves": 2,
+    "label_count_condition_met": true,
+    "family_condition_met": true,
+    "both_classes_present": true,
+    "prediction_wave_condition_met": true,
+    "activation_conditions_met": true,
+    "remaining_shortfall": {
+      "decided_labels": 0,
+      "evaluation_families": 0,
+      "prediction_waves": 0,
+      "both_classes": 0
+    },
+    "basis": "The frozen leakage-safe cohort previously contained 39 decided labels (six positive, 33 negative) across eight families and three waves. The one authorized append-only non-actionable decision for existing prospective finding 2036 raises the cohort to exactly 40 decided labels (six positive, 34 negative) without adding a family or prediction wave."
+  },
+  "authorization_accounting": {
+    "new_data_bytes_before_this_result": 9065283,
+    "new_data_ceiling_bytes": 10485760,
+    "network_reads": 0,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "rescored_findings": 0,
+    "model_training_runs": 0,
+    "response_changes": 0,
+    "additional_reviews": 0,
+    "source_expansions": 0,
+    "ceiling_breaches": []
+  },
+  "not_executed": {
+    "tuning": true,
+    "recalibration": true,
+    "threshold_selection": true,
+    "production_policy_change": true,
+    "opt_003_promotion_or_closure": true,
+    "branch_merge": true
+  },
+  "disposition": {
+    "opt_003_status": "open-temporal-evaluation-report-gated",
+    "gate_status": "activation-floor-satisfied",
+    "recommended_next_step": "Freeze and separately authorize the protocol-required outcome-blind temporal evaluation report over the fixed prospective predictions and imported outcomes. Report fixed-threshold precision, recall, Brier score, class counts, family counts, and family-block uncertainty without rescoring, training, tuning, recalibration, threshold selection, production-policy change, status change, or branch merge."
+  }
+}

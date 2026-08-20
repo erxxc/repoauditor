@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-010",
+  "status": "offline-foundation-qualified",
+  "protocol_id": "opt010-g03b-g04-paired-evaluation-v1",
+  "input_bindings": {
+    "receipt_sha256": "d54d16ccbcae2511d6e45a46d11ff0d46c605be4252d0dfd90efdc64fde25f11",
+    "receipt_test_sha256": "2dfd0edc42050d45055f0a4c762d407ba1588ca682da8c4c1a685af1aed2775f",
+    "protocol_sha256": "a19f0790bdf5bc9042fcd50e1fe029871e089aa48a32eb2e88cf56b24e91e874",
+    "agent_prompt_sha256": "a736559e3a3c27e6c2e194db181bc223867e16d98b8304c3f6c3f4c109f0a8bb",
+    "helper_sha256": "cffbf7f107ae70dc4fefa5520fc08f82f0a634cdeb2988f19bb1419ac88d5790",
+    "focused_test_sha256": "e11160eabd6242ca7d36febacca7bfc667435db8a5317da48dd1a3db34de8ade",
+    "production_store_before_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a"
+  },
+  "qualified_contracts": {
+    "exact_two_arm_pairing": "passed",
+    "missing_and_duplicate_arm_failure": "passed",
+    "supported_language_mechanism_envelope": "passed",
+    "unsupported_outer_denominator_retention": "passed",
+    "read_only_tool_allowlist": "passed",
+    "snapshot_and_index_digest_binding": "passed",
+    "unknown_tool_failure": "passed",
+    "bounded_tool_configuration": "passed",
+    "blinded_outcome_requirement": "passed",
+    "actionable_recall_semantics": "passed",
+    "monotonic_no_silent_kill": "passed",
+    "pareto_no_worse_plus_strict_improvement": "passed",
+    "unknown_usage_failure": "passed",
+    "zero_denominator_failure": "passed",
+    "one_class_subgroup_unavailable": "passed"
+  },
+  "frozen_future_packet": {
+    "identities": 40,
+    "supported_source_families_required": 4,
+    "maximum_fraction_per_family": 0.5,
+    "selection": "outcome-blind family-mechanism-hash round-robin",
+    "shortfall": "insufficient-stop-no-substitution"
+  },
+  "denominators": {
+    "outer_subjects": 6,
+    "supported_subject_languages": 4,
+    "supported_mechanism_cells": 7,
+    "unsupported_outer_subject_languages": 2,
+    "unsupported_languages": ["Go", "Rust"]
+  },
+  "decision_contract": {
+    "G04": "overall and reportable-subgroup recall non-regression plus zero baseline-confirmed actionable identity lost by the agent",
+    "G03b": "G04 pass plus complete usage, available cost per validated issue, precision non-regression, Pareto no-worse, and at least one strict improvement",
+    "undefined_or_incomplete": "blocks pass without imputation or post-outcome repair"
+  },
+  "synthetic_qualification": {
+    "initial_tests_passed": 17,
+    "initial_tests_failed": 0,
+    "expected_pre_result_skip": 1,
+    "provider_or_live_cases": 0,
+    "prospective_identities": 0
+  },
+  "boundaries": {
+    "production_integration": false,
+    "prospective_snapshot_or_scanner_artifact_opened": false,
+    "finding_or_candidate_read_or_created": false,
+    "outcome_read": false,
+    "provider_or_credential_used": false,
+    "production_store_opened": false,
+    "workspace_git_mutated": false
+  }
+}

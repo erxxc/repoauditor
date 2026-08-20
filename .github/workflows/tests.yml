@@ -22,7 +22,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: uv sync --frozen --dev
-      - run: uv run pytest -m "not integration and not live"
+      - run: uv run pytest -m "not integration and not live and not local_evidence"
 
   scanner-deployment:
     name: scanner deployment / required

@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-014",
+  "protocol_id": "opt014-descriptive-prior-predictive-coherence-v1",
+  "status": "frozen-report-not-authorized",
+  "frozen_at": "2026-08-18",
+  "objective": "Describe the implications and internal coherence of the current organization-level all-event IRIS priors without fitting, validating, changing, or recommending them.",
+  "bound_inputs": {
+    "eligibility_audit_result": {
+      "path": "opt-014-offline-eligibility-audit-result-2026-08-18.json",
+      "sha256": "95c4166f7002ff09ad5e5278d6417e21581d3d0a19ceef8398b7c2e21f9b6454"
+    },
+    "eligibility_audit_artifact": {
+      "path": "../../data/artifacts/opt014-eligibility-audit.json",
+      "sha256": "682e6f8e0e0c701e06abd762f63e00a7008a8957d904243c76ca13890a9d37a1"
+    },
+    "priors": {
+      "path": "../../priors.yaml",
+      "sha256": "f6a49336a1e7aa72ed1e360e90649036364983b3792ddfd97a203d18d85287e9"
+    },
+    "configuration": {
+      "path": "../../config.toml",
+      "sha256": "30d8837bdb63b56a50aefb0cd9bc18a0a7173ac86cd8581d4af6f2b2b21f3d09"
+    },
+    "pure_simulation_engine": {
+      "path": "../../src/repoauditor/analyze/risk_quant.py",
+      "sha256": "bcea80fd03fd636cebfb3328f30beae48b64b6d197f3e5d3b96f0f60a18150ac"
+    },
+    "production_store": {
+      "path": "../../data/repoauditor.db",
+      "sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a"
+    }
+  },
+  "frozen_model": {
+    "methodology_version": "organization_all_event_v1",
+    "modeling_unit": "one anonymous organization-year",
+    "frequency_input": "frequency.industry_baseline.annual_probability_at_least_one",
+    "frequency_transformation": "lambda=-ln(1-p)",
+    "magnitude_input": "magnitude.industry_baseline median and p95",
+    "magnitude_transformation": "fit Lognormal(mu,sigma) with the configured median and p95",
+    "exposure": 1.0,
+    "control_strength": 0.0,
+    "loss_scale": 1.0,
+    "finding_membership": 0,
+    "validity_probability": 1.0,
+    "epistemic_parameter_sampling": false
+  },
+  "generation_contract": {
+    "trials": 200000,
+    "seed": 2014,
+    "batch_count": 20,
+    "trials_per_batch": 10000,
+    "raw_draws_persisted": false,
+    "store_or_simulation_run_persistence": false,
+    "fixed_annual_loss_exceedance_usd": [100000, 1000000, 10000000, 50000000, 100000000],
+    "aggregate_outputs": [
+      "source parameters and fitted mu/sigma",
+      "analytic expected event count and zero-event/at-least-one-event probabilities",
+      "simulated zero-loss fraction and annual-loss mean, median, p75, p90, p95, and p99",
+      "conditional-positive annual-loss mean, median, p90, p95, and p99",
+      "probability of exceeding each frozen dollar point",
+      "share of total simulated loss in the top one percent of organization-years",
+      "minimum and maximum batch mean and p95 as Monte Carlo stability diagnostics"
+    ]
+  },
+  "coherence_checks": [
+    "The transformed Poisson rate reproduces the configured annual probability of at least one event to absolute tolerance 1e-12.",
+    "The fitted lognormal reproduces the configured magnitude median and p95 to relative tolerance 1e-12.",
+    "The simulated zero-loss fraction is within 0.005 absolute of the analytic zero-event probability.",
+    "The annual-loss median is zero because the analytic zero-event probability exceeds one half.",
+    "Every reported exceedance probability is between zero and one and is nonincreasing as the frozen dollar point rises.",
+    "Repeating the fixed seed and inputs produces byte-identical aggregate JSON.",
+    "The production store remains byte-identical and no SimulationRun, RiskScenario, or PriorSource row is written."
+  ],
+  "interpretation_boundary": {
+    "permitted": [
+      "Describe internal source reproduction, skew, zero mass, tail concentration, fixed-point exceedance, and Monte Carlo batch variability.",
+      "State that these are implications of the configured industry baseline for an anonymous neutral organization-year.",
+      "Identify population applicability and epistemic uncertainty as unresolved limitations."
+    ],
+    "prohibited": [
+      "Claim calibration, predictive validity, accuracy, representativeness, decision quality, remediation value, or portfolio optimality.",
+      "Compare against observed outcomes, select a preferred model, fit parameters, infer cohorts, or recommend a threshold.",
+      "Treat Monte Carlo variability as epistemic prior uncertainty or confidence in real-world performance.",
+      "Use the results for deal, budget, risk-acceptance, remediation, or production-policy decisions."
+    ]
+  },
+  "decision_rule": "Passing coherence checks establishes only that the frozen implementation reproduces and consistently simulates the configured prior implications. It does not clear the OPT-014 data gate. The result must retain the choice between governed independent-data acquisition and bounded negative-feasibility closure.",
+  "excluded": [
+    "Network access, uploads, provider calls, tokens, or cost",
+    "Production-store reads beyond before/after hashing or any store mutation",
+    "Repository, finding, assessment, label, source, incident, loss, or organization identity access",
+    "Raw simulated draw persistence or persisted SimulationRun/RiskScenario/PriorSource rows",
+    "Observed-outcome validation, fitting, model comparison, backtesting, resampling, or adequacy thresholds",
+    "New or changed priors, hierarchical estimation, category allocation, remediation effects, dependencies, or portfolio optimization",
+    "Tuning, recalibration, threshold selection or recommendation, production-policy changes",
+    "OPT-014 promotion or closure, OPT-010 execution, branch integration, remote push, or deployment"
+  ]
+}

@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-08-11",
+  "optimization": "OPT-003",
+  "status": "completed-prospective-prediction-wave",
+  "authorization": "The project owner authorized the corrected wave-one retry with the original 122-label cutoff and three exact source commits, a workspace-bound Semgrep log, separated offline and advisory preflights, one new pre-acquisition model, deterministic acquisition/scanning, compatible predictions, and zero outcomes or providers.",
+  "receipt": {
+    "path": "opt-003-wave-1-corrected-receipt-2026-08-11.json",
+    "sha256": "dbf415de7f6f4e27793c39ecf0f97ba0da353e17fce7ad031b846fc2d4a4cfc2"
+  },
+  "preflight": {
+    "semgrep_log_file": "data/artifacts/opt003-wave-1-retry/semgrep.log",
+    "offline_report_sha256": "a0066252f3082a3cde8cdbfcc8c9e701315e90162f4c0eb6a37ffc5f0945d4ed",
+    "offline_scanners": ["semgrep", "semgrep-supplemental", "gitleaks"],
+    "offline_passed": true,
+    "advisory_report_sha256": "30941432a5cb8e954dad3177f0e3d3a59c7e8c102162c47396f713a614904c45",
+    "advisory_scanners": ["pip-audit", "osv-scanner"],
+    "advisory_hosts": ["pypi.org", "api.osv.dev", "osv.dev"],
+    "advisory_passed": true
+  },
+  "wave_model": {
+    "training_invocations": 1,
+    "trained_before_source_materialization": true,
+    "stopped_model_reused": false,
+    "effective_labels": 122,
+    "effective_label_sha256": "b56131b57e949fb8512773bc28cedfae56f598bf2a9ae233088e9d3726202d87",
+    "model_name": "randomforest",
+    "model_version": "1.9.0",
+    "feature_schema_version": "sha256:89450a98dd4cdc1c",
+    "calibration": "isotonic",
+    "model_artifact_sha256": "b1d118ec8246e7e24ee46d2626a09eebcf84cab182ef582443c48cd4a866f6f5",
+    "model_metadata_sha256": "29a3cf91e5508c3ba24b350dc8137573a15e2412d7efde4bb1a9e067dc323698",
+    "scoring_provenance_rows": [36, 37, 38]
+  },
+  "repositories": [
+    {
+      "repo_id": "opt003-wave1-chatwoot",
+      "evaluation_family": "independent-upstream:chatwoot/chatwoot",
+      "commit": "9a9be2f919662b0408b1910be3a07c3f94fbbc6c",
+      "pipeline_run": 108,
+      "scanner_statuses": {"semgrep": "complete", "semgrep-supplemental": "empty", "pip-audit": "not-applicable", "osv-scanner": "complete", "gitleaks": "complete"},
+      "raw_findings": 530,
+      "triage_features": 384,
+      "persisted_scores": 385,
+      "score_started_at": "2026-08-11 11:31:27",
+      "score_completed_at": "2026-08-11 11:31:28"
+    },
+    {
+      "repo_id": "opt003-wave1-linkwarden",
+      "evaluation_family": "independent-upstream:linkwarden/linkwarden",
+      "commit": "4ce789dfb248a032e0f5a8af580fc3cdbc141c21",
+      "pipeline_run": 109,
+      "scanner_statuses": {"semgrep": "complete", "semgrep-supplemental": "empty", "pip-audit": "not-applicable", "osv-scanner": "complete", "gitleaks": "empty"},
+      "raw_findings": 174,
+      "triage_features": 30,
+      "persisted_scores": 30,
+      "score_started_at": "2026-08-11 11:32:23",
+      "score_completed_at": "2026-08-11 11:32:23"
+    },
+    {
+      "repo_id": "opt003-wave1-paperless",
+      "evaluation_family": "independent-upstream:paperless-ngx/paperless-ngx",
+      "commit": "855669ddf93e25fe5c45420781e191a7df63884d",
+      "pipeline_run": 110,
+      "scanner_statuses": {"semgrep": "complete", "semgrep-supplemental": "empty", "pip-audit": "not-applicable", "osv-scanner": "complete", "gitleaks": "complete"},
+      "raw_findings": 79,
+      "triage_features": 34,
+      "persisted_scores": 34,
+      "score_started_at": "2026-08-11 11:34:13",
+      "score_completed_at": "2026-08-11 11:34:13"
+    }
+  ],
+  "accounting": {
+    "initial_store_sha256": "d34e2ff9bf8946209686c47a15ed4428ada11c1b08afc05705be8b7adb3107eb",
+    "final_store_sha256": "28fa29ad0660dd75f78ee69ee3d82b5d6a97beb4d265528f19e3ef91798bb3aa",
+    "new_data_kib": 388912,
+    "new_data_ceiling_kib": 15728640,
+    "repositories": 3,
+    "raw_findings": 783,
+    "persisted_scores": 449,
+    "triage_assessments_before": 123,
+    "triage_assessments_after": 123,
+    "triage_labels_before": 129,
+    "triage_labels_after": 129,
+    "model_usage_rows_before": 1473,
+    "model_usage_rows_after": 1473,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "human_reviews": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "ceiling_breaches": []
+  },
+  "not_executed": {
+    "packet_selection": true,
+    "candidate_disclosure_for_review": true,
+    "source_rendering": true,
+    "human_review": true,
+    "second_wave": true,
+    "rescoring": true,
+    "tuning": true,
+    "recalibration": true,
+    "threshold_selection": true,
+    "production_policy_change": true
+  },
+  "disposition": {
+    "opt_003_status": "open-wave-one-packet-gated",
+    "recommended_next_step": "Review and merge this prediction result, then freeze an outcome-blind packet-selection receipt over only eligible production/deployment findings from the three immutable scored inventories. Scores, ranks, expected classes, review, and outcomes remain excluded."
+  }
+}

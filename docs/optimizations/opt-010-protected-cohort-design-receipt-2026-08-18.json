@@ -1,0 +1,147 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-010",
+  "status": "authorization-pending",
+  "frozen_at": "2026-08-18",
+  "objective": "Freeze the outcome-blind G02/G05 protected-cohort and subgroup eligibility contract, classify only the aggregate capacity of already-documented local source classes, and calculate prospective design requirements without selecting or acquiring a source, reading an outcome, or running an agent.",
+  "frozen_inputs": {
+    "untouched_production_selection_plan": {
+      "path": "docs/untouched-production-selection-plan-2026-07-28.json",
+      "sha256": "884be4e6c29367c7d11e481dbb3a16481e522d9de5065531519f22bd7b30e85a"
+    },
+    "independent_acquisition_protocol": {
+      "path": "docs/optimizations/opt-002-independent-acquisition-protocol-2026-08-07.json",
+      "sha256": "202a435a6ddd62e228dbc516a03cf526bce842b2bf9b7fed1bcc76e534fbddab"
+    },
+    "fixture_inventory_metadata": {
+      "path": "tests/fixtures/README.md",
+      "sha256": "f485ef50bb80b8206582cfcea40a08e9316745b731f08f32a3333ffdaa8f75f1"
+    },
+    "triage_accuracy_roadmap": {
+      "path": "docs/triage-accuracy-roadmap.md",
+      "sha256": "68f2523942cc48c2eb6243c39463ff3d442265b45db662418e7b413271a22732"
+    },
+    "containment_artifact": {
+      "path": "docs/optimizations/opt-010-offline-containment-foundation-artifact-2026-08-18.json",
+      "sha256": "38a3502552339805a8b0855321e1356a902594232ace506ddf8988544942a502"
+    },
+    "containment_result": {
+      "path": "docs/optimizations/opt-010-offline-containment-foundation-result-2026-08-18.json",
+      "sha256": "fbfb13771a6cdc4d2fae23d7d6985a025d78e5481fd853a1f8719f17cc627c51"
+    },
+    "agentic_gate": {
+      "path": "docs/agentic-escalation-gate.md",
+      "sha256": "17112f367776373eba27c754311e99a982ddab3a3c65bb7f85afd50eb66767dd"
+    },
+    "production_store": {
+      "path": "data/repoauditor.db",
+      "sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+      "access": "before-and-after-hash-only"
+    }
+  },
+  "design_contract": {
+    "source_independence": [
+      "A protected source family must be absent from development, training, prompt construction, detector construction, scanner qualification, prior evaluation, and human-review source pools before its protection timestamp.",
+      "Repositories, forks, upstream/downstream mirrors, release variants, and pre/post snapshots sharing one upstream product lineage count as one source family.",
+      "Benchmark, synthetic, recovery-demonstration, previously rendered, and previously outcome-assessed sources are ineligible for the protected cohort."
+    ],
+    "subject_identity": [
+      "A future subject identity must bind one source-family identifier, repository identity, exact commit, immutable snapshot digest, detector-input digest, architecture-map digest, and protocol version before execution.",
+      "Paired variants remain one subject family and may not be split across protected and comparison populations.",
+      "Identity materialization and disclosure are not authorized by this receipt."
+    ],
+    "subgroup_metadata": {
+      "dimensions": [
+        "source_family",
+        "mechanism",
+        "language",
+        "detector_provenance"
+      ],
+      "rules": [
+        "Every value must come from frozen pre-outcome metadata or authoritative execution provenance.",
+        "Missing or ambiguous metadata is recorded as unavailable and may not be inferred from findings, outcomes, scores, or model output.",
+        "A subgroup may be reported only when its membership rule and denominator were frozen before any outcome was available."
+      ]
+    },
+    "terminal_observation_completeness": [
+      "Every later comparison arm must have an explicit terminal state under the same frozen protocol.",
+      "Provider usage is authoritative only when returned by the provider; rejected attempts with unavailable usage remain unavailable and are never assigned zero.",
+      "Verifier, parser, tool-call, budget, timeout, and abstention terminal states must be retained, including failures.",
+      "No incomplete subject may be silently removed from a denominator."
+    ],
+    "aggregate_inventory_classes": [
+      "eligible-unexposed-independent",
+      "development-or-training-exposed",
+      "benchmark-or-synthetic",
+      "previously-protected-or-evaluated",
+      "insufficient-metadata"
+    ],
+    "prospective_sufficiency_calculations": {
+      "permitted": [
+        "aggregate counts available under each inventory class",
+        "minimum identities implied by candidate family-by-mechanism-by-language coverage matrices",
+        "terminal-completeness denominators and attrition bounds",
+        "comparison against the frozen roadmap's historical 40-decided-identity descriptive reference"
+      ],
+      "not_permitted": [
+        "selecting or recommending an adequacy threshold",
+        "choosing a cohort, source family, repository, candidate, holdout, or packet",
+        "using outcomes, findings, scores, ranks, severity, confidence, or expected performance"
+      ]
+    }
+  },
+  "execution": {
+    "allowed_outputs": [
+      "docs/optimizations/opt-010-protected-cohort-design-2026-08-18.json",
+      "docs/optimizations/opt-010-protected-cohort-eligibility-artifact-2026-08-18.json",
+      "docs/optimizations/opt-010-protected-cohort-design-result-2026-08-18.json",
+      "tests/test_opt_010_protected_cohort_design.py"
+    ],
+    "result_states": [
+      "existing-offline-capacity-supports-later-separately-authorized-selection",
+      "prospective-metadata-source-discovery-required",
+      "blocked-by-insufficient-metadata"
+    ],
+    "opt_036_treatment": "OPT-036 is excluded from this design and does not count as a source, detector, mechanism, subgroup, or corroboration input."
+  },
+  "resource_ceilings": {
+    "maximum_elapsed_minutes": 10,
+    "maximum_new_data_bytes": 1048576,
+    "network_reads": 0,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "schema_migrations": 0,
+    "repository_materializations": 0,
+    "repository_code_executions": 0,
+    "scanner_processes": 0,
+    "agentic_falsification_runs": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0,
+    "source_commits": 0,
+    "merge_commits": 0
+  },
+  "excluded": [
+    "source, repository, candidate, cohort, holdout, or packet selection or disclosure",
+    "repository acquisition, materialization, code execution, scanning, source rendering, or finding generation",
+    "outcome, score, rank, severity, confidence, prediction, raw model output, assessment, or label access",
+    "adequacy-threshold selection or recommendation, baseline execution, G03b qualification, G04 empirical recall evaluation, G07 coverage qualification, or agentic execution",
+    "prompt, planner, challenger, claim, verifier, slicer, retrieval, architecture-map, facade, configuration, store, migration, scanner, CLI, or pipeline changes",
+    "production-policy changes, OPT-010 activation, promotion, or closure, OPT-014 or SEC/EDGAR activation, lifecycle changes, branch integration, remote push, or deployment"
+  ],
+  "stop_conditions": [
+    "Any frozen input other than the production-store before-and-after hash changes.",
+    "The production-store hash changes or the store would need to be opened.",
+    "An aggregate inventory classification would require reading a source identity or outcome not already present in the frozen documentation.",
+    "Any threshold, source, cohort, candidate, outcome, agentic run, provider call, network access, implementation change, or unlisted file change would be required."
+  ],
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the OPT-010 outcome-blind offline protected-cohort and subgroup eligibility design described by opt-010-protected-cohort-design-receipt-2026-08-18.json, limited to freezing source-independence, exact-subject-identity, family, mechanism, language, detector-provenance, terminal-observation-completeness, and missing-metadata rules; aggregate-only classification of the already-documented local source inventory; prospective sufficiency calculations and comparison to the frozen historical 40-decided-identity descriptive reference without selecting or recommending an adequacy threshold; one design, one aggregate eligibility artifact, one result, and one focused test; exclusion of OPT-036 from all cohort and corroboration inputs; and production-store before-and-after hashing only, with ceilings of 10 minutes, 1 MiB new data, and exactly zero network reads, uploads, provider calls, tokens, cost, production-store reads or mutations, schema migrations, repository materializations or code executions, scanner processes, agentic falsification runs, assessments, labels, model training, rescoring, source commits, or merge commits. Source, repository, candidate, cohort, holdout, or packet selection or disclosure; source rendering; outcomes, findings, scores, ranks, severity, confidence, predictions, raw model output, threshold selection or recommendation, baseline execution, G03b qualification, G04 empirical recall evaluation, G07 coverage qualification, implementation or configuration changes, production-policy changes, OPT-010 activation, promotion, or closure, OPT-014 or SEC/EDGAR activation, lifecycle changes, branch integration, remote push, and deployment remain excluded."
+  }
+}

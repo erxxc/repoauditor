@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-08-12",
+  "optimization": "OPT-003",
+  "status": "completed-fixed-prospective-evaluation",
+  "authorization": "The project owner authorized one deterministic offline read-only report over exactly 40 frozen prospective identities, with aggregate fixed metrics and deterministic evaluation-family-block uncertainty. All excluded activity remained excluded.",
+  "execution_receipt": {
+    "path": "opt-003-temporal-report-receipt-2026-08-12.json",
+    "sha256": "38622f41e585b1b4f7a3417b8582da70a7e9e28b60b50dbc6b097e541107eb98"
+  },
+  "report_artifact": {
+    "path": "../../data/artifacts/opt003-temporal-evaluation-report.json",
+    "sha256": "9af17a9a7f5d0381ab255ef9f9fe706ad78ee177021c60dc7498b28ce564c093",
+    "bytes": 4634,
+    "identity_level_scores_emitted": false
+  },
+  "chronology_verification": {
+    "identities_checked": 40,
+    "prediction_precedes_first_assessment": 40,
+    "failures": 0,
+    "identity_digest": "cff86edf754ce6e4f0fd1a9c4f40cb92133fc769e34f0540295fd5ae86138848"
+  },
+  "cohort": {
+    "decided_labels": 40,
+    "positive": 6,
+    "negative": 34,
+    "evaluation_families": 8,
+    "prediction_waves": 3,
+    "activation_conditions_met": true
+  },
+  "aggregate_metrics": {
+    "brier_score": 0.14465065130292426,
+    "brier_95_family_block_percentile": [
+      0.045203757115197155,
+      0.2530361261308064
+    ],
+    "fixed_thresholds": [
+      {"threshold": 0.0, "selected": 40, "precision": 0.15, "recall": 1.0, "precision_95": [0.023809523809523808, 0.4048584298584298], "recall_95": [1.0, 1.0]},
+      {"threshold": 0.1, "selected": 33, "precision": 0.18181818181818182, "recall": 1.0, "precision_95": [0.02631578947368421, 0.5357142857142857], "recall_95": [1.0, 1.0]},
+      {"threshold": 0.2, "selected": 19, "precision": 0.3157894736842105, "recall": 1.0, "precision_95": [0.05263157894736842, 0.7162337662337644], "recall_95": [1.0, 1.0]},
+      {"threshold": 0.3, "selected": 9, "precision": 0.1111111111111111, "recall": 0.16666666666666666, "precision_95": [0.0, 0.6], "recall_95": [0.0, 0.2]},
+      {"threshold": 0.4, "selected": 9, "precision": 0.1111111111111111, "recall": 0.16666666666666666, "precision_95": [0.0, 0.6], "recall_95": [0.0, 0.2]},
+      {"threshold": 0.5, "selected": 3, "precision": 0.0, "recall": 0.0, "precision_95": [0.0, 0.0], "recall_95": [0.0, 0.0]},
+      {"threshold": 0.6, "selected": 3, "precision": 0.0, "recall": 0.0, "precision_95": [0.0, 0.0], "recall_95": [0.0, 0.0]},
+      {"threshold": 0.7, "selected": 0, "precision": null, "recall": 0.0, "precision_95": null, "recall_95": [0.0, 0.0]},
+      {"threshold": 0.8, "selected": 0, "precision": null, "recall": 0.0, "precision_95": null, "recall_95": [0.0, 0.0]},
+      {"threshold": 0.9, "selected": 0, "precision": null, "recall": 0.0, "precision_95": null, "recall_95": [0.0, 0.0]},
+      {"threshold": 1.0, "selected": 0, "precision": null, "recall": 0.0, "precision_95": null, "recall_95": [0.0, 0.0]}
+    ]
+  },
+  "per_wave": [
+    {"wave": "baseline", "labels": 11, "positive": 5, "negative": 6, "families": 2, "brier_score": 0.3287032131532882},
+    {"wave": "wave-one", "labels": 16, "positive": 1, "negative": 15, "families": 3, "brier_score": 0.11907624406068835},
+    {"wave": "wave-two", "labels": 13, "positive": 0, "negative": 13, "families": 3, "brier_score": 0.020390061727675858}
+  ],
+  "uncertainty_method": {
+    "sampling_unit": "evaluation_family",
+    "resamples": 2000,
+    "positive_class_resamples": 1795,
+    "confidence": 0.95,
+    "seed": 2003,
+    "interval": "percentile"
+  },
+  "interpretation": {
+    "descriptive_only": true,
+    "threshold_selected_or_recommended": false,
+    "summary": "The bounded prospective cohort establishes chronological evaluation depth and reports the protocol-required metrics. Uncertainty remains broad, and wave two contains no positive outcomes, so these results do not authorize a production threshold or tuning decision."
+  },
+  "accounting": {
+    "report_runs": 1,
+    "new_data_bytes": 4634,
+    "new_data_ceiling_bytes": 1048576,
+    "initial_store_sha256": "a3d8e55feadf5860c079f1de18b698186afbae81ba6bf678717cdfe1f2cca11f",
+    "final_store_sha256": "a3d8e55feadf5860c079f1de18b698186afbae81ba6bf678717cdfe1f2cca11f",
+    "store_byte_identical": true,
+    "network_reads": 0,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "store_mutations": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "rescored_findings": 0,
+    "model_training_runs": 0,
+    "ceiling_breaches": []
+  },
+  "not_executed": {
+    "threshold_selection_or_recommendation": true,
+    "tuning": true,
+    "recalibration": true,
+    "production_policy_change": true,
+    "opt_003_promotion_or_closure": true,
+    "branch_merge": true
+  },
+  "disposition": {
+    "opt_003_status": "open-closure-decision-gated",
+    "bounded_objective_complete": true,
+    "recommended_next_step": "Review this descriptive result, then separately authorize closure of OPT-003 at its bounded temporal-validation scope and integration of the current branch. Preserve the reported uncertainty and no-threshold conclusion; any tuning, recalibration, threshold, or production-policy work requires a new scope."
+  }
+}

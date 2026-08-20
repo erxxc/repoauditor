@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-010",
+  "protocol_id": "opt010-g03b-g04-paired-evaluation-v1",
+  "status": "frozen-offline-foundation-only",
+  "frozen_at": "2026-08-20",
+  "arms": [
+    "current-bounded-falsifier",
+    "evaluation-only-read-only-tool-agent"
+  ],
+  "qualification_envelope": {
+    "supported": {
+      "Python": ["sql_injection", "command_injection", "ssrf"],
+      "TypeScript": ["command_injection", "ssrf"],
+      "Java": ["ssrf"],
+      "Ruby": ["unsafe_deserialization"]
+    },
+    "unsupported_outer_denominator": ["Go", "Rust"],
+    "unsupported_terminal_state": "verifier_unsupported",
+    "scope_rule": "A future qualification or activation claim is limited to the exact supported cells; aggregate six-subject coverage remains partial."
+  },
+  "packet": {
+    "size": 40,
+    "identity": "stable issue-group hash",
+    "selection_order": "outcome-blind round-robin by supported source family, mechanism cell, then stable hash",
+    "family_floor": "all four supported source families contribute at least one identity",
+    "family_ceiling": "no family contributes more than 20 identities",
+    "shortfall": "stop as insufficient without source activation, substitution, or post-outcome repair",
+    "outcome_classes": "both classes required after blinded review; one-class outcomes are insufficient"
+  },
+  "terminal_contract": {
+    "states": [
+      "confirmed",
+      "killed",
+      "unresolved",
+      "abstained",
+      "failed",
+      "timed_out",
+      "budget_exhausted",
+      "parser_failed",
+      "verifier_failed",
+      "verifier_unsupported",
+      "not_applicable"
+    ],
+    "pairing": "exactly one terminal observation per arm per frozen identity",
+    "missing_or_duplicate": "blocks evaluation and remains visible",
+    "outcome_blinding": "both arm observations and chronology freeze before outcomes"
+  },
+  "metrics": [
+    "unique validated issues",
+    "precision",
+    "recall",
+    "abstention coverage",
+    "provider latency",
+    "provider input, output, cache-read, and cache-write tokens",
+    "known dated-price cost",
+    "cost per uniquely validated issue"
+  ],
+  "decision_rules": {
+    "recall_semantics": "Only confirmed recalls an actionable outcome; all other terminal states are not recalled and remain visible.",
+    "G04": "Agent recall is at least baseline recall overall and in every reportable subgroup, with zero actionable identity confirmed by baseline but not confirmed by agent.",
+    "G03b": "G04 passes; agent precision is at least baseline precision; terminal observations and usage are complete; cost per uniquely validated issue is available; and the agent is Pareto-no-worse on unique validated issues, precision, recall, abstention coverage, and cost per uniquely validated issue with at least one strict improvement.",
+    "subgroups": "Family, mechanism, language, and detector subgroups require pre-outcome membership, both outcome classes, and complete paired observations; an unreportable required subgroup blocks a broad pass.",
+    "undefined": "Undefined metrics and unknown usage or pricing remain unavailable and block a pass."
+  },
+  "tool_bounds": {
+    "surface": "agent_read_only_tools_v1",
+    "allowlist": [
+      "indexed_source_excerpt",
+      "structural_slice",
+      "callers",
+      "references",
+      "architecture_evidence"
+    ],
+    "maximum_agent_iterations": 3,
+    "maximum_tool_calls_per_identity": 12,
+    "maximum_results_per_call": 5,
+    "maximum_context_lines": 12,
+    "maximum_query_characters": 256,
+    "maximum_response_bytes": 32768,
+    "failure": "terminal abstention or failure; no fallback interface"
+  },
+  "current_authority": {
+    "prospective_candidates": 0,
+    "provider_calls": 0,
+    "baseline_runs": 0,
+    "agentic_runs": 0,
+    "outcomes_read": 0,
+    "assessments": 0,
+    "labels": 0,
+    "production_activation": false,
+    "OPT_010_closure": false
+  }
+}

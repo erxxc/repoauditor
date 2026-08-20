@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-014",
+  "status": "authorization-pending",
+  "frozen_at": "2026-08-18",
+  "design": {
+    "path": "opt-014-independent-data-acquisition-design-2026-08-18.json",
+    "sha256": "af29a9bd3e1f644fd6ee115daccf59c6da166b45c668941a8f22b4416e09be15"
+  },
+  "swiss_discovery": {
+    "path": "opt-014-swiss-metadata-source-discovery-result-2026-08-18.json",
+    "sha256": "bb7dd8b4338565b004d56876cfb69eee735e08f57bd6e800863e160fd9f871de",
+    "full_tier_candidates": 0,
+    "acquisition_ready_candidates": 0,
+    "data_gate_cleared": false
+  },
+  "scope": "Conduct one outcome-blind public-metadata-only feasibility qualification of a controlled-access Swiss pathway that would require lawful research access to NCSC mandatory critical-infrastructure cyberattack records and a documented linkage or denominator construction using FSO STATENT or an equivalent official enterprise frame; persist one aggregate gate result; and stop before application, contact, restricted access, source selection, or outcome inspection.",
+  "qualification_contract": {
+    "pathway_identity": "NCSC mandatory critical-infrastructure cyberattack administrative records plus FSO STATENT or an equivalent official enterprise population frame",
+    "gate_states": [
+      "documented-pass",
+      "documented-fail",
+      "unresolved"
+    ],
+    "gates": [
+      "A public controlled-access route exists for eligible external research institutions.",
+      "The authorized research purpose could include independent statistical validation using confidential administrative cybersecurity records.",
+      "NCSC records can lawfully be disclosed to or processed for the research route without defeating statutory confidentiality or purpose limitation.",
+      "An official enterprise or covered-operator denominator can be accessed or constructed for the same observation periods.",
+      "Stable pseudonymous linkage keys or an authorized trusted-linkage service are publicly documented.",
+      "Non-reporting covered organization-periods can be represented as explicit zero-event observations without treating unknown compliance as zero.",
+      "Incident counts and realized monetary-loss fields, including currency and censoring metadata, are advertised for controlled research use.",
+      "Deidentification, disclosure review, secure-environment, output-export, retention, deletion, and onward-disclosure rules are compatible with the frozen OPT-014 design.",
+      "Record-level lineage and overlap controls can distinguish NCSC voluntary and mandatory reports and exclude known IRIS, Advisen, VERIS, DBIR, Canadian, and Eurostat overlap.",
+      "Access terms, license, institutional eligibility, application steps, expected review authority, advertised fees, and version or vintage controls are publicly documented."
+    ],
+    "evidence_rule": "Assign documented-pass or documented-fail only from direct official public wording. Missing, implied, or ambiguous metadata remains unresolved; no favorable inference is permitted.",
+    "overall_states": [
+      "publicly-actionable",
+      "conditionally-feasible-but-not-publicly-actionable",
+      "not-publicly-actionable"
+    ],
+    "overall_rule": "The pathway is publicly-actionable only if every legal-access, confidentiality, denominator, zero-period, linkage, required-field, privacy, and governance gate is a documented pass. Any documented legal prohibition makes it not-publicly-actionable; otherwise one or more unresolved mandatory gates makes it conditionally feasible but not publicly actionable.",
+    "outcome_blinding": {
+      "permitted_inputs": "Only public legal, governance, institutional-eligibility, confidentiality, linkage, schema, access, license, security, retention, disclosure-review, version, format, size, and fee metadata may affect qualification.",
+      "forbidden_inputs": "No incident totals, rates, loss values, distributions, records, organization identities, model performance, or prior agreement may be inspected or used.",
+      "incidental_value_quarantine": "If a permitted page co-mingles outcome values, do not transcribe, persist, compare, summarize, or use them; stop reading that section and record only that quarantine occurred.",
+      "translation_rule": "Use publisher-provided language variants or direct official wording only; no translation provider or uploaded text is authorized."
+    },
+    "deterministic_funnel": [
+      "Verify frozen design, Swiss discovery result, receipt, and production-store digest offline.",
+      "Inspect FSO public research-data, data-linkage, confidentiality, institutional-eligibility, contract, and secure-access metadata.",
+      "Inspect NCSC public confidentiality, mandatory-reporting, data-use, disclosure, and administrative-record access metadata.",
+      "Inspect applicable federal legal and data-protection metadata only as needed to resolve the frozen gates.",
+      "Assign each gate exactly one frozen state without contacting an authority or accessing restricted material.",
+      "Persist one aggregate feasibility result and stop."
+    ]
+  },
+  "allowed_reads": [
+    "Official public landing, legal-basis, methodology, privacy, confidentiality, research-access, data-linkage, contract-requirement, institutional-eligibility, secure-environment, disclosure-review, fee, retention, deletion, license, schema, and version metadata on the exact enumerated hosts.",
+    "Metadata-only search results restricted to the exact enumerated hosts; an unlisted result or redirect may not be opened or used as evidence.",
+    "Document headers and relevant governance sections only; linked records, tables, cubes, APIs, previews, samples, outcomes, application portals, and authenticated systems remain excluded."
+  ],
+  "forbidden_actions": [
+    "Credentials, login, account creation, terms or license acceptance, application, inquiry, contact, purchase, payment, restricted-data request, or protected portal access",
+    "Raw, row-level, sample, preview, extract, table, cube, API-data response, archive, CSV, JSON, database, spreadsheet, microdata, incident, or organization record access",
+    "Outcome, incident-count, loss-value, rate, quantile, distribution, correlation, performance, or prior-agreement inspection or persistence",
+    "Dataset code, notebook, query, API client, scanner, simulation, fitting, scoring, model, or translation-provider execution",
+    "Source acquisition selection, adequacy threshold, cohort or holdout selection, linkage-key construction, deduplication implementation, evaluation, fitting, prior or methodology change",
+    "Production-store access or mutation, schema migration, assessment, label, training, rescoring, OPT-014 lifecycle change, OPT-010 execution, branch integration, remote push, or deployment"
+  ],
+  "resource_ceilings": {
+    "maximum_elapsed_minutes": 20,
+    "maximum_new_data_bytes": 5242880,
+    "maximum_metadata_documents": 24,
+    "maximum_result_documents": 1,
+    "network_hosts": [
+      "bfs.admin.ch",
+      "www.bfs.admin.ch",
+      "dam-api.bfs.admin.ch",
+      "www.swissstats.bfs.admin.ch",
+      "ncsc.admin.ch",
+      "www.ncsc.admin.ch",
+      "admin.ch",
+      "www.admin.ch",
+      "fedlex.admin.ch",
+      "www.fedlex.admin.ch",
+      "edoeb.admin.ch",
+      "www.edoeb.admin.ch"
+    ],
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "dataset_downloads": 0,
+    "raw_records_read": 0,
+    "applications_or_contacts": 0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "simulation_runs": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0
+  },
+  "stop_conditions": [
+    "The design, Swiss discovery result, frozen receipt, or production-store digest drifts.",
+    "A required page redirects to or loads material from an unlisted host.",
+    "Resolving a mandatory gate requires login, terms acceptance, application, contact, restricted material, record access, outcome inspection, or an undocumented favorable inference.",
+    "The document, time, byte, or result ceiling would be exceeded.",
+    "Any source selection, acquisition, adequacy judgment, evaluation, store, model, policy, lifecycle, branch, remote, or deployment action is attempted."
+  ],
+  "result_boundary": "The result may report only aggregate gate states, official access-path identities, blocking rules, unresolved requirements, and one overall public-actionability classification. It may not disclose records or outcomes, apply for access, select or acquire a source, clear the OPT-014 data gate, judge statistical adequacy, change a prior or methodology, or change OPT-014 status.",
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the OPT-014 Swiss controlled-access feasibility qualification described by opt-014-swiss-controlled-access-feasibility-receipt-2026-08-18.json, limited to one outcome-blind public-metadata-only audit of the legal, institutional, confidentiality, research-access, linkage, denominator, zero-period, required-field, deidentification, secure-environment, disclosure-review, retention, deletion, license, fee, and version gates for a pathway combining NCSC mandatory critical-infrastructure cyberattack records with FSO STATENT or an equivalent official enterprise frame; classification of each frozen gate as documented pass, documented fail, or unresolved; quarantine of incidentally visible outcomes; and one aggregate feasibility result, with ceilings of 20 minutes, 5 MiB new data, 24 metadata documents, only bfs.admin.ch, www.bfs.admin.ch, dam-api.bfs.admin.ch, www.swissstats.bfs.admin.ch, ncsc.admin.ch, www.ncsc.admin.ch, admin.ch, www.admin.ch, fedlex.admin.ch, www.fedlex.admin.ch, edoeb.admin.ch, and www.edoeb.admin.ch network access, and exactly zero uploads, provider calls, tokens, cost, dataset downloads, raw record reads, applications, contacts, production-store reads or mutations, assessments, labels, simulation runs, model training, or rescoring. Credentials, login, account creation, terms acceptance, applications, inquiries, contact, purchase, payment, restricted-data requests, protected portals, records, tables, cubes, API data, previews, samples, outcomes, linkage-key construction, source acquisition selection, adequacy thresholds, cohort or holdout selection, evaluation, fitting, prior or methodology changes, production-policy changes, OPT-014 promotion or closure, OPT-010 execution, branch integration, remote push, and deployment remain excluded."
+  }
+}

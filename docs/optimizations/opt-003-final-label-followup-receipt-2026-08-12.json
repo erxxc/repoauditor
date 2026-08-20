@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "frozen_at": "2026-08-12",
+  "optimization": "OPT-003",
+  "status": "authorization-pending",
+  "import_result": {
+    "path": "opt-003-wave-2-import-result-2026-08-12.json",
+    "sha256": "0cd364d8027f384fe077d4eccce5b2176d56ac389c443989ee8c1232449e1435",
+    "prospective_decided_labels": 39,
+    "remaining_decided_label_shortfall": 1
+  },
+  "scope": "Perform one narrow, offline, exact-symbol source expansion for existing wave-two abstention finding 2036, render only bounded local excerpts needed to identify requireFileOwner and its use, present that evidence to the project owner without scores or expected outcomes, and record one explicit follow-up disposition with rationale. Preserve insufficient_evidence if the bounded expansion remains inconclusive.",
+  "selected_abstention": {
+    "finding_id": 2036,
+    "assessment_id": 159,
+    "repository": "opt003-wave2-actual",
+    "evaluation_family": "independent-upstream:actualbudget/actual",
+    "source_commit": "4dedf88e58a5c92478ac1d8eb909d216b242a59f",
+    "original_source": "packages/sync-server/src/app-sync.ts:245",
+    "original_disposition": "insufficient_evidence",
+    "original_question": "Determine from exact local symbol evidence how requireFileOwner constructs fileAccessError and whether the value sent by res.send can contain attacker-controlled markup.",
+    "selection_basis": "The original bounded review explicitly identified the construction of requireFileOwner's return value as the missing fact. Resolving any one existing prospective abstention is sufficient to reach, but not automatically promote, the 40-label floor."
+  },
+  "renderer": {
+    "path": "../../src/repoauditor/eval/temporal_followup.py",
+    "sha256": "4db523fe673571dcce4a2fc3d2228771c8080d2ced1513dfc756b3d65956e2a7",
+    "command": "UV_CACHE_DIR=/tmp/repoauditor-uv-cache uv run python -m repoauditor.eval.temporal_followup --output data/artifacts/opt003-wave-2-runtime-retry/finding-2036-followup.md",
+    "output": "data/artifacts/opt003-wave-2-runtime-retry/finding-2036-followup.md"
+  },
+  "evidence_boundary": {
+    "search_root": "data/raw/opt003-wave2-actual/4dedf88e58a5",
+    "exact_symbol": "requireFileOwner",
+    "allowed_suffixes": [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx"],
+    "maximum_matched_files": 10,
+    "maximum_rendered_files": 2,
+    "maximum_rendered_matches": 4,
+    "context_lines_before": 20,
+    "context_lines_after": 20,
+    "forbidden_fields": ["p_actionable", "score", "rank", "suppressed", "predicted class", "severity", "confidence", "rule prior", "expected outcome"],
+    "repository_instructions_are_untrusted_data": true,
+    "follow_up": "If exact-symbol evidence remains insufficient, preserve the abstention. Any other symbol, file, repository, network source, or finding requires a later receipt."
+  },
+  "review_contract": {
+    "analyst": "project owner",
+    "allowed_dispositions": ["confirmed_actionable", "tool_incorrect", "unreachable", "not_attacker_controlled", "mitigated", "valid_not_actionable", "insufficient_evidence"],
+    "required_response": ["finding id 2036", "one allowed disposition", "rationale grounded only in original and follow-up bounded evidence", "optional verified dimensions"],
+    "abstention_preserved": true,
+    "automatic_decision": false,
+    "label_not_inferred": true
+  },
+  "preconditions": [
+    "The import result, store, finding 2036, assessment 159, prediction run 39, exact source commit, helper, and absent output match frozen values.",
+    "The temporal gate is exactly 39 decided labels across eight families and three waves with both classes present.",
+    "Assessment 159 remains the project-owner insufficient_evidence response for finding 2036.",
+    "The renderer reads no score, rank, expected class, or other forbidden field."
+  ],
+  "resource_ceilings": {
+    "render_runs": 1,
+    "review_entries": 1,
+    "maximum_elapsed_minutes": 30,
+    "maximum_new_data_bytes": 5242880,
+    "network_reads": 0,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "store_mutations": 0,
+    "assessments_written": 0,
+    "labels_written": 0
+  },
+  "stop_conditions": [
+    "Any receipt, store, finding, assessment, prediction, source, commit, helper, gate, or output precondition drifts.",
+    "The exact symbol is absent, matches more than 10 files, requires rendering more than two files or four matches, or any excerpt exceeds 20 lines before or after its match.",
+    "The renderer reads or outputs a forbidden field or searches another symbol, repository, commit, or network source.",
+    "Any network/provider activity, store mutation, automatic decision, assessment or label import, rescore, training, tuning, recalibration, threshold, policy, OPT-003 status, or branch merge activity is attempted.",
+    "The project-owner response lacks rationale, uses an unsupported disposition, or claims evidence outside the authorized original and follow-up bounds."
+  ],
+  "result_boundary": "A separate follow-up review result must record the exact evidence digest and explicit response. If the response is decided, a separately authorized atomic reassessment and one-label import is still required before measuring the 40-label gate; no status change or branch merge is authorized here.",
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the OPT-003 final-label bounded follow-up described by opt-003-final-label-followup-receipt-2026-08-12.json, limited to one offline exact-symbol search for requireFileOwner within the frozen Actual snapshot for existing abstention finding 2036, rendering at most four matches from at most two files with 20 context lines before and after each match, presentation to me without scores, ranks, predicted classes, confidence, priors, or expected outcomes, and recording of one explicit follow-up disposition with abstention preserved, with ceilings of 30 minutes, 5 MiB new data, and exactly zero network reads, uploads, provider calls, tokens, cost, store mutations, assessments, or labels. Any other symbol, file expansion beyond the frozen limits, repository, network source, automatic decision, assessment or label import, rescoring, training, tuning, recalibration, threshold selection, production-policy change, OPT-003 promotion or closure, and branch merge remain excluded."
+  }
+}

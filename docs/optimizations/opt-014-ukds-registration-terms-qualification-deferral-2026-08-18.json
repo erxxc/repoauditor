@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-014",
+  "status": "ukds-registration-path-deferred-unexecuted",
+  "recorded_at": "2026-08-18",
+  "receipt": {
+    "path": "opt-014-ukds-registration-terms-qualification-receipt-2026-08-18.json",
+    "sha256": "121da2a12ea15e067d37f64cae7637a61f16a0de233dc6bcecbbc787c3dd2db9",
+    "authorization_granted": false,
+    "execution_started": false
+  },
+  "prior_qualification": {
+    "path": "opt-014-uk-canada-access-codebook-qualification-result-2026-08-18.json",
+    "sha256": "72c041056415836b2bd1ae6325ae0301d994c9ada6636fa1bcca9c3abab5aa63",
+    "study_9285_state": "conditionally-qualified",
+    "data_gate_cleared": false
+  },
+  "project_owner_decision": {
+    "decision": "defer-before-registration",
+    "reason": "The intended future use may become commercial. Entering a safeguarded End User Licence path without first resolving study-specific commercial-use rights could create a downstream rights blocker.",
+    "commercial_or_noncommercial_use_selected": false,
+    "registration_or_login_authorized": false,
+    "eul_acceptance_authorized": false,
+    "study_request_or_download_authorized": false
+  },
+  "path_state": {
+    "identity": "UK Data Service study 9285, DOI 10.5255/UKDA-SN-9285-1, first edition",
+    "state": "deferred-commercial-rights-uncertain",
+    "scope_of_block": "Only the human-mediated UK Data Service registration, End User Licence acceptance, authenticated qualification, request, and acquisition path is blocked.",
+    "opt_014_status": "open-data-gated",
+    "opt_014_closed": false,
+    "data_gate_cleared": false,
+    "source_selected": false,
+    "bounded_interpretation": "This deferral does not classify study 9285 as commercially prohibited or permanently unusable. It preserves the prior conditional qualification and records that no account, agreement, or access action was taken while commercial compatibility remains unresolved."
+  },
+  "unblock_conditions": [
+    "Direct official study-specific terms document commercial reuse without data-owner permission, application, contact, or a use-limiting agreement incompatible with the intended product path.",
+    "A separately authorized legal and commercial-rights feasibility step establishes an acceptable licensed route before registration or End User Licence acceptance.",
+    "The project owner deliberately creates a segregated research-only track whose data, outputs, derived artifacts, and decisions cannot enter commercial product development, under a separately frozen governance protocol.",
+    "Study 9285 is replaced by a source with an explicit commercially compatible open or negotiated license that also satisfies the frozen organization-period observation contract."
+  ],
+  "commercially_neutral_next_options": [
+    {
+      "option": "license-first-source-screen",
+      "purpose": "Run a new outcome-blind metadata screen that rejects non-commercial, permission-only, registration-only, missing-license, and ambiguous-use sources before any schema qualification.",
+      "benefit": "Preserves commercial optionality and avoids repeating detailed work on sources that fail the rights gate.",
+      "limitation": "Prior discovery suggests that permissively licensed incident datasets often lack explicit organization-period denominators and zero-event observations."
+    },
+    {
+      "option": "frozen-aggregate-external-coherence",
+      "purpose": "Pre-register exact open-government aggregate sources, vintages, metrics, and comparisons before inspecting published outcomes, then run a descriptive external coherence report.",
+      "benefit": "Can add commercially reusable external evidence without accounts or row-level data.",
+      "limitation": "Aggregate context cannot clear the held-out organization-period data gate or support record-level backtesting, hierarchical cohorts, or remediation effects."
+    },
+    {
+      "option": "prospective-commercial-rights-panel",
+      "purpose": "Design an original organization-period survey or partner panel whose consent, data-use, commercial validation, retention, and deidentification rights are frozen before collection.",
+      "benefit": "Best structural fit for explicit zero periods, counts, realized costs, stable pseudonymous keys, and future commercial use.",
+      "limitation": "Requires recruitment, governance, time, and likely budget; no collection is currently authorized."
+    },
+    {
+      "option": "commercial-data-license-feasibility",
+      "purpose": "Evaluate metadata and proposed rights for an independent licensed incident or insurer dataset before purchase or contact.",
+      "benefit": "Could provide mature records and explicit product-use rights faster than building a panel.",
+      "limitation": "Cost, vendor terms, selection bias, denominator construction, and overlap with the Advisen-derived prior must all be resolved."
+    },
+    {
+      "option": "retain-open-and-advance-opt-010",
+      "purpose": "Leave OPT-014 open and data-gated while beginning only a separately authorized OPT-010 safety/evaluation step.",
+      "benefit": "Avoids forcing a weak or rights-constrained OPT-014 source decision.",
+      "limitation": "OPT-014's held-out validation and portfolio claims remain unavailable."
+    }
+  ],
+  "recommended_sequence": [
+    "Run the license-first source screen with commercial compatibility as a mandatory gate before source identity disclosure or outcome inspection.",
+    "If no full organization-period candidate survives, choose between a frozen aggregate external-coherence report for descriptive evidence and a prospective commercial-rights panel for eventual gate clearance.",
+    "Keep study 9285 deferred as a reversible fallback; do not register, accept its End User Licence, or request access unless a later rights decision explicitly unblocks it."
+  ],
+  "accounting": {
+    "network_reads": 0,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "accounts_created": 0,
+    "login_or_registration_sessions": 0,
+    "eul_acceptances": 0,
+    "study_requests_or_orders": 0,
+    "dataset_downloads": 0,
+    "raw_records_read": 0,
+    "outcomes_read": 0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "simulation_runs": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0,
+    "opt_014_lifecycle_changes": 0
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-010",
+  "status": "aggregate-offline-inventory-complete",
+  "recorded_at": "2026-08-18",
+  "input_bindings": {
+    "receipt_sha256": "692f3a5e56628855a8e449796a3fb7bff495e134b99a2e8d4b4b01178ce0c7a3",
+    "untouched_production_selection_plan_sha256": "884be4e6c29367c7d11e481dbb3a16481e522d9de5065531519f22bd7b30e85a",
+    "independent_acquisition_protocol_sha256": "202a435a6ddd62e228dbc516a03cf526bce842b2bf9b7fed1bcc76e534fbddab",
+    "fixture_inventory_metadata_sha256": "f485ef50bb80b8206582cfcea40a08e9316745b731f08f32a3333ffdaa8f75f1",
+    "triage_accuracy_roadmap_sha256": "68f2523942cc48c2eb6243c39463ff3d442265b45db662418e7b413271a22732",
+    "containment_artifact_sha256": "38a3502552339805a8b0855321e1356a902594232ace506ddf8988544942a502",
+    "containment_result_sha256": "fbfb13771a6cdc4d2fae23d7d6985a025d78e5481fd853a1f8719f17cc627c51",
+    "agentic_gate_sha256": "17112f367776373eba27c754311e99a982ddab3a3c65bb7f85afd50eb66767dd",
+    "production_store_before_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a"
+  },
+  "inventory_scope": {
+    "unit": "documented source family or fixture identity",
+    "identity_disclosure": false,
+    "exhaustiveness": "bounded to the source classes and counts explicitly present in the frozen inputs; counts are not a claim about every source mentioned elsewhere in the repository",
+    "overlap_rule": "The protected member of an existing independent pre/post cohort remains counted once in that cohort; it is not double-counted as a separate family."
+  },
+  "aggregate_evidence_groups": [
+    {
+      "group": "previously evaluated independent pre/post source families",
+      "count": 8,
+      "classification": "previously-protected-or-evaluated",
+      "eligible_for_new_OPT_010_protection": 0,
+      "basis": "The fixture inventory documents eight independent real-world pairs, while the untouched plan states that checked-in public pairs are already exposed or carry answer keys."
+    },
+    {
+      "group": "completed untouched-selection source family outside that eight-family inventory",
+      "count": 1,
+      "classification": "previously-protected-or-evaluated",
+      "eligible_for_new_OPT_010_protection": 0,
+      "basis": "The untouched-selection plan records one completed target disclosure and states that it is never untouched again."
+    },
+    {
+      "group": "classifier-training acquisition source families",
+      "count": 8,
+      "classification": "development-or-training-exposed",
+      "eligible_for_new_OPT_010_protection": 0,
+      "basis": "The fixture inventory explicitly marks the training acquisition cohort evaluation-ineligible."
+    },
+    {
+      "group": "scripted-golden and benchmark fixture identities",
+      "count": 5,
+      "classification": "benchmark-or-synthetic",
+      "eligible_for_new_OPT_010_protection": 0,
+      "basis": "The fixture inventory lists two scripted golden fixtures and three benchmark-corpus fixtures; benchmark and purpose-built material cannot advance an independent protected cohort."
+    },
+    {
+      "group": "prospective metadata-frozen source families reserved by an earlier protocol",
+      "count": 3,
+      "classification": "insufficient-metadata",
+      "eligible_for_new_OPT_010_protection": 0,
+      "basis": "The earlier protocol freezes three source families, but the frozen OPT-010 contract cannot establish complete pre-outcome mechanism, language, detector-provenance, terminal-observation, and current non-exposure metadata for them; no identity is selected or carried forward here."
+    }
+  ],
+  "aggregate_classification": {
+    "bounded_documented_units": 25,
+    "eligible-unexposed-independent": 0,
+    "development-or-training-exposed": 8,
+    "benchmark-or-synthetic": 5,
+    "previously-protected-or-evaluated": 9,
+    "insufficient-metadata": 3
+  },
+  "capacity": {
+    "fully_specified_untouched_source_families": 0,
+    "current_G02_protected_cohort_capacity": "insufficient",
+    "current_G05_subgroup_capacity": "insufficient",
+    "G07_frozen_cohort_coverage_assessment_possible": false,
+    "G04_empirical_recall_assessment_possible": false,
+    "G03b_comparison_execution_ready": false,
+    "reason": "No bounded documented unit is both untouched and complete under the newly frozen identity, independence, subgroup-provenance, and terminal-observation contract."
+  },
+  "sufficiency_summary": {
+    "historical_reference_decided_identities": 40,
+    "historical_reference_families": 8,
+    "current_fully_specified_untouched_families": 0,
+    "family_shortfall_against_historical_reference": 8,
+    "threshold_selected_or_recommended": false,
+    "arithmetic_only": true
+  },
+  "boundaries": {
+    "source_or_candidate_selected": false,
+    "source_identity_disclosed": false,
+    "outcome_or_finding_read": false,
+    "production_store_opened": false,
+    "OPT_036_used": false,
+    "network_or_provider_used": false,
+    "agent_executed": false
+  }
+}

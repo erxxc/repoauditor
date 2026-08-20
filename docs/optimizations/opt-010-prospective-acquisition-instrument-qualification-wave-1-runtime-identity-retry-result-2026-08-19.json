@@ -1,0 +1,248 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-010",
+  "status": "complete-six-subject-offline-instrument-qualification",
+  "recorded_at": "2026-08-20T04:02:42Z",
+  "authorization": "The project owner authorized the runtime-identity retry with both stopped attempts retained, exact OSV Scanner 2.4.0 binary identity, fresh five-canary preflight, and the unchanged six-source aggregate-only offline qualification wave.",
+  "execution_evidence": {
+    "receipt": {
+      "path": "docs/optimizations/opt-010-prospective-acquisition-instrument-qualification-wave-1-runtime-identity-retry-receipt-2026-08-19.json",
+      "sha256": "a11a6b6d7aeea2a9daa79a96459c68fd169c20b1e18198fca53d9ced39f3617f"
+    },
+    "helper": {
+      "path": "src/repoauditor/eval/opt010_acquisition_qualification.py",
+      "sha256": "fb75947e52a3ec5ff4219ca63c2cd747510821fca72b8237d30ed83471e6fa4c"
+    },
+    "execution_summary": {
+      "path": "data/artifacts/opt010-acquisition-instrument-qualification-wave-1-runtime-identity-retry/execution-summary.json",
+      "sha256": "2cb772139edc4a20ce3168aa1248231b620ce926f73cbb2a34d84ec8c013642e"
+    },
+    "artifact_directory": "data/artifacts/opt010-acquisition-instrument-qualification-wave-1-runtime-identity-retry"
+  },
+  "retained_attempts": {
+    "first_stopped_result_sha256": "f762ce9d6a0b543c2e8ff7028038ac806105f8e0d88faeb067a369b1956a24c5",
+    "corrected_stopped_result_sha256": "1349fdceb64cbf05caca9daa142ed9f7293c0f3a4c02d91663609e48233e2fd6",
+    "artifact_directories_immutable": true
+  },
+  "fresh_runtime_and_canaries": {
+    "semgrep_import_only_version": "1.170.0",
+    "semgrep_version_cache_sha256": "8479eacad6344544c1b8dc21f8e05665bac048113f30e5d7dc83b1089fa082c4",
+    "semgrep_runtime_bindings_complete": true,
+    "semgrep_dev_contact": false,
+    "registry_rules_used": false,
+    "canaries": [
+      {
+        "scanner": "semgrep",
+        "version": "1.170.0",
+        "status": "passed",
+        "artifact_sha256": "54cdc71c6c18450d9ca39e8c09a4dd2500738d873a13f4f965cbbf91853a8fd4"
+      },
+      {
+        "scanner": "semgrep-supplemental",
+        "version": "1.170.0",
+        "status": "passed",
+        "artifact_sha256": "31ce141852aae4a7630052dd04f859aecf3f419c6c70889426add621d81ecc65"
+      },
+      {
+        "scanner": "gitleaks",
+        "version": "8.30.1",
+        "status": "passed",
+        "artifact_sha256": "c71940f5ca639f5885ec7cc54fb2fcc73a9b0faadc19a25bdacbaed5225db5a0"
+      },
+      {
+        "scanner": "pip-audit-direct-no-deps",
+        "version": "2.10.1",
+        "status": "passed",
+        "dependency_resolution": false,
+        "dependency_installation": false,
+        "artifact_sha256": "28a19e17be7ca59772f6dcff91d46015b61ffa13d95690882ab279c2cb4a4d1f"
+      },
+      {
+        "scanner": "osv-scanner",
+        "version": "2.4.0",
+        "binary_sha256": "77e5286bd4f45bfe904389043f87958f30a0d1da62017a3323aadd064549fce1",
+        "status": "passed",
+        "artifact_sha256": "1b355fff99602c39d458ad6fa756ef7ea54dd727469b5db3a95f315a9fbfd434"
+      }
+    ]
+  },
+  "subjects": [
+    {
+      "order": 1,
+      "stable_identity_sha256": "1a1517101c0f8ee6e27ab189961f246bd5f7a8a9e70c5e0cae75132ba12f3bdd",
+      "language": "Python",
+      "exact_commit": "489fab4a71f83dd4e02a430f560884c3d052c575",
+      "terminal_state": "completed",
+      "snapshot_sha256": "b4b2d383a0f7f002cde2b96c3a919a38bec10c924f246dcd8cbe4a2c9438028d",
+      "detector_input_sha256": "dec469718958d72b50ec7b161cfc3fc8f5cadd8c807a1b9cabb82bddc1c59887",
+      "retrieval_index_sha256": "4738ef5be1cdafdd68a6ae3691e9f948521ba95c97e78f49683093b3cc097b5e",
+      "architecture_map_sha256": "pending-separate-provider-authorization"
+    },
+    {
+      "order": 2,
+      "stable_identity_sha256": "3fca500d6ca3d5ce0c0547bd7055e448d46f39d8ad49ab770683d0631f63b4d6",
+      "language": "TypeScript",
+      "exact_commit": "dbbab6fd7610cf1472d0e0377fc0e966faf7acda",
+      "terminal_state": "completed",
+      "snapshot_sha256": "f14dea7c3cf86e82cf8d60adc91dbbf788eb8acebd95f3c074b4f697b31ec11c",
+      "detector_input_sha256": "271b5fd0920dafdefcbf31adf94d71911dcb9534690001c41882c1f947cc3720",
+      "retrieval_index_sha256": "4435aaeb468288a45a555fefb90acadda8506cf268da97ee981f57c767951509",
+      "architecture_map_sha256": "pending-separate-provider-authorization"
+    },
+    {
+      "order": 3,
+      "stable_identity_sha256": "3476b18f12ad5bdd4e7c89c0aa5249cb2d97e2f7697f73ac4ef4d052d6195378",
+      "language": "Go",
+      "exact_commit": "f1b8d846eab834daf6a95e30e3d02d329fdcb0d4",
+      "terminal_state": "completed",
+      "snapshot_sha256": "f2a15a60910991ae1db9ba6828b3ad2f289ed6000439662f97834e1d4019b9d0",
+      "detector_input_sha256": "52cc9677539d79c79869b413dcf052ac7c00ae0ad1659fa48db38e694de4d402",
+      "retrieval_index_sha256": "83061125b98ec86271c494253f411086e03adf13e16e37248af201717464d2c1",
+      "architecture_map_sha256": "pending-separate-provider-authorization"
+    },
+    {
+      "order": 4,
+      "stable_identity_sha256": "7808d7614a6ab1fe0f5d8ad3e16eaff4a44477cc2b7be4296ea2e7caa2dc181b",
+      "language": "Java",
+      "exact_commit": "89e2f09b7b0cd9682a32a8b4a1ed863f791570ea",
+      "terminal_state": "completed",
+      "snapshot_sha256": "f9a6cc28e1093f5d4de299b2f1d17c99d29a845dc66fcb62319e2310edc10103",
+      "detector_input_sha256": "bc85c55f58256a39d88f07289b7af3ab4c984983ccfb60468e28af83d1f73251",
+      "retrieval_index_sha256": "455df59f39dba3ccee37d7b1d6da2c92b0802d1a289f5a0e37c8348cab1448ff",
+      "architecture_map_sha256": "pending-separate-provider-authorization"
+    },
+    {
+      "order": 5,
+      "stable_identity_sha256": "a7f7b694aa9c4b90dc6ec650283ce10f25f214a52a0e1a280a0cd4b4ff9299bc",
+      "language": "Ruby",
+      "exact_commit": "c8fd1dc18fc55b570c2acc06ded6b37f05da6ee5",
+      "terminal_state": "completed",
+      "snapshot_sha256": "bbfc448abf53728c9e40fe5e732dc516b23773dbb97ef5460da2271b9391765e",
+      "detector_input_sha256": "439d855acac990bdc83ee7f7505e94b9c348335a83a6f7865f5dae7eedd30b61",
+      "retrieval_index_sha256": "57fdb748236f61236e1fc9f5073a6a3a9de02f5d1605e9357084427cff8e45fb",
+      "architecture_map_sha256": "pending-separate-provider-authorization"
+    },
+    {
+      "order": 6,
+      "stable_identity_sha256": "5d499169e2daafc100b54798d3e12f43627130324ed98d438804ff2cbc3f6342",
+      "language": "Rust",
+      "exact_commit": "7d36ccbd585bd326adfff45982bb0a4d760287c1",
+      "terminal_state": "completed",
+      "snapshot_sha256": "a6b032aa04dd2052beaed92a8d68f76c57bcbc205c3a7c97776434b5246eec0f",
+      "detector_input_sha256": "1fbc963a1c16fe4ab11b0ff7e0abd04b19bb3a7c87f84d9fbeadf85eb7b734fb",
+      "retrieval_index_sha256": "e3826bed7ffd639f2817dd3f539e7b1452214a73f4ece8ff030fe24e0fe3be04",
+      "architecture_map_sha256": "pending-separate-provider-authorization"
+    }
+  ],
+  "aggregate_inventory": {
+    "subjects_completed": 6,
+    "snapshot_files": 14600,
+    "snapshot_bytes": 281906230,
+    "detector_source_files": 10369,
+    "detector_input_bytes": 111482766,
+    "retrieval_source_files": 10369,
+    "retrieval_indexed_functions": 132164,
+    "scanner_executions": 30,
+    "scanner_findings": 918,
+    "scanners": [
+      {
+        "scanner": "semgrep",
+        "complete": 6,
+        "empty": 0,
+        "not_applicable": 0,
+        "findings": 682,
+        "targets": 11205
+      },
+      {
+        "scanner": "semgrep-supplemental",
+        "complete": 1,
+        "empty": 5,
+        "not_applicable": 0,
+        "findings": 1,
+        "targets": 2885
+      },
+      {
+        "scanner": "gitleaks",
+        "complete": 6,
+        "empty": 0,
+        "not_applicable": 0,
+        "findings": 63,
+        "targets": 6
+      },
+      {
+        "scanner": "pip-audit-direct-no-deps",
+        "complete": 0,
+        "empty": 0,
+        "not_applicable": 6,
+        "findings": 0,
+        "targets": 0
+      },
+      {
+        "scanner": "osv-scanner",
+        "complete": 5,
+        "empty": 1,
+        "not_applicable": 0,
+        "findings": 172,
+        "targets": 6
+      }
+    ],
+    "candidate_or_finding_identities_disclosed": 0,
+    "source_paths_symbols_or_excerpts_disclosed": 0
+  },
+  "verifier_eligibility": {
+    "language_supported_subjects": 4,
+    "language_unsupported_subjects": 2,
+    "mechanism_vocabulary_resolved_subjects": 0,
+    "mechanism_vocabulary_unresolved_subjects": 6,
+    "fully_eligible_subjects": 0,
+    "basis": "Python, TypeScript, Java, and Ruby have language-level structural-verifier support; Go and Rust do not. The frozen broad boundary hypotheses do not equal the verifier's concrete mechanism keys, and no mechanism was inferred from scanner output."
+  },
+  "store": {
+    "access": "before-and-after-hash-only",
+    "before_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "after_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "byte_identical": true,
+    "reads": 0,
+    "mutations": 0
+  },
+  "resource_accounting": {
+    "elapsed_seconds_new_run": 413.253,
+    "new_run_data_bytes": 439139346,
+    "cumulative_data_bytes": 439204882,
+    "new_logical_scanner_processes": 35,
+    "cumulative_logical_scanner_processes": 44,
+    "repositories_materialized": 6,
+    "retrieval_indexes": 6,
+    "repository_code_executions": 0,
+    "dependency_resolutions": 0,
+    "dependency_installations": 0,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "assessments": 0,
+    "labels": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0,
+    "human_finding_reviews": 0,
+    "agentic_runs": 0,
+    "workspace_branch_or_index_operations": 0,
+    "commits": 0,
+    "merges": 0,
+    "pushes": 0,
+    "lifecycle_changes": 0
+  },
+  "decision": {
+    "wave_one_instrument_qualification_complete": true,
+    "G02": "partial-exact-subject-identities-frozen-architecture-map-slot-pending",
+    "G05": "partial-language-metadata-complete-concrete-mechanism-eligibility-unresolved",
+    "G07": "partial-language-coverage-measured-no-fully-eligible-subjects",
+    "G03b": "not-authorized",
+    "G04_empirical_recall": "not-authorized",
+    "OPT_010_status": "open-deferred",
+    "production_activation_permitted": false,
+    "smallest_next_prerequisite": "Separately authorize an outcome-blind bounded architecture-map completion and concrete-mechanism eligibility design over these same six digest-frozen subjects. It must freeze mechanism assignment rules without consulting raw scanner findings or outcomes, preserve unsupported Go and Rust coverage explicitly, and stop before paired comparison, human review, or outcome access."
+  }
+}

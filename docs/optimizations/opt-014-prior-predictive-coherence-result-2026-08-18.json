@@ -1,0 +1,163 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-014",
+  "status": "descriptive-prior-predictive-coherence-complete",
+  "recorded_at": "2026-08-18",
+  "receipt": {
+    "path": "opt-014-prior-predictive-coherence-receipt-2026-08-18.json",
+    "sha256": "3f3f5f19659a4166061898b63450a5a598d93ffb22d15ebf9c16e1b8e4cad13e"
+  },
+  "eligibility_audit": {
+    "path": "opt-014-offline-eligibility-audit-result-2026-08-18.json",
+    "sha256": "95c4166f7002ff09ad5e5278d6417e21581d3d0a19ceef8398b7c2e21f9b6454",
+    "eligible_observed_outcomes": 0,
+    "data_gate_cleared": false
+  },
+  "execution_evidence": {
+    "artifact": {
+      "path": "../../data/artifacts/opt014-prior-predictive-coherence.json",
+      "sha256": "7aa611f95bb09ec59127facf4621ccf89d8bacf417731e1650cf40741138d0a2",
+      "bytes": 7441
+    },
+    "helper": {
+      "path": "../../src/repoauditor/eval/prior_predictive.py",
+      "sha256": "2c6d37934b9a07cba57966d6431f158309e6a8bc2499ee157cc39ee97b2c59be"
+    }
+  },
+  "frozen_model": {
+    "methodology_version": "organization_all_event_v1",
+    "modeling_unit": "anonymous-neutral-organization-year",
+    "trials": 200000,
+    "seed": 2014,
+    "exposure": 1.0,
+    "control_strength": 0.0,
+    "loss_scale": 1.0,
+    "epistemic_parameter_sampling": false
+  },
+  "source_reproduction": {
+    "annual_probability_at_least_one": 0.129,
+    "poisson_lambda": 0.13811330212963427,
+    "analytic_zero_event_probability": 0.871,
+    "configured_magnitude_median_usd": 259000.0,
+    "configured_magnitude_p95_usd": 52000000.0,
+    "reconstructed_magnitude_median_usd": 258999.99999999983,
+    "reconstructed_magnitude_p95_usd": 51999999.99999996,
+    "analytic_expected_event_loss_usd": 46736247.412075855,
+    "analytic_expected_annual_loss_usd": 6454897.459229371
+  },
+  "simulated_implications": {
+    "positive_loss_years": 25752,
+    "zero_loss_fraction": 0.87124,
+    "annual_loss_usd": {
+      "mean": 6426504.4426687565,
+      "p50": 0.0,
+      "p75": 0.0,
+      "p90": 26261.270748648385,
+      "p95": 763300.3790303464,
+      "p99": 27220918.54362501
+    },
+    "conditional_positive_annual_loss_usd": {
+      "mean": 49910721.05210279,
+      "p50": 305041.6044101468,
+      "p90": 18268109.495988622,
+      "p95": 55444425.59566503,
+      "p99": 525355412.3149748
+    },
+    "fixed_exceedance": [
+      {"threshold_usd": 100000, "probability": 0.081795},
+      {"threshold_usd": 1000000, "probability": 0.045685},
+      {"threshold_usd": 10000000, "probability": 0.017775},
+      {"threshold_usd": 50000000, "probability": 0.006945},
+      {"threshold_usd": 100000000, "probability": 0.004295}
+    ],
+    "top_one_percent_share_of_total_loss": 0.9618269305648872,
+    "batch_stability": {
+      "batches": 20,
+      "trials_per_batch": 10000,
+      "mean_usd_min": 2391371.3693718244,
+      "mean_usd_max": 17096771.73579943,
+      "p95_usd_min": 662534.6457420054,
+      "p95_usd_max": 942429.8904209366
+    }
+  },
+  "coherence": {
+    "checks_required": 7,
+    "checks_passed": 7,
+    "frequency_source_reproduced": true,
+    "magnitude_source_reproduced": true,
+    "zero_mass_consistent": true,
+    "annual_median_zero_as_implied": true,
+    "fixed_exceedance_monotonic_and_bounded": true,
+    "fixed_seed_aggregate_canonicalization": true,
+    "production_store_byte_identical": true
+  },
+  "interpretation": {
+    "coherence_conclusion": "The frozen pure implementation consistently reproduces and simulates the configured industry-prior implications.",
+    "tail_conclusion": "The baseline is highly zero-inflated and extremely tail-dominated. The top one percent of simulated organization-years contributes 96.18% of total simulated loss, and 10,000-year batch means vary by more than sevenfold.",
+    "permitted_claim": "These are deterministic descriptive implications of the configured anonymous neutral organization-year baseline.",
+    "predictive_validation": false,
+    "calibration_or_representativeness": false,
+    "monte_carlo_variability_is_epistemic_uncertainty": false,
+    "decision_grade": false,
+    "population_applicability_verified": false,
+    "reason": "No observed organization-period outcomes exist, organization revenue is unknown, and the priors are not organization-, sector-, geography-, architecture-, or control-maturity-specific."
+  },
+  "decision": {
+    "opt_014_status": "open-data-gated",
+    "data_gate_cleared": false,
+    "prior_or_policy_changed": false,
+    "next_options": [
+      "governed-independent-organization-incident-data-acquisition-design",
+      "bounded-negative-feasibility-closure"
+    ],
+    "recommendation": "Do not extend the descriptive simulation post hoc. Decide separately whether a defensible independent organization/incident data source can be governed and acquired; if not, close OPT-014 at its available-evidence scope."
+  },
+  "store": {
+    "access": "hash-only-no-database-open",
+    "before_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "after_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "byte_identical": true
+  },
+  "validation": {
+    "pre_execution_focused_tests": 7,
+    "coherence_checks": 7,
+    "coherence_checks_passed": 7,
+    "json_validation": true,
+    "raw_draws_persisted": 0
+  },
+  "accounting": {
+    "elapsed_seconds": 0.5,
+    "new_artifact_bytes": 7441,
+    "in_memory_prior_predictive_generations": 1,
+    "anonymous_organization_years": 200000,
+    "network_reads": 0,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "production_store_rows_read": 0,
+    "production_store_mutations": 0,
+    "persisted_simulation_runs": 0,
+    "persisted_risk_scenarios": 0,
+    "persisted_prior_sources": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0
+  },
+  "not_executed": {
+    "identity_or_source_outcome_access": true,
+    "observed_outcome_validation": true,
+    "fitting_or_model_comparison": true,
+    "backtesting_or_resampling": true,
+    "adequacy_threshold_or_holdout_selection": true,
+    "new_priors_or_hierarchical_estimation": true,
+    "category_allocation_or_remediation_effects": true,
+    "dependency_assumptions_or_portfolio_optimization": true,
+    "tuning_recalibration_or_threshold_recommendation": true,
+    "production_policy_change": true,
+    "opt_014_status_change_or_closure": true,
+    "opt_010_execution": true,
+    "branch_integration_remote_push_or_deployment": true
+  }
+}

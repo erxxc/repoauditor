@@ -1,0 +1,207 @@
+{
+  "accounting": {
+    "agentic_falsification_runs": 0,
+    "assessments_written": 0,
+    "audit_runs": 1,
+    "labels_written": 0,
+    "model_training_runs": 0,
+    "network_reads": 0,
+    "network_uploads": 0,
+    "production_store_mutations": 0,
+    "provider_calls": 0,
+    "provider_cost_usd": 0.0,
+    "provider_reported_tokens": 0,
+    "repository_code_executions": 0,
+    "repository_materializations": 0,
+    "rescoring_runs": 0,
+    "row_identities_emitted": 0,
+    "scanner_processes": 0,
+    "schema_migrations": 0,
+    "source_records_rendered": 0
+  },
+  "aggregate_inventory": {
+    "finding_metadata_availability": {
+      "source_lens_present": 63,
+      "source_tool_present": 2813,
+      "total": 2876
+    },
+    "findings_by_falsification_status": {
+      "confirmed": 97,
+      "killed": 19,
+      "unresolved": 2760
+    },
+    "manual_evidence": {
+      "assessment_abstentions": 12,
+      "manual_labels": 144
+    },
+    "pipeline_runs_by_status": {
+      "completed": 112,
+      "failed": 4
+    },
+    "structural_claims": {
+      "by_language": {
+        "python": 13
+      },
+      "by_mechanism": {
+        "command_injection": 2,
+        "sql_injection": 6,
+        "ssrf": 5
+      },
+      "claims": 13,
+      "snapshot_bound": 13,
+      "verifications_by_status": {
+        "structurally_verified": 10,
+        "verification_incomplete": 3
+      }
+    },
+    "usage_accounting": {
+      "attempts": 1488,
+      "authoritative_usage": 1485,
+      "explicit_unknown_usage": 3,
+      "latency_recorded": 1488,
+      "linked_continuation_batches": 90
+    }
+  },
+  "audit_id": "opt010-offline-readiness-v1",
+  "configuration_bounds": {
+    "falsify_max_findings_per_run": 0,
+    "falsify_max_iterations": 3,
+    "falsify_min_untriaged_per_run": 1,
+    "provider_call_ceiling": 75,
+    "provider_token_ceiling": 250000
+  },
+  "decision": {
+    "agentic_experiment_permitted": false,
+    "all_seven_pass": false,
+    "documented_fail": 2,
+    "documented_pass": 1,
+    "opt_010_status": "open-deferred",
+    "partial": 4,
+    "smallest_next_prerequisite": "Separately authorize an offline implementation and independent negative-test qualification of a configuration-driven read-only agent tool allowlist with immutable-snapshot and per-tool provenance enforcement.",
+    "unresolved": 0
+  },
+  "gate_classification": [
+    {
+      "blocker": null,
+      "evidence": {
+        "attempts": 1488,
+        "authoritative_usage": 1485,
+        "dated_cost_support": "implemented-for-supported-standard-first-party-model",
+        "explicit_unknown_usage": 3,
+        "latency_recorded": 1488,
+        "linked_continuation_batches": 90
+      },
+      "gate_id": "G01",
+      "name": "authoritative-usage-accounting",
+      "state": "documented-pass"
+    },
+    {
+      "blocker": "One protected pre/post pair is not a sufficiently broad real-world cohort.",
+      "evidence": {
+        "independently_frozen_subjects_documented": 2,
+        "subject_set": "single-pre-post-pair",
+        "terminal_usage_documented": true
+      },
+      "gate_id": "G02",
+      "name": "protected-evaluation-cohort",
+      "state": "partial"
+    },
+    {
+      "blocker": "No frozen current-falsifier-versus-agent comparison exists.",
+      "evidence": {
+        "comparison_executed": false,
+        "frozen_comparison_protocol": false,
+        "proposed_agent_implemented": false
+      },
+      "gate_id": "G03",
+      "name": "baseline-comparison",
+      "state": "documented-fail"
+    },
+    {
+      "blocker": "Abstention is preserved, but the protected cohort cannot yet bound recall regression.",
+      "evidence": {
+        "assessment_abstentions_retained": 12,
+        "deferred_findings_retained": 0,
+        "protected_recall_regression_bound": false,
+        "unresolved_findings_retained": 2760
+      },
+      "gate_id": "G04",
+      "name": "recall-safety",
+      "state": "partial"
+    },
+    {
+      "blocker": "Metadata exists, but protected family, mechanism, language, and detector cohorts are not adequately sized.",
+      "evidence": {
+        "adequate_protected_subgroup_sizes": false,
+        "detector_metadata_recorded": 2813,
+        "language_metadata_present": true,
+        "mechanism_metadata_present": true
+      },
+      "gate_id": "G05",
+      "name": "cohort-breakdown",
+      "state": "partial"
+    },
+    {
+      "blocker": "The read-only agent tool surface remains design-only and has no enforced allowlist or provenance contract.",
+      "evidence": {
+        "agent_tool_provenance_contract": false,
+        "bounded_slicing_exists": true,
+        "configuration_driven_agent_tool_allowlist": false,
+        "deterministic_retrieval_exists": true
+      },
+      "gate_id": "G06",
+      "name": "read-only-tools",
+      "state": "documented-fail"
+    },
+    {
+      "blocker": "Independent syntax verification exists, but mechanism coverage is not adequate for an unfrozen proposed cohort.",
+      "evidence": {
+        "claims": 13,
+        "snapshot_bound": 13,
+        "supported_languages_observed": 1,
+        "supported_mechanism_categories": 3,
+        "verifications_by_status": {
+          "structurally_verified": 10,
+          "verification_incomplete": 3
+        }
+      },
+      "gate_id": "G07",
+      "name": "independent-verification",
+      "state": "partial"
+    }
+  ],
+  "input_digests": {
+    "activation_gate": "6ec12b12918c7449866b47b96564d3a815a4efda67739e643aee7cf609e43cfe",
+    "challenger": "ab50f969979c1fe2c2e961b78455bdf91e72fa7e9459c1291ec30f34aca9610c",
+    "claims": "d534c9137236a1e37e2ae88072f24d69b1c6f516ab577175af4dbbf461ad41f6",
+    "configuration": "30d8837bdb63b56a50aefb0cd9bc18a0a7173ac86cd8581d4af6f2b2b21f3d09",
+    "opt_014_handoff": "9af94242b348378a175528e3ceb4d4c8c01f1cccd6da4036ecc7ca895b47045a",
+    "optimization_status": "a8d33e0d3f27e686b120213689223fb29b83834245ffc2f0b147f33f7842c6fa",
+    "production_store": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "receipt": "0f9f324eebba4975b5195acb2d188f56add8e66556a936663a7448329779e478",
+    "retrieval_index": "c440666998bc0898453acc309d23a10b13e95a41360ec23f911e0410da357c08",
+    "sec_edgar_reserve": "5b21cb52b7011165e0609796b3a007c1df2bb209460e343d718b68a7f5cb04d5",
+    "slicing": "f46e8c3eb7bc519efa9c64f11f226dc6fef944ac911373c3238e6615ca07f0df"
+  },
+  "lifecycle_observed": {
+    "gate": "safety-and-evaluation",
+    "id": "OPT-010",
+    "next_priority": 2,
+    "status": "open",
+    "title": "Agentic falsification"
+  },
+  "recorded_at": "2026-08-18",
+  "schema_version": 1,
+  "sec_edgar_reserve": {
+    "opt_014_role": "inactive-commercially-permissive-structurally-limited-reserve",
+    "selected_or_acquired": false,
+    "used_by_opt_010": false
+  },
+  "status": "offline-remediation-or-evidence-needed",
+  "store": {
+    "byte_identical": true,
+    "open_mode": "sqlite-uri-mode-ro-plus-query-only",
+    "sha256_after": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "sha256_before": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a"
+  }
+}

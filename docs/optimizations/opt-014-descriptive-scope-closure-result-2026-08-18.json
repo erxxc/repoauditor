@@ -1,0 +1,126 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-014",
+  "status": "complete-local-lifecycle-closed-integration-deferred",
+  "recorded_at": "2026-08-18",
+  "authorization": "The project owner authorized the corrected bounded descriptive-scope closure with SEC/EDGAR inactive, OPT-010 as the sole open optimization, zero live or branch activity, and full-suite integration separately gated.",
+  "receipts": {
+    "original": {
+      "path": "docs/optimizations/opt-014-descriptive-scope-closure-receipt-2026-08-18.json",
+      "sha256": "239b5c1af6180e1b39ca7887a6cb94797dabc7be0e2b12695e3990fb91035d6b"
+    },
+    "corrected_retry": {
+      "path": "docs/optimizations/opt-014-descriptive-scope-closure-corrected-retry-receipt-2026-08-18.json",
+      "sha256": "5422b81e9c71fdb8b7235df52d3495aefcae34ea7297811ab05d8d6e7f48077c"
+    }
+  },
+  "frozen_evidence": {
+    "offline_eligibility_audit_result_sha256": "95c4166f7002ff09ad5e5278d6417e21581d3d0a19ceef8398b7c2e21f9b6454",
+    "prior_predictive_coherence_result_sha256": "fd5a690164420a89549ba005b228e75fc622ed4558ae0fe0ab97106d1ac47b7d",
+    "metadata_source_discovery_result_sha256": "3da5b5ce5be01b9bf302c4875203e78c3667cec904fd240a3c60ddc0ec6c997d",
+    "swiss_metadata_discovery_result_sha256": "bb7dd8b4338565b004d56876cfb69eee735e08f57bd6e800863e160fd9f871de",
+    "swiss_controlled_access_result_sha256": "1402809914f4056e0baf8b1772e678fc47c4ed69938ab0cf5d5558dbb0e873e8",
+    "uk_canada_qualification_result_sha256": "72c041056415836b2bd1ae6325ae0301d994c9ada6636fa1bcca9c3abab5aa63",
+    "commercial_license_first_result_sha256": "9af94242b348378a175528e3ceb4d4c8c01f1cccd6da4036ecc7ca895b47045a",
+    "sec_edgar_reserve_sha256": "5b21cb52b7011165e0609796b3a007c1df2bb209460e343d718b68a7f5cb04d5",
+    "independent_data_acquisition_design_sha256": "af29a9bd3e1f644fd6ee115daccf59c6da166b45c668941a8f22b4416e09be15"
+  },
+  "closure_interpretation": {
+    "completed_scope": "Deterministic descriptive prior-predictive coherence and bounded outcome-blind commercial-rights and structural data-feasibility screening.",
+    "not_completed_or_claimed": [
+      "predictive validation",
+      "calibration",
+      "target-population representativeness",
+      "held-out backtesting",
+      "hierarchical estimation",
+      "remediation-effect estimation",
+      "dependency modeling",
+      "portfolio optimization or readiness"
+    ],
+    "bounded_negative_claim": "No screened source met the frozen commercial-rights, organization-period denominator, explicit zero-period, incident-count, stable-key, version, and lineage contract. This does not establish that qualifying data are universally impossible.",
+    "future_work": "Any future observed-outcome, disclosure-frequency, negotiated-license, prospective-panel, hierarchical, remediation, or portfolio study requires a new lifecycle identity and separately frozen estimand, rights, data, and evaluation contract."
+  },
+  "sec_edgar": {
+    "state": "inactive-material-disclosure-context-reserve",
+    "activated": false,
+    "filing_or_issuer_records_read": 0,
+    "non_filing_period_is_zero_incident": false
+  },
+  "lifecycle": {
+    "summary": {
+      "closed": 34,
+      "open": 1,
+      "total": 35
+    },
+    "OPT_014": {
+      "status": "closed",
+      "gate": "none",
+      "next_priority": null
+    },
+    "OPT_010": {
+      "status": "open",
+      "gate": "safety-and-evaluation",
+      "next_priority": 1
+    },
+    "sole_open_item": "OPT-010"
+  },
+  "output_bindings": {
+    "optimization_status_sha256": "b08ae0e3a3194eb917c29840e6c133beed47832d3749b493dfbe4dafd3c02791",
+    "optimization_register_sha256": "9f42da756f0be97aa8eab1421013dbc99bb8a99924279184b5f95484465292b6",
+    "documentation_status_sha256": "29b31bcac498b816ddb0b22d2220ca45337358fb3183c39b0bf93a17e864a73d",
+    "project_priorities_sha256": "c5216b129bb8357eb518962262dff9852b79901814a8a73f0c039e458b90c9e5",
+    "triage_accuracy_roadmap_sha256": "92b1a66df26111515eb82981cb8a95053bbe7cfba8da435548038a1d2e3a3b7d",
+    "documentation_current_state_test_sha256": "256b9badad9e37e34d0aecb470bd4c26c3db2f85c31caa90ee8c42d26c8c3b63",
+    "outstanding_work_checkpoint_test_sha256": "b85db027be88152d6093783f460a9b5fe6968356eb8b92627727b9826dce0c65"
+  },
+  "historical_checkpoint": {
+    "path": "docs/optimizations/outstanding-work-checkpoint-2026-08-07.json",
+    "before_sha256": "5161994703f9768f250cc2b7de4dfdcb4ac26632858495391843b9690291562c",
+    "after_sha256": "5161994703f9768f250cc2b7de4dfdcb4ac26632858495391843b9690291562c",
+    "byte_identical": true
+  },
+  "production_store": {
+    "path": "data/repoauditor.db",
+    "access": "before-and-after-hash-only",
+    "before_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "after_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "byte_identical": true,
+    "reads": 0,
+    "mutations": 0
+  },
+  "validation": {
+    "focused_tests_passed": 14,
+    "focused_tests_failed": 0,
+    "status": "passed",
+    "json_validation": true,
+    "git_diff_check": true,
+    "full_offline_non_live_suite": "not-run-separately-gated"
+  },
+  "integration": {
+    "current_branch": "main",
+    "source_commits": 0,
+    "merge_commits": 0,
+    "remote_pushes": 0,
+    "branch_operations": 0,
+    "state": "deferred-to-separate-authorization"
+  },
+  "accounting": {
+    "network_reads": 0,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "schema_migrations": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "simulation_runs": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0,
+    "source_commits": 0,
+    "merge_commits": 0,
+    "remote_pushes": 0,
+    "branch_operations": 0
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-009",
+  "status": "offline-eligibility-audit-complete-current-cohort-ineligible",
+  "date": "2026-08-12",
+  "protocol": {
+    "path": "opt-009-eligibility-protocol-2026-08-12.json",
+    "sha256": "1e58927adab1cd4c4338a64a3ccecaaacd95866194361fd08605eed0ae8a78d0"
+  },
+  "audit_artifact": {
+    "path": "../../data/artifacts/opt009-eligibility-audit.json",
+    "sha256": "ab476e683f582cc3e8b9e6219c039285da322ff79cdfc0e74631b4f9f01d7bdd"
+  },
+  "helper": {
+    "path": "../../src/repoauditor/eval/novelty_eligibility.py",
+    "sha256": "a07085ea2ccd85b649db3f690c94a1fd63dcc65e91b17398c0a460bbcb0988a6"
+  },
+  "store": {
+    "path": "../../data/repoauditor.db",
+    "sha256_before": "a3d8e55feadf5860c079f1de18b698186afbae81ba6bf678717cdfe1f2cca11f",
+    "sha256_after": "a3d8e55feadf5860c079f1de18b698186afbae81ba6bf678717cdfe1f2cca11f",
+    "byte_identical": true
+  },
+  "observed_inventory": {
+    "llm_origin_finding_records": 63,
+    "previously_assessed_records": 2,
+    "unassessed_records": 61,
+    "evidence_eligible_records": 0,
+    "protocol_development_only_records": 63,
+    "calibration_fixture_records": 60,
+    "protected_post_fix_holdout_records": 1,
+    "known_answer_pre_fix_fixture_records": 2,
+    "candidate_identities_emitted": 0,
+    "assessment_outcomes_read": false,
+    "source_content_rendered": false
+  },
+  "decision": {
+    "existing_cohort_can_supply_retrospective_pilot": false,
+    "opt_009_data_gate_cleared": false,
+    "opt_009_status": "open-data-gated",
+    "basis": "All 63 existing LLM-origin finding records are fixture, protected-holdout, or known-answer material. None can establish held-out novelty benefit without provenance or outcome leakage.",
+    "hybrid_plan_effect": "The existing cohort remains useful only for deterministic protocol and evaluation-plumbing tests. The evidence-bearing portion of the hybrid must begin with a separately authorized prospective independent-repository collection.",
+    "next_bounded_step": "Freeze a prospective collection design that assigns novelty strata before outcomes, uses independent production/deployment repositories, and stops before review or labels."
+  },
+  "accounting": {
+    "network_reads": 0,
+    "uploads": 0,
+    "provider_calls": 0,
+    "tokens": 0,
+    "cost_usd": 0,
+    "store_mutations": 0,
+    "assessments_added": 0,
+    "labels_added": 0,
+    "models_trained": 0,
+    "scores_read_or_written": 0
+  },
+  "not_executed": {
+    "packet_selection": true,
+    "source_rendering": true,
+    "human_review": true,
+    "assessment_or_label_import": true,
+    "training_or_rescoring": true,
+    "threshold_selection_or_recommendation": true,
+    "production_policy_change": true,
+    "opt_009_promotion_or_closure": true,
+    "branch_integration": true,
+    "remote_push": true
+  }
+}

@@ -1,0 +1,495 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-014",
+  "status": "uk-canada-access-codebook-qualification-complete",
+  "recorded_at": "2026-08-18",
+  "receipt": {
+    "path": "opt-014-uk-canada-access-codebook-qualification-receipt-2026-08-18.json",
+    "sha256": "bde737aea228f894e19fb8248ada40336a7c1062f14237e7ef79586e8df1ce79",
+    "authorization_matched": true
+  },
+  "design": {
+    "path": "opt-014-independent-data-acquisition-design-2026-08-18.json",
+    "sha256": "af29a9bd3e1f644fd6ee115daccf59c6da166b45c668941a8f22b4416e09be15"
+  },
+  "prior_discovery": {
+    "path": "opt-014-metadata-source-discovery-result-2026-08-18.json",
+    "sha256": "3da5b5ce5be01b9bf302c4875203e78c3667cec904fd240a3c60ddc0ec6c997d"
+  },
+  "swiss_feasibility": {
+    "path": "opt-014-swiss-controlled-access-feasibility-result-2026-08-18.json",
+    "sha256": "1402809914f4056e0baf8b1772e678fc47c4ed69938ab0cf5d5558dbb0e873e8"
+  },
+  "outcome_blinding": {
+    "outcome_values_persisted": 0,
+    "outcome_distributions_persisted": 0,
+    "prior_agreement_inspected_or_used": false,
+    "incidental_value_quarantine": {
+      "activated": true,
+      "occurrences": [
+        "Statistics Canada search results co-mingled survey findings with permitted identity and access metadata.",
+        "The GOV.UK statistical-release family contains outcome-bearing report sections adjacent to the permitted technical report, questionnaire, population, and sampling metadata."
+      ],
+      "handling": "No incident total, rate, loss value, quantile, distribution, correlation, organization identity, row value, model comparison, or prior agreement was transcribed, persisted, summarized, or used. Outcome-bearing snippets and report sections were quarantined."
+    }
+  },
+  "identity_counts": {
+    "total": 3,
+    "canadian": 1,
+    "uk_release_or_catalog": 2,
+    "maximum_total_respected": true,
+    "maximum_uk_respected": true
+  },
+  "identities": [
+    {
+      "stable_identity_sha256": "974468d3676dfe1f184b9c4e2a48c59f1d005c4e4e291b8950ae889e6f301283",
+      "identity_basis": "statistics-canada|CSCSC|2017|record-5244-id-359489",
+      "title": "Canadian Survey of Cyber Security and Cybercrime, 2017",
+      "publisher": "Statistics Canada",
+      "stable_release_identity": "Statistics Canada record 5244, detailed information ID 359489, reference year 2017",
+      "canonical_metadata_url": "https://www23.statcan.gc.ca/imdb/p2SV.pl?Function=getSurvey&Id=359489",
+      "overall_state": "not-qualified",
+      "gate_counts": {
+        "total": 12,
+        "documented-pass": 4,
+        "documented-fail": 2,
+        "unresolved": 6
+      },
+      "gates": [
+        {
+          "gate_id": "G01",
+          "state": "documented-pass",
+          "evidence": "The official survey record fixes record 5244, detailed information ID 359489, reference year 2017, and release date 2018-10-15.",
+          "official_urls": [
+            "https://www23.statcan.gc.ca/imdb/p2SV.pl?Function=getSurvey&Id=359489"
+          ]
+        },
+        {
+          "gate_id": "G02",
+          "state": "documented-pass",
+          "evidence": "The statistical unit is the enterprise and the observation period is the 2017 calendar year.",
+          "official_urls": [
+            "https://www23.statcan.gc.ca/imdb/p2SV.pl?Function=getSurvey&Id=359489"
+          ]
+        },
+        {
+          "gate_id": "G03",
+          "state": "documented-pass",
+          "evidence": "The official methodology documents the private-enterprise target population, Business Register frame, revenue and employee exclusions, stratified random sampling by industry and employee size, estimation, weighting, and disclosure control.",
+          "official_urls": [
+            "https://www23.statcan.gc.ca/imdb/p2SV.pl?Function=getSurvey&Id=359489"
+          ]
+        },
+        {
+          "gate_id": "G04",
+          "state": "documented-pass",
+          "evidence": "The exact questionnaire supplies an explicit no-impact response for 2017 and asks how many times each incident type occurred, with a do-not-know path.",
+          "official_urls": [
+            "https://www23.statcan.gc.ca/imdb/p3Instr.pl?Function=assembleInstr&Item_Id=418254&TET=1"
+          ]
+        },
+        {
+          "gate_id": "G05",
+          "state": "unresolved",
+          "evidence": "The questionnaire documents annual recovery-cost components in Canadian dollars, permits zero, and provides a best-estimate response path, but public metadata does not fully document record-level censoring, truncation, imputation, and missingness transformations for the fixed microdata.",
+          "official_urls": [
+            "https://www23.statcan.gc.ca/imdb/p3Instr.pl?Function=assembleInstr&Item_Id=418254&TET=1"
+          ],
+          "blocking_requirement": "A record-level dictionary and processing note must document the released fields and all censoring, truncation, missingness, and imputation rules."
+        },
+        {
+          "gate_id": "G06",
+          "state": "unresolved",
+          "evidence": "No public codebook for the fixed 2017 microdata was identified that documents record format, advertised size, released variable names, or a stable pseudonymous enterprise identifier.",
+          "official_urls": [
+            "https://www23.statcan.gc.ca/imdb/p2SV.pl?Function=getSurvey&Id=359489",
+            "https://www.statcan.gc.ca/en/microdata/data-centres/data"
+          ],
+          "blocking_requirement": "The fixed wave needs a public or access-route codebook, file manifest, and stable deidentified organization-key specification."
+        },
+        {
+          "gate_id": "G07",
+          "state": "documented-fail",
+          "evidence": "The current official RDC availability inventory for survey record 5244 advertises 2019, 2021, and 2023; the fixed 2017 vintage is not in the inventory of master files available in RDCs.",
+          "official_urls": [
+            "https://www.statcan.gc.ca/en/microdata/data-centres/data"
+          ],
+          "failure_reason": "No currently advertised record-level access tier exists for the exact fixed 2017 identity."
+        },
+        {
+          "gate_id": "G08",
+          "state": "unresolved",
+          "evidence": "Statistics Canada publicly documents Microdata Access Portal and RDC project eligibility, institutional contracting, security clearance, training, oath, and review pathways, but those general pathways do not establish eligibility or review authority for the unavailable fixed 2017 wave.",
+          "official_urls": [
+            "https://www.statcan.gc.ca/en/microdata",
+            "https://www.statcan.gc.ca/en/microdata/data-centres/faq"
+          ],
+          "blocking_requirement": "Wave-specific institutional and researcher eligibility, permitted purpose, jurisdiction, and approving authority remain undocumented."
+        },
+        {
+          "gate_id": "G09",
+          "state": "unresolved",
+          "evidence": "The general RDC route documents deemed-employee duties, secure access, confidentiality, and output vetting, but fixed-wave license, retention, deletion, onward-disclosure, and reidentification terms were not publicly established.",
+          "official_urls": [
+            "https://www.statcan.gc.ca/en/microdata",
+            "https://www.statcan.gc.ca/en/microdata/data-centres/faq"
+          ],
+          "blocking_requirement": "A fixed-wave access agreement and complete lifecycle-control package are required."
+        },
+        {
+          "gate_id": "G10",
+          "state": "unresolved",
+          "evidence": "The general program states that fees depend on the proposal and access needs, but the fixed wave has no advertised access mechanism, file version, size, fee, or withdrawal and supersession rule.",
+          "official_urls": [
+            "https://www.statcan.gc.ca/en/microdata/data-centres/fees",
+            "https://www.statcan.gc.ca/en/microdata/data-centres/data"
+          ],
+          "blocking_requirement": "Wave-specific version, access, fee, and withdrawal metadata are required."
+        },
+        {
+          "gate_id": "G11",
+          "state": "unresolved",
+          "evidence": "The survey is a direct mandatory Statistics Canada enterprise survey, but no record-level provenance or deterministic overlap-exclusion keys are publicly documented for IRIS, Advisen, VERIS, DBIR, NCSC, or the UK candidate family.",
+          "official_urls": [
+            "https://www23.statcan.gc.ca/imdb/p2SV.pl?Function=getSurvey&Id=359489"
+          ],
+          "blocking_requirement": "Publisher-confirmed lineage and a frozen nonidentifying overlap-exclusion method are required."
+        },
+        {
+          "gate_id": "G12",
+          "state": "documented-fail",
+          "evidence": "Because the exact 2017 master file is absent from the current advertised RDC inventory, its advertised access and schema cannot support a later frozen acquisition receipt.",
+          "official_urls": [
+            "https://www.statcan.gc.ca/en/microdata/data-centres/data"
+          ],
+          "failure_reason": "The fixed-vintage acquisition path is not presently advertised."
+        }
+      ],
+      "bounded_interpretation": "This is a fixed-vintage access failure, not a claim that later Canadian waves or a non-public administrative arrangement are unavailable."
+    },
+    {
+      "stable_identity_sha256": "6d1ce9bfa181962f8079c3685c7911b9ade6305127fc1ff7e77168ec0d4c5763",
+      "identity_basis": "uk-dsit|CSBS|2024|govuk-release-2024-04-09",
+      "title": "Cyber Security Breaches Survey 2024",
+      "publisher": "UK Department for Science, Innovation and Technology and Home Office",
+      "stable_release_identity": "GOV.UK Official Statistics release published 2024-04-09",
+      "canonical_metadata_url": "https://www.gov.uk/government/statistics/cyber-security-breaches-survey-2024",
+      "directly_corresponding_deposit": "UK Data Service study 9285",
+      "overall_state": "not-qualified",
+      "gate_counts": {
+        "total": 12,
+        "documented-pass": 5,
+        "documented-fail": 2,
+        "unresolved": 5
+      },
+      "gates": [
+        {
+          "gate_id": "G01",
+          "state": "documented-pass",
+          "evidence": "The official release fixes the 2024 title, publishers, publication date, 12-month reference period, and technical report.",
+          "official_urls": [
+            "https://www.gov.uk/government/statistics/cyber-security-breaches-survey-2024"
+          ]
+        },
+        {
+          "gate_id": "G02",
+          "state": "documented-pass",
+          "evidence": "The quantitative unit is a UK business, charity, or education institution and respondents report over the 12 months before interview; the enterprise subset is explicit.",
+          "official_urls": [
+            "https://www.gov.uk/government/statistics/cyber-security-breaches-survey-2024",
+            "https://www.gov.uk/government/statistics/cyber-security-breaches-survey-2024/cyber-security-breaches-survey-2024-technical-report"
+          ]
+        },
+        {
+          "gate_id": "G03",
+          "state": "documented-pass",
+          "evidence": "The technical report documents the Market Location enterprise frame, regulator frames for charities, exclusions, disproportionate size and sector sampling, population targets, and post-survey weighting.",
+          "official_urls": [
+            "https://www.gov.uk/government/statistics/cyber-security-breaches-survey-2024/cyber-security-breaches-survey-2024-technical-report"
+          ]
+        },
+        {
+          "gate_id": "G04",
+          "state": "documented-pass",
+          "evidence": "The questionnaire has an explicit none-of-these path for organizations without listed breaches or attacks, conditions frequency questions on positives, and documents count variables and zero-capable count routing.",
+          "official_urls": [
+            "https://www.gov.uk/government/statistics/cyber-security-breaches-survey-2024/cyber-security-breaches-survey-2024-technical-report"
+          ]
+        },
+        {
+          "gate_id": "G05",
+          "state": "documented-pass",
+          "evidence": "The questionnaire identifies short-term direct, long-term direct, staff-time, and damage or disruption cost fields in pounds for a selected breach or attack, with numeric bounds, explicit no-cost, do-not-know, prefer-not-to-say, and banded fallback paths.",
+          "official_urls": [
+            "https://www.gov.uk/government/statistics/cyber-security-breaches-survey-2024/cyber-security-breaches-survey-2024-technical-report"
+          ]
+        },
+        {
+          "gate_id": "G06",
+          "state": "documented-fail",
+          "evidence": "The GOV.UK release identity publishes statistical and technical documents rather than a record-level file manifest, advertised microdata size, or stable pseudonymous organization identifier.",
+          "official_urls": [
+            "https://www.gov.uk/government/statistics/cyber-security-breaches-survey-2024"
+          ],
+          "failure_reason": "The publication identity alone is not a record-level acquisition identity."
+        },
+        {
+          "gate_id": "G07",
+          "state": "unresolved",
+          "evidence": "The publication is licensed under the Open Government Licence, but that publication license does not establish an access tier for record-level responses.",
+          "official_urls": [
+            "https://www.gov.uk/government/statistics/cyber-security-breaches-survey-2024/cyber-security-breaches-survey-2024-technical-report"
+          ],
+          "blocking_requirement": "Use the directly corresponding UK Data Service deposit for record-level access qualification."
+        },
+        {
+          "gate_id": "G08",
+          "state": "unresolved",
+          "evidence": "The public statistical release does not define record-level researcher eligibility, residency, permitted-project review, or approval authority.",
+          "official_urls": [
+            "https://www.gov.uk/government/statistics/cyber-security-breaches-survey-2024"
+          ],
+          "blocking_requirement": "Record-level access governance belongs to the corresponding deposit identity."
+        },
+        {
+          "gate_id": "G09",
+          "state": "unresolved",
+          "evidence": "Open Government Licence terms cover the publication, not record-level retention, deletion, output review, onward disclosure, or reidentification controls.",
+          "official_urls": [
+            "https://www.gov.uk/government/statistics/cyber-security-breaches-survey-2024/cyber-security-breaches-survey-2024-technical-report"
+          ],
+          "blocking_requirement": "Record-level data-use terms require the corresponding archive identity."
+        },
+        {
+          "gate_id": "G10",
+          "state": "unresolved",
+          "evidence": "The publication version and date are stable, but no record access mechanism, microdata fee, file version, or withdrawal and supersession controls are attached to the release identity.",
+          "official_urls": [
+            "https://www.gov.uk/government/statistics/cyber-security-breaches-survey-2024"
+          ],
+          "blocking_requirement": "The corresponding archive deposit must govern record access and versioning."
+        },
+        {
+          "gate_id": "G11",
+          "state": "unresolved",
+          "evidence": "The official methodology establishes direct survey provenance but does not expose record-level keys or a deterministic overlap-exclusion method against the frozen prior and comparison sources.",
+          "official_urls": [
+            "https://www.gov.uk/government/statistics/cyber-security-breaches-survey-2024/cyber-security-breaches-survey-2024-technical-report"
+          ],
+          "blocking_requirement": "Record-level lineage and overlap controls remain required."
+        },
+        {
+          "gate_id": "G12",
+          "state": "documented-fail",
+          "evidence": "The GOV.UK publication manifest alone does not advertise record materialization compatible with a later held-out acquisition receipt.",
+          "official_urls": [
+            "https://www.gov.uk/government/statistics/cyber-security-breaches-survey-2024"
+          ],
+          "failure_reason": "The publication is supporting methodology, not the acquisition endpoint."
+        }
+      ],
+      "bounded_interpretation": "The release remains authoritative methodology and questionnaire evidence; its directly corresponding UK Data Service study is the record-level candidate."
+    },
+    {
+      "stable_identity_sha256": "cbec5ed3a41320e8f2a613677b25fa8bcd3e30568f4a4bad851474e9ce787665",
+      "identity_basis": "uk-data-service|CSBS|2024|study-9285-edition-1",
+      "title": "Cyber Security Breaches Survey, 2024",
+      "publisher": "UK Data Service, deposited by the Department for Science, Innovation and Technology",
+      "stable_release_identity": "UK Data Service study 9285, DOI 10.5255/UKDA-SN-9285-1, first edition distributed June 2025",
+      "canonical_metadata_url": "https://doc.ukdataservice.ac.uk/doc/9285/mrdoc/UKDA/UKDA_Study_9285_Information.htm",
+      "directly_corresponding_release": "GOV.UK Official Statistics release published 2024-04-09",
+      "overall_state": "conditionally-qualified",
+      "gate_counts": {
+        "total": 12,
+        "documented-pass": 7,
+        "documented-fail": 0,
+        "unresolved": 5
+      },
+      "gates": [
+        {
+          "gate_id": "G01",
+          "state": "documented-pass",
+          "evidence": "UK Data Service documents study number 9285, title and 2024 vintage, DOI 10.5255/UKDA-SN-9285-1, depositor, distributor, first edition, and file-update date.",
+          "official_urls": [
+            "https://doc.ukdataservice.ac.uk/doc/9285/mrdoc/UKDA/UKDA_Study_9285_Information.htm"
+          ]
+        },
+        {
+          "gate_id": "G02",
+          "state": "documented-pass",
+          "evidence": "The corresponding official methodology establishes organization-level business, charity, and education observations over the 12 months before interview.",
+          "official_urls": [
+            "https://doc.ukdataservice.ac.uk/doc/9285/mrdoc/pdf/9285_cyber_security_breaches_survey_2024_technical_report.pdf"
+          ]
+        },
+        {
+          "gate_id": "G03",
+          "state": "documented-pass",
+          "evidence": "The corresponding technical report documents target populations, enterprise and regulator sampling frames, exclusions, stratification, denominator profiles, and weighting.",
+          "official_urls": [
+            "https://doc.ukdataservice.ac.uk/doc/9285/mrdoc/pdf/9285_cyber_security_breaches_survey_2024_technical_report.pdf"
+          ]
+        },
+        {
+          "gate_id": "G04",
+          "state": "documented-pass",
+          "evidence": "The archived questionnaire documents the no-breach path, 12-month frequency, event-count variables, and zero-capable routed counts.",
+          "official_urls": [
+            "https://doc.ukdataservice.ac.uk/doc/9285/mrdoc/pdf/9285_cyber_security_breaches_survey_2024_technical_report.pdf"
+          ]
+        },
+        {
+          "gate_id": "G05",
+          "state": "documented-pass",
+          "evidence": "The archived questionnaire documents named cost variables, pounds sterling, incident reference routing, numeric bounds, zero-cost codes, do-not-know and refusal codes, and banded censoring fallback for the selected breach or attack.",
+          "official_urls": [
+            "https://doc.ukdataservice.ac.uk/doc/9285/mrdoc/pdf/9285_cyber_security_breaches_survey_2024_technical_report.pdf"
+          ]
+        },
+        {
+          "gate_id": "G06",
+          "state": "unresolved",
+          "evidence": "UK Data Service states that variable and value labels are curated and that multiple formats may be generated, while the technical report references a published SPSS file; public metadata inspected here does not state the exact released file manifest, advertised byte size, stable organization identifier, or identifier persistence semantics.",
+          "official_urls": [
+            "https://doc.ukdataservice.ac.uk/doc/9285/read9285.htm",
+            "https://doc.ukdataservice.ac.uk/doc/9285/mrdoc/pdf/9285_cyber_security_breaches_survey_2024_technical_report.pdf"
+          ],
+          "blocking_requirement": "Post-registration documentation must establish the exact file manifest, size, full data dictionary, and stable pseudonymous organization key before any record acquisition."
+        },
+        {
+          "gate_id": "G07",
+          "state": "documented-pass",
+          "evidence": "The exact study states that the collection is available to registered UK Data Service users under the End User Licence; the service classifies this route as safeguarded access.",
+          "official_urls": [
+            "https://doc.ukdataservice.ac.uk/doc/9285/read9285.htm",
+            "https://ukdataservice.ac.uk/find-data/access-conditions/",
+            "https://ukdataservice.ac.uk/find-data/access-conditions/safeguarded-access/"
+          ]
+        },
+        {
+          "gate_id": "G08",
+          "state": "unresolved",
+          "evidence": "The service documents registered-user access and commercial-use approval for this study, but the exact identity does not publicly resolve all institutional eligibility, user-location limits, permitted-purpose classification, and review-authority conditions without registration.",
+          "official_urls": [
+            "https://doc.ukdataservice.ac.uk/doc/9285/read9285.htm",
+            "https://ukdataservice.ac.uk/find-data/access-conditions/safeguarded-access/"
+          ],
+          "blocking_requirement": "Exact user type, jurisdiction, intended-use category, and any depositor review must be frozen before acquisition."
+        },
+        {
+          "gate_id": "G09",
+          "state": "documented-pass",
+          "evidence": "The End User Licence route documents attribution, confidentiality, no reidentification, no sharing with unregistered users, security duties, commercial-use restrictions, termination, and destruction of all copies at the end of the access period; safeguarded data do not use a SecureLab output-review route unless additional conditions are attached.",
+          "official_urls": [
+            "https://ukdataservice.ac.uk/help/access-policy/types-of-data-access/",
+            "https://ukdataservice.ac.uk/app/uploads/cd137-enduserlicence.pdf"
+          ]
+        },
+        {
+          "gate_id": "G10",
+          "state": "unresolved",
+          "evidence": "The study number, DOI, edition, distributor date, file-update date, and registered-user mechanism are documented, but exact file size, any study-specific fee, access-period value, and withdrawal or supersession behavior are not fully documented in the public study metadata.",
+          "official_urls": [
+            "https://doc.ukdataservice.ac.uk/doc/9285/mrdoc/UKDA/UKDA_Study_9285_Information.htm",
+            "https://doc.ukdataservice.ac.uk/doc/9285/read9285.htm"
+          ],
+          "blocking_requirement": "A later receipt must freeze the exact edition, file manifest and digest, access period, fee state, and withdrawal handling."
+        },
+        {
+          "gate_id": "G11",
+          "state": "unresolved",
+          "evidence": "Publisher provenance supports a direct DSIT and Home Office survey conducted by Ipsos, but the public metadata does not document stable record-level identifiers or deterministic overlap controls against IRIS, Advisen, VERIS, DBIR, NCSC, and the Canadian family.",
+          "official_urls": [
+            "https://doc.ukdataservice.ac.uk/doc/9285/mrdoc/UKDA/UKDA_Study_9285_Information.htm",
+            "https://doc.ukdataservice.ac.uk/doc/9285/mrdoc/pdf/9285_cyber_security_breaches_survey_2024_technical_report.pdf"
+          ],
+          "blocking_requirement": "A nonidentifying organization/time overlap-exclusion protocol and compatible stable key must be verified before outcome access."
+        },
+        {
+          "gate_id": "G12",
+          "state": "unresolved",
+          "evidence": "The safeguarded EUL route and schema are structurally compatible with a later acquisition receipt, but compatibility cannot be completed until the exact file, stable key, lineage, user eligibility, and version controls are documented.",
+          "official_urls": [
+            "https://doc.ukdataservice.ac.uk/doc/9285/read9285.htm",
+            "https://doc.ukdataservice.ac.uk/doc/9285/mrdoc/UKDA/UKDA_Study_9285_Information.htm"
+          ],
+          "blocking_requirement": "Resolve G06, G08, G10, and G11 under a separately authorized access-metadata step."
+        }
+      ],
+      "bounded_interpretation": "This is the only conditionally qualified identity in this audit. It is not selected, not acquired, not statistically adequate by implication, and not approved for registration or record access."
+    }
+  ],
+  "decision": {
+    "opt_014_status": "open-data-gated",
+    "data_gate_cleared": false,
+    "source_selected_for_acquisition": false,
+    "adequacy_threshold_selected": false,
+    "qualified_for_later_acquisition_receipt": 0,
+    "conditionally_qualified": 1,
+    "not_qualified": 2,
+    "result": "UK Data Service study 9285 is a governed, conditionally feasible record-level lead; the fixed Statistics Canada 2017 identity lacks a currently advertised access tier, and the GOV.UK release is supporting methodology rather than an acquisition endpoint.",
+    "decisive_canada_blocker": "The official current RDC inventory advertises record 5244 waves 2019, 2021, and 2023 but not the fixed 2017 wave.",
+    "remaining_uk_blockers": [
+      "Exact file manifest, advertised size, full released-variable dictionary, and stable pseudonymous organization-key semantics are not public.",
+      "Exact user eligibility, jurisdiction, intended-use review, access period, fee state, and withdrawal behavior are incomplete without registration.",
+      "Record-level lineage and deterministic overlap exclusion from the frozen prior and comparison sources remain unresolved."
+    ],
+    "bounded_interpretation": "This qualification does not select UK study 9285, clear the data gate, establish sample adequacy, authorize registration or terms acceptance, inspect any record or outcome, or establish that later Canadian waves are unsuitable.",
+    "next_bounded_options": [
+      "Freeze a separately authorized human-mediated UK Data Service registration and terms-review step limited to study 9285 documentation and access metadata, still stopping before any data-file request or record access.",
+      "Run a separately authorized outcome-blind availability qualification of the currently advertised Statistics Canada 2019, 2021, and 2023 waves without selecting or downloading one.",
+      "Close OPT-014 at its completed descriptive coherence and conditional/negative data-feasibility scope without a universal impossibility claim."
+    ]
+  },
+  "network_and_resource_accounting": {
+    "maximum_elapsed_minutes_respected": true,
+    "new_result_documents": 1,
+    "new_result_bytes_within_10485760": true,
+    "candidate_identities": 3,
+    "metadata_documents_used_as_evidence": 15,
+    "metadata_document_ceiling_respected": true,
+    "allowed_network_hosts_contacted_for_evidence": [
+      "www23.statcan.gc.ca",
+      "www.statcan.gc.ca",
+      "www.gov.uk",
+      "doc.ukdataservice.ac.uk",
+      "ukdataservice.ac.uk"
+    ],
+    "unlisted_links_followed": 0,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "dataset_downloads": 0,
+    "raw_dataset_table_api_preview_or_sample_requests": 0,
+    "raw_records_read": 0,
+    "registrations_applications_or_contacts": 0,
+    "outcome_values_persisted": 0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "simulation_runs": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0
+  },
+  "store": {
+    "access": "hash-only-no-database-open",
+    "before_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "after_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "byte_identical": true
+  },
+  "not_executed": {
+    "credentials_login_registration_account_or_terms_acceptance": true,
+    "application_inquiry_contact_purchase_payment_or_restricted_request": true,
+    "protected_portal_dataset_download_or_record_access": true,
+    "table_api_preview_sample_or_outcome_access": true,
+    "linkage_key_construction_or_source_acquisition_selection": true,
+    "adequacy_threshold_cohort_or_holdout_selection": true,
+    "evaluation_fitting_simulation_or_resampling": true,
+    "prior_methodology_or_policy_change": true,
+    "opt_014_promotion_or_closure": true,
+    "opt_010_execution": true,
+    "branch_integration_remote_push_or_deployment": true
+  }
+}

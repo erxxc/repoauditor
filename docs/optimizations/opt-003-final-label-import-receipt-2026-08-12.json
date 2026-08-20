@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "frozen_at": "2026-08-12",
+  "optimization": "OPT-003",
+  "status": "authorization-pending",
+  "followup_result": {
+    "path": "opt-003-final-label-followup-result-2026-08-12.json",
+    "sha256": "d48a93550223e298ac6fb650ca19d40f703c0fc1a649072122dec419fcd8ade7",
+    "finding_id": 2036,
+    "prior_assessment_id": 159,
+    "disposition": "not_attacker_controlled",
+    "binary_projection": "non_actionable"
+  },
+  "scope": "Perform one atomic offline append-only import of the project owner's bounded follow-up response for finding 2036: preserve assessment 159 as the historical insufficient-evidence abstention, append exactly one not_attacker_controlled reassessment, insert exactly one corresponding non-actionable manual classifier label, and produce one read-only post-import temporal gate report.",
+  "store_precondition": {
+    "path": "../../data/repoauditor.db",
+    "sha256": "06a3d078ecc537600ed877639595adfebc993f36252e8fe5d56da3402b7dfa9b",
+    "triage_assessments": 159,
+    "triage_labels": 157,
+    "triage_model_runs": 41,
+    "model_usage_rows": 1473,
+    "finding_2036_assessments": 1,
+    "finding_2036_labels": 0
+  },
+  "pre_import_backup": {
+    "path": "../../data/backups/repoauditor-opt003-final-label-import.sqlite",
+    "must_not_exist_before_execution": true,
+    "must_match_initial_store_sha256": true
+  },
+  "importer": {
+    "path": "../../src/repoauditor/eval/temporal_followup_import.py",
+    "sha256": "c0f390fb5d077137f3fec22d5dd51bbce47b21c99eb73b57b2aab6d37910107e",
+    "command": "UV_CACHE_DIR=/tmp/repoauditor-uv-cache uv run --offline python -m repoauditor.eval.temporal_followup_import --result docs/optimizations/opt-003-final-label-followup-result-2026-08-12.json --output data/artifacts/opt003-wave-2-runtime-retry/finding-2036-followup-import-result.json",
+    "output": "../../data/artifacts/opt003-wave-2-runtime-retry/finding-2036-followup-import-result.json",
+    "output_must_not_exist_before_execution": true
+  },
+  "atomic_mutation_contract": {
+    "triage_assessment_inserts": 1,
+    "triage_assessment_updates": 0,
+    "triage_assessment_deletes": 0,
+    "triage_label_inserts": 1,
+    "triage_label_actionable": false,
+    "triage_label_source": "manual",
+    "triage_label_updates": 0,
+    "triage_label_deletes": 0,
+    "other_store_mutations": 0,
+    "prior_abstention_preserved": true,
+    "new_assessment": {
+      "finding_id": 2036,
+      "engagement": "opt003-wave2-actual",
+      "outcome": "false_positive",
+      "disposition": "not_attacker_controlled",
+      "analyst": "project owner",
+      "classifier_eligible": true
+    },
+    "new_label": {
+      "engagement": "opt003-wave2-actual",
+      "rule_id": "javascript.express.security.audit.xss.direct-response-write.direct-response-write",
+      "finding_fingerprint": "65d056668c3a8375",
+      "actionable": false,
+      "source": "manual"
+    }
+  },
+  "expected_post_import_gate": {
+    "prospective_decided_labels": 40,
+    "prospective_positive": 6,
+    "prospective_negative": 34,
+    "genuine_evaluation_families": 8,
+    "separately_frozen_prediction_waves": 3,
+    "both_classes_present": true,
+    "activation_conditions_met": true,
+    "effect": "The numerical temporal gate is expected to pass, but this receipt authorizes no OPT-003 status change, promotion, closure, or merge."
+  },
+  "preconditions": [
+    "The follow-up result, response, database, helper, prior assessment, finding feature identity, absent label, absent backup, and absent output match their frozen values.",
+    "Assessment 159 remains the only assessment for finding 2036 and remains the project-owner insufficient_evidence abstention.",
+    "No existing label has engagement opt003-wave2-actual and fingerprint 65d056668c3a8375.",
+    "The pre-import database backup is created and digest-verified before the atomic importer starts."
+  ],
+  "resource_ceilings": {
+    "import_runs": 1,
+    "maximum_elapsed_minutes": 10,
+    "maximum_new_data_bytes": 10485760,
+    "triage_assessment_inserts": 1,
+    "triage_label_inserts": 1,
+    "other_store_mutations": 0,
+    "network_reads": 0,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "rescores": 0,
+    "model_training_runs": 0
+  },
+  "stop_conditions": [
+    "Any result, response, database, helper, prior assessment, finding identity, label absence, backup absence, or output absence precondition drifts.",
+    "The backup cannot be created byte-identical to the initial store before import.",
+    "The import would update or delete assessment 159, insert anything other than the one frozen reassessment and one frozen non-actionable manual label, or mutate any other store row.",
+    "The measured post-import table counts or temporal gate differ from the frozen expected values.",
+    "Any network/provider activity, rescore, model training, response change, further source review, tuning, recalibration, threshold, production policy, OPT-003 status, or branch merge activity is attempted."
+  ],
+  "result_boundary": "One final-label import result may record the atomic transaction, inserted identifiers, store digests, accounting, and read-only temporal gate report. Even if the gate passes, OPT-003 promotion or closure and branch merge require separate authorization.",
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the OPT-003 final-label reassessment import described by opt-003-final-label-import-receipt-2026-08-12.json, limited to one atomic offline append-only import for finding 2036 that preserves assessment 159 as a historical insufficient-evidence abstention, appends exactly one project-owner not_attacker_controlled reassessment, inserts exactly one corresponding non-actionable manual classifier label, and produces one read-only post-import temporal gate report, with ceilings of 10 minutes, 10 MiB new data, one assessment insert, one label insert, and exactly zero other store mutations, network reads, uploads, provider calls, tokens, cost, rescoring, or model training. Response changes, additional review, source expansion, tuning, recalibration, threshold selection, production-policy changes, OPT-003 promotion or closure, and branch merge remain excluded."
+  }
+}

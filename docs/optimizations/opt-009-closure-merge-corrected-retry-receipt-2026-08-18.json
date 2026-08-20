@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "frozen_at": "2026-08-18",
+  "optimization": "OPT-009",
+  "status": "authorization-pending",
+  "original_receipt": {
+    "path": "opt-009-closure-merge-receipt-2026-08-18.json",
+    "sha256": "5ffc8d0786d49d74c8522c93ffc432e224044bb47efb4ece31c4c129b9a3da10"
+  },
+  "stopped_attempt": {
+    "path": "opt-009-closure-merge-attempt-2026-08-18.json",
+    "sha256": "0891769af9c5b78f8b00f0aa1dd54bffc369fdfa5b2ed132a68cfecc4d0892a7",
+    "full_suite": {"passed": 862, "failed": 1, "deselected": 27},
+    "source_branch_commits": 0,
+    "merge_commits": 0,
+    "lifecycle_restored_to_open": true,
+    "historical_checkpoint_unchanged": true,
+    "production_store_unchanged": true
+  },
+  "scope": "Retry the original OPT-009 bounded negative-feasibility closure and local integration with every original evidence, interpretation, lifecycle, documentation, commit, merge, resource, zero-network, zero-store, and excluded-action boundary retained, adding only one exact reconciliation for the stale assertion that requires an immutable dated checkpoint to equal the current lifecycle ledger.",
+  "allowed_test_reconciliation": {
+    "path": "../../tests/test_outstanding_work_checkpoint.py",
+    "pre_change_sha256": "1557ad55068acf5f6862e8e8f001bc20a18894fddacb82a4b92c5ad737b45216",
+    "permitted_change": "Keep the POC Definition-of-Done and tuning-hold checks; replace only the live-equality assertions with explicit verification that outstanding-work-checkpoint-2026-08-07.json remains the immutable historical 32-closed/3-open snapshot with OPT-009, OPT-014, and OPT-010 in recorded priority order, and independently verify that the current ledger is 33 closed and two open with OPT-014 then OPT-010.",
+    "historical_checkpoint_edit_permitted": false,
+    "other_test_semantics_permitted": false
+  },
+  "retained_closure_contract": {
+    "terminal_interpretation": "OPT-009 is closed as not justified and not feasible at the evaluated scope, without making a universal impossibility claim. Any future semantic-novelty attempt is new work with a separate lifecycle identity.",
+    "optimization_status": {"closed": 33, "open": 2, "total": 35},
+    "opt_009": {"status": "closed", "gate": "none", "next_priority": null},
+    "remaining_priority_order": ["OPT-014", "OPT-010"],
+    "historical_checkpoint": {
+      "path": "outstanding-work-checkpoint-2026-08-07.json",
+      "sha256": "5161994703f9768f250cc2b7de4dfdcb4ac26632858495391843b9690291562c",
+      "must_remain_byte_identical": true
+    },
+    "production_store": {
+      "path": "../../data/repoauditor.db",
+      "sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+      "must_remain_byte_identical": true
+    },
+    "descriptive_documents": [
+      "optimization-status.json",
+      "optimization-register.md",
+      "../documentation-status.md",
+      "../project-priorities.md",
+      "../triage-accuracy-roadmap.md"
+    ],
+    "original_test_reconciliation": "../../tests/test_documentation_current_state.py",
+    "closure_result": "opt-009-closure-result-2026-08-18.json",
+    "source_branch": "codex/opt-009-closure",
+    "source_branch_base": "296945be4497b9577b325ee1648cc700f9233a3c",
+    "source_branch_commit_message": "feat: close OPT-009 novelty feasibility study",
+    "target_branch": "main",
+    "target_branch_must_remain_at": "296945be4497b9577b325ee1648cc700f9233a3c",
+    "merge_strategy": "one conflict-free local non-fast-forward merge commit; stop on conflict",
+    "merge_commit_message": "Merge branch 'codex/opt-009-closure'",
+    "remote_push": false,
+    "branch_deletion": false
+  },
+  "branch_preconditions": {
+    "current_branch": "codex/opt-009-closure",
+    "current_head": "296945be4497b9577b325ee1648cc700f9233a3c",
+    "source_commits_since_base": 0,
+    "local_main": "296945be4497b9577b325ee1648cc700f9233a3c",
+    "known_origin_main": "6cf17f0ba3ea430e01540882f9890f9b38975f9b",
+    "origin_main_is_older_than_local_main": true,
+    "network_fetch": false,
+    "branch_recreation": false
+  },
+  "commit_allowlist_extension": [
+    "tests/test_outstanding_work_checkpoint.py"
+  ],
+  "validation_contract": {
+    "full_offline_non_live_test_suite": true,
+    "json_validation": true,
+    "git_diff_check": true,
+    "optimization_status_consistency": true,
+    "historical_checkpoint_unchanged": true,
+    "production_store_unchanged": true,
+    "source_commit_contains_only_original_allowlist_plus_extension": true,
+    "target_main_unchanged_before_merge": true,
+    "clean_tracked_worktree_after_merge": true
+  },
+  "resource_ceilings": {
+    "accounting_basis": "cumulative across the stopped attempt and corrected retry",
+    "maximum_elapsed_minutes": 45,
+    "stopped_attempt_elapsed_minutes": 6.2441666667,
+    "maximum_new_data_bytes": 2097152,
+    "source_branch_commits": 1,
+    "merge_commits": 1,
+    "network_reads": 0,
+    "network_uploads": 0,
+    "remote_pushes": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "production_store_mutations": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "rescored_findings": 0,
+    "model_training_runs": 0
+  },
+  "stop_conditions": [
+    "The original receipt, stopped attempt, historical checkpoint, production store, bound evidence, branch identity, or local-main identity differs from its frozen value.",
+    "The historical checkpoint is edited, the additional test change exceeds its exact lifecycle semantics, or any other test outside the original allowlist is changed.",
+    "Any lifecycle summary differs from 33 closed, two open, 35 total with OPT-014 then OPT-010 in remaining priority order.",
+    "Any full offline non-live test, JSON validation, lifecycle consistency test, historical-checkpoint test, git diff check, or allowlist check fails.",
+    "Any source commit path falls outside the original frozen allowlist plus tests/test_outstanding_work_checkpoint.py, local main changes before merge, or integration produces a conflict.",
+    "Any network read, upload, remote push, provider activity, production-store mutation, assessment, label, rescore, model training, prompt or planner correction, tuning, recalibration, threshold selection or recommendation, production-policy change, deployment, OPT-014 or OPT-010 execution, branch deletion, stash, reset, rebase, or cherry-pick is attempted."
+  ],
+  "completion_boundary": "After the one exact historical-checkpoint test reconciliation, original lifecycle reconciliation, one closure result, passing full offline non-live validation, one allowlisted source-branch commit, one conflict-free local merge commit into unchanged main, a clean tracked worktree, and byte-identical checkpoint and production store, OPT-009 is closed and locally integrated. No remote push, deployment, prompt/planner correction, tuning, threshold, production policy, OPT-014 work, or OPT-010 work is authorized.",
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the corrected OPT-009 bounded negative-feasibility closure and local integration retry described by opt-009-closure-merge-corrected-retry-receipt-2026-08-18.json, retaining every boundary and allowlist from the original closure receipt; accepting the retained stopped attempt with 862 passed, one failed, and 27 deselected, zero source commits, zero merge commits, restored 32-closed/3-open lifecycle state, and byte-identical historical checkpoint and production store; and permitting only one additional reconciliation in test_outstanding_work_checkpoint.py so the immutable 2026-08-07 checkpoint is asserted as historical 32-closed/3-open evidence with OPT-009, OPT-014, OPT-010 in its recorded order while the current ledger is independently asserted as 33 closed and two open items in OPT-014, OPT-010 order; then mark OPT-009 closed as not justified and not feasible at its evaluated scope without a universal impossibility claim, reconcile the originally named ledgers, roadmap, and current-state test, record one closure result, run the full offline non-live suite, commit only the original allowlist plus that one test once on existing codex/opt-009-closure, and create one conflict-free local non-fast-forward merge commit into unchanged main 296945be4497b9577b325ee1648cc700f9233a3c, with cumulative ceilings of 45 minutes, 2 MiB new data, one source commit, one merge commit, and exactly zero network reads, uploads, remote pushes, provider calls, tokens, cost, production-store mutations, assessments, labels, rescoring, or model training. Any other test or historical-evidence change, prompt or planner correction, tuning, recalibration, threshold selection or recommendation, production-policy change, deployment, OPT-014 or OPT-010 execution, stash, reset, rebase, cherry-pick, branch deletion, or unlisted file change remains excluded."
+  }
+}

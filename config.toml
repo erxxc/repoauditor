@@ -65,6 +65,23 @@ max_findings_per_run = 0
 # have no deterministic triage score. 0 restores strict triaged-first behavior.
 min_untriaged_per_run = 1
 
+[falsify.agent_tools]
+# Containment surface for a future separately authorized agent. The current challenger and
+# CLI do not invoke it. Enabling or integrating it requires a later gated change.
+enabled = false
+allowlist = [
+  "indexed_source_excerpt",
+  "structural_slice",
+  "callers",
+  "references",
+  "architecture_evidence",
+]
+maximum_calls = 12
+maximum_results_per_call = 5
+maximum_context_lines = 12
+maximum_query_characters = 256
+maximum_response_bytes = 32768
+
 [triage]
 # Triage classifier training corpus (src/repoauditor/triage/). How the synthetic
 # teacher is blended with real accumulated TriageLabels as they grow. Operational

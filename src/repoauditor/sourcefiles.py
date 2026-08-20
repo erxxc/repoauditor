@@ -131,3 +131,51 @@ def read_numbered(path: Path) -> str:
     lines = path.read_text(errors="replace").splitlines()
     width = len(str(len(lines))) if lines else 1
     return "\n".join(f"{i:>{width}}\t{line}" for i, line in enumerate(lines, start=1))
+
+
+def truncate_utf8(value: str, maximum_bytes: int) -> tuple[str, bool]:
+    """Return a valid UTF-8 prefix no larger than ``maximum_bytes``.
+
+    Byte bounds are deterministic and conservative for provider context safety. A
+    character-count bound is insufficient for repositories containing multibyte text.
+    """
+    if maximum_bytes < 0:
+        raise ValueError("maximum_bytes must be non-negative")
+    encoded = value.encode("utf-8")
+    if len(encoded) <= maximum_bytes:
+        return value, False
+    return encoded[:maximum_bytes].decode("utf-8", errors="ignore"), True
+
+
+def read_numbered_bounded(path: Path, maximum_bytes: int) -> tuple[str, dict[str, int | bool]]:
+    """Render a stable numbered prefix under an exact UTF-8 byte ceiling.
+
+    Original 1-based line numbers are retained, including when the final included
+    source line itself must be clipped. The omission notice is clearly outside the
+    repository evidence block and cannot pass citation canonicalization.
+    """
+    if maximum_bytes <= 0:
+        raise ValueError("maximum_bytes must be positive")
+    text = path.read_text(errors="replace")
+    lines = text.splitlines()
+    width = len(str(len(lines))) if lines else 1
+    rendered = "\n".join(
+        f"{i:>{width}}\t{line}" for i, line in enumerate(lines, start=1)
+    )
+    original_bytes = len(rendered.encode("utf-8"))
+    if original_bytes <= maximum_bytes:
+        return rendered, {
+            "original_bytes": original_bytes,
+            "sent_bytes": original_bytes,
+            "truncated": False,
+        }
+
+    notice = "\n# [REPOAUDITOR: remaining source evidence omitted by byte bound]"
+    notice_bytes = len(notice.encode("utf-8"))
+    prefix, _ = truncate_utf8(rendered, max(0, maximum_bytes - notice_bytes))
+    bounded = prefix + notice
+    return bounded, {
+        "original_bytes": original_bytes,
+        "sent_bytes": len(bounded.encode("utf-8")),
+        "truncated": True,
+    }

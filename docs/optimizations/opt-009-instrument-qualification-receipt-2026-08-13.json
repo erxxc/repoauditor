@@ -1,0 +1,141 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-009",
+  "status": "authorization-pending",
+  "created_at": "2026-08-13",
+  "scope": "Run one aggregate-only offline adequacy audit of the completed OPT-009 wave-one detector and, only if that audit passes every frozen integrity and local functional check, run one isolated two-case OWASP semantic canary against a preselected upstream benchmark positive and matched precision trap. Stop after one qualification result; neither case nor any output may enter the OPT-009 evaluation cohort.",
+  "retained_evidence": {
+    "wave_result": {
+      "path": "opt-009-prospective-detection-wave-1-serialization-retry-result-2026-08-13.json",
+      "sha256": "f63321a143a1252124bd7c58f7bbcd3bf19bede738722311a49f0edc5663241f"
+    },
+    "execution_result": {
+      "path": "../../data/artifacts/opt009-wave-1-serialization-retry/result.json",
+      "sha256": "ae9c72b76ff64a8a2d0458453a85b9271e2b7d0a72bc28ded900dbbad2e32967"
+    },
+    "production_store": {
+      "path": "../../data/repoauditor.db",
+      "sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a"
+    }
+  },
+  "frozen_instrument": {
+    "provider": "anthropic",
+    "model": "claude-opus-4-8",
+    "lens": "owasp",
+    "prompt_version": "owasp_v3+untrusted_repository_content_v1+detection_context_v2",
+    "owasp_prompt": {
+      "path": "../../src/repoauditor/detect/lenses/owasp_v3.md",
+      "sha256": "d303fa95e6906af8553fe704b0215c788f132e038e7b7cb7810db35d15ef4172"
+    },
+    "prompt_security": {
+      "path": "../../src/repoauditor/llm/prompts/untrusted_repository_content_v1.md",
+      "sha256": "f9af73ddaccae6c087f2bc4b0a629688b8084aa5960110f7482afbe9e8717383"
+    },
+    "ensemble": {
+      "path": "../../src/repoauditor/detect/ensemble.py",
+      "sha256": "7f0657bb2f9eef23fac79bc393259f5294daf8f4252e046ec4995e184bde31a1"
+    },
+    "planner": {
+      "path": "../../src/repoauditor/detect/planning.py",
+      "sha256": "3246882d02cfa764143b3336a20565153b901d414ab818d6f4bdcb32e2126eb8"
+    },
+    "source_bounds": {
+      "path": "../../src/repoauditor/sourcefiles.py",
+      "sha256": "133f5b71bb12ecc42921fc62f45836b306e6121d78fdf1cfdcb4c41de18174cc"
+    },
+    "maximum_region_utf8_bytes": 240000,
+    "maximum_complete_request_utf8_bytes": 320000,
+    "provider_retries": 0
+  },
+  "offline_audit": {
+    "network_reads": 0,
+    "production_store_mode": "read-only",
+    "allowed_inputs": [
+      "the retained aggregate result and execution evidence",
+      "pipeline 115 and 116 stage summaries, detection-region chronology, model-usage accounting, and aggregate finding counts",
+      "the frozen detector, planner, prompt, citation-integrity, path-classification, and request-bound implementations",
+      "the two preselected local benchmark files and their pre-existing upstream ground truth"
+    ],
+    "required_checks": [
+      "recompute every retained and frozen digest before analysis",
+      "confirm twelve completed OWASP region records and zero persisted LLM-origin findings without reading assessments, labels, or candidate outcomes",
+      "report only aggregate region-selection basis, path-class, primary/retrieval byte, and truncation counts; do not emit selected production paths or excerpts",
+      "exercise the frozen structured-response parser and citation anchoring locally with a scripted valid positive and an empty negative response",
+      "prove both preselected canary requests fit the 240,000-byte region and 320,000-byte complete-request bounds",
+      "prove the production store digest is unchanged"
+    ],
+    "pass_gate": "Every bound digest and local functional check passes, the retained twelve-region/zero-finding accounting is reproduced, both canary requests fit their byte ceilings, and the production store remains byte-identical. Otherwise persist one offline-only stopped result and do not contact the provider."
+  },
+  "semantic_canary": {
+    "purpose": "Qualify the frozen OWASP semantic detector on independently sourced benchmark truth; this is an instrument test, not prospective candidate collection or benefit evaluation.",
+    "benchmark": {
+      "project": "OWASP Benchmark for Python",
+      "upstream_commit": "f1291485808b66e20ddb6b01b10dc71b3df8c8ba",
+      "ground_truth": {
+        "path": "../../tests/fixtures/owasp_benchmark_py/expected_findings.json",
+        "sha256": "e495debbd254a35b57bd0c8dc3beea063bc6b022b80b2581dc5762e97b3df22d"
+      },
+      "positive": {
+        "case": "BenchmarkTest00099",
+        "category": "sqli",
+        "cwe": "CWE-89",
+        "path": "../../tests/fixtures/owasp_benchmark_py/snapshot/testcode/BenchmarkTest00099.py",
+        "sha256": "70a1ae553181b4ea78e6dec87c0c7ca73fdf1a9babbfeec062ea3465a8e64f8c",
+        "expected_citation_anchor": "cur.execute(sql)"
+      },
+      "negative": {
+        "case": "BenchmarkTest00011",
+        "category": "sqli",
+        "cwe": "CWE-89",
+        "path": "../../tests/fixtures/owasp_benchmark_py/snapshot/testcode/BenchmarkTest00011.py",
+        "sha256": "89c30b95eb2bfd6978be29cd0a7f883f006606ce5c958f0747e25e551ac2a7d1",
+        "expected": "no validated OWASP finding"
+      }
+    },
+    "transfer": "Send api.anthropic.com only the frozen system prompt, structured-output schema, and the numbered public source content of one preselected benchmark file per call. Do not send ground-truth metadata, expected citations, prior OPT-009 source, findings, assessments, labels, scores, or local configuration.",
+    "isolation": "Use a new data/artifacts/opt009-instrument-qualification directory and scratch SQLite database. Only provider usage and validation chronology may be written to that scratch database; data/repoauditor.db must remain byte-identical.",
+    "sequence": [
+      "Run the positive case once with no retry and require authoritative provider usage.",
+      "If the positive attempt has authoritative usage, run the matched negative once with no retry and require authoritative provider usage.",
+      "Validate citations against the frozen local benchmark snapshot without persisting findings.",
+      "Persist aggregate positive/negative validation counts, usage, cost, and the qualification disposition without raw provider output or source excerpts, then stop."
+    ],
+    "pass_gate": "The positive call yields at least one schema-valid, citation-valid OWASP finding matching the pre-frozen upstream citation anchor; the matched negative yields zero citation-valid findings; both attempts have authoritative usage; and every content, token, cost, time, data, isolation, and host ceiling is respected.",
+    "failure_effect": "Record the exact aggregate failed condition and stop. Planner v2, additional source acquisition, prompt changes, tuning, and further provider calls remain deferred.",
+    "success_effect": "Record that the frozen semantic detector passed this two-case qualification and stop. Planner v2 and any remaining-primary or reserve activation still require separate authorization."
+  },
+  "resource_ceilings": {
+    "elapsed_minutes": 30,
+    "new_data_bytes": 10485760,
+    "network_hosts": ["api.anthropic.com"],
+    "uploads": 0,
+    "provider_attempts": 2,
+    "provider_reported_tokens": 30000,
+    "known_dated_price_cost_usd": 0.5,
+    "production_store_mutations": 0,
+    "scratch_model_usage_inserts": 2,
+    "scratch_validation_failure_inserts": 2,
+    "repository_materializations": 0,
+    "scanner_processes": 0,
+    "human_reviews": 0,
+    "assessments": 0,
+    "labels": 0,
+    "model_training_runs": 0
+  },
+  "pricing": {
+    "path": "opt-006-provider-pricing-2026-08-01.json",
+    "sha256": "6d3004e55c577b968513d114fb986156798582017f809f8b09826035e7210649"
+  },
+  "stop_conditions": [
+    "Any retained input, prompt, implementation, benchmark, pricing, or production-store digest differs.",
+    "The offline audit fails, attempts a network read, renders a retained OPT-009 source excerpt, or changes the production store.",
+    "Any host other than api.anthropic.com is contacted, any call uses a different provider, model, lens, prompt, schema, or source case, or any retry is attempted.",
+    "A request exceeds its region or complete-content byte bound, a third provider attempt would occur, total reported tokens exceed 30,000, known dated-price cost exceeds $0.50, or any attempt lacks authoritative usage.",
+    "Any benchmark response or ground truth is imported into the production store or OPT-009 cohort, or any finding identity, source excerpt, raw model output, assessment, label, novelty score, rank, or expected prospective outcome is disclosed.",
+    "Any planner, prompt, threshold, source-selection, production-policy, optimization-status, branch, or remote state is changed."
+  ],
+  "result_boundary": "One qualification result may report aggregate offline diagnostics, positive/negative validation counts, authoritative usage and known dated-price cost, ceiling compliance, production-store immutability, and pass or fail. It cannot clear the OPT-009 data gate, establish novelty benefit, or authorize planner v2, source activation, packet selection, review, labeling, implementation, promotion, closure, integration, or push.",
+  "authorization": {
+    "required_statement": "I authorize the OPT-009 instrument qualification described by opt-009-instrument-qualification-receipt-2026-08-13.json, limited first to one aggregate-only offline audit of the retained twelve completed OWASP regions, frozen detector and planner, parser and citation boundary, request bounds, and production-store immutability, and only if every offline gate passes, one isolated no-retry semantic canary using Claude Opus 4.8 over exactly the pre-frozen OWASP Benchmark Python SQL-injection positive BenchmarkTest00099 and matched precision trap BenchmarkTest00011, transmitting to api.anthropic.com only the frozen prompts, schema, and numbered public fixture source, persisting only scratch usage and validation chronology plus one aggregate qualification result, with ceilings of 30 minutes, 10 MiB new data, only api.anthropic.com network access, at most two provider attempts, 30,000 provider-reported tokens, $0.50 known dated-price cost, two scratch model-usage inserts, two scratch validation-failure inserts, and exactly zero production-store mutations, repository materializations, scanner processes, human reviews, assessments, labels, or model training. Raw model output, source excerpts in result evidence, production candidate generation or disclosure, ground-truth import, planner or prompt changes, retries, rescoring, tuning, recalibration, threshold selection, remaining-primary or reserve activation, packet selection, production-policy changes, OPT-009 promotion or closure, branch integration, and remote push remain excluded; planner v2 and further sources remain deferred regardless of qualification outcome."
+  }
+}

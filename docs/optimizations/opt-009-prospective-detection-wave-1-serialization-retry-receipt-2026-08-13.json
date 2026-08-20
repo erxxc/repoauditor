@@ -1,0 +1,164 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-009",
+  "status": "authorization-pending",
+  "frozen_at": "2026-08-13",
+  "supersedes_for_execution": "opt-009-prospective-detection-wave-1-corrected-retry-receipt-2026-08-13.json",
+  "prior_corrected_receipt": {
+    "path": "opt-009-prospective-detection-wave-1-corrected-retry-receipt-2026-08-13.json",
+    "sha256": "6c67d7f4afc1c2c9f54cd741df3637ae28e1ca33ef223080bbc163d75e1cb4b3"
+  },
+  "stopped_attempt_result": {
+    "path": "opt-009-prospective-detection-wave-1-corrected-retry-attempt-2026-08-13.json",
+    "sha256": "9dd67e0c2ea560857246ed5e378d5562bfe8d186892d34a733b798d1cc35e56a"
+  },
+  "stopped_attempt_evidence": {
+    "path": "../../data/artifacts/opt009-wave-1-corrected-retry/stopped-attempt.json",
+    "sha256": "12dd600bda6071020689e5d5b618af4ee7df0627b70f43a68c5f4079bfec058c"
+  },
+  "scope": "Retain every source, prompt, scanner, evidence-bound, cumulative-provider, outcome-blind, capacity, network, mutation, and exclusion boundary from the corrected retry receipt. Correct only recursive stage-summary serialization, converting datetime values to ISO-8601 strings before JSON persistence; preserve failed pipeline 115 and resume it instead of creating another Vikunja pipeline; use one new isolated artifact directory and fresh preflights; then continue the exact corrected Vikunja resume and conditional Miniflux processing.",
+  "stopped_state": {
+    "store": {
+      "path": "../../data/repoauditor.db",
+      "sha256": "e3cb8e9b129dd92f357cb937d5a5775f442b29f50aac40e19f94e667053315b7"
+    },
+    "pipeline_114": {
+      "repo_id": "opt009-wave1-vikunja",
+      "status": "failed",
+      "failed_stage": "detect",
+      "completed_owasp_regions": 3,
+      "failed_owasp_regions": 1,
+      "historical_provider_attempts": 5,
+      "known_provider_reported_tokens": 99846,
+      "known_dated_price_cost_usd": 0.546170,
+      "unknown_usage_attempts": 1
+    },
+    "pipeline_115": {
+      "repo_id": "opt009-wave1-vikunja",
+      "status": "failed",
+      "failed_stage": "scan",
+      "provider_attempts": 0,
+      "model_usage_rows": 0,
+      "resume_in_place": true
+    },
+    "miniflux": {
+      "repo_id": "opt009-wave1-miniflux",
+      "materialized": false,
+      "pipeline_runs": 0
+    },
+    "outcomes": {
+      "assessments": 0,
+      "labels": 0,
+      "reviews": 0,
+      "scores_or_ranks": 0
+    }
+  },
+  "serialization_correction": {
+    "policy": "opt009-stage-summary-json-v1",
+    "allowed_change": "Recursively transform Pydantic models through model_dump(mode='json'), datetime values through ISO-8601 isoformat(), mappings recursively, and tuples/lists recursively before passing stage summaries to the existing store JSON boundary.",
+    "forbidden_changes": "No scanner execution, applicability, finding, prompt, source excerpt, planner, region selection, citation, provider, retry, budget, cost, capacity, or outcome semantics may change.",
+    "runner": {
+      "path": "../../src/repoauditor/eval/novelty_wave.py",
+      "sha256": "222c2388fa059c0927282f610040ba974689dcfee45cea0ad1f620b8be3177a4"
+    },
+    "focused_test": "A nested advisory_database_checked_at datetime must persist as its ISO-8601 string.",
+    "pipeline_chronology": "Resume pipeline 115 in place, restart its idempotent ingest/map/scan stage records, durably persist fresh scanner health, then proceed to detect. Create only one new pipeline for Miniflux if Vikunja completes."
+  },
+  "retained_corrected_instrument": {
+    "ensemble": {
+      "path": "../../src/repoauditor/detect/ensemble.py",
+      "sha256": "7f0657bb2f9eef23fac79bc393259f5294daf8f4252e046ec4995e184bde31a1"
+    },
+    "source_evidence": {
+      "path": "../../src/repoauditor/sourcefiles.py",
+      "sha256": "133f5b71bb12ecc42921fc62f45836b306e6121d78fdf1cfdcb4c41de18174cc"
+    },
+    "exact_commit_ingest": {
+      "path": "../../src/repoauditor/ingest/repo.py",
+      "sha256": "945a74d476c6204f61342aced931ce2a0bd9af0e8ec31e9bcaa02b080023e6dc"
+    },
+    "architecture": {
+      "path": "../../src/repoauditor/map/domain_map.py",
+      "sha256": "d0598d795b559b0d43db44170e460653288464d72b89fc1a92dfc5e5b6e9d07e"
+    },
+    "config": {
+      "path": "../../config.toml",
+      "sha256": "30d8837bdb63b56a50aefb0cd9bc18a0a7173ac86cd8581d4af6f2b2b21f3d09"
+    },
+    "active_lenses": ["owasp"],
+    "owasp_prompt_version": "owasp_v3+untrusted_repository_content_v1+detection_context_v2",
+    "maximum_regions_per_repository": 6,
+    "maximum_region_utf8_bytes": 240000,
+    "maximum_complete_structured_request_utf8_bytes": 320000,
+    "scanner_health_before_provider": true,
+    "exact_vikunja_resume_prefix_required": true,
+    "unknown_historical_usage_treatment": "Retain as unavailable; never assign zero tokens or cost."
+  },
+  "runtime": {
+    "retained_failed_directory": "data/artifacts/opt009-wave-1-corrected-retry",
+    "retained_failed_directory_immutable": true,
+    "new_artifact_directory": "data/artifacts/opt009-wave-1-serialization-retry",
+    "must_be_absent_before_authorization": true,
+    "semgrep_log_file": "data/artifacts/opt009-wave-1-serialization-retry/semgrep.log",
+    "semgrep_version_cache_path": "data/artifacts/opt009-wave-1-serialization-retry/semgrep-version-cache",
+    "semgrep_version": "1.170.0",
+    "runtime_helper_sha256": "b908ac266f923f35fea290436e11959c11a49829e4566b89c444b25056a3a257",
+    "preflight_order": [
+      "Create the new directory, import-check Semgrep 1.170.0 without starting its CLI, and seed a fresh local version cache.",
+      "Run only Semgrep, supplemental Semgrep, and Gitleaks offline canaries with both exact runtime variables.",
+      "Run only pip-audit and OSV advisory canaries against authorized hosts.",
+      "Create a byte-identical stopped-state backup after all preflights and before resuming pipeline 115."
+    ],
+    "semgrep_dev_contacts": 0
+  },
+  "resource_ceilings": {
+    "resumed_vikunja_pipelines": 1,
+    "new_miniflux_pipelines": 1,
+    "maximum_additional_elapsed_minutes": 415,
+    "maximum_additional_data_bytes": 10726180695,
+    "allowed_network_hosts": [
+      "github.com",
+      "pypi.org",
+      "api.osv.dev",
+      "osv.dev",
+      "api.anthropic.com"
+    ],
+    "vikunja_remaining_provider_attempts": 70,
+    "vikunja_remaining_provider_reported_tokens": 150154,
+    "miniflux_provider_attempts": 75,
+    "miniflux_provider_reported_tokens": 250000,
+    "maximum_new_provider_attempts": 145,
+    "maximum_new_provider_reported_tokens": 400154,
+    "maximum_new_known_dated_price_cost_usd": 11.953830,
+    "maximum_combined_attempts": 150,
+    "maximum_combined_known_reported_tokens": 500000,
+    "maximum_combined_known_dated_price_cost_usd": 12.5,
+    "complete_historical_cost_claim": "unavailable",
+    "human_reviews": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "models_trained": 0,
+    "novelty_scores_or_ranks": 0
+  },
+  "execution_sequence": [
+    "Verify this receipt, both stopped attempts, stopped store, retained directories, exact Vikunja snapshot and chronology, code, prompts, config, budgets, and absent new directory before any write or network activity.",
+    "Create the isolated serialization-retry runtime, pass separated canaries, and preserve a stopped-state backup.",
+    "Resume pipeline 115, reuse exact Vikunja snapshot and completed architecture without provider use, rerun scanners into the new directory, serialize their summary to JSON-compatible values, and require durable completed scanner health before any provider request.",
+    "Verify exact Vikunja region-plan prefix, reuse its three completed OWASP regions, retry only the failed and two unattempted regions under all byte and cumulative usage ceilings.",
+    "Only after Vikunja completes, shallow-fetch exact Miniflux commit 106cdd09e1557222303f3ed1376e1dadf0638621, map once, persist scanner health before provider use, and run at most six bounded OWASP regions.",
+    "Persist one aggregate serialization-retry result with authoritative new usage, known cumulative price, the historical unknown-cost limitation, aggregate family capacity, store accounting, and zero outcomes; then stop."
+  ],
+  "stop_conditions": [
+    "Any frozen receipt, attempt, evidence, store, source, commit, chronology, implementation, prompt, config, scanner, runtime, budget, price, or initially absent directory identity drifts.",
+    "Any retained directory or artifact is changed, any Semgrep binding differs, any canary fails, or any unlisted host is contacted.",
+    "Scanner health is not durably persisted before provider use, any summary remains non-JSON-compatible, or pipeline 115 cannot be resumed in place.",
+    "The exact Vikunja plan prefix drifts, any completed region is called again, any complete request exceeds its byte bound, or any new provider attempt lacks authoritative usage.",
+    "Any remaining per-family or cumulative provider, token, known-cost, time, or data ceiling is exceeded.",
+    "Any source other than retained exact Vikunja or exact Miniflux, repository-code execution, submodule, dependency installation, build, observational lens, falsification, normalization, review, assessment, label, training, score, rank, packet selection, tuning, recalibration, threshold selection, policy change, OPT-009 status change, branch integration, remote push, candidate disclosure, or review rendering is attempted."
+  ],
+  "capacity_and_result_boundary": "Retain the original opt009-prospective-owasp-capacity-v1 aggregate-only minimum of eight eligible production/deployment OWASP issue groups per family. A shortfall is reported without identities and stops execution. The result cannot authorize reserve activation, packet selection, review, outcomes, implementation, promotion, closure, merge, or push.",
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the OPT-009 scanner-summary serialization retry described by opt-009-prospective-detection-wave-1-serialization-retry-receipt-2026-08-13.json, retaining every source, prompt, OWASP-only, scanner, evidence-bound, exact-resume, cumulative-provider, aggregate eight-group-per-family, five-host, outcome-blind, zero-review, zero-assessment, zero-label, zero-training, zero-ranking, and exclusion boundary from the corrected retry receipt; accepting both retained stopped attempts and the original unknown-usage provider rejection without assigning it zero; permitting only recursive JSON-safe conversion of stage summaries, including ISO-8601 advisory timestamps, resumption of failed Vikunja pipeline 115 in place, one new isolated Semgrep runtime with separated canaries, fresh scanner health durably persisted before provider use, reuse of the three completed Vikunja OWASP regions, retry of only its failed and two unattempted regions under 240,000-byte region and 320,000-byte complete-request ceilings, and conditional exact-commit shallow acquisition and bounded processing of Miniflux, with remaining ceilings of 70 Vikunja and 75 Miniflux provider attempts, 150,154 and 250,000 provider-reported tokens respectively, 145 new attempts, 400,154 new reported tokens, $11.953830 new known dated-price cost, 415 additional minutes, and 10,726,180,695 additional bytes, followed by one aggregate result and stop. Candidate identity disclosure, source rendering for review, reserve or remaining-primary activation, observational lenses, falsification, normalization, packet selection, outcomes, tuning, recalibration, threshold selection, production-policy changes, OPT-009 promotion or closure, branch integration, and remote push remain excluded."
+  }
+}

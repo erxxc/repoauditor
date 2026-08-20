@@ -1,0 +1,355 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-014",
+  "status": "metadata-only-source-discovery-complete",
+  "recorded_at": "2026-08-18",
+  "receipt": {
+    "path": "opt-014-metadata-source-discovery-receipt-2026-08-18.json",
+    "sha256": "392756442e2e18f00a665304db70e3f2603ca60efcf0180ff441462e49a44170",
+    "authorization_matched": true
+  },
+  "design": {
+    "path": "opt-014-independent-data-acquisition-design-2026-08-18.json",
+    "sha256": "af29a9bd3e1f644fd6ee115daccf59c6da166b45c668941a8f22b4416e09be15"
+  },
+  "outcome_blinding": {
+    "candidate_classification_inputs": [
+      "source identity and version",
+      "publisher-stated statistical unit and population",
+      "observation window and collection method",
+      "advertised schema, questionnaire, and variable metadata",
+      "denominator and zero-period support",
+      "provenance and upstream lineage",
+      "license, access, format, and size metadata"
+    ],
+    "outcome_values_persisted": 0,
+    "outcome_distributions_persisted": 0,
+    "prior_agreement_inspected_or_used": false,
+    "incidental_value_quarantine": {
+      "activated": true,
+      "occurrences": [
+        "Search snippets co-mingled headline result values with otherwise permitted survey metadata.",
+        "The HHS OCR metadata landing page co-mingled current breach rows with the statutory collection description."
+      ],
+      "handling": "No incident, rate, loss, quantile, distribution, organization, or row value from those sections was transcribed, compared, summarized, persisted, or used in classification. Reading stopped at the metadata boundary."
+    }
+  },
+  "candidate_counts": {
+    "total": 10,
+    "full-organization-period-candidate": 1,
+    "magnitude-only-candidate": 0,
+    "aggregate-context-only": 6,
+    "ineligible": 3
+  },
+  "candidates": [
+    {
+      "stable_identity_sha256": "974468d3676dfe1f184b9c4e2a48c59f1d005c4e4e291b8950ae889e6f301283",
+      "identity_basis": "statistics-canada|CSCSC|2017|record-5244-id-359489",
+      "title": "Canadian Survey of Cyber Security and Cybercrime, 2017",
+      "publisher": "Statistics Canada",
+      "canonical_metadata_url": "https://www23.statcan.gc.ca/imdb/p2SV.pl?Function=getSurvey&Id=359489",
+      "stable_release_identity": "Statistics Canada record 5244, detailed information ID 359489, reference year 2017",
+      "tier": "full-organization-period-candidate",
+      "independence_state": "unresolved",
+      "structural_evidence": {
+        "unit": "enterprise",
+        "period": "12-month calendar year",
+        "population_denominator": "Business Register frame with a publisher-documented private-firm target population, exclusions, stratified random sample, and enterprise sampling unit",
+        "zero_incident_support": "The questionnaire contains an explicit not-impacted response for the reference year.",
+        "incident_count_support": "The questionnaire requests the number of occurrences by incident type.",
+        "loss_support": "The survey purpose and questionnaire include costs associated with responding to incidents.",
+        "population_covariates": ["industry", "employee-size class", "revenue eligibility bands"],
+        "collection": "Direct mandatory electronic questionnaire with non-response follow-up",
+        "microdata_processing": "Publisher metadata describes enterprise-level validation, imputation, weighting, and disclosure control."
+      },
+      "access_and_license": {
+        "public_metadata": true,
+        "row_data_publicly_downloadable_verified": false,
+        "microdata_access_path": "not established on an allowed exact host",
+        "license_for_record_level_use": "unresolved"
+      },
+      "blocking_gaps": [
+        "Exact microdata access, retention, and license terms were not available on the allowed exact host.",
+        "The direct survey lineage appears distinct from the frozen Advisen-derived prior, but record-level overlap cannot be verified from public metadata.",
+        "Currency normalization, censoring, and field-level missingness rules require a later codebook-only verification."
+      ],
+      "acquisition_ready": false
+    },
+    {
+      "stable_identity_sha256": "e7ba75b0379bd2aa746f5e1d05ada7a37332dcf793b44c193b4ff0bc51099694",
+      "identity_basis": "statistics-canada|PSSCSC|2022|record-5244-id-1491855",
+      "title": "Public Sector Survey on Cyber Security and Cybercrime, 2022",
+      "publisher": "Statistics Canada",
+      "canonical_metadata_url": "https://www23.statcan.gc.ca/imdb/p2SV.pl?Function=getSurvey&Id=1491855&wbdisable=true",
+      "stable_release_identity": "Statistics Canada record 5244, detailed information ID 1491855, reference year 2022",
+      "tier": "aggregate-context-only",
+      "independence_state": "unresolved",
+      "structural_evidence": {
+        "unit": "federal public-sector organization",
+        "period": "12-month calendar year",
+        "population_denominator": "Publisher describes an enumerated federal public-sector universe and census design.",
+        "variable_catalog": "Publisher lists incident status, count, and value variables plus organization count and size variables.",
+        "loss_support": "Publisher describes prevention and recovery cost collection."
+      },
+      "blocking_gaps": [
+        "The allowed-host questionnaire index redirects the actual instrument to an unlisted host, so explicit zero coding could not be verified.",
+        "The methodology page contains internally inconsistent copied text from an unrelated survey after its source description; those sections were rejected as evidence.",
+        "Record-level access and license terms remain unresolved.",
+        "The public-sector population differs materially from the frozen private-enterprise prior population."
+      ],
+      "acquisition_ready": false
+    },
+    {
+      "stable_identity_sha256": "1245a3b2a1611c11362bf3d5ae95c4cfd5e11e261d7fba99b4dfb0ef9e3fd3e7",
+      "identity_basis": "statistics-canada|CSCSC|2023|record-5244-id-1529757",
+      "title": "Canadian Survey of Cyber Security and Cybercrime, 2023",
+      "publisher": "Statistics Canada",
+      "canonical_metadata_url": "https://www23.statcan.gc.ca/imdb/p2SV.pl?Function=getSurvey&Id=1529757",
+      "stable_release_identity": "Statistics Canada record 5244, detailed information ID 1529757, reference year 2023",
+      "tier": "aggregate-context-only",
+      "independence_state": "unresolved",
+      "structural_evidence": {
+        "unit": "enterprise",
+        "period": "12-month calendar year",
+        "population_denominator": "Business Register frame, documented private-enterprise target population, exclusions, and cross-sectional sample design",
+        "zero_incident_support": "The questionnaire contains an explicit not-impacted response for the reference year.",
+        "loss_support": "The questionnaire collects organization-year recovery costs in Canadian dollars with explicit zero entry."
+      },
+      "blocking_gaps": [
+        "The permitted questionnaire metadata did not expose an incident-count field, so it fails the frozen full-tier observation contract.",
+        "Recovery cost is organization-year total rather than demonstrated incident-level realized loss.",
+        "Record-level access, license, censoring, and overlap-exclusion terms remain unresolved."
+      ],
+      "acquisition_ready": false
+    },
+    {
+      "stable_identity_sha256": "7b63d3303dcd4a34959a4ce6dfb29531c0825005240ea090c06fed5814c511c2",
+      "identity_basis": "eurostat|ICT-usage-in-enterprises|isoc_e|2025-metadata",
+      "title": "Eurostat ICT Usage in Enterprises",
+      "publisher": "Eurostat",
+      "canonical_metadata_url": "https://ec.europa.eu/eurostat/cache/metadata/EN/isoc_e_esms.htm",
+      "stable_release_identity": "Eurostat metadata domain isoc_e, metadata certified 2025-12-11",
+      "tier": "aggregate-context-only",
+      "independence_state": "unresolved",
+      "structural_evidence": {
+        "unit": "enterprise",
+        "period": "annual survey with specified prior-calendar-year questions",
+        "population_denominator": "Enterprises are covered through national statistical institute surveys with documented size, activity, and regional breakdowns.",
+        "incident_support": "The publisher lists ICT security and incidents among the enterprise survey subjects.",
+        "quality": "Harmonized model questionnaires, national quality reporting, sampling metadata, and confidentiality controls are documented."
+      },
+      "blocking_gaps": [
+        "Eurostat states that only aggregated national data are transmitted and that no microdata are available at the Eurostat level.",
+        "Published aggregate percentages cannot provide deidentified organization-period records or deterministic holdouts.",
+        "National microdata access would require separately enumerated national-statistics hosts and governance."
+      ],
+      "acquisition_ready": false
+    },
+    {
+      "stable_identity_sha256": "1da564efc409daec5c8c9a8bd7e23fa989a112b47a5591899f97b4a0373be0ce",
+      "identity_basis": "vz-risk|VCDB|github-master-metadata|2026-08-18",
+      "title": "VERIS Community Database",
+      "publisher": "Verizon RISK / VERIS community",
+      "canonical_metadata_url": "https://github.com/vz-risk/VCDB",
+      "stable_release_identity": "Public GitHub repository metadata on master, observed 2026-08-18",
+      "tier": "aggregate-context-only",
+      "independence_state": "unresolved",
+      "structural_evidence": {
+        "unit": "publicly disclosed security incident",
+        "schema": "Versioned VERIS incident schema with incident, victim, timeline, and provenance fields",
+        "license": "Creative Commons Attribution-ShareAlike 4.0",
+        "sampling_disclosure": "README warns of mixed sampling and purposefully selected healthcare and priority incidents."
+      },
+      "blocking_gaps": [
+        "No organization-period population denominator or explicit zero-incident organizations exists.",
+        "The unit is an incident, not an observed organization-period.",
+        "Public-disclosure and priority sampling prevent frequency interpretation.",
+        "Potential overlap with other incident aggregators and prior-source records is unresolved."
+      ],
+      "acquisition_ready": false
+    },
+    {
+      "stable_identity_sha256": "6cdea1dfecdba9254a10ce1bcd419b00ab196e365e72c94058552c46604a9053",
+      "identity_basis": "eurepoc|global-dataset-of-cyber-incidents|1.3|zenodo-14965395",
+      "title": "EuRepoC Global Dataset of Cyber Incidents, version 1.3",
+      "publisher": "European Repository of Cyber Incidents",
+      "canonical_metadata_url": "https://zenodo.org/records/14965395",
+      "stable_release_identity": "DOI 10.5281/zenodo.14965395, version 1.3",
+      "tier": "aggregate-context-only",
+      "independence_state": "unresolved",
+      "structural_evidence": {
+        "unit": "cyber incident",
+        "period": "publisher-stated complete historical coverage window",
+        "provenance": "Expert-coded public information from many upstream sources with a versioned DOI and advertised codebook",
+        "formats": ["CSV", "XLSX"]
+      },
+      "blocking_gaps": [
+        "No organization-period population denominator or zero-incident organizations exists.",
+        "The main unit is an incident and affected entities may expand across multiple rows.",
+        "The Zenodo license field is blank in the permitted metadata page.",
+        "Upstream overlap with other public incident collections and the frozen prior lineage is unresolved."
+      ],
+      "acquisition_ready": false
+    },
+    {
+      "stable_identity_sha256": "cbcbb1d714e589092163ee41a96ebcab9d6a265b1529e15ad2e07aabc6805c0d",
+      "identity_basis": "hhs-ocr|breach-portal|current-and-archive|2026-08-18",
+      "title": "HHS OCR Breach Portal",
+      "publisher": "U.S. Department of Health and Human Services, Office for Civil Rights",
+      "canonical_metadata_url": "https://ocrportal.hhs.gov/ocr/breach/breach_report_hip.jsf",
+      "stable_release_identity": "HITECH Act breach portal current and archive collections, observed 2026-08-18",
+      "tier": "aggregate-context-only",
+      "independence_state": "unresolved",
+      "structural_evidence": {
+        "unit": "reported breach",
+        "scope": "Statutorily reported unsecured protected-health-information breaches above a publisher-stated affected-person reporting threshold",
+        "advertised_fields": ["covered-entity type", "submission date", "breach type", "information location", "business-associate indicator"]
+      },
+      "blocking_gaps": [
+        "No covered-entity population denominator or zero-breach entity-periods exists.",
+        "Thresholded regulatory reporting and healthcare-only scope prevent general annual-frequency interpretation.",
+        "The portal co-mingles row-level breach results with its landing metadata; those rows were quarantined and not used.",
+        "No record-level use license was identified."
+      ],
+      "acquisition_ready": false
+    },
+    {
+      "stable_identity_sha256": "31a73439620a33cd80be20b4cd0c830fa371975b36956c01aa319ba8175ee05b",
+      "identity_basis": "european-commission|special-eurobarometer-390|v1.00|S1058_77_2_EBS390",
+      "title": "Special Eurobarometer 390: Cyber Security",
+      "publisher": "European Commission, Directorate-General for Communication",
+      "canonical_metadata_url": "https://data.europa.eu/data/datasets/s1058_77_2_ebs390?locale=en",
+      "stable_release_identity": "Catalog identifier S1058_77_2_EBS390, version 1.00",
+      "tier": "ineligible",
+      "independence_state": "unresolved",
+      "structural_evidence": {
+        "unit": "individual citizen",
+        "scope": "Internet use, perceptions, awareness, and personal cybercrime experience"
+      },
+      "blocking_gaps": [
+        "The statistical unit is a person rather than an organization.",
+        "It cannot supply organization-period incident counts, losses, or population covariates required by OPT-014."
+      ],
+      "acquisition_ready": false
+    },
+    {
+      "stable_identity_sha256": "78807a1892b1b4f2cc4d030395568da58943da337925849f7f93d7766fb6fbf3",
+      "identity_basis": "ait|CAM-LDS|v2|zenodo-18861762",
+      "title": "Cyber Attack Manifestations Log Data Set, version 2",
+      "publisher": "Austrian Institute of Technology",
+      "canonical_metadata_url": "https://zenodo.org/records/18861762",
+      "stable_release_identity": "Zenodo record 18861762, version 2",
+      "tier": "ineligible",
+      "independence_state": "circular-or-overlapping",
+      "structural_evidence": {
+        "unit": "synthetic attack-step log and alert manifestation",
+        "generation": "Virtual test environment with simulated attack chains"
+      },
+      "blocking_gaps": [
+        "The source is synthetic and model/testbed-generated.",
+        "Logs and alerts are not realized organization-period incidents or losses."
+      ],
+      "acquisition_ready": false
+    },
+    {
+      "stable_identity_sha256": "e49e3f85c22a6fc39afcbc47d6d28386c2a40de1fc7b8cae36214b15f24d65e6",
+      "identity_basis": "cesnet|warden-alert-capture|1.0.0|zenodo-4683701",
+      "title": "Warden Intrusion Detection Alert Capture, version 1.0.0",
+      "publisher": "CESNET",
+      "canonical_metadata_url": "https://zenodo.org/records/4683701",
+      "stable_release_identity": "DOI 10.5281/zenodo.4683701, version 1.0.0",
+      "tier": "ineligible",
+      "independence_state": "unresolved",
+      "structural_evidence": {
+        "unit": "anonymized intrusion-detection alert",
+        "period": "bounded technical capture window",
+        "license": "Creative Commons Attribution 4.0"
+      },
+      "blocking_gaps": [
+        "Alerts are not realized incidents or losses.",
+        "The organizations are a convenience set of sensor operators rather than a target-population denominator.",
+        "The capture cannot supply organization-year zero-event observations."
+      ],
+      "acquisition_ready": false
+    }
+  ],
+  "blocked_or_unusable_host_paths": [
+    {
+      "source_family": "UK Cyber Security Breaches Survey and UK Data Service catalog",
+      "reason": "Search surfaced potentially relevant metadata on www.gov.uk, doc.ukdataservice.ac.uk, and assets.publishing.service.gov.uk, but those exact hosts were not authorized. They were not opened or used as classification evidence."
+    },
+    {
+      "source_family": "U.S. Census business survey materials",
+      "reason": "Search surfaced materials on www.census.gov and www2.census.gov, but those exact hosts were not authorized. They were not opened or used as classification evidence."
+    },
+    {
+      "source_family": "Statistics Canada instruments and public tables",
+      "reason": "Some allowed www23.statcan.gc.ca indexes redirect instruments and tables to unlisted www.statcan.gc.ca or www150.statcan.gc.ca hosts. Those links were not followed."
+    },
+    {
+      "source_family": "Other authorized host families",
+      "reason": "No usable metadata evidence was established on the exact oecd.org, sec.gov, data.sec.gov, hhs.gov, ic3.gov, data.census.gov, statcan.gc.ca, ukdataservice.ac.uk, gov.uk, census.gov, veriscommunity.net, or dataverse.harvard.edu hosts within the frozen funnel. No redirect expansion was attempted."
+    }
+  ],
+  "decision": {
+    "opt_014_status": "open-data-gated",
+    "data_gate_cleared": false,
+    "source_selected_for_acquisition": false,
+    "adequacy_threshold_selected": false,
+    "result": "One source is structurally full-tier by published metadata, but no candidate is acquisition-ready under the frozen governance contract.",
+    "strongest_structural_lead": "Statistics Canada's 2017 Canadian Survey of Cyber Security and Cybercrime is the only discovered source with an enterprise-year unit, explicit zero-incident response, incident occurrence counts, response-cost fields, and a documented business-population frame.",
+    "remaining_gate": "Exact record-level access, license, deidentification, retention, field dictionary, currency/censoring rules, and prior-lineage overlap controls must be verified without outcome access before any acquisition can be considered.",
+    "next_bounded_options": [
+      "Correct the metadata host allowlist and run a narrow access-and-codebook qualification for the full-tier Statistics Canada identity plus the blocked UK survey family, still without records or outcomes.",
+      "If governed record-level access cannot be established, close OPT-014 at its descriptive and negative-feasibility scope without a universal impossibility claim."
+    ]
+  },
+  "network_and_resource_accounting": {
+    "maximum_elapsed_minutes_respected": true,
+    "new_result_documents": 1,
+    "candidate_identities": 10,
+    "unique_allowed_host_metadata_documents_used_as_evidence": 17,
+    "allowed_network_hosts_contacted_for_evidence": [
+      "www23.statcan.gc.ca",
+      "ec.europa.eu",
+      "data.europa.eu",
+      "github.com",
+      "ocrportal.hhs.gov",
+      "zenodo.org"
+    ],
+    "unlisted_links_followed": 0,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "dataset_downloads": 0,
+    "raw_dataset_or_preview_requests": 0,
+    "raw_records_used": 0,
+    "outcome_values_persisted": 0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "simulation_runs": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0
+  },
+  "store": {
+    "access": "hash-only-no-database-open",
+    "before_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "after_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "byte_identical": true
+  },
+  "not_executed": {
+    "dataset_or_microdata_download": true,
+    "raw_record_or_preview_access": true,
+    "credential_account_terms_application_contact_or_purchase": true,
+    "source_acquisition_selection_or_ranking": true,
+    "adequacy_threshold_cohort_or_holdout_selection": true,
+    "evaluation_fitting_simulation_or_resampling": true,
+    "prior_methodology_or_policy_change": true,
+    "opt_014_promotion_or_closure": true,
+    "opt_010_execution": true,
+    "branch_integration_remote_push_or_deployment": true
+  }
+}

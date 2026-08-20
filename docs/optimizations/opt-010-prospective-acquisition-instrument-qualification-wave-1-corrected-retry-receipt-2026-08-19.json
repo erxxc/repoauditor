@@ -1,0 +1,193 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-010",
+  "status": "authorization-pending",
+  "frozen_at": "2026-08-19",
+  "supersedes_for_execution": "opt-010-prospective-acquisition-instrument-qualification-wave-1-receipt-2026-08-19.json",
+  "objective": "Retry the stopped six-family acquisition and offline instrument-qualification wave with one narrowly corrected no-resolution pip-audit path, while retaining the original source order, exact commits, scanner and retrieval identities, aggregate-only result, store, provider, review, git, lifecycle, and deployment boundaries.",
+  "retained_stopped_attempt": {
+    "original_receipt": {
+      "path": "docs/optimizations/opt-010-prospective-acquisition-instrument-qualification-wave-1-receipt-2026-08-19.json",
+      "sha256": "4145acd756a0f9a2de0c2c3b42d863e3ca18543c673ff20cab9fd51b68e25108"
+    },
+    "stopped_result": {
+      "path": "docs/optimizations/opt-010-prospective-acquisition-instrument-qualification-wave-1-result-2026-08-19.json",
+      "sha256": "f762ce9d6a0b543c2e8ff7028038ac806105f8e0d88faeb067a369b1956a24c5"
+    },
+    "stopped_result_test": {
+      "path": "tests/test_opt_010_acquisition_instrument_qualification_wave_1.py",
+      "sha256": "9d0ec3e206a6a9fc953be99417ee2d80dfdf5973309dcd9c945fe4889c725290"
+    },
+    "artifact_directory": "data/artifacts/opt010-acquisition-instrument-qualification-wave-1",
+    "immutability": "Do not delete, overwrite, rename, or modify the original artifact directory, fresh version cache, four completed canary reports, original receipt, stopped result, or stopped-result test.",
+    "accepted_state": {
+      "semgrep_import_version": "1.170.0",
+      "offline_canaries_passed": 3,
+      "pip_audit_canary_failed": 1,
+      "osv_canary_attempted": 0,
+      "repositories_materialized": 0,
+      "repository_scanners_attempted": 0,
+      "retrieval_indexes_built": 0,
+      "provider_calls": 0,
+      "production_store_mutations": 0,
+      "branch_or_index_operations": 0
+    }
+  },
+  "retained_frozen_scope": {
+    "source_selection_result_sha256": "df6e20287538d8ec2fe1cb2606ab7c85a47296c803e59273ae38acbe285f91a1",
+    "protected_cohort_design_sha256": "bb77f61d14051fb6c5443b30157a92089f8e3ecbf53cb20c69daa2adaa7b12b8",
+    "baseline_comparison_protocol_sha256": "ac7872088d89950e27ffc2e733bc1282a9697d34d2a9add378fb35023c487133",
+    "selection_digest_sha256": "583772fe5f533aecaa306660783ff49d7ed0f84d5fc3f2d8cc09a08f7bb456d0",
+    "production_store_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "subjects": [
+      [
+        "unslothai/unsloth",
+        "489fab4a71f83dd4e02a430f560884c3d052c575"
+      ],
+      [
+        "amruthpillai/reactive-resume",
+        "dbbab6fd7610cf1472d0e0377fc0e966faf7acda"
+      ],
+      [
+        "0xJacky/nginx-ui",
+        "f1b8d846eab834daf6a95e30e3d02d329fdcb0d4"
+      ],
+      [
+        "theonedev/onedev",
+        "89e2f09b7b0cd9682a32a8b4a1ed863f791570ea"
+      ],
+      [
+        "pglombardo/PasswordPusher",
+        "c8fd1dc18fc55b570c2acc06ded6b37f05da6ee5"
+      ],
+      [
+        "SinTan1729/chhoto-url",
+        "7d36ccbd585bd326adfff45982bb0a4d760287c1"
+      ]
+    ],
+    "languages": [
+      "Python",
+      "TypeScript",
+      "Go",
+      "Java",
+      "Ruby",
+      "Rust"
+    ],
+    "architecture_map_slot": "pending-separate-provider-authorization"
+  },
+  "only_instrument_correction": {
+    "scope": "Replace the pip-audit canary and repository invocation path only. Do not modify pip-audit, ScaAdapter, any other scanner adapter, scanner rules, retrieval, slicing, claims, configuration, pipeline, store, CLI, or production integration.",
+    "implementation": "src/repoauditor/eval/opt010_acquisition_qualification.py",
+    "pip_audit_version": "2.10.1",
+    "exact_invocation": [
+      "pip-audit",
+      "--disable-pip",
+      "--no-deps",
+      "-r",
+      "$MANIFEST",
+      "-f",
+      "json",
+      "--progress-spinner",
+      "off"
+    ],
+    "positive_canary": "One isolated requirements.txt containing only requests==2.19.1; require valid JSON, at least one advisory, exact version provenance, and exit status zero or one.",
+    "clean_canary": "One isolated empty requirements.txt; require valid JSON, zero advisories, exact version provenance, and exit status zero or one.",
+    "repository_rule": "Audit only root-level requirements*.txt files for which every active requirement is a direct exact name==version pin. A repository without such a file is explicit not-applicable. Any root requirements file containing an unpinned, ranged, editable, URL, path, option, include, constraint, marker-ambiguous, or otherwise non-direct entry is a retained terminal scanner failure, not a relaxed or silently partial audit.",
+    "dependency_resolution": false,
+    "dependency_installation": false,
+    "fallback": false,
+    "retry_inside_attempt": false,
+    "advisory_host": "pypi.org",
+    "output_contract": "Parse in memory through the frozen pip-audit JSON parser; retain only execution provenance and aggregate finding count outside raw isolated scanner artifacts."
+  },
+  "corrected_runtime": {
+    "artifact_directory": "data/artifacts/opt010-acquisition-instrument-qualification-wave-1-corrected-retry",
+    "must_be_absent_before_authorization": true,
+    "semgrep_log_file": "data/artifacts/opt010-acquisition-instrument-qualification-wave-1-corrected-retry/semgrep.log",
+    "semgrep_version_cache_path": "data/artifacts/opt010-acquisition-instrument-qualification-wave-1-corrected-retry/semgrep-version-cache",
+    "semgrep_version": "1.170.0",
+    "pip_audit_version": "2.10.1",
+    "osv_scanner_version": "2.3.8",
+    "gitleaks_version": "8.30.1",
+    "requirements": [
+      "Verify all retained evidence, source, selection, store, implementation, rules, branch, index, and initially absent corrected-directory identities before any new write, scanner, or network process.",
+      "Create the corrected directory before any Semgrep-capable process, perform the same import-only Semgrep verification, seed a new version cache, and bind both corrected runtime variables on every Semgrep-capable process.",
+      "Rerun separated offline Semgrep, supplemental Semgrep, and Gitleaks canaries, then the corrected no-resolution pip-audit canary, then the unchanged OSV canary; every canary must pass before acquisition.",
+      "Do not contact semgrep.dev, use registry rules, invoke a dependency resolver or installer, retry a failed canary, or reuse a canary result from the stopped directory."
+    ]
+  },
+  "resumed_execution": {
+    "rule": "Only after every corrected canary passes, process the same six subjects in the same order under every original exact-commit, snapshot, detector-input, RetrievalIndex, scanner-health, verifier-eligibility, terminal-state, local-artifact, aggregate-result, outcome-blind, and stop boundary.",
+    "five_scanners": [
+      "semgrep",
+      "semgrep-supplemental",
+      "gitleaks",
+      "pip-audit-direct-no-deps",
+      "osv-scanner"
+    ],
+    "scanner_health": "Complete, empty, or explicit valid zero-target not-applicable is acceptable. Unavailable, failed, partial, malformed, disabled, missing provenance, incomplete inventory, or unsupported direct-pin manifest is a retained terminal failure and stops before the next subject.",
+    "raw_artifact_boundary": "Exact public snapshots and raw local scanner artifacts remain only in the corrected artifact directory. The result discloses only aggregate counts, statuses, and digests.",
+    "result": "docs/optimizations/opt-010-prospective-acquisition-instrument-qualification-wave-1-corrected-retry-result-2026-08-19.json",
+    "focused_test": "tests/test_opt_010_acquisition_instrument_qualification_wave_1_corrected_retry.py"
+  },
+  "resource_ceilings": {
+    "retained_logical_scanner_canaries": 4,
+    "new_logical_scanner_processes_maximum": 35,
+    "cumulative_logical_scanner_processes_maximum": 39,
+    "repositories_materialized_cumulative": 6,
+    "retrieval_index_builds_cumulative": 6,
+    "maximum_elapsed_minutes_per_repository": 180,
+    "maximum_additional_elapsed_minutes": 890,
+    "maximum_cumulative_elapsed_minutes": 900,
+    "maximum_additional_data_bytes": 21474816000,
+    "maximum_cumulative_data_bytes": 21474836480,
+    "allowed_network_hosts": [
+      "github.com",
+      "pypi.org",
+      "api.osv.dev",
+      "osv.dev"
+    ],
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "repository_code_executions": 0,
+    "dependency_resolutions": 0,
+    "dependency_installations": 0,
+    "agentic_falsification_runs": 0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "schema_migrations": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0,
+    "human_finding_reviews": 0,
+    "branch_or_index_operations": 0,
+    "source_commits": 0,
+    "merge_commits": 0,
+    "remote_pushes": 0,
+    "lifecycle_changes": 0
+  },
+  "authorized_outputs_after_authorization": [
+    "data/artifacts/opt010-acquisition-instrument-qualification-wave-1-corrected-retry",
+    "src/repoauditor/eval/opt010_acquisition_qualification.py",
+    "tests/test_opt_010_acquisition_instrument_qualification_wave_1_corrected_retry.py",
+    "docs/optimizations/opt-010-prospective-acquisition-instrument-qualification-wave-1-corrected-retry-result-2026-08-19.json"
+  ],
+  "stop_conditions": [
+    "Any retained failed evidence is modified or any frozen source, commit, selection, store, implementation, tool, rule, branch, index, or initially absent corrected-directory identity drifts.",
+    "Any pip-audit process omits --disable-pip or --no-deps, invokes pip or dependency resolution, follows an unsupported manifest, contacts a host other than pypi.org, retries, or returns invalid or absent JSON.",
+    "Any corrected canary fails or any repository scanner is unavailable, failed, partial, malformed, disabled, missing provenance, or incomplete except for explicit valid not-applicable status.",
+    "Any original exact-source, process, elapsed, data, network-host, zero-activity, aggregate-only, source-rendering, finding-disclosure, outcome, review, provider, store, git, lifecycle, or deployment boundary is exceeded."
+  ],
+  "excluded": [
+    "any correction other than the isolated no-resolution pip-audit invocation helper and its focused test",
+    "the remaining six primaries, all reserves, replacement or reordered sources, architecture recovery, provider use, agentic or paired-baseline execution, candidate or packet selection, source rendering, finding identity disclosure, outcomes, review, assessments, labels, training, rescoring, tuning, threshold selection or recommendation, production-policy changes, OPT-010 activation, promotion or closure",
+    "OPT-014 or SEC/EDGAR reactivation, OPT-036 use or change, lifecycle changes, full-suite execution, branch or index operations, staging, commits, merges, pushes, integration, or deployment"
+  ],
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the corrected OPT-010 prospective acquisition and offline instrument-qualification wave-one retry described by opt-010-prospective-acquisition-instrument-qualification-wave-1-corrected-retry-receipt-2026-08-19.json, retaining the original six exact source commits, order, language and mechanism metadata, scanner and retrieval identities, outcome-blind aggregate-only boundary, four allowed network hosts, 20 GiB cumulative data ceiling, 900-minute cumulative time ceiling, and zero-provider, zero-repository-code, zero-store, zero-review, zero-label, zero-training, zero-git-integration, and zero-lifecycle limits; accepting the retained stopped attempt with three passed offline canaries, one failed pip-audit canary, no OSV attempt, zero acquisitions, and byte-identical production store; requiring immutable prior evidence, a fresh corrected artifact directory and Semgrep runtime, rerun of all separated canaries, and only one instrument correction that invokes exact pip-audit 2.10.1 with --disable-pip and --no-deps over the frozen positive and clean controls and only direct exact root requirements pins, with no resolver, installer, fallback, or retry; then, only if every canary passes, exact-commit shallow materialization and the originally frozen five-scanner, snapshot, detector-input, RetrievalIndex, and aggregate verifier-eligibility qualification over the same six subjects, followed by one corrected result and stop, with ceilings of 35 new and 39 cumulative logical scanner processes, six cumulative repositories, six retrieval indexes, 180 minutes per repository, 890 additional minutes, 21,474,816,000 additional bytes, only github.com, pypi.org, api.osv.dev, and osv.dev network hosts, and exactly zero uploads, provider calls, tokens, cost, repository-code executions, dependency resolutions or installations, agentic runs, production-store reads or mutations, assessments, labels, model training, rescoring, human finding reviews, branch or index operations, commits, merges, pushes, or lifecycle changes. The remaining six primaries and all reserves, any other instrument change, architecture recovery, provider or agentic execution, candidate or packet selection, finding identity disclosure, source rendering, outcomes, review, tuning, threshold selection or recommendation, production-policy changes, OPT-010 activation, promotion or closure, OPT-014 or SEC/EDGAR reactivation, OPT-036 use or change, integration, and deployment remain excluded."
+  }
+}

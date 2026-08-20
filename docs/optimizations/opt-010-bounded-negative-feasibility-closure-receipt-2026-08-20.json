@@ -1,0 +1,230 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-010",
+  "status": "authorization-pending",
+  "objective": "Close OPT-010 at its completed bounded negative-feasibility scope, preserve all positive containment foundations and negative evaluation evidence, reconcile current lifecycle authority, and leave production activation and integration unperformed.",
+  "closure_interpretation": {
+    "status": "closed-not-justified-and-not-feasible-at-evaluated-scope",
+    "positive_completed_scope": [
+      "authoritative usage accounting remained available",
+      "the frozen paired protocol and fail-closed comparison invariants were documented",
+      "the disabled and disconnected read-only tool facade passed its isolated containment qualification",
+      "six exact prospective subjects were acquired and indexed, and bounded architecture maps were recovered for the supported qualification envelope",
+      "Java CWE-918 scratch-rule and Ruby CWE-502 pinned-default synthetic canaries qualified"
+    ],
+    "negative_or_unresolved_scope": [
+      "the first frozen 40-identity four-family packet contract had only 30 deduplicated groups from two families",
+      "supported-primary augmentation reached capped capacity 39 with only Python and TypeScript contributing",
+      "retained Java scans contributed zero Java groups",
+      "the final approved Java/Ruby augmentation attempt stopped under the strict scanner-health contract after both Java subjects completed and the first Ruby source emitted partial-parsing errors",
+      "no complete 40-identity packet, paired G03b comparison, empirical G04 recall evaluation, production threshold, or activation decision was reached"
+    ],
+    "claims_not_made": [
+      "agentic falsification is universally impossible or valueless",
+      "the read-only facade improves correctness, precision, recall, latency, or cost",
+      "the prospective sources contain or do not contain actionable vulnerabilities",
+      "production activation, integration, or deployment is safe"
+    ],
+    "future_work_rule": "Any future agentic evaluation, Ruby scan-scope change, alternate scanner-health policy, expanded verifier, new source, packet, paired run, or production activation is newly scoped work under a new lifecycle identity and authorization; OPT-010 is not silently reopened."
+  },
+  "frozen_evidence": {
+    "readiness_audit_result": {
+      "path": "docs/optimizations/opt-010-offline-readiness-audit-result-2026-08-18.json",
+      "sha256": "79f45658b3d1a4f07fafa6dbbdeca4673d36c807d1c8ecf539e131503b040602"
+    },
+    "containment_foundation_result": {
+      "path": "docs/optimizations/opt-010-offline-containment-foundation-result-2026-08-18.json",
+      "sha256": "fbfb13771a6cdc4d2fae23d7d6985a025d78e5481fd853a1f8719f17cc627c51"
+    },
+    "paired_foundation_result": {
+      "path": "docs/optimizations/opt-010-offline-paired-evaluation-foundation-result-2026-08-20.json",
+      "sha256": "bb3f990a17af7a407d69c8da52ef74c2434a43fffa5e0cc593b9f04127ef41d1"
+    },
+    "packet_shortfall_result": {
+      "path": "docs/optimizations/opt-010-outcome-blind-packet-paired-run-result-2026-08-20.json",
+      "sha256": "98e30e5e731ec82d6ada99601c69b5a002c816edc90fd9ab99de580165dd1ca1"
+    },
+    "architecture_result": {
+      "path": "docs/optimizations/opt-010-architecture-mechanism-eligibility-corrected-retry-result-2026-08-20.json",
+      "sha256": "a639f3970c0b3bfee4dbf1cbf22bd17591191ae22ebba4e0a99b0e96efe06cd8"
+    },
+    "supported_augmentation_acceptance_result": {
+      "path": "docs/optimizations/opt-010-supported-primary-augmentation-corrected-acceptance-result-2026-08-20.json",
+      "sha256": "040d11c802fba031f17434c6271dee61bdfb4c7f1bde837d9021ca6b2557e955"
+    },
+    "scanner_cell_acceptance_result": {
+      "path": "docs/optimizations/opt-010-java-ruby-scanner-cell-coverage-corrected-acceptance-result-2026-08-20.json",
+      "sha256": "51239ba31b8473dd683cb9e75ac4c32a5d8b9362d0a1b4cf6e4775dd2cb0bca4"
+    },
+    "java_rule_qualification_result": {
+      "path": "docs/optimizations/opt-010-java-ssrf-supplemental-rule-qualification-result-2026-08-20.json",
+      "sha256": "b42cba99f93ba542fd0c9d0d14fe39fd2a442c53d19c623157f1d056a18d3bef"
+    },
+    "retained_java_screen_result": {
+      "path": "docs/optimizations/opt-010-java-ssrf-retained-source-screen-result-2026-08-20.json",
+      "sha256": "cd3f6e3faaa9d8f962e81e6e95103336a7fed604b0d44881bf5b956e997169c1"
+    },
+    "source_selection_result": {
+      "path": "docs/optimizations/opt-010-java-ruby-source-augmentation-selection-result-2026-08-20.json",
+      "sha256": "5bdec1dc9cc80ba3f168d70078993941007e6549aa987c4cb4a41f41a45d12e2"
+    },
+    "final_augmentation_result": {
+      "path": "docs/optimizations/opt-010-java-ruby-source-augmentation-acquisition-screen-final-retry-result-2026-08-20.json",
+      "sha256": "bdce907cd4ee96006deb8b40d83af844646a707532235b6e6843145648491df3"
+    },
+    "final_canary_result": {
+      "path": "data/artifacts/opt010-java-ruby-source-augmentation-acquisition-screen-final-retry/canary-results.json",
+      "sha256": "bc9d4dd01024f59cf4332e4be4dff919ee7d21770e3b9c3730c89fa9f34dd2dc"
+    }
+  },
+  "frozen_current_state": {
+    "optimization_status": {
+      "path": "docs/optimizations/optimization-status.json",
+      "sha256": "b08ae0e3a3194eb917c29840e6c133beed47832d3749b493dfbe4dafd3c02791"
+    },
+    "optimization_register": {
+      "path": "docs/optimizations/optimization-register.md",
+      "sha256": "9f42da756f0be97aa8eab1421013dbc99bb8a99924279184b5f95484465292b6"
+    },
+    "documentation_status": {
+      "path": "docs/documentation-status.md",
+      "sha256": "29b31bcac498b816ddb0b22d2220ca45337358fb3183c39b0bf93a17e864a73d"
+    },
+    "project_priorities": {
+      "path": "docs/project-priorities.md",
+      "sha256": "c5216b129bb8357eb518962262dff9852b79901814a8a73f0c039e458b90c9e5"
+    },
+    "triage_accuracy_roadmap": {
+      "path": "docs/triage-accuracy-roadmap.md",
+      "sha256": "92b1a66df26111515eb82981cb8a95053bbe7cfba8da435548038a1d2e3a3b7d"
+    },
+    "agentic_escalation_gate": {
+      "path": "docs/agentic-escalation-gate.md",
+      "sha256": "17112f367776373eba27c754311e99a982ddab3a3c65bb7f85afd50eb66767dd"
+    },
+    "historical_checkpoint": {
+      "path": "docs/optimizations/outstanding-work-checkpoint-2026-08-07.json",
+      "sha256": "5161994703f9768f250cc2b7de4dfdcb4ac26632858495391843b9690291562c"
+    },
+    "production_store_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "configuration_sha256": "c0f3a6569fb0d5c4f90464a5ce143ae8112b5918e261303c1d5acbf5b8a47680",
+    "configuration_schema_sha256": "e92d255470b83882fa46f88d4a7501ea6b0e44d7d58f00269ee48f455529c3d9",
+    "workspace_branch": "main",
+    "workspace_head": "1f1dba7a30a86d957510608c25e94077b15d2e8d",
+    "staged_paths": 0
+  },
+  "lifecycle_reconciliation": {
+    "summary_after": {
+      "closed": 35,
+      "open": 0,
+      "total": 35
+    },
+    "opt010_after": {
+      "status": "closed",
+      "gate": "none",
+      "next_priority": null
+    },
+    "open_priority_after": [],
+    "documents": [
+      "docs/optimizations/optimization-status.json",
+      "docs/optimizations/optimization-register.md",
+      "docs/documentation-status.md",
+      "docs/project-priorities.md",
+      "docs/triage-accuracy-roadmap.md",
+      "docs/agentic-escalation-gate.md"
+    ],
+    "current_state_tests": [
+      "tests/test_documentation_current_state.py",
+      "tests/test_outstanding_work_checkpoint.py"
+    ],
+    "historical_checkpoint_rule": "The immutable 2026-08-07 checkpoint remains byte-identical historical 32-closed/3-open evidence and is independently distinguished from the current 35-closed/0-open ledger.",
+    "production_rule": "The read-only facade remains disabled and disconnected; no configuration, implementation, policy, provider, scanner, pipeline, store, threshold, activation, or deployment change is authorized."
+  },
+  "historical_test_reconciliation": {
+    "baseline": {
+      "passed": 241,
+      "failed": 11,
+      "skipped": 2
+    },
+    "allowed_tests": [
+      "tests/test_opt_010_architecture_mechanism_eligibility.py",
+      "tests/test_opt_010_java_ruby_scanner_cell_coverage_corrected_acceptance_retry_receipt.py",
+      "tests/test_opt_010_java_ruby_source_augmentation_acquisition_screen_final_retry_receipt.py",
+      "tests/test_opt_010_offline_containment_foundation_receipt.py",
+      "tests/test_opt_010_offline_readiness_audit_receipt.py",
+      "tests/test_opt_010_protected_cohort_design_receipt.py",
+      "tests/test_opt_010_readiness_audit.py"
+    ],
+    "rules": [
+      "Architecture-resume and scanner-cell acceptance tests must validate their now-retained authorized results instead of asserting that outputs remain absent.",
+      "The final augmentation receipt test must preserve pre-correction helper and focused-test hashes as historical receipt evidence rather than compare them with the authorized corrected current files.",
+      "Containment, readiness-receipt, and protected-cohort receipt tests must validate immutable receipt-time bindings as historical evidence while separately validating current lifecycle state; they must not rewrite historical hashes.",
+      "Readiness-audit tests must validate the persisted frozen artifact and its recorded input digests rather than rerun the 2026-08-18 audit against later authorized configuration, gate, and lifecycle files.",
+      "No assertion may weaken scanner, provider, store, outcome, packet, production-activation, or historical-evidence boundaries."
+    ]
+  },
+  "execution": {
+    "closure_result": "docs/optimizations/opt-010-bounded-negative-feasibility-closure-result-2026-08-20.json",
+    "closure_test": "tests/test_opt_010_bounded_negative_feasibility_closure.py",
+    "validation": "Run the full offline non-live suite after the exact lifecycle and historical-test reconciliations; stop without finalizing closure if any test fails.",
+    "integration": "Branch creation, staging, commit, merge, push, and deployment remain separately gated."
+  },
+  "allowlist": [
+    "docs/optimizations/optimization-status.json",
+    "docs/optimizations/optimization-register.md",
+    "docs/documentation-status.md",
+    "docs/project-priorities.md",
+    "docs/triage-accuracy-roadmap.md",
+    "docs/agentic-escalation-gate.md",
+    "tests/test_documentation_current_state.py",
+    "tests/test_outstanding_work_checkpoint.py",
+    "tests/test_opt_010_architecture_mechanism_eligibility.py",
+    "tests/test_opt_010_java_ruby_scanner_cell_coverage_corrected_acceptance_retry_receipt.py",
+    "tests/test_opt_010_java_ruby_source_augmentation_acquisition_screen_final_retry_receipt.py",
+    "tests/test_opt_010_offline_containment_foundation_receipt.py",
+    "tests/test_opt_010_offline_readiness_audit_receipt.py",
+    "tests/test_opt_010_protected_cohort_design_receipt.py",
+    "tests/test_opt_010_readiness_audit.py",
+    "tests/test_opt_010_bounded_negative_feasibility_closure.py",
+    "docs/optimizations/opt-010-bounded-negative-feasibility-closure-result-2026-08-20.json"
+  ],
+  "resource_ceilings": {
+    "maximum_elapsed_minutes": 45,
+    "maximum_new_data_bytes": 2097152,
+    "network_reads_or_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "keychain_or_credential_reads": 0,
+    "repository_materializations_or_code_executions": 0,
+    "scanner_processes": 0,
+    "production_store_reads_or_mutations": 0,
+    "schema_migrations": 0,
+    "assessments": 0,
+    "labels": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0,
+    "agentic_or_baseline_runs": 0,
+    "human_reviews": 0,
+    "outcomes_read": 0,
+    "workspace_branch_or_index_mutations": 0,
+    "commits": 0,
+    "merges": 0,
+    "pushes": 0,
+    "deployments": 0
+  },
+  "stop_conditions": [
+    "Any frozen evidence, current-state input, checkpoint, store, configuration, workspace, or test-baseline binding drifts before its authorized change.",
+    "Any file outside the exact allowlist changes, any historical receipt, result, artifact, source snapshot, scanner output, checkpoint, helper, implementation, configuration, store, or policy file changes, or any resource ceiling is reached.",
+    "The final ledger is not exactly 35 closed and zero open, OPT-010 is not closed with no gate or priority, the bounded interpretation weakens, the facade becomes enabled or connected, or any full offline non-live test fails."
+  ],
+  "excluded": [
+    "editing immutable receipts, results, artifacts, snapshots, scanner evidence, the historical checkpoint, production store, configuration, implementation, helper, prompt, model, rule, retrieval, verifier, facade, pipeline, CLI, migration, or policy",
+    "source or outcome access, network, provider, credential, scanner, agentic or baseline execution, assessment, label, review, training, rescoring, tuning, recalibration, threshold selection or recommendation, production activation or policy change",
+    "OPT-014 or SEC/EDGAR reactivation, a new optimization identity, branch or index operations, commits, merges, remote pushes, deployment, branch deletion, stash, reset, rebase, cherry-pick, and any unlisted file change"
+  ],
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the OPT-010 bounded negative-feasibility closure described by opt-010-bounded-negative-feasibility-closure-receipt-2026-08-20.json, limited to closing OPT-010 as not justified and not feasible at its evaluated scanner, data, verifier, and paired-evaluation scope without claiming universal impossibility or production readiness; preserving the qualified disabled read-only containment foundation and every retained positive, negative, stopped, and raw evidence artifact; updating the current lifecycle authority to exactly 35 closed and zero open items with no remaining priority; reconciling only optimization-status.json, optimization-register.md, documentation-status.md, project-priorities.md, triage-accuracy-roadmap.md, agentic-escalation-gate.md, the two current-lifecycle assertions, and the seven named historical-state test files so authorized outputs and evolved current files are distinguished from immutable receipt-time evidence without editing any receipt, result, artifact, helper, implementation, configuration, production store, or historical checkpoint; adding one focused closure test and one closure result; and running the full offline non-live suite, with ceilings of 45 minutes, 2 MiB new data, and exactly zero network reads or uploads, provider calls, tokens, cost, Keychain or credential reads, repository materializations or code executions, scanner processes, production-store reads or mutations, schema migrations, assessments, labels, training, rescoring, agentic or baseline runs, human reviews, outcomes, branch or index mutations, commits, merges, pushes, or deployments. Future agentic evaluation, Ruby scan-scope changes, alternate scanner-health policy, expanded verifiers, new sources, packets, paired runs, production activation, OPT-014 or SEC/EDGAR reactivation, lifecycle expansion, integration, remote push, deployment, and any unlisted file change remain excluded and require new scope and authorization."
+  }
+}

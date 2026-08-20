@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "frozen_at": "2026-08-11",
+  "optimization": "OPT-003",
+  "status": "authorization-pending",
+  "prediction_result": {"path": "opt-003-wave-1-retry-result-2026-08-11.json", "sha256": "9440abc83b8f817d923fdc61bebbb00de7e52c56bb2dd282e36bb0799448a223"},
+  "scope": "Select and persist one outcome-blind 18-entry review plan, exactly six entries from each immutable wave-one evaluation family, using only frozen identities and stable hashes. No source context, scores, ranks, expected classes, or outcomes may be read or disclosed.",
+  "inventory": {
+    "sha256": "213119ccebe71ba3cd7f7c78af7e0c9a3f0d6d7386e058235c6b6dbeab40975a",
+    "total": 363,
+    "chatwoot": 315,
+    "linkwarden": 17,
+    "paperless_ngx": 31,
+    "eligibility": ["frozen scoring run exists", "production or deployment path tier", "unique exact-location identity", "not package-manager-only", "not Gitleaks", "no prior assessment"]
+  },
+  "selection": {
+    "policy": "opt003-wave1-packet-v1",
+    "key": "sha256(policy + evaluation_family + finding_fingerprint + exact_location_identity)",
+    "packet_size": 18,
+    "per_family": 6,
+    "output": "data/artifacts/opt003-wave-1-retry/review-plan.json",
+    "selection_runs": 1
+  },
+  "forbidden_fields": ["p_actionable", "score", "rank", "suppressed", "predicted class", "severity", "confidence", "rule prior", "expected outcome", "known vulnerability membership"],
+  "resource_ceilings": {"maximum_elapsed_minutes": 10, "maximum_new_data_bytes": 10485760, "network_reads": 0, "network_uploads": 0, "provider_calls": 0, "provider_reported_tokens": 0, "provider_cost_usd": 0.0, "store_mutations": 0, "source_lines_rendered": 0, "human_reviews": 0, "assessments_written": 0, "labels_written": 0},
+  "stop_conditions": ["Any result, store, scoring-run, source, inventory, or eligibility identity drifts.", "The selector reads or emits any forbidden field.", "Any family cannot supply exactly six eligible unique identities.", "Any network, provider, store mutation, source rendering, review, assessment, label, tuning, threshold, or policy activity is attempted."],
+  "result_boundary": "A separate result PR must prove balanced immutable selection, byte-identical store, forbidden-field absence, and zero outcomes before any source-rendering receipt.",
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the OPT-003 wave-one outcome-blind packet selection described by opt-003-wave-1-packet-receipt-2026-08-11.json, limited to one deterministic offline selection and persistence of exactly 18 identities, six each from the frozen Chatwoot, Linkwarden, and Paperless-ngx eligible inventories, using only stable identity hashes, with ceilings of 10 minutes, 10 MiB new data, and exactly zero network reads, uploads, provider calls, tokens, cost, store mutations, source rendering, human reviews, assessments, or labels. Scores, ranks, suppression, predicted classes, severity, confidence, priors, expected outcomes, tuning, threshold selection, and production-policy changes remain excluded."
+  }
+}

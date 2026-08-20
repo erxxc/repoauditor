@@ -1,0 +1,152 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-010",
+  "status": "authorization-pending",
+  "frozen_at": "2026-08-19",
+  "supersedes_for_execution": "opt-010-prospective-acquisition-instrument-qualification-wave-1-corrected-retry-receipt-2026-08-19.json",
+  "objective": "Resume the unchanged six-family wave after accepting the already functionally qualified installed OSV Scanner 2.4.0 binary as the corrected runtime identity, with both stopped attempts retained immutably and no other instrument, source, scope, or policy change.",
+  "retained_attempts": {
+    "first_stopped_result": {
+      "path": "docs/optimizations/opt-010-prospective-acquisition-instrument-qualification-wave-1-result-2026-08-19.json",
+      "sha256": "f762ce9d6a0b543c2e8ff7028038ac806105f8e0d88faeb067a369b1956a24c5",
+      "status": "stopped-preflight-pip-audit-failed"
+    },
+    "corrected_stopped_result": {
+      "path": "docs/optimizations/opt-010-prospective-acquisition-instrument-qualification-wave-1-corrected-retry-result-2026-08-19.json",
+      "sha256": "1349fdceb64cbf05caca9daa142ed9f7293c0f3a4c02d91663609e48233e2fd6",
+      "status": "stopped-preflight-osv-version-drift"
+    },
+    "corrected_receipt": {
+      "path": "docs/optimizations/opt-010-prospective-acquisition-instrument-qualification-wave-1-corrected-retry-receipt-2026-08-19.json",
+      "sha256": "d06ac0e2c21d1ce34ceba9227be6b8c0df91f38839ff4e712cf378807bca4fa4"
+    },
+    "artifact_directories": [
+      "data/artifacts/opt010-acquisition-instrument-qualification-wave-1",
+      "data/artifacts/opt010-acquisition-instrument-qualification-wave-1-corrected-retry"
+    ],
+    "immutability": "Do not delete, overwrite, rename, or modify either stopped receipt, result, result test, helper binding, version cache, raw canary artifact, or artifact directory.",
+    "accepted_cumulative_state": {
+      "logical_scanner_canaries": 9,
+      "repositories_materialized": 0,
+      "repository_scanners": 0,
+      "retrieval_indexes": 0,
+      "provider_calls": 0,
+      "dependency_resolutions": 0,
+      "dependency_installations": 0,
+      "production_store_mutations": 0,
+      "workspace_branch_or_index_operations": 0
+    }
+  },
+  "only_runtime_identity_correction": {
+    "scanner": "osv-scanner",
+    "prior_expected_version": "2.3.8",
+    "corrected_exact_version": "2.4.0",
+    "binary_path": "/opt/homebrew/Cellar/osv-scanner/2.4.0/bin/osv-scanner",
+    "binary_sha256": "77e5286bd4f45bfe904389043f87958f30a0d1da62017a3323aadd064549fce1",
+    "observed_functional_evidence": {
+      "positive_status": "complete",
+      "clean_status": "not-applicable",
+      "canary_passed": true,
+      "artifact_sha256": "eefc32fa9d1628528c2cc7762bf95b16e58b4a2af6001e5ea99fd7d9a778cb99"
+    },
+    "installation_or_downgrade": false,
+    "adapter_or_invocation_change": false,
+    "database_or_host_change": false,
+    "scope": "Accept the exact observed 2.4.0 binary identity only; rerun rather than reuse its canary evidence."
+  },
+  "unchanged_instrument": {
+    "helper": {
+      "path": "src/repoauditor/eval/opt010_acquisition_qualification.py",
+      "sha256": "fb75947e52a3ec5ff4219ca63c2cd747510821fca72b8237d30ed83471e6fa4c",
+      "mutable": false
+    },
+    "semgrep_version": "1.170.0",
+    "pip_audit_version": "2.10.1",
+    "gitleaks_version": "8.30.1",
+    "pip_audit_mode": "--disable-pip --no-deps direct exact root pins only",
+    "semgrep_rules_and_retrieval_digests": "unchanged from the original receipt",
+    "provider_or_agentic_instrument": null
+  },
+  "unchanged_sources": {
+    "selection_digest_sha256": "583772fe5f533aecaa306660783ff49d7ed0f84d5fc3f2d8cc09a08f7bb456d0",
+    "subjects": [
+      ["unslothai/unsloth", "489fab4a71f83dd4e02a430f560884c3d052c575"],
+      ["amruthpillai/reactive-resume", "dbbab6fd7610cf1472d0e0377fc0e966faf7acda"],
+      ["0xJacky/nginx-ui", "f1b8d846eab834daf6a95e30e3d02d329fdcb0d4"],
+      ["theonedev/onedev", "89e2f09b7b0cd9682a32a8b4a1ed863f791570ea"],
+      ["pglombardo/PasswordPusher", "c8fd1dc18fc55b570c2acc06ded6b37f05da6ee5"],
+      ["SinTan1729/chhoto-url", "7d36ccbd585bd326adfff45982bb0a4d760287c1"]
+    ],
+    "languages": ["Python", "TypeScript", "Go", "Java", "Ruby", "Rust"],
+    "architecture_map_slot": "pending-separate-provider-authorization"
+  },
+  "runtime": {
+    "artifact_directory": "data/artifacts/opt010-acquisition-instrument-qualification-wave-1-runtime-identity-retry",
+    "must_be_absent_before_authorization": true,
+    "semgrep_log_file": "data/artifacts/opt010-acquisition-instrument-qualification-wave-1-runtime-identity-retry/semgrep.log",
+    "semgrep_version_cache_path": "data/artifacts/opt010-acquisition-instrument-qualification-wave-1-runtime-identity-retry/semgrep-version-cache",
+    "requirements": [
+      "Verify both stopped attempts, exact OSV binary hash, helper, source, selection, store, scanner, rule, branch, index, and initially absent runtime-retry directory before any new write, scanner, or network process.",
+      "Create the fresh directory before any Semgrep-capable process, import-check Semgrep 1.170.0, seed a fresh cache, and bind both fresh runtime variables on every Semgrep-capable process.",
+      "Rerun separated Semgrep, supplemental Semgrep, Gitleaks, exact no-resolution pip-audit, and exact OSV Scanner 2.4.0 canaries; every functional and identity gate must pass before acquisition.",
+      "Do not reuse canary results, install or downgrade a tool, contact semgrep.dev, use registry rules, resolve or install dependencies, or retry a failed canary."
+    ]
+  },
+  "resumed_wave": {
+    "sequence": "Only after all five fresh canaries pass, execute the unchanged helper over the same six subjects in order, stopping before the next subject on any acquisition, scanner, elapsed, data, retrieval, or identity failure.",
+    "qualification": "Exact-commit shallow materialization without history, submodule, LFS, dependency, build, or repository-code expansion; deterministic snapshot and detector-input digests; five scanner terminal inventories; RetrievalIndex digests and aggregate coverage; aggregate verifier-eligibility accounting; architecture map slot retained as pending.",
+    "raw_artifacts": "Exact public snapshots and raw scanner artifacts remain only beneath the fresh runtime-retry directory; the result contains no finding, path, symbol, excerpt, secret, dependency, advisory, candidate, score, or outcome identity.",
+    "result": "docs/optimizations/opt-010-prospective-acquisition-instrument-qualification-wave-1-runtime-identity-retry-result-2026-08-19.json",
+    "focused_test_update": "tests/test_opt_010_acquisition_instrument_qualification_wave_1_corrected_retry.py"
+  },
+  "resource_ceilings": {
+    "retained_logical_scanner_canaries": 9,
+    "new_logical_scanner_processes_maximum": 35,
+    "cumulative_logical_scanner_processes_maximum": 44,
+    "repositories_materialized_cumulative": 6,
+    "retrieval_index_builds_cumulative": 6,
+    "maximum_elapsed_minutes_per_repository": 180,
+    "maximum_additional_elapsed_minutes": 870,
+    "maximum_cumulative_elapsed_minutes": 900,
+    "maximum_additional_data_bytes": 21474770944,
+    "maximum_cumulative_data_bytes": 21474836480,
+    "allowed_network_hosts": ["github.com", "pypi.org", "api.osv.dev", "osv.dev"],
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "repository_code_executions": 0,
+    "dependency_resolutions": 0,
+    "dependency_installations": 0,
+    "agentic_runs": 0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "schema_migrations": 0,
+    "assessments": 0,
+    "labels": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0,
+    "human_finding_reviews": 0,
+    "workspace_branch_or_index_operations": 0,
+    "commits": 0,
+    "merges": 0,
+    "pushes": 0,
+    "lifecycle_changes": 0
+  },
+  "stop_conditions": [
+    "Any retained attempt or frozen source, selection, store, helper, scanner, binary, rule, branch, index, or initially absent directory identity drifts.",
+    "Any fresh functional or exact-version canary fails, any process uses an unlisted host, any Semgrep process lacks fresh bindings, or any pip-audit process resolves or installs dependencies.",
+    "Any repository scanner is unavailable, failed, partial, malformed, disabled, missing provenance, or incomplete except for explicit valid not-applicable status.",
+    "Any original aggregate-only, no-source-rendering, no-finding-disclosure, outcome-blind, zero-provider, zero-store, zero-review, zero-label, zero-training, zero-workspace-git, lifecycle, integration, or deployment boundary is exceeded."
+  ],
+  "excluded": [
+    "any correction beyond accepting the exact functionally qualified OSV Scanner 2.4.0 binary identity",
+    "tool installation or downgrade, helper or adapter modification, other scanner or rule changes, remaining primary or reserve activation, source replacement or reordering",
+    "architecture recovery, provider or agentic execution, paired baseline, candidate or packet selection, finding disclosure, source rendering, outcomes, review, assessments, labels, training, rescoring, tuning, threshold selection or recommendation, production-policy changes, OPT-010 activation, promotion or closure",
+    "OPT-014 or SEC/EDGAR reactivation, OPT-036 use or change, lifecycle changes, full-suite execution, branch or index operations, staging, commits, merges, pushes, integration, or deployment"
+  ],
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the OPT-010 wave-one runtime-identity retry described by opt-010-prospective-acquisition-instrument-qualification-wave-1-runtime-identity-retry-receipt-2026-08-19.json, retaining both stopped attempts, the original six exact source commits and order, frozen language and mechanism metadata, no-resolution pip-audit correction, scanner and retrieval identities, outcome-blind aggregate-only boundary, four allowed network hosts, 20 GiB cumulative data ceiling, 900-minute cumulative time ceiling, and zero-provider, zero-repository-code, zero-store, zero-review, zero-label, zero-training, zero-workspace-git, and zero-lifecycle limits; accepting only the installed OSV Scanner 2.4.0 binary at SHA-256 77e5286bd4f45bfe904389043f87958f30a0d1da62017a3323aadd064549fce1 in place of frozen 2.3.8 because its retained positive and clean canary functionally passed; requiring immutable prior evidence, no tool installation or downgrade, no helper or adapter change, a fresh runtime directory and Semgrep cache, and fresh separated exact-version canaries for Semgrep 1.170.0, supplemental Semgrep 1.170.0, Gitleaks 8.30.1, no-resolution pip-audit 2.10.1, and OSV Scanner 2.4.0; then, only if every canary passes, exact-commit shallow materialization and the unchanged five-scanner, snapshot, detector-input, RetrievalIndex, and aggregate verifier-eligibility qualification over the same six subjects, followed by one runtime-identity result and stop, with ceilings of 35 new and 44 cumulative logical scanner processes, six cumulative repositories, six retrieval indexes, 180 minutes per repository, 870 additional minutes, 21,474,770,944 additional bytes, only github.com, pypi.org, api.osv.dev, and osv.dev network hosts, and exactly zero uploads, provider calls, tokens, cost, repository-code executions, dependency resolutions or installations, agentic runs, production-store reads or mutations, assessments, labels, model training, rescoring, human finding reviews, workspace branch or index operations, commits, merges, pushes, or lifecycle changes. The remaining six primaries and all reserves, any other instrument or source change, architecture recovery, provider or agentic execution, candidate or packet selection, finding identity disclosure, source rendering, outcomes, review, tuning, threshold selection or recommendation, production-policy changes, OPT-010 activation, promotion or closure, OPT-014 or SEC/EDGAR reactivation, OPT-036 use or change, integration, and deployment remain excluded."
+  }
+}

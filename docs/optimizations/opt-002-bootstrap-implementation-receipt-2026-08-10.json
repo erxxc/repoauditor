@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "frozen_at": "2026-08-10",
+  "optimization": "OPT-002",
+  "status": "authorization-pending",
+  "activation_evidence": {
+    "path": "opt-002-review-import-result-2026-08-10.json",
+    "compatible_scored_human_labels": 47,
+    "compatible_positive": 24,
+    "compatible_negative": 23,
+    "genuine_evaluation_families": 9,
+    "data_gate_conditions_met": true
+  },
+  "scope": "Implement deterministic evaluation-family-aware bootstrap confidence ranges for the existing descriptive threshold table over compatible human scored labels, expose the ranges through the existing triage-stats surface, and retain one offline validation result. This estimates uncertainty only; it does not select a threshold or change classifier behavior.",
+  "implementation_contract": {
+    "sampling_unit": "evaluation family, using configured evaluation_family_overrides before resampling",
+    "resampling": "sample the observed evaluation families with replacement; include every compatible observation belonging to each sampled family, preserving within-family dependence",
+    "resamples": 2000,
+    "confidence_level": 0.95,
+    "seed": 2002,
+    "interval": "deterministic percentile interval",
+    "reported_per_threshold": ["precision lower/upper", "recall lower/upper"],
+    "existing_point_estimates_preserved": true,
+    "minimum_conditions": ["at least 40 compatible human scored labels", "at least eight genuine evaluation families", "both classes represented"],
+    "fail_closed_output": "withhold bootstrap ranges and report the exact unmet condition",
+    "no_optimal_threshold": true
+  },
+  "validation_contract": [
+    "Unit tests prove family-block rather than row-level resampling.",
+    "A fixed seed produces byte-stable ranges for the same observations.",
+    "Related aliases governed by evaluation_family_overrides remain one sampling unit.",
+    "Abstentions, duplicates removed by effective-label grouping, derived-falsify labels, and incompatible score identities do not enter the default human cohort.",
+    "Degenerate resamples with no predicted positives retain unavailable precision rather than inventing a value.",
+    "The CLI continues to state that results are retrospective and recommends no threshold."
+  ],
+  "resource_ceilings": {
+    "maximum_elapsed_minutes": 20,
+    "maximum_new_data_bytes": 10485760,
+    "network_reads": 0,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "store_mutations": 0,
+    "model_training_runs": 0,
+    "rescored_findings": 0
+  },
+  "not_authorized": [
+    "automatic threshold selection or recommendation",
+    "classifier training, tuning, recalibration, rescoring, or feature changes",
+    "production threshold or suppression-policy changes",
+    "row-level bootstrap presented as repository-aware uncertainty",
+    "provider or network activity",
+    "new review, reserve activation, or label changes",
+    "OPT-002 closure unless the result proves every implementation and validation condition"
+  ],
+  "result_boundary": "A separate result PR must record implementation tests, the observed family-aware ranges, all cohort identities/counts, and whether OPT-002 can close at this bounded descriptive scope.",
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the OPT-002 family-aware bootstrap implementation described by opt-002-bootstrap-implementation-receipt-2026-08-10.json, limited to deterministic 2,000-resample, 95% percentile uncertainty ranges over evaluation-family sampling units for the existing compatible human-label threshold table, existing CLI exposure, tests, and one offline validation result, with ceilings of 20 minutes, 10 MiB new data, and exactly zero network reads, uploads, provider calls, tokens, cost, store mutations, model training, or rescoring. Automatic threshold selection, classifier or feature changes, tuning, recalibration, production-policy changes, row-level bootstrap claims, new review, reserve activation, and label changes remain excluded; OPT-002 may close only if the result proves every bounded implementation and validation condition."
+  }
+}

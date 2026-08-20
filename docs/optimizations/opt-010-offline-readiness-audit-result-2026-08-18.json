@@ -1,0 +1,141 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-010",
+  "status": "complete-offline-remediation-or-evidence-needed",
+  "recorded_at": "2026-08-18",
+  "authorization": "The project owner authorized the digest-frozen aggregate-only offline readiness audit. No agentic falsification run, provider call, cohort selection, source rendering, store mutation, or lifecycle change was authorized or performed.",
+  "execution_evidence": {
+    "receipt": {
+      "path": "docs/optimizations/opt-010-offline-readiness-audit-receipt-2026-08-18.json",
+      "sha256": "0f9f324eebba4975b5195acb2d188f56add8e66556a936663a7448329779e478"
+    },
+    "helper": {
+      "path": "src/repoauditor/eval/opt010_readiness.py",
+      "sha256": "723fb0b8fb955f862bfea05ac1743c85d28f49d4e95494a5ed3d3882877bafa0"
+    },
+    "focused_test": {
+      "path": "tests/test_opt_010_readiness_audit.py",
+      "sha256": "516fc175d4c11b284b658925227d22b59204be43db89eafee3ba57a2cf54cb58"
+    },
+    "artifact": {
+      "path": "docs/optimizations/opt-010-offline-readiness-audit-artifact-2026-08-18.json",
+      "sha256": "2c8969f26c4203b9bd9bd6f31645a41480d95f9526960cce3c5339d8de946ca5"
+    },
+    "focused_offline_non_live_suite": {
+      "passed": 118,
+      "failed": 0,
+      "duration_seconds": 5.47,
+      "covered_contracts": [
+        "authoritative usage and continuation accounting",
+        "bounded falsification budgets and convergence",
+        "deterministic retrieval and slicing",
+        "snapshot-bound structural claims and independent verification",
+        "abstention preservation",
+        "aggregate cohort metadata",
+        "receipt and readiness-helper boundaries"
+      ]
+    }
+  },
+  "store": {
+    "mode": "sqlite-uri-mode-ro-plus-query-only",
+    "before_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "after_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "byte_identical": true
+  },
+  "gate_summary": {
+    "documented_pass": 1,
+    "partial": 4,
+    "documented_fail": 2,
+    "unresolved": 0,
+    "gates": [
+      {
+        "gate_id": "G01",
+        "name": "authoritative-usage-accounting",
+        "state": "documented-pass",
+        "basis": "Current paths persist per-attempt authoritative or explicitly unknown usage and latency, continuation linkage, and supported dated-cost calculation."
+      },
+      {
+        "gate_id": "G02",
+        "name": "protected-evaluation-cohort",
+        "state": "partial",
+        "basis": "The independently frozen terminal pre/post pair exists, but one pair is not a broad real-world cohort."
+      },
+      {
+        "gate_id": "G03",
+        "name": "baseline-comparison",
+        "state": "documented-fail",
+        "basis": "No frozen current-falsifier-versus-agent protocol or completed comparison exists."
+      },
+      {
+        "gate_id": "G04",
+        "name": "recall-safety",
+        "state": "partial",
+        "basis": "Unresolved cases and abstentions remain represented, but protected evidence cannot yet bound recall regression."
+      },
+      {
+        "gate_id": "G05",
+        "name": "cohort-breakdown",
+        "state": "partial",
+        "basis": "Mechanism, language, and detector metadata exist, but protected subgroup sizes are inadequate."
+      },
+      {
+        "gate_id": "G06",
+        "name": "read-only-tools",
+        "state": "documented-fail",
+        "basis": "Deterministic retrieval and bounded slicing exist, but an enforced configuration-driven agent allowlist and provenance contract do not."
+      },
+      {
+        "gate_id": "G07",
+        "name": "independent-verification",
+        "state": "partial",
+        "basis": "Snapshot-bound independent syntax verification exists, but its mechanism coverage is not adequate for an unfrozen proposed cohort."
+      }
+    ]
+  },
+  "decision": {
+    "result_state": "offline-remediation-or-evidence-needed",
+    "all_seven_gates_pass": false,
+    "agentic_experiment_permitted": false,
+    "opt_010_status": "open-deferred",
+    "smallest_next_prerequisite": "Separately authorize an offline implementation and independent negative-test qualification of a configuration-driven read-only agent tool allowlist with immutable-snapshot and per-tool provenance enforcement.",
+    "why_this_is_first": "It closes the concrete G06 design-only gap without provider use or cohort selection and creates the containment boundary required before any agent comparison can be responsibly specified.",
+    "not_performed": [
+      "agent or read-only tool implementation",
+      "protected cohort selection",
+      "baseline experiment",
+      "provider-backed execution",
+      "threshold or policy recommendation",
+      "OPT-010 activation, promotion, or closure"
+    ]
+  },
+  "sec_edgar_reserve": {
+    "optimization": "OPT-014",
+    "state": "inactive-commercially-permissive-structurally-limited-reserve",
+    "selected_or_acquired": false,
+    "used_by_opt_010": false,
+    "future_use_requires_separate_authorization": true
+  },
+  "accounting": {
+    "audit_runs": 1,
+    "new_helpers": 1,
+    "new_test_files": 1,
+    "aggregate_artifacts": 1,
+    "result_documents": 1,
+    "new_data_bytes_total": 31578,
+    "network_reads": 0,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "repository_materializations": 0,
+    "repository_code_executions": 0,
+    "scanner_processes": 0,
+    "agentic_falsification_runs": 0,
+    "production_store_mutations": 0,
+    "schema_migrations": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0
+  }
+}

@@ -1,0 +1,261 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-014",
+  "status": "swiss-metadata-only-source-discovery-complete",
+  "recorded_at": "2026-08-18",
+  "receipt": {
+    "path": "opt-014-swiss-metadata-source-discovery-receipt-2026-08-18.json",
+    "sha256": "567a26db9812a3dfb6d114e8875d9b4b0b9b017b82482a701fe04fc4e7ef12dc",
+    "authorization_matched": true
+  },
+  "design": {
+    "path": "opt-014-independent-data-acquisition-design-2026-08-18.json",
+    "sha256": "af29a9bd3e1f644fd6ee115daccf59c6da166b45c668941a8f22b4416e09be15"
+  },
+  "prior_discovery": {
+    "path": "opt-014-metadata-source-discovery-result-2026-08-18.json",
+    "sha256": "3da5b5ce5be01b9bf302c4875203e78c3667cec904fd240a3c60ddc0ec6c997d",
+    "data_gate_cleared": false
+  },
+  "outcome_blinding": {
+    "candidate_classification_inputs": [
+      "official identity, publisher, release or catalog identity, and vintage",
+      "statistical unit, target population, denominator construction, and observation period",
+      "advertised zero-incident, incident-count, loss, population, and geography fields",
+      "collection method, provenance, lineage, license, access, format, and size metadata"
+    ],
+    "outcome_values_persisted": 0,
+    "outcome_distributions_persisted": 0,
+    "prior_agreement_inspected_or_used": false,
+    "incidental_value_quarantine": {
+      "activated": true,
+      "occurrences": [
+        "Federal Statistical Office search results and historical enterprise-survey reports co-mingled quantitative findings with permitted survey identity and methodology metadata.",
+        "National Cyber Security Centre search results and report pages co-mingled report totals or category shares with permitted collection metadata.",
+        "Federal open-data search results co-mingled unrelated criminal-justice aggregates with catalog metadata."
+      ],
+      "handling": "No incident total, rate, share, loss, quantile, distribution, organization, or row value from those sections was transcribed, compared, summarized, persisted, or used in classification. Reading stopped at the metadata boundary."
+    }
+  },
+  "candidate_counts": {
+    "total": 4,
+    "full-organization-period-candidate": 0,
+    "magnitude-only-candidate": 0,
+    "aggregate-context-only": 4,
+    "ineligible": 0
+  },
+  "candidates": [
+    {
+      "stable_identity_sha256": "603ec307668fc4fa54fbdf706e4e129836ce1bc725b23e9f60a66a4763f0cd54",
+      "identity_basis": "swiss-fso-kof|ict-ecommerce-enterprise-survey|2002|asset-341200",
+      "title": "IKT und E-Commerce in der Schweizer Wirtschaft, Unternehmensbefragung 2002",
+      "publisher": "Swiss Federal Statistical Office; survey conducted by KOF Swiss Economic Institute",
+      "canonical_metadata_url": "https://www.bfs.admin.ch/bfsstatic/dam/assets/341200/master",
+      "stable_release_identity": "FSO asset 341200, 2003 publication describing the autumn 2002 enterprise survey",
+      "tier": "aggregate-context-only",
+      "independence_state": "unresolved",
+      "structural_evidence": {
+        "unit": "private enterprise",
+        "period": "enterprise survey conducted in autumn 2002 with stated reference periods in the instrument",
+        "population_denominator": "The methodology describes a representative enterprise survey and an enterprise sampling design.",
+        "zero_incident_support": "not advertised",
+        "incident_count_support": "not advertised",
+        "loss_support": "No realized cyberincident-loss field is advertised.",
+        "collection": "Postal enterprise questionnaire conducted by KOF for the FSO",
+        "format_and_size": "Publisher-rendered historical report; record-level format and size not advertised"
+      },
+      "access_and_license": {
+        "public_metadata": true,
+        "row_data_publicly_downloadable_verified": false,
+        "microdata_access_path": "not advertised in the permitted metadata",
+        "license_for_record_level_use": "unresolved"
+      },
+      "blocking_gaps": [
+        "The survey is an ICT and e-commerce instrument, not a documented organization-period cyberincident outcome collection.",
+        "Explicit zero-incident periods, incident counts, and realized-loss fields are not advertised.",
+        "Record-level access, license, current vintage, and overlap-exclusion terms are unresolved."
+      ],
+      "acquisition_ready": false
+    },
+    {
+      "stable_identity_sha256": "fae21233840991a103d39165b0ddf496941756ec6b5b3426d3beb3b8da65c4d5",
+      "identity_basis": "swiss-fso|STATENT-enterprises|annual-register-statistics|opendata-ecc82a85-9ecb-4f14-873d-bd07d8468bad",
+      "title": "Business Census / Structural Business Statistics (STATENT): Enterprises",
+      "publisher": "Swiss Federal Statistical Office",
+      "canonical_metadata_url": "https://opendata.swiss/en/dataset/betriebszahlung-unternehmensstatistik-arbeitsstatten",
+      "stable_release_identity": "opendata.swiss identifier ecc82a85-9ecb-4f14-873d-bd07d8468bad@bundesamt-fur-statistik-bfs, issued 2017-12-13, annual series",
+      "tier": "aggregate-context-only",
+      "independence_state": "unresolved",
+      "structural_evidence": {
+        "unit": "enterprise and establishment population statistics",
+        "period": "annual",
+        "population_denominator": "Administrative-register-based full survey of business and economic structure, replacing the business census from 2011.",
+        "zero_incident_support": "not applicable; no cyberincident outcome is advertised",
+        "incident_count_support": "not advertised",
+        "loss_support": "not advertised",
+        "population_covariates": [
+          "enterprise",
+          "employment",
+          "economic sector",
+          "business location"
+        ],
+        "advertised_formats": [
+          "WMS",
+          "WMTS",
+          "CSV variable list",
+          "API",
+          "HTML"
+        ]
+      },
+      "access_and_license": {
+        "public_metadata": true,
+        "row_data_publicly_downloadable_verified": false,
+        "microdata_access_path": "not established",
+        "license_for_record_level_use": "unresolved"
+      },
+      "blocking_gaps": [
+        "STATENT can describe the enterprise population but advertises no cyberincident, zero-event, incident-count, or realized-loss outcome fields.",
+        "No deterministic linkage to an independent incident collection is documented.",
+        "The permitted catalog record describes aggregate and geospatial resources, not governed organization-period research records."
+      ],
+      "acquisition_ready": false
+    },
+    {
+      "stable_identity_sha256": "673ed0f154f0d296fce412e63677a6be9eba6cfd9f4d4df3e53b0e3e9cc30e41",
+      "identity_basis": "swiss-ncsc|voluntary-cyberincident-reports|mid-2020-weekly-series|statistik-en",
+      "title": "NCSC voluntary cyberincident report collection and weekly statistics",
+      "publisher": "Swiss National Cyber Security Centre",
+      "canonical_metadata_url": "https://www.ncsc.admin.ch/statistik_en",
+      "stable_release_identity": "NCSC weekly published classification series, available since mid-2020; metadata page dated 2022-04-01",
+      "tier": "aggregate-context-only",
+      "independence_state": "unresolved",
+      "structural_evidence": {
+        "unit": "voluntarily submitted cyberincident report",
+        "period": "continuously collected and weekly classified publication",
+        "population_denominator": "No complete organization population or exposure denominator is advertised; reports may originate from private individuals or companies.",
+        "zero_incident_support": "absent",
+        "incident_count_support": "The administrative collection classifies submitted reports, but no organization-period count schema is advertised.",
+        "loss_support": "No realized monetary-loss field is advertised in the permitted collection metadata.",
+        "collection": "Voluntary reporting form; NCSC screening and main-category/subcategory classification",
+        "record_access": "Only aggregate interactive statistics are publicly described"
+      },
+      "access_and_license": {
+        "public_metadata": true,
+        "row_data_publicly_downloadable_verified": false,
+        "microdata_access_path": "not advertised",
+        "license_for_record_level_use": "unresolved"
+      },
+      "blocking_gaps": [
+        "Voluntary ascertainment has no organization-period denominator or zero-report organizations.",
+        "The statistical unit is a submitted report rather than an observed organization-period.",
+        "Reports from individuals and organizations are combined in the public collection description.",
+        "Potential overlap with public incident aggregators, the mandatory reporting lineage, IRIS, Advisen, VERIS, or DBIR is unresolved."
+      ],
+      "acquisition_ready": false
+    },
+    {
+      "stable_identity_sha256": "d4b9558a631172f0c9f547c989497c198417cfa87a626e1af5984ccc033ca0da",
+      "identity_basis": "swiss-ncsc|mandatory-critical-infrastructure-cyberattack-reports|2025-04-01-vintage",
+      "title": "NCSC mandatory critical-infrastructure cyberattack report collection",
+      "publisher": "Swiss National Cyber Security Centre",
+      "canonical_metadata_url": "https://www.ncsc.admin.ch/ncsc/en/home/meldepflicht/meldepflicht-info.html",
+      "stable_release_identity": "Information Security Act and Cybersecurity Ordinance reporting collection effective 2025-04-01; metadata last modified 2026-05-19",
+      "tier": "aggregate-context-only",
+      "independence_state": "unresolved",
+      "structural_evidence": {
+        "unit": "reportable cyberattack affecting a covered critical-infrastructure operator",
+        "period": "initial report within 24 hours of discovery and completion within 14 days",
+        "population_denominator": "The law and ordinance define covered critical-infrastructure authorities and organizations, with exemptions, but the permitted public metadata does not enumerate a frozen exposed-organization denominator.",
+        "zero_incident_support": "absent; non-reporting organization-periods are not published as zero observations",
+        "incident_count_support": "Incident submissions are recorded, but no organization-period count export is advertised.",
+        "loss_support": "The public e-mail schema advertises operational impact severity fields but no realized monetary-loss amount, currency, or censoring field.",
+        "collection": "Cyber Security Hub or e-mail form; confidential, anonymized, categorized, and statistically recorded administrative reports",
+        "advertised_fields": [
+          "organization identity and contact",
+          "discovery and attack time",
+          "attack type and vector",
+          "ongoing status",
+          "availability, integrity, confidentiality, and operational impact",
+          "countermeasures"
+        ]
+      },
+      "access_and_license": {
+        "public_metadata": true,
+        "row_data_publicly_downloadable_verified": false,
+        "record_access_path": "confidential administrative system; no public record-level access path advertised",
+        "license_for_record_level_use": "unresolved"
+      },
+      "blocking_gaps": [
+        "No public frozen denominator, zero-incident organization-period rows, or organization-period count export is advertised.",
+        "The NCSC states there is no active supervision of compliance, so complete ascertainment cannot be inferred.",
+        "No realized monetary-loss field, record-level access, license, deidentification, retention, or missingness policy is advertised.",
+        "Potential overlap with voluntary NCSC reports and public incident aggregators is unresolved."
+      ],
+      "acquisition_ready": false
+    }
+  ],
+  "federal_open_data_catalog_finding": {
+    "catalog_role": "opendata.swiss publishes metadata references rather than hosting the source data itself.",
+    "result": "Metadata-only exact-topic searches did not establish a distinct Swiss federal organization-period cybersecurity incident or realized-loss dataset beyond the four disclosed identities.",
+    "data_or_preview_opened": false,
+    "catalog_api_called": false
+  },
+  "decision": {
+    "opt_014_status": "open-data-gated",
+    "data_gate_cleared": false,
+    "source_selected_for_acquisition": false,
+    "adequacy_threshold_selected": false,
+    "result": "No Swiss source discovered in the authorized funnel is structurally full-tier or magnitude-only, and none is acquisition-ready.",
+    "remaining_gate": "An independent, governed organization-period source must expose a target-population denominator, explicit zero-incident periods, incident counts, and realized-loss metadata with record-level access, license, deidentification, retention, missingness, and overlap controls.",
+    "swiss_value": "The NCSC mandatory collection supplies useful administrative incident-schema and covered-population context, while STATENT supplies enterprise-population context, but the public metadata does not document a lawful deterministic linkage or a combined analytical record set.",
+    "next_bounded_options": [
+      "Retain the Swiss identities as aggregate context and run the previously identified narrow access-and-codebook qualification for the Statistics Canada 2017 lead and blocked UK enterprise-survey family.",
+      "If governed record-level access cannot be established, close OPT-014 at its completed descriptive coherence and negative data-feasibility scope without a universal impossibility claim."
+    ]
+  },
+  "network_and_resource_accounting": {
+    "maximum_elapsed_minutes_respected": true,
+    "new_result_documents": 1,
+    "candidate_identities": 4,
+    "unique_allowed_host_metadata_documents_used_as_evidence": 8,
+    "allowed_network_hosts_contacted_for_evidence": [
+      "www.bfs.admin.ch",
+      "opendata.swiss",
+      "www.ncsc.admin.ch"
+    ],
+    "unlisted_links_followed": 0,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "dataset_downloads": 0,
+    "raw_dataset_table_cube_api_or_preview_requests": 0,
+    "raw_records_used": 0,
+    "outcome_values_persisted": 0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "simulation_runs": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0
+  },
+  "store": {
+    "access": "hash-only-no-database-open",
+    "before_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "after_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "byte_identical": true
+  },
+  "not_executed": {
+    "dataset_or_microdata_download": true,
+    "raw_record_table_cube_api_or_preview_access": true,
+    "credential_account_terms_application_contact_or_purchase": true,
+    "source_acquisition_selection_or_ranking": true,
+    "adequacy_threshold_cohort_or_holdout_selection": true,
+    "evaluation_fitting_simulation_or_resampling": true,
+    "prior_methodology_or_policy_change": true,
+    "opt_014_promotion_or_closure": true,
+    "opt_010_execution": true,
+    "branch_integration_remote_push_or_deployment": true
+  }
+}

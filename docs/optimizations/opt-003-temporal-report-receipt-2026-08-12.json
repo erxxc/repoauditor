@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "frozen_at": "2026-08-12",
+  "optimization": "OPT-003",
+  "status": "authorization-pending",
+  "protocol": {
+    "path": "opt-003-temporal-validation-protocol-2026-08-10.json",
+    "sha256": "4251e3849e21eac84ac13f93b05a62b0bc94a4996881c9598f7ac9222edb3550"
+  },
+  "gate_result": {
+    "path": "opt-003-final-label-import-result-2026-08-12.json",
+    "sha256": "7d5ed2e3ccc6764bbf59f32856b9714b3b53ed64624649e31aed236d534ba579",
+    "prospective_decided_labels": 40,
+    "prospective_positive": 6,
+    "prospective_negative": 34,
+    "evaluation_families": 8,
+    "prediction_waves": 3,
+    "activation_conditions_met": true
+  },
+  "scope": "Produce one deterministic offline read-only descriptive temporal evaluation over exactly the 40 digest-frozen prospective prediction/outcome identities. Verify that every frozen prediction precedes the first assessment for its identity, then report aggregate Brier score, fixed-threshold precision and recall at thresholds 0.0 through 1.0 in 0.1 increments, class/family/wave counts, per-wave Brier summaries, and deterministic 95% evaluation-family-block percentile uncertainty. Select or recommend no threshold.",
+  "source_prediction_waves": [
+    {
+      "name": "baseline",
+      "path": "opt-002-zero-provider-continuation-result-2026-08-07.json",
+      "sha256": "be96675aefa96273206424e2d09a16f2135fe07215d6f7404cf14ba5126b7667",
+      "triage_run_ids": [34, 35],
+      "decided_labels": 11,
+      "families": 2
+    },
+    {
+      "name": "wave-one",
+      "path": "opt-003-wave-1-retry-result-2026-08-11.json",
+      "sha256": "9440abc83b8f817d923fdc61bebbb00de7e52c56bb2dd282e36bb0799448a223",
+      "triage_run_ids": [36, 37, 38],
+      "decided_labels": 16,
+      "families": 3
+    },
+    {
+      "name": "wave-two",
+      "path": "opt-003-wave-2-runtime-corrected-result-2026-08-11.json",
+      "sha256": "7ed9c69f4dfbbe37871b5db4e8b3a7d121a1200aa405d1f840e287dbb248b83a",
+      "triage_run_ids": [39, 40, 41],
+      "decided_labels": 13,
+      "families": 3
+    }
+  ],
+  "store_precondition": {
+    "path": "../../data/repoauditor.db",
+    "sha256": "a3d8e55feadf5860c079f1de18b698186afbae81ba6bf678717cdfe1f2cca11f",
+    "triage_assessments": 160,
+    "triage_labels": 158,
+    "triage_model_runs": 41,
+    "model_usage_rows": 1473
+  },
+  "reporter": {
+    "path": "../../src/repoauditor/eval/temporal_report.py",
+    "sha256": "2b3f33f62060655103b01a50cec58340ad115b4835596bb8163624d82bebca5f",
+    "command": "UV_CACHE_DIR=/tmp/repoauditor-uv-cache uv run --offline python -m repoauditor.eval.temporal_report --output data/artifacts/opt003-temporal-evaluation-report.json",
+    "output": "../../data/artifacts/opt003-temporal-evaluation-report.json",
+    "output_must_not_exist_before_execution": true
+  },
+  "fixed_method": {
+    "cohort_size": 40,
+    "positive": 6,
+    "negative": 34,
+    "families": 8,
+    "waves": 3,
+    "thresholds": [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
+    "brier_score": true,
+    "per_wave_brier": true,
+    "bootstrap_sampling_unit": "evaluation_family",
+    "bootstrap_resamples": 2000,
+    "bootstrap_confidence": 0.95,
+    "bootstrap_interval": "percentile",
+    "bootstrap_seed": 2003,
+    "identity_level_scores_in_output": false,
+    "threshold_selected_or_recommended": false
+  },
+  "preconditions": [
+    "The protocol, gate result, three prediction-wave results, store, reporter, and absent output match their frozen values.",
+    "The cohort contains exactly the 40 frozen manual-label identities bound in the reporter: six actionable and 34 non-actionable across eight evaluation families and three prediction waves.",
+    "Every exact triage score row exists and its scored_at timestamp precedes the first assessment timestamp for that finding.",
+    "No identity-level score, rank, suppression, source excerpt, or expected outcome is written to the report."
+  ],
+  "resource_ceilings": {
+    "report_runs": 1,
+    "maximum_elapsed_minutes": 10,
+    "maximum_new_data_bytes": 1048576,
+    "network_reads": 0,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "store_mutations": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "rescores": 0,
+    "model_training_runs": 0
+  },
+  "stop_conditions": [
+    "Any protocol, gate result, wave result, store, reporter, cohort, chronology, or output-absence precondition drifts.",
+    "The report contains a non-frozen identity, omits a frozen decided identity, includes an abstention, or reports a class/family/wave count other than 40/6/34/8/3.",
+    "Any prediction timestamp does not strictly precede its finding's first assessment timestamp.",
+    "Any identity-level score, rank, suppression, source excerpt, expected outcome, threshold selection, or recommendation is emitted.",
+    "Any network/provider activity, store mutation, assessment, label, rescore, training, tuning, recalibration, production-policy change, OPT-003 status change, or branch merge is attempted."
+  ],
+  "result_boundary": "One temporal evaluation result may record aggregate fixed metrics, deterministic uncertainty, chronology verification, input/output digests, and zero-mutation accounting. OPT-003 promotion or closure and branch merge remain separately authorized decisions after the result is reviewed.",
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the OPT-003 fixed prospective temporal evaluation described by opt-003-temporal-report-receipt-2026-08-12.json, limited to one deterministic offline read-only report over exactly the digest-frozen 40 decided prediction/outcome identities across eight evaluation families and three waves, strict verification that every prediction precedes its first assessment, aggregate Brier score, fixed-threshold precision and recall at 0.0 through 1.0 in 0.1 increments, class/family/wave counts, per-wave Brier summaries, and 2,000-resample 95% evaluation-family-block percentile uncertainty with seed 2003, with ceilings of 10 minutes, 1 MiB new data, and exactly zero network reads, uploads, provider calls, tokens, cost, store mutations, assessments, labels, rescoring, or model training. Identity-level scores, ranks, suppression, source rendering, threshold selection or recommendation, tuning, recalibration, production-policy changes, OPT-003 promotion or closure, and branch merge remain excluded."
+  }
+}

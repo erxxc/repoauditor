@@ -1,0 +1,141 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-010",
+  "status": "authorization-pending",
+  "frozen_at": "2026-08-20",
+  "objective": "Complete the remaining outcome-blind protected-subject identity and verifier-eligibility prerequisite by producing bounded scratch architecture maps for the six digest-frozen wave-one subjects and freezing an exhaustive language-to-concrete-mechanism verifier matrix without reading scanner findings or outcomes.",
+  "frozen_wave": {
+    "qualification_result": {
+      "path": "docs/optimizations/opt-010-prospective-acquisition-instrument-qualification-wave-1-runtime-identity-retry-result-2026-08-19.json",
+      "sha256": "e4eb2008eeb4ad2bbac3373aed24a58e3e7e321a0325cf0cb8a0b2887b61710e"
+    },
+    "subjects": 6,
+    "selection_digest_sha256": "583772fe5f533aecaa306660783ff49d7ed0f84d5fc3f2d8cc09a08f7bb456d0",
+    "snapshot_and_detector_digests": "Use only the six exact snapshot, detector-input, and RetrievalIndex identities in the bound qualification result; no source replacement, reordering, refetch, or rescanning is permitted.",
+    "production_store_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a"
+  },
+  "frozen_architecture_instrument": {
+    "provider": "anthropic",
+    "model": "claude-opus-4-8",
+    "temperature": 0.0,
+    "maximum_output_tokens": 4096,
+    "prompt_version": "architecture_recovery_v2",
+    "implementation_bindings": {
+      "architecture_recovery": {
+        "path": "src/repoauditor/map/domain_map.py",
+        "sha256": "d0598d795b559b0d43db44170e460653288464d72b89fc1a92dfc5e5b6e9d07e"
+      },
+      "prompt": {
+        "path": "src/repoauditor/map/prompts/architecture_recovery_v2.md",
+        "sha256": "1c5009448dab35a4805236b19872a6b8baea4082423469af629a5fda1ca45a89"
+      },
+      "schema": {
+        "path": "src/repoauditor/map/schema.py",
+        "sha256": "727c8647f65395535e12495f7d004231ed86548bbf9ac0383fefbd64c7bc84c3"
+      },
+      "provider_backend": {
+        "path": "src/repoauditor/llm/backends.py",
+        "sha256": "b71a108c1c51f25768b126fd1da08ee848f182ef1e7ba477a102506b728cb947"
+      },
+      "dated_pricing": {
+        "path": "src/repoauditor/analyze/provider_cost.py",
+        "sha256": "19e883c10382df4ca1cadd9eb791d96d779fa05033fe0f9ac4367e4640a93ac5",
+        "checked_at": "2026-08-01"
+      }
+    },
+    "context_selection": "Reuse the frozen architecture implementation's deterministic directory-diverse maximum-40-file selection. Initial context is bounded to 60,000 characters; one low-confidence repass may use at most 240,000 characters.",
+    "complete_request_maximum_utf8_bytes": 320000,
+    "request_gate": "Measure the exact system prompt, public-source evidence, and structured-output schema together before every request and stop locally if the complete content exceeds 320,000 UTF-8 bytes.",
+    "call_policy": "At most one initial call and, only when its validated confidence is below 0.5, one broader-context repass per subject. No transport, status, schema, parse, refusal, missing-usage, or other retry is permitted.",
+    "source_transfer": "Transmit only the frozen architecture prompt, schema, and bounded numbered public-source excerpts from the subject currently being mapped to api.anthropic.com.",
+    "usage": "Persist scratch-only authoritative provider usage and latency after every attempt. An attempt without authoritative usage remains unavailable and is never assigned zero.",
+    "output": "Persist only validated structured ArchitectureExtraction data beneath the isolated artifact directory, with no raw provider response; compute one canonical architecture-map digest per completed subject."
+  },
+  "concrete_mechanism_matrix": {
+    "freeze_before_provider_use": true,
+    "basis": "Exhaustive instrument-declared verifier support read only from the digest-frozen structural slicer and independent checker; independent of source content, scanner output, candidate count, rank, or outcome.",
+    "implementation_bindings": {
+      "slicer": {
+        "path": "src/repoauditor/falsify/slicing.py",
+        "sha256": "f46e8c3eb7bc519efa9c64f11f226dc6fef944ac911373c3238e6615ca07f0df"
+      },
+      "verifier": {
+        "path": "src/repoauditor/falsify/claims.py",
+        "sha256": "d534c9137236a1e37e2ae88072f24d69b1c6f516ab577175af4dbbf461ad41f6"
+      }
+    },
+    "matrix": {
+      "Python": ["sql_injection", "command_injection", "ssrf"],
+      "TypeScript": ["command_injection", "ssrf"],
+      "Java": ["ssrf"],
+      "Ruby": ["unsafe_deserialization"],
+      "Go": [],
+      "Rust": []
+    },
+    "unsupported_rule": "Go and Rust remain explicit unsupported terminal coverage states and stay in every denominator; they may not be dropped, relabeled, or pooled away.",
+    "assignment_rule": "Every subject inherits the complete fixed matrix row for its already-frozen primary language. No per-subject mechanism is selected from source, architecture, scanner, model, or outcome evidence.",
+    "later_finding_rule": "A future separately authorized candidate evaluation may enter a matrix cell only through its own predeclared detector mechanism and language provenance; this receipt creates no finding, claim, certificate, candidate, or outcome."
+  },
+  "execution": {
+    "artifact_directory": "data/artifacts/opt010-architecture-mechanism-eligibility",
+    "must_be_absent_before_authorization": true,
+    "helper": "src/repoauditor/eval/opt010_architecture_eligibility.py",
+    "focused_test": "tests/test_opt_010_architecture_mechanism_eligibility.py",
+    "result": "docs/optimizations/opt-010-architecture-mechanism-eligibility-result-2026-08-20.json",
+    "sequence": [
+      "Verify every receipt, result, snapshot, detector, retrieval, store, instrument, prompt, schema, price, branch, index, and absent artifact-directory identity before any write or provider process.",
+      "Create the artifact directory; freeze and persist the concrete mechanism matrix before accessing source content or provider credentials.",
+      "Verify all six exact local snapshots and their qualification digests without opening any scanner finding artifact.",
+      "Verify Anthropic credential presence from the existing cloud chain without logging its value and require the exact provider/model/configuration before the first request.",
+      "Map subjects strictly in frozen order with one initial call and at most one confidence-triggered repass; persist authoritative scratch usage and a canonical structured-map digest after each attempt.",
+      "Produce one aggregate result with subject completion states, map digests, aggregate architecture counts, fixed mechanism coverage, resource accounting, and G02/G05/G07 descriptive gate classification; then stop."
+    ]
+  },
+  "resource_ceilings": {
+    "subjects": 6,
+    "provider_attempts": 12,
+    "provider_reported_tokens": 500000,
+    "maximum_known_dated_price_cost_usd": 7.5,
+    "maximum_elapsed_minutes": 45,
+    "maximum_new_data_bytes": 10485760,
+    "allowed_network_hosts": ["api.anthropic.com"],
+    "authorized_public_source_transmissions": 12,
+    "other_network_reads_or_uploads": 0,
+    "repository_materializations": 0,
+    "repository_code_executions": 0,
+    "scanner_processes": 0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "schema_migrations": 0,
+    "findings_or_candidates_created": 0,
+    "assessments": 0,
+    "labels": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0,
+    "human_reviews": 0,
+    "agentic_runs": 0,
+    "workspace_branch_or_index_operations": 0,
+    "commits": 0,
+    "merges": 0,
+    "pushes": 0,
+    "lifecycle_changes": 0
+  },
+  "stop_conditions": [
+    "Any frozen receipt, result, subject, snapshot, detector, retrieval, store, helper, prompt, schema, model, price, verifier, branch, index, or initially absent artifact-directory identity drifts.",
+    "The mechanism matrix is not durably frozen before source or credential access, or any matrix cell is selected from source, scanner, architecture, model, candidate, or outcome evidence.",
+    "Any complete request exceeds 320,000 UTF-8 bytes, any provider/model/host differs, any call occurs after a failure, any untriggered repass or other retry occurs, or any provider attempt lacks retained authoritative-or-unavailable usage status.",
+    "Any raw provider output, source excerpt, source path, symbol, finding, candidate, scanner detail, assessment, label, score, rank, severity, confidence, prior, expected outcome, or identity beyond the already disclosed stable subject hashes appears in the aggregate result.",
+    "Any resource ceiling or zero-activity boundary is exceeded."
+  ],
+  "excluded": [
+    "scanner artifact or finding inspection, candidate generation or disclosure, source rendering to the project owner, human review, assessment, label, outcome, answer-key, score, rank, threshold, or expected-performance access",
+    "architecture persistence to the production store, production pipeline or CLI integration, provider retry beyond one confidence-triggered repass, prompt, schema, model, helper-external instrument, scanner, retrieval, slicer, verifier, configuration, or policy modification",
+    "paired G03b baseline comparison, agentic falsification, G04 empirical recall evaluation, G07 adequacy-threshold selection or recommendation, tuning, recalibration, production activation or policy change, OPT-010 promotion or closure",
+    "remaining primary or reserve activation, OPT-014 or SEC/EDGAR reactivation, OPT-036 use or change, lifecycle changes, full-suite execution, workspace branch or index operations, staging, commits, merges, pushes, integration, or deployment"
+  ],
+  "result_boundary": "This work may complete the six architecture-map identity slots, freeze concrete verifier mechanism eligibility, and descriptively reclassify G02, G05, and G07. It cannot claim empirical safety, select adequacy or performance thresholds, run either comparison arm, access outcomes, activate the agent, or close OPT-010.",
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the OPT-010 bounded architecture-map and concrete-mechanism eligibility gate described by opt-010-architecture-mechanism-eligibility-receipt-2026-08-20.json, limited to the six already materialized digest-frozen wave-one subjects; deterministic freezing before provider use of the exhaustive verifier matrix Python sql_injection, command_injection, and ssrf, TypeScript command_injection and ssrf, Java ssrf, Ruby unsafe_deserialization, and explicit unsupported Go and Rust states; verification of the exact existing snapshots without scanner-finding access; bounded scratch-only architecture recovery using Anthropic Claude Opus 4.8, architecture_recovery_v2, at most 60,000 initial and 240,000 low-confidence-repass context characters, a 320,000-byte complete-request ceiling, one initial call and at most one confidence-triggered repass per subject with no other retry, authoritative scratch usage, canonical map digests, and one aggregate result, with ceilings of six subjects, 12 provider attempts, 500,000 provider-reported tokens, $7.50 known dated-price cost, 45 minutes, 10 MiB new data, only api.anthropic.com network access, at most 12 bounded public-source transmissions, and exactly zero other network activity, repository materializations or code executions, scanner processes, production-store reads or mutations, findings or candidates, assessments, labels, model training, rescoring, human reviews, agentic runs, workspace branch or index operations, commits, merges, pushes, or lifecycle changes. Scanner findings, candidate generation or disclosure, source rendering to me, outcomes, review, production-store architecture persistence, prompt, schema, model, scanner, retrieval, slicer, verifier, configuration or policy changes, paired G03b comparison, agentic falsification, G04 empirical recall evaluation, threshold selection or recommendation, tuning, recalibration, production activation, OPT-010 promotion or closure, remaining-source activation, OPT-014 or SEC/EDGAR reactivation, OPT-036 use or change, integration, and deployment remain excluded."
+  }
+}

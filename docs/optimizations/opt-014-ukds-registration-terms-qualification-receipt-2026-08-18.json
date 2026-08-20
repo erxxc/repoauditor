@@ -1,0 +1,200 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-014",
+  "status": "authorization-pending",
+  "frozen_at": "2026-08-18",
+  "design": {
+    "path": "opt-014-independent-data-acquisition-design-2026-08-18.json",
+    "sha256": "af29a9bd3e1f644fd6ee115daccf59c6da166b45c668941a8f22b4416e09be15"
+  },
+  "prior_qualification": {
+    "path": "opt-014-uk-canada-access-codebook-qualification-result-2026-08-18.json",
+    "sha256": "72c041056415836b2bd1ae6325ae0301d994c9ada6636fa1bcca9c3abab5aa63",
+    "identity": "UK Data Service study 9285, DOI 10.5255/UKDA-SN-9285-1, first edition",
+    "overall_state": "conditionally-qualified",
+    "unresolved_gates": [
+      "G06",
+      "G08",
+      "G10",
+      "G11",
+      "G12"
+    ],
+    "data_gate_cleared": false
+  },
+  "scope": "Conduct one human-mediated, outcome-blind registration and terms qualification for exact UK Data Service study 9285. Verify frozen evidence offline; review public registration, access, End User Licence, and exact-study metadata; pause for the project owner to perform any credential entry, login, registration, and required End User Licence acceptance privately; accept only a sanitized categorical attestation and authenticated metadata transcription; classify only the five previously unresolved gates; persist one aggregate qualification result; and stop before adding the study to an account, requesting, ordering, opening, previewing, or downloading any data file.",
+  "fixed_identity": {
+    "title": "Cyber Security Breaches Survey, 2024",
+    "study_number": "9285",
+    "doi": "10.5255/UKDA-SN-9285-1",
+    "edition": 1,
+    "stable_identity_sha256": "cbec5ed3a41320e8f2a613677b25fa8bcd3e30568f4a4bad851474e9ce787665",
+    "identity_basis": "uk-data-service|CSBS|2024|study-9285-edition-1",
+    "catalog_metadata_url": "https://doc.ukdataservice.ac.uk/doc/9285/mrdoc/UKDA/UKDA_Study_9285_Information.htm",
+    "condition_of_use_url": "https://doc.ukdataservice.ac.uk/doc/9285/read9285.htm",
+    "candidate_ranking": false,
+    "source_acquisition_selection": false
+  },
+  "human_control_contract": {
+    "owner_only_actions": [
+      "Choose whether to use an existing UK Data Service account or create one new account.",
+      "Enter all credentials, identity attributes, contact details, institutional affiliations, residency information, and multifactor-authentication values outside repository evidence and outside agent-visible text.",
+      "Read and, only if acceptable, accept the current UK Data Service End User Licence once when required for registration or access.",
+      "Navigate any institutional identity-provider pages privately; identity-provider hosts, credentials, and page contents are not agent inputs and may not be persisted.",
+      "Stop before any control that adds study 9285 to an account, requests or orders access, or opens, previews, or downloads a data file."
+    ],
+    "agent_actions": [
+      "Verify frozen local digests without opening the production database.",
+      "Review public UK Data Service registration, safeguarded-access, terms, End User Licence, and study-9285 metadata on the enumerated hosts.",
+      "Provide a sanitized fill-in checklist and pause for project-owner completion.",
+      "Inspect only project-owner-transcribed categorical access and manifest metadata after all personal and credential information has been removed.",
+      "Classify G06, G08, G10, G11, and G12 as documented-pass, documented-fail, or unresolved, persist one aggregate result, and stop."
+    ],
+    "agent_must_not_receive_or_store": [
+      "username, password, passkey, authentication code, recovery code, session cookie, token, or identity-provider URL",
+      "person name, email address, telephone number, postal address, birth date, or account identifier",
+      "institution or employer name, department, supervisor, sponsor, or billing identity",
+      "screenshots or page exports containing personal, credential, account, or study-outcome information"
+    ],
+    "maximum_new_accounts": 1,
+    "maximum_login_or_registration_sessions": 1,
+    "maximum_eul_acceptances": 1,
+    "maximum_human_attestations": 1
+  },
+  "owner_attestation_template": {
+    "instructions": "Return only these categorical or study-metadata fields after removing all personal and account information. Use null for anything not displayed. Do not paste page source, cookies, URLs containing account identifiers, or outcome-bearing text.",
+    "fields": {
+      "account_path": "existing-account | newly-registered | unable-to-register",
+      "user_category": "uk-academic | non-uk-academic | government | nonprofit | commercial | independent | other-category | undisclosed",
+      "residency_category": "uk | eea | other | undisclosed",
+      "intended_use": "non-commercial-research | commercial | teaching | other | undisclosed",
+      "eul_presented": "yes | no | unknown",
+      "eul_accepted_by_owner": "yes | no | not-required | unknown",
+      "study_9285_access_tier": "open | safeguarded-eul | special-condition | depositor-permission | special-licence | controlled | unavailable | unknown",
+      "additional_conditions_displayed": "yes | no | unknown",
+      "depositor_approval_required": "yes | no | unknown",
+      "fee_displayed": "none | amount-not-transcribed | unknown",
+      "study_version_displayed": "categorical edition or version text without account identifiers | null",
+      "file_manifest_visible_without_request": "yes | no | unknown",
+      "data_file_count": "nonnegative integer | null",
+      "data_file_formats": "array of format names only, such as SPSS, Stata, or tab-delimited; no filenames | null",
+      "aggregate_advertised_size_bytes": "nonnegative integer | null",
+      "documentation_inventory": "array drawn only from questionnaire, codebook, variable-list, technical-report, user-guide, or other-documentation | null",
+      "stable_pseudonymous_organization_key_documented": "yes | no | unknown",
+      "identifier_persistence_across_files_documented": "yes | no | not-applicable | unknown",
+      "access_period_or_expiry_displayed": "yes | no | unknown",
+      "withdrawal_or_supersession_rule_displayed": "yes | no | unknown",
+      "overlap_or_lineage_metadata_beyond_public_report": "yes | no | unknown",
+      "stopped_before_study_request_or_download": "yes"
+    }
+  },
+  "qualification_contract": {
+    "gate_states": [
+      "documented-pass",
+      "documented-fail",
+      "unresolved"
+    ],
+    "gates": [
+      {
+        "gate_id": "G06",
+        "gate": "Exact record-level file formats, aggregate advertised size, released documentation inventory, and stable pseudonymous organization identifiers are documented without opening a data file."
+      },
+      {
+        "gate_id": "G08",
+        "gate": "The owner's categorical user type, residency, and intended use are eligible for the exact access tier without depositor contact or an application."
+      },
+      {
+        "gate_id": "G10",
+        "gate": "Exact edition, access mechanism, fee state, access period, and withdrawal or supersession rules are documented."
+      },
+      {
+        "gate_id": "G11",
+        "gate": "Publisher-stated provenance and stable record-level lineage metadata can support deterministic overlap exclusion from the frozen prior and comparison sources."
+      },
+      {
+        "gate_id": "G12",
+        "gate": "The authenticated advertised access and schema are compatible with a later separately authorized acquisition receipt."
+      }
+    ],
+    "evidence_rule": "A public official statement, exact authenticated study metadata transcribed by the owner, or a categorical owner attestation may establish a gate. Missing, ambiguous, outcome-derived, or personally identifying information remains unresolved. No favorable inference is permitted.",
+    "commercial_use_rule": "If intended_use is commercial, or if the exact study displays data-owner permission, a special licence, an application, payment, or contact requirement, stop with that gate unresolved or failed as supported; no permission request, application, inquiry, purchase, or payment is authorized.",
+    "qualification_rule": "Study 9285 is qualified for a later acquisition receipt only if all five unresolved gates become documented-pass and the prior seven passes remain undrifted. Any mandatory documented failure makes it not-qualified; otherwise any unresolved mandatory gate leaves it conditionally-qualified.",
+    "claim_boundary": "Qualification is not source selection, acquisition authorization, statistical adequacy, outcome validation, or clearance of the OPT-014 data gate."
+  },
+  "outcome_blinding": {
+    "permitted_inputs": "Identity, edition, file-count, format, aggregate advertised size, documentation-type, schema-name, identifier-semantics, provenance, lineage, license, access-tier, categorical eligibility, security, retention, deletion, fee, access-period, and withdrawal metadata only.",
+    "forbidden_inputs": "Records, previews, samples, variable distributions, response counts, incident totals, rates, loss values, quantiles, correlations, organizations, scores, model performance, and prior agreement.",
+    "incidental_value_quarantine": "If an authenticated or public page co-mingles outcome values with permitted metadata, do not transcribe, persist, compare, summarize, or use them; record only that quarantine occurred and stop reading that section."
+  },
+  "deterministic_funnel": [
+    "Verify the design, prior qualification, receipt, and production-store digest offline.",
+    "Review only public registration, access, EUL, and study-9285 metadata on exact authorized hosts.",
+    "Present the frozen sanitized owner-attestation fields and pause before any credential or identity entry.",
+    "The owner privately completes at most one login or registration session and at most one EUL acceptance, or reports unable-to-register, then returns only the sanitized categorical attestation.",
+    "Reject and do not persist any personal, credential, session, account, institutional-name, or outcome content.",
+    "Classify only G06, G08, G10, G11, and G12, persist one aggregate result, and stop before study request, order, preview, file opening, or download."
+  ],
+  "allowed_reads": [
+    "Public UK Data Service study-9285 identity, condition-of-use, registration, access-tier, terms, End User Licence, privacy, security, retention, deletion, version, fee, and withdrawal metadata on exact enumerated hosts.",
+    "Authenticated study-9285 catalog metadata rendered to the owner after private login, limited to the frozen attestation fields and excluding account, outcome, request, order, preview, and file content.",
+    "Public documentation inventories and schema labels for study 9285 without opening or downloading a data file.",
+    "One sanitized categorical owner attestation matching the frozen template."
+  ],
+  "forbidden_actions": [
+    "Agent entry, receipt, storage, or replay of credentials, identity attributes, personal details, institutional names, authentication codes, cookies, tokens, or session material",
+    "Agent-controlled login, registration, account creation, terms acceptance, identity-provider navigation, or multifactor authentication",
+    "Adding study 9285 to an account, requesting or ordering access, depositor permission, application, inquiry, contact, purchase, payment, or billing action",
+    "Opening, rendering, previewing, sampling, querying, exporting, or downloading a data file, record, row, table, API response, archive, CSV, SPSS, Stata, or other microdata object",
+    "Outcome, incident-total, rate, loss-value, quantile, distribution, correlation, organization, model-performance, or prior-agreement inspection or persistence",
+    "Source selection, adequacy thresholds, cohort or holdout selection, deduplication implementation, linkage-key construction, evaluation, fitting, simulation, rescoring, training, prior or methodology change",
+    "Production-store access or mutation, schema migration, assessment, label, OPT-014 lifecycle change, OPT-010 execution, branch integration, remote push, or deployment"
+  ],
+  "resource_ceilings": {
+    "maximum_elapsed_minutes_excluding_owner_pause": 30,
+    "maximum_new_data_bytes": 5242880,
+    "maximum_public_or_authenticated_metadata_documents": 20,
+    "maximum_human_attestations": 1,
+    "maximum_result_documents": 1,
+    "agent_network_hosts": [
+      "ukdataservice.ac.uk",
+      "www.ukdataservice.ac.uk",
+      "doc.ukdataservice.ac.uk",
+      "discover.ukdataservice.ac.uk",
+      "beta.ukdataservice.ac.uk",
+      "datacatalogue.ukdataservice.ac.uk"
+    ],
+    "owner_private_identity_provider_navigation": "identity-provider hosts are permitted only for the owner's private login or registration and are excluded from agent observation, transcription, persistence, and network use",
+    "network_uploads_by_agent": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "new_accounts": 1,
+    "login_or_registration_sessions": 1,
+    "eul_acceptances": 1,
+    "dataset_requests_or_orders": 0,
+    "dataset_or_data_file_downloads": 0,
+    "raw_records_read": 0,
+    "applications_inquiries_or_contacts": 0,
+    "purchases_or_payments": 0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "simulation_runs": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0
+  },
+  "stop_conditions": [
+    "The design, prior qualification, frozen receipt, or production-store digest drifts.",
+    "The owner does not affirm that credentials, personal details, account identifiers, and institution names were removed from the attestation.",
+    "The intended use is commercial or the exact study requires depositor permission, a special licence, application, inquiry, contact, purchase, or payment.",
+    "A page requires the agent to enter credentials, traverse an identity provider, accept terms, or receive session material.",
+    "Resolving a gate requires adding the study to an account, requesting, ordering, previewing, opening, or downloading a data file or inspecting a record or outcome.",
+    "An unlisted host is required for agent-visible evidence, or the time, byte, document, attestation, session, account, acceptance, or result ceiling would be exceeded.",
+    "Any source selection, acquisition, adequacy, evaluation, store, model, policy, lifecycle, branch, remote, or deployment action is attempted."
+  ],
+  "result_boundary": "The result may preserve one sanitized categorical owner attestation, classify only G06, G08, G10, G11, and G12, and report whether study 9285 remains conditional, becomes qualified for a later acquisition receipt, or is not qualified. It may not store personal or account information, select or acquire the source, request or download data, inspect records or outcomes, judge statistical adequacy, clear the OPT-014 data gate, change a prior or methodology, or change OPT-014 status.",
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the OPT-014 human-mediated UK Data Service registration and terms qualification described by opt-014-ukds-registration-terms-qualification-receipt-2026-08-18.json, limited to exact study 9285; offline digest verification; public registration, safeguarded-access, End User Licence, and study metadata review; at most one owner-controlled private login or new registration and one owner-controlled End User Licence acceptance; one sanitized categorical owner attestation containing no credentials, personal details, account identifiers, institution names, identity-provider details, or outcomes; authenticated transcription only of access tier, categorical eligibility, edition, file count, formats, aggregate advertised size, documentation inventory, stable identifier semantics, fees, access period, withdrawal, and lineage metadata; classification only of unresolved gates G06, G08, G10, G11, and G12; and one aggregate result, with ceilings of 30 agent minutes excluding the owner pause, 5 MiB new data, 20 metadata documents, one attestation, only ukdataservice.ac.uk, www.ukdataservice.ac.uk, doc.ukdataservice.ac.uk, discover.ukdataservice.ac.uk, beta.ukdataservice.ac.uk, and datacatalogue.ukdataservice.ac.uk agent network access, and exactly zero agent uploads, provider calls, tokens, cost, study requests or orders, data-file downloads, raw record reads, applications, inquiries, contacts, purchases, payments, production-store reads or mutations, assessments, labels, simulation runs, model training, or rescoring. Agent-controlled credentials, login, registration, terms acceptance, identity-provider navigation, adding study 9285 to an account, source selection, data access, previews, samples, records, outcomes, linkage-key construction, adequacy thresholds, cohort or holdout selection, evaluation, fitting, prior or methodology changes, production-policy changes, OPT-014 promotion or closure, OPT-010 execution, branch integration, remote push, and deployment remain excluded; commercial use or any permission, special-licence, application, contact, or payment requirement causes an immediate stop."
+  }
+}

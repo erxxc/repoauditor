@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-08-12",
+  "optimization": "OPT-003",
+  "status": "stopped-before-commit-and-merge",
+  "authorization": "The project owner granted the exact authorization statement in opt-003-closure-merge-corrected-receipt-2026-08-12.json.",
+  "receipt": {
+    "path": "opt-003-closure-merge-corrected-receipt-2026-08-12.json",
+    "sha256": "2c4a2c3520068dfee2c1fd591e702256943366c31d1fdb50ba9fd382cb541ef3"
+  },
+  "stop": {
+    "passed": false,
+    "stage": "full-offline-non-live-validation",
+    "command": "UV_CACHE_DIR=/tmp/repoauditor-uv-cache uv run --offline pytest -m 'not integration and not live' -q",
+    "passed_tests": 787,
+    "failed_tests": 1,
+    "deselected_tests": 36,
+    "elapsed_seconds": 92.64,
+    "failure": {
+      "test": "tests/test_opt005_lightweight_completion_receipt.py::test_closeout_reassessment_remains_historical_and_opt005_is_closed",
+      "cause": "The authorized historical-evidence reconciliation correctly stopped comparing the 2026-08-07 summary to the current ledger, but inverted the frozen current_execution_gate value: the immutable snapshot contains null, not a non-null object.",
+      "required_correction": "Change only the assertion from is not None to is None; do not edit the historical snapshot."
+    },
+    "receipt_condition": "Any full offline non-live test fails after the three reconciliations.",
+    "disposition": "Fail closed before branch commit, local-main update, or merge. Restore the canonical status and descriptive lifecycle documents to their pre-closure open state."
+  },
+  "retained_authorized_test_changes": [
+    "tests/test_documentation_current_state.py",
+    "tests/test_opt005_lightweight_completion_receipt.py",
+    "tests/test_optimization_status.py"
+  ],
+  "accounting": {
+    "final_store_sha256": "a3d8e55feadf5860c079f1de18b698186afbae81ba6bf678717cdfe1f2cca11f",
+    "store_byte_identical": true,
+    "branch_commits": 0,
+    "merge_commits": 0,
+    "local_main_updates": 0,
+    "network_reads": 0,
+    "network_uploads": 0,
+    "remote_pushes": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "store_mutations": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "rescores": 0,
+    "model_training_runs": 0
+  },
+  "restored_state": {
+    "opt_003_status": "open",
+    "optimization_summary": {"closed": 31, "open": 4, "total": 35},
+    "working_branch": "codex/opt-003-wave-1-import-receipt",
+    "head": "1e92bb90602e7bd6e52dbfd86e12e6c6be5f3f28",
+    "local_main": "4a6a4fff0f5d1fe9f8375b1cb41a611c8d0bf470"
+  },
+  "recommended_next_step": "Freeze one final retry that retains all prior boundaries and authorizes only the one-line is-not-None to is-None correction within the already named OPT-005 lifecycle test before repeating closure validation."
+}

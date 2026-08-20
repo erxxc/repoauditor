@@ -1,0 +1,126 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-010",
+  "status": "authorization-pending",
+  "objective": "Resume the corrected offline acceptance after preserving its pre-output mapping-order stop, using only an order-insensitive comparison of the same exact frozen supported-cell memberships before the unchanged retained-evidence reproduction.",
+  "retained_authority": {
+    "corrected_acceptance_receipt": {
+      "path": "docs/optimizations/opt-010-java-ruby-scanner-cell-coverage-corrected-acceptance-receipt-2026-08-20.json",
+      "sha256": "87f49dfa042061697aae1ca3b7031cdf9c3fc28d7b7f03f1882acfd802e4cca0"
+    },
+    "corrected_acceptance_receipt_test": {
+      "path": "tests/test_opt_010_java_ruby_scanner_cell_coverage_corrected_acceptance_receipt.py",
+      "sha256": "11903edd98933b77d3da9e2abc5b22aa90ce97c21da39bd04dc6ce99733275fa"
+    },
+    "mechanism_mapping": {
+      "path": "data/artifacts/opt010-java-ruby-scanner-cell-coverage/mechanism-mapping.json",
+      "sha256": "5a954ed23a788d34dce0b36bda1b98ad3f8fe322915552f7d237fe57627218b0"
+    },
+    "frozen_parser": {
+      "path": "src/repoauditor/eval/opt010_paired_wave.py",
+      "sha256": "52ee4c59c41c6823afba07e2a4ac27f565125366159d1d78f7be43586ddad1eb"
+    },
+    "production_store_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a"
+  },
+  "retained_stopped_attempt": {
+    "status": "stopped-pre-output-supported-cell-order-comparison-mismatch",
+    "pre_correction_helper_sha256": "d8987d4051228307bd0d10ea4a0aab28fdfb289d389c679233c6a14cc3c68dcd",
+    "pre_correction_focused_test_sha256": "6fe56d226dc3b7c258e8b10eafede16eed13120c57ff7be323215dc0c5349b4f",
+    "observed_difference": {
+      "frozen_python_membership_order": [
+        "command_injection",
+        "sql_injection",
+        "ssrf"
+      ],
+      "internal_python_membership_order": [
+        "command_injection",
+        "ssrf",
+        "sql_injection"
+      ],
+      "exact_language_membership_equal": true,
+      "exact_mechanism_membership_equal": true,
+      "cwe_mapping_equal": true
+    },
+    "facts": {
+      "stop_point": "The helper stopped during preflight after retained digest verification and before classification reproduction or output persistence.",
+      "outputs": "The aggregate acceptance artifact and corrected result remained absent.",
+      "activity": "Zero runtime imports, scanner or canary processes, network reads, provider calls, credential reads, source or repository access, production-database access, store mutations, assessments, labels, training, rescoring, agentic or baseline runs, reviews, outcomes, or workspace-git mutations occurred.",
+      "store": "The production store remained byte-identical at the retained SHA-256."
+    },
+    "interpretation": "The stop was caused only by treating per-language mechanism-list order as semantic. It is retained as a stopped attempt and is not itself an acceptance result."
+  },
+  "corrected_instruments": {
+    "acceptance_helper": {
+      "path": "src/repoauditor/eval/opt010_scanner_cell_coverage_acceptance.py",
+      "sha256": "f1560e195b7be01021fe789cac89146db270310b8484ecaf912acf26834d251d"
+    },
+    "focused_test": {
+      "path": "tests/test_opt_010_scanner_cell_coverage_acceptance.py",
+      "sha256": "5d4ed307b0262bdd2ea2fb1176f6b9817a288d14d6f1fe54470edf0dd466d5d5"
+    }
+  },
+  "correction_contract": {
+    "only_change": "Compare the frozen and internal supported-cell structures by exact language-key equality and sorted exact mechanism membership within each language. List order alone is non-semantic.",
+    "must_reject": [
+      "any added or removed language",
+      "any added, removed, or changed mechanism membership",
+      "any changed CWE mapping",
+      "any malformed non-list frozen membership"
+    ],
+    "unchanged": "Every retained evidence digest, SARIF and target-report binding, parser, expected cell count and classification, supplemental applicability, routing, production-store digest, aggregate-only result boundary, resource ceiling, zero-activity limit, and exclusion from the corrected acceptance receipt remains unchanged.",
+    "resume_rule": "Only if both corrected-instrument digests, every retained authority and original evidence binding, the exact stopped state, the production-store digest, main branch, empty index, retained-evidence ceiling, and absent outputs pass may the corrected helper execute exactly once.",
+    "result_rule": "The retry may write only the originally named aggregate acceptance artifact and corrected completed-negative result. It must preserve the original over-ceiling result and this stopped pre-output attempt as history."
+  },
+  "execution": {
+    "helper": "src/repoauditor/eval/opt010_scanner_cell_coverage_acceptance.py",
+    "focused_test": "tests/test_opt_010_scanner_cell_coverage_acceptance.py",
+    "artifact": "data/artifacts/opt010-java-ruby-scanner-cell-coverage/acceptance-artifact.json",
+    "result": "docs/optimizations/opt-010-java-ruby-scanner-cell-coverage-corrected-acceptance-result-2026-08-20.json"
+  },
+  "cumulative_resource_ceilings": {
+    "maximum_elapsed_minutes": 10,
+    "retained_evidence_bytes_maximum": 8388608,
+    "maximum_new_data_bytes": 1048576,
+    "network_reads_or_uploads": 0,
+    "runtime_import_checks": 0,
+    "scanner_or_canary_processes": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "keychain_or_credential_reads": 0,
+    "repository_materializations": 0,
+    "repository_or_source_reads": 0,
+    "repository_code_executions": 0,
+    "production_store_database_reads": 0,
+    "production_store_mutations": 0,
+    "schema_migrations": 0,
+    "human_reviews": 0,
+    "outcomes_read": 0,
+    "assessments": 0,
+    "labels": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0,
+    "agentic_or_baseline_runs": 0,
+    "workspace_branch_or_index_mutations": 0,
+    "commits": 0,
+    "merges": 0,
+    "pushes": 0,
+    "lifecycle_changes": 0
+  },
+  "stop_conditions": [
+    "Any retained authority, original evidence binding, stopped-attempt fact, corrected helper or test digest, production-store digest, branch, index, retained-evidence ceiling, or output-absence state drifts.",
+    "The corrected comparison accepts a language or mechanism membership difference, a CWE difference, or malformed membership, or any expected scan count, classification, applicability, routing, or aggregate digest fails exact reproduction.",
+    "Any network, runtime-import, scanner, canary, provider, credential, repository, source, production-database, outcome, assessment, label, training, rescoring, agentic, review, git-mutation, or lifecycle activity occurs, or any cumulative ceiling is reached."
+  ],
+  "excluded": [
+    "editing or deleting the original over-ceiling result, retained scan evidence, corrected acceptance receipt, or retained stopped-attempt facts",
+    "any helper or test change beyond the already-frozen exact membership-order comparison correction",
+    "new or edited CWE mappings, supported cells, scanner rules, parser, classification rules, routing rules, runtime imports, scanners, canaries, acquisition, repository or source access, source rendering, architecture recovery, provider or Keychain use, candidate or packet activity, paired execution, review, outcomes, assessments, and labels",
+    "precision, recall, G03b or G04 decisions, threshold selection, training, rescoring, fitting, tuning, recalibration, production-policy changes, OPT-010 promotion or closure, lifecycle changes, integration, push, and deployment"
+  ],
+  "result_boundary": "A successful retry may establish only the same corrected completed-negative synthetic scanner-cell interpretation authorized by the retained acceptance receipt. It cannot establish real-source availability, finding correctness, empirical recall, packet feasibility, paired-arm performance, production readiness, or OPT-010 completion.",
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the OPT-010 Java/Ruby scanner-cell corrected offline acceptance retry described by opt-010-java-ruby-scanner-cell-coverage-corrected-acceptance-retry-receipt-2026-08-20.json, retaining every evidence, classification, routing, resource, zero-activity, and exclusion boundary from the corrected acceptance receipt; accepting the stopped pre-output attempt caused solely by order-sensitive comparison of identical frozen and internal supported-cell memberships, with zero acceptance outputs, runtime imports, scanners, network, provider, credential, source, store, review, outcome, or git activity and byte-identical production store; permitting only the already-frozen helper and focused-test correction that compares exact language keys and sorted exact mechanism memberships while rejecting any language, mechanism, CWE, or malformed-structure difference; and then, only if every retained binding and stopped-state check passes, executing the corrected offline reproduction exactly once and writing the originally named aggregate acceptance artifact and corrected completed-negative result routing to separate Java SSRF supplemental-rule qualification, with cumulative ceilings of 10 minutes, 8 MiB retained evidence, 1 MiB new data, and exactly zero network reads or uploads, runtime imports, scanner or canary processes, provider calls, tokens, cost, Keychain or credential reads, repository or source access, production-database reads or mutations, assessments, labels, training, rescoring, agentic or baseline runs, human reviews, outcomes, branch or index mutations, commits, merges, pushes, or lifecycle changes. Any other helper, test, evidence, parser, mapping, scanner-rule, classification, routing, source, candidate, packet, architecture, paired-execution, precision, recall, threshold, tuning, recalibration, production-policy, OPT-010 status, integration, push, or deployment change remains excluded."
+  }
+}

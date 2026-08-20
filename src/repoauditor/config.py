@@ -70,6 +70,45 @@ class LLMConfig(BaseModel):
     max_tokens_per_pipeline_run: int = Field(default=250_000, ge=0)
 
 
+AgentReadOnlyToolName = Literal[
+    "indexed_source_excerpt",
+    "structural_slice",
+    "callers",
+    "references",
+    "architecture_evidence",
+]
+
+
+class AgentReadOnlyToolsConfig(BaseModel):
+    """Disabled-by-default containment bounds for a future agent tool surface."""
+
+    enabled: bool = False
+    allowlist: list[AgentReadOnlyToolName] = Field(
+        default_factory=lambda: [
+            "indexed_source_excerpt",
+            "structural_slice",
+            "callers",
+            "references",
+            "architecture_evidence",
+        ],
+        min_length=1,
+    )
+    maximum_calls: int = Field(default=12, ge=1, le=100)
+    maximum_results_per_call: int = Field(default=5, ge=1, le=20)
+    maximum_context_lines: int = Field(default=12, ge=0, le=40)
+    maximum_query_characters: int = Field(default=256, ge=1, le=1024)
+    maximum_response_bytes: int = Field(default=32_768, ge=1024, le=131_072)
+
+    @field_validator("allowlist")
+    @classmethod
+    def _unique_allowlist(
+        cls, value: list[AgentReadOnlyToolName]
+    ) -> list[AgentReadOnlyToolName]:
+        if len(value) != len(set(value)):
+            raise ValueError("agent read-only tool allowlist entries must be unique")
+        return value
+
+
 class FalsifyConfig(BaseModel):
     """Iteration budget for the falsification challenger's observe-think-act-reflect loop.
 
@@ -92,6 +131,9 @@ class FalsifyConfig(BaseModel):
     # This prevents a large SARIF queue from starving nonstandard findings. A budget of
     # one retains strict best-first behavior because one slot cannot serve both streams.
     min_untriaged_per_run: int = Field(default=1, ge=0)
+    agent_tools: AgentReadOnlyToolsConfig = Field(
+        default_factory=AgentReadOnlyToolsConfig
+    )
 
 
 class DetectConfig(BaseModel):

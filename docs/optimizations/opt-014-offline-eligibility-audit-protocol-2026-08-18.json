@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-014",
+  "protocol_id": "opt014-offline-data-eligibility-v1",
+  "status": "frozen-audit-not-authorized",
+  "frozen_at": "2026-08-18",
+  "objective": "Determine, without changing the model or store, whether the current repository contains observed organization/incident evidence that could support any later OPT-014 prior-predictive interpretation, held-out validation, backtesting, hierarchical-prior estimation, remediation-effect analysis, or portfolio modeling.",
+  "bound_inputs": {
+    "production_store": {
+      "path": "../../data/repoauditor.db",
+      "sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a"
+    },
+    "configuration": {
+      "path": "../../config.toml",
+      "sha256": "30d8837bdb63b56a50aefb0cd9bc18a0a7173ac86cd8581d4af6f2b2b21f3d09"
+    },
+    "priors": {
+      "path": "../../priors.yaml",
+      "sha256": "f6a49336a1e7aa72ed1e360e90649036364983b3792ddfd97a203d18d85287e9"
+    },
+    "prior_scope_roadmap": {
+      "path": "../prior-scope-roadmap.md",
+      "sha256": "2c869ffafc40e2bd8d871c3ccbbe89e54b1a1fdb1164d74acdf57eeac7843b44"
+    },
+    "organization_frequency_methodology": {
+      "path": "../organization-frequency-methodology.md",
+      "sha256": "645aa1c29d58ca299cfa27c3c1d15c315366cad1d80b8b051744d6c6b6c01ef5"
+    },
+    "optimization_status": {
+      "path": "optimization-status.json",
+      "sha256": "a8d33e0d3f27e686b120213689223fb29b83834245ffc2f0b147f33f7842c6fa"
+    }
+  },
+  "audit_unit": "Aggregate schema and row-count evidence. No repository, organization, incident, finding, assessment, label, scenario, or simulation identity is emitted.",
+  "inventory_dimensions": [
+    "Presence and aggregate row counts of observed organization-year, incident-count, realized-loss, observation-window, intervention, portfolio-membership, dependency, objective, and constraint records.",
+    "Aggregate counts of current risk scenarios and simulation runs by methodology version, classified as model-generated outputs rather than observed outcomes.",
+    "Aggregate counts of repositories, findings, assessments, and labels, classified as security-finding evidence rather than organization/incident outcome evidence.",
+    "Completeness of configured prior population, effective-date, data-vintage, aleatory-representation, and epistemic-status metadata.",
+    "Whether organization revenue/population applicability is configured, unknown, or outside the cited frequency population.",
+    "Availability of distinct organization and time units sufficient to define a future organization-held-out or chronological split, without selecting a split or judging statistical adequacy.",
+    "Availability of predefined cohort dimensions for a future hierarchical model, without inferring cohorts from outcomes.",
+    "Availability of time-stamped interventions and comparable pre/post or control observation windows for future remediation-effect work.",
+    "Availability of multiple portfolio units plus explicit dependency evidence, decision objective, and constraints for future portfolio modeling."
+  ],
+  "evidence_classification": {
+    "observed_outcome_candidate": "A directly observed, provenance-bearing organization-period record with an explicit observation window and incident count, optionally with realized loss and censoring metadata.",
+    "model_generated_ineligible": "A risk scenario, Monte Carlo draw, simulation summary, tornado result, or other output generated from the model; it cannot validate the model that generated it.",
+    "finding_evidence_ineligible": "A repository finding, triage score, assessment, label, severity, EPSS, KEV, or deal-risk component; it is not an organization-period incident or realized loss outcome.",
+    "prior_input_ineligible_as_outcome": "A published prior or the observations used to derive it; it cannot serve as an independent held-out outcome for that same prior."
+  },
+  "capacity_classification": {
+    "descriptive_prior_predictive_plumbing": "Structurally possible when valid configured priors and a pure non-persisting simulator exist. This does not require observed outcomes and cannot clear the predictive-validation gate.",
+    "held_out_or_backtest_candidate": "Structurally possible only if independent observed organization-period outcomes and disjoint organization or time units exist. A positive structural count does not establish adequate sample size or authorize split selection.",
+    "hierarchical_candidate": "Structurally possible only if cohort dimensions were defined without outcome inspection and multiple independent organization-period observations exist across multiple cohorts. Statistical adequacy remains a later frozen decision.",
+    "remediation_effect_candidate": "Structurally possible only with time-stamped interventions plus comparable pre/post or contemporaneous-control outcome windows. Finding closure alone is not an outcome.",
+    "portfolio_candidate": "Structurally possible only with multiple portfolio units, explicit dependency evidence, a decision objective, and constraints. Summing repository or scenario simulations is ineligible."
+  },
+  "decision_rule": "The audit may classify each capacity as structurally present or absent and list aggregate missing dimensions. It may not declare the OPT-014 data gate cleared, select adequacy thresholds, choose a holdout, fit or compare a model, recommend a prior, or authorize portfolio decisions. Any positive capacity requires a separately frozen evaluation protocol; zero eligible observed outcomes supports a later choice among descriptive prior-predictive diagnostics, governed data acquisition, or bounded closure.",
+  "bounded_actions": [
+    "Verify every bound input digest and current OPT-014 open/data-gated lifecycle state.",
+    "Open the production SQLite store in read-only mode and verify its digest remains byte-identical.",
+    "Inspect only table/column names, declared constraints, aggregate row counts, aggregate methodology counts, and aggregate null/completeness counts.",
+    "Read configured prior metadata and risk-quant population settings without changing them.",
+    "Persist one aggregate audit artifact and one descriptive result with no row identities or raw outcome values."
+  ],
+  "excluded": [
+    "Network access, uploads, or external data acquisition",
+    "Provider calls, tokens, or cost",
+    "Raw row, identity, finding, assessment, label, source, incident, or loss rendering",
+    "Production-store mutations or schema migrations",
+    "Simulation, prior-predictive generation, model fitting, scoring, comparison, backtesting, or resampling",
+    "Holdout, cohort, threshold, or portfolio selection",
+    "New priors, hierarchical estimation, category allocation, remediation-effect estimation, or dependency assumptions",
+    "Tuning, recalibration, production-policy changes, OPT-014 promotion or closure",
+    "OPT-010 execution, branch integration, remote push, or deployment"
+  ],
+  "hybrid_follow_up": {
+    "if_observed_capacity_exists": "Freeze eligibility thresholds, target population, leakage controls, and organization/time holdout rules before reading outcome values or fitting anything.",
+    "if_observed_capacity_is_absent": "Choose separately between a descriptive prior-predictive coherence report, a governed independent-data acquisition plan, or bounded negative-feasibility closure."
+  }
+}

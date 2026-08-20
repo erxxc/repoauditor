@@ -1,0 +1,183 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-010",
+  "status": "authorization-pending",
+  "frozen_at": "2026-08-18",
+  "objective": "Select and disclose an outcome-blind metadata-only buffer of twelve primary and four reserve untouched independent deployable-product source families for later owner review, without repository materialization, scanning, agent execution, findings, outcomes, or adequacy claims.",
+  "workspace_preflight": {
+    "branch": "main",
+    "committed_main": "1f1dba7a30a86d957510608c25e94077b15d2e8d",
+    "staged_paths": 0,
+    "OPT_036_branch": "opt-036-weak-rng-detect",
+    "OPT_036_head": "0aa7286",
+    "OPT_036_changed_paths": 10,
+    "OPT_036_overlap_with_current_OPT_010_or_closure_WIP": 0,
+    "branch_or_index_change_authorized": false
+  },
+  "frozen_inputs": {
+    "protected_cohort_design": {
+      "path": "docs/optimizations/opt-010-protected-cohort-design-2026-08-18.json",
+      "sha256": "bb77f61d14051fb6c5443b30157a92089f8e3ecbf53cb20c69daa2adaa7b12b8"
+    },
+    "protected_cohort_eligibility_artifact": {
+      "path": "docs/optimizations/opt-010-protected-cohort-eligibility-artifact-2026-08-18.json",
+      "sha256": "b052cce1856c7375a489ea1692dd025b8174c0e1419f831b93fad3a1c4268d3e"
+    },
+    "protected_cohort_design_result": {
+      "path": "docs/optimizations/opt-010-protected-cohort-design-result-2026-08-18.json",
+      "sha256": "7be64283163abd218310bacb8fd21cb5d865470bfeef32395ca4e28fdaaa069a"
+    },
+    "containment_result": {
+      "path": "docs/optimizations/opt-010-offline-containment-foundation-result-2026-08-18.json",
+      "sha256": "fbfb13771a6cdc4d2fae23d7d6985a025d78e5481fd853a1f8719f17cc627c51"
+    },
+    "agentic_gate": {
+      "path": "docs/agentic-escalation-gate.md",
+      "sha256": "17112f367776373eba27c754311e99a982ddab3a3c65bb7f85afd50eb66767dd"
+    },
+    "optimization_status": {
+      "path": "docs/optimizations/optimization-status.json",
+      "sha256": "b08ae0e3a3194eb917c29840e6c133beed47832d3749b493dfbe4dafd3c02791"
+    },
+    "untouched_selection_plan": {
+      "path": "docs/untouched-production-selection-plan-2026-07-28.json",
+      "sha256": "884be4e6c29367c7d11e481dbb3a16481e522d9de5065531519f22bd7b30e85a"
+    },
+    "independent_acquisition_protocol": {
+      "path": "docs/optimizations/opt-002-independent-acquisition-protocol-2026-08-07.json",
+      "sha256": "202a435a6ddd62e228dbc516a03cf526bce842b2bf9b7fed1bcc76e534fbddab"
+    },
+    "fixture_inventory_metadata": {
+      "path": "tests/fixtures/README.md",
+      "sha256": "f485ef50bb80b8206582cfcea40a08e9316745b731f08f32a3333ffdaa8f75f1"
+    },
+    "OPT_009_source_selection_result": {
+      "path": "docs/optimizations/opt-009-prospective-source-selection-result-2026-08-12.json",
+      "sha256": "2985f90110d2a40d9f2dbe45f2db166c351515e44182a251945edd4474dbca55"
+    },
+    "production_store": {
+      "path": "data/repoauditor.db",
+      "sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+      "access": "before-and-after-hash-only"
+    }
+  },
+  "metadata_discovery": {
+    "allowed_hosts": [
+      "github.com",
+      "api.github.com"
+    ],
+    "maximum_candidate_metadata_identities_inspected": 40,
+    "maximum_selected_identities_disclosed": 16,
+    "selected_roles": {
+      "primary": 12,
+      "reserve": 4
+    },
+    "permitted_metadata": [
+      "repository owner and name",
+      "public repository description and topics",
+      "fork, archived, disabled, visibility, and template state",
+      "creation and latest-push timestamps",
+      "primary language",
+      "license identity and public license text",
+      "default branch and exact HEAD commit",
+      "repository size and public popularity metadata used only as fixed eligibility floors",
+      "README product, deployment, architecture, and feature metadata"
+    ],
+    "fixed_search_buckets": [
+      "Python deployable product",
+      "JavaScript or TypeScript deployable product",
+      "Go deployable product",
+      "Java, Ruby, or Rust deployable product"
+    ],
+    "README_boundary": "README and license metadata may be inspected only to establish deployable-product identity, application domain, architecture shape, and pre-outcome mechanism hypotheses. No other repository source file may be opened."
+  },
+  "eligibility_contract": {
+    "required": [
+      "public independently authored deployable product",
+      "not a fork, mirror, archived repository, disabled repository, template, tutorial, starter, benchmark, deliberately vulnerable application, fixture, library-only package, or documentation-only project",
+      "created on or before 2024-08-18 and still maintained through public metadata",
+      "public license permits inspection and later separately authorized evaluation materialization",
+      "absent from RepoAuditor development, training, prompting, scanner qualification, prior evaluation, protected holdout, review, and source-selection families",
+      "exact default-branch HEAD commit resolved before persistence",
+      "one stable upstream family per repository with owner duplicates excluded"
+    ],
+    "fixed_metadata_floors": {
+      "minimum_repository_size_kib": 100,
+      "minimum_public_stars": 100,
+      "maximum_selected_repositories_per_owner": 1,
+      "minimum_distinct_primary_languages_across_selected_identities": 4
+    },
+    "family_rule": "Forks, mirrors, shared-upstream derivatives, editions, release variants, and related pre/post snapshots remain one source family and cannot occupy multiple slots.",
+    "prior_exposure_rule": "A repository owner/name or identifiable upstream family already present in the frozen exclusion inputs or current repository documentation is ineligible. Ambiguity fails closed.",
+    "missing_metadata_rule": "Missing or ambiguous license, ancestry, product, language, maintenance, deployability, or prior-exposure metadata makes the identity ineligible and may not be inferred from findings or code."
+  },
+  "coverage_and_selection": {
+    "pre_outcome_mechanism_hypotheses": [
+      "identity, authorization, role, or tenant boundaries",
+      "business workflows and state transitions",
+      "cross-service, integration, webhook, or outbound-request boundaries",
+      "file, content, template, command, or data-processing boundaries"
+    ],
+    "hypothesis_rule": "Mechanism tags describe advertised product surfaces only. They are not vulnerability labels, expected findings, severity claims, or evidence that a mechanism is implemented unsafely.",
+    "selection_key": "sha256('opt-010-prospective-source-v1' + normalized_upstream_family + exact_commit)",
+    "ordering": "After eligibility filtering, select in deterministic stable-hash order with round-robin language buckets, no more than four selected identities per primary language, at most one identity per owner, and at least four primary languages across the final sixteen. The first twelve are primary and the next four reserve.",
+    "shortfall_rule": "If exactly twelve primary and four reserve identities cannot be qualified under the frozen contract, persist only aggregate shortfall counts and stop; do not relax an eligibility floor, inspect source code or outcomes, substitute an exposed family, or disclose a partial selected list.",
+    "review_boundary": "The completed result may disclose only the sixteen selected repository identities, exact commits, licenses, primary languages, stable identity hashes, role/order, and bounded metadata selection bases for project-owner review."
+  },
+  "forbidden_inputs": [
+    "security advisories, CVEs, GHSAs, security issue or pull-request outcomes, exploit reports, vulnerability databases, or known-vulnerability membership",
+    "repository code search, source findings, scanner output, candidate or finding counts, source paths, symbols, excerpts outside README/license metadata, or patches",
+    "scores, ranks, predicted classes, severity, confidence, priors, expected outcomes, model output, assessments, labels, or human finding reviews",
+    "OPT-036 proposal, implementation, detector identity, findings, or test results"
+  ],
+  "allowed_outputs_after_authorization": [
+    "docs/optimizations/opt-010-prospective-source-selection-result-2026-08-18.json",
+    "tests/test_opt_010_prospective_source_selection.py"
+  ],
+  "resource_ceilings": {
+    "maximum_elapsed_minutes": 30,
+    "maximum_new_data_bytes": 5242880,
+    "maximum_metadata_documents": 64,
+    "maximum_candidate_metadata_identities_inspected": 40,
+    "selected_identities": 16,
+    "primary_identities": 12,
+    "reserve_identities": 4,
+    "network_reads": 64,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "repository_materializations": 0,
+    "repository_code_executions": 0,
+    "scanner_processes": 0,
+    "agentic_falsification_runs": 0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "schema_migrations": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0,
+    "branch_operations": 0,
+    "source_commits": 0,
+    "merge_commits": 0,
+    "remote_pushes": 0
+  },
+  "excluded": [
+    "partial-list disclosure after a qualification shortfall, candidate popularity or security ranking, and any selection input outside the frozen metadata contract",
+    "repository acquisition, clone, archive, materialization, source-code execution, scanning, architecture mapping, retrieval indexing, agentic execution, provider or model use, or production-store access beyond hashing",
+    "candidate-finding generation or disclosure, source rendering beyond README/license metadata, packet selection, human finding review, assessment, label, outcome, score, threshold, adequacy decision, fitting, training, tuning, recalibration, or production-policy change",
+    "OPT-010 activation, promotion, or closure, OPT-014 or SEC/EDGAR reactivation, OPT-036 use or change, lifecycle reconciliation, full-suite execution, branch integration, commit, remote push, or deployment"
+  ],
+  "stop_conditions": [
+    "Any frozen input or production-store hash differs.",
+    "The current branch, index separation, or zero-overlap OPT-036 preflight no longer holds.",
+    "Fewer than exactly twelve primary and four reserve identities pass without relaxing the contract.",
+    "A source identity, commit, license, ancestry, language, maintenance, deployability, prior-exposure, or README metadata field is missing or ambiguous.",
+    "Any forbidden outcome-bearing, code-bearing, provider, agentic, store, lifecycle, branch, commit, push, or unlisted-file activity would be required."
+  ],
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the OPT-010 prospective metadata-only source selection described by opt-010-prospective-source-selection-receipt-2026-08-18.json, limited to outcome-blind public GitHub repository, README, license, lineage, language, maintenance, deployability, and exact-default-branch-HEAD metadata for at most 40 candidate identities; deterministic selection and disclosure for my review of exactly twelve primary and four reserve untouched independent deployable-product source families using stable identity hashes, round-robin language buckets, at least four primary languages, no more than four selected identities per language, and one identity per owner; persistence of one selection result and one focused test; preservation of the current main WIP and isolated OPT-036 branch with zero index or branch changes; and production-store before-and-after hashing only, with ceilings of 30 minutes, 5 MiB new data, 64 metadata documents and network reads, only github.com and api.github.com network hosts, and exactly zero uploads, provider calls, tokens, cost, repository materializations or code executions, scanner processes, agentic falsification runs, production-store reads or mutations, schema migrations, assessments, labels, model training, rescoring, branch operations, commits, merges, remote pushes, or lifecycle changes. Security advisories, CVEs, security issues or pull requests, exploit reports, vulnerability databases, code search, source files beyond README and license metadata, findings, candidate counts, scores, ranks, predicted classes, severity, confidence, priors, expected outcomes, model output, OPT-036 evidence, threshold or adequacy selection, source acquisition, packet selection, human finding review, fitting, training, tuning, recalibration, production-policy changes, OPT-010 activation, promotion, or closure, OPT-014 or SEC/EDGAR reactivation, full-suite execution, integration, and deployment remain excluded; if exactly sixteen identities do not qualify, persist only an aggregate shortfall and disclose no partial selected list."
+  }
+}

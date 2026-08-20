@@ -1,0 +1,182 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-010",
+  "status": "authorization-pending",
+  "objective": "Determine outcome-blind whether the qualified scratch Java SSRF rule contributes metadata-compatible issue groups in the two already-frozen Java snapshots, then recompute only aggregate four-family packet capacity without constructing or disclosing a packet.",
+  "frozen_inputs": {
+    "scratch_rule_qualification_result": {
+      "path": "docs/optimizations/opt-010-java-ssrf-supplemental-rule-qualification-result-2026-08-20.json",
+      "sha256": "b42cba99f93ba542fd0c9d0d14fe39fd2a442c53d19c623157f1d056a18d3bef"
+    },
+    "scratch_rule_qualification_artifact": {
+      "path": "data/artifacts/opt010-java-ssrf-supplemental-qualification/qualification-artifact.json",
+      "sha256": "ed207245b933ed41c5ceb198e6fba80585721cd69b6faf51cc006dc2ad195d84"
+    },
+    "qualified_scratch_rule": {
+      "path": "data/artifacts/opt010-java-ssrf-supplemental-qualification/candidate-rule.json",
+      "sha256": "03aa9e47ca6e38efa7970a24a8f682ebc2f98029285b11014e50b6cb46636210"
+    },
+    "wave_one_result": {
+      "path": "docs/optimizations/opt-010-prospective-acquisition-instrument-qualification-wave-1-runtime-identity-retry-result-2026-08-19.json",
+      "sha256": "e4eb2008eeb4ad2bbac3373aed24a58e3e7e321a0325cf0cb8a0b2887b61710e"
+    },
+    "augmentation_summary": {
+      "path": "data/artifacts/opt010-supported-primary-augmentation/augmentation-summary.json",
+      "sha256": "dac5dde25041ac3dc6eaa89c3cd3c3dff34d189b8475cf2664521625f17166a4"
+    },
+    "base_capacity_result": {
+      "path": "docs/optimizations/opt-010-supported-primary-augmentation-corrected-acceptance-result-2026-08-20.json",
+      "sha256": "040d11c802fba031f17434c6271dee61bdfb4c7f1bde837d9021ca6b2557e955"
+    },
+    "base_capacity_artifact": {
+      "path": "data/artifacts/opt010-supported-primary-augmentation/acceptance-artifact.json",
+      "sha256": "d2cdd3a5d4a8b8244abd64fea04da44c819e600b611a8e580c75161ba7599e31"
+    },
+    "production_supplemental_ruleset": {
+      "path": "src/repoauditor/detect/deterministic/semgrep-supplemental.yml",
+      "sha256": "e3b5ce91d91dcf194eff6fd1a0cdb9b6214a31a71b661075534d919143017963"
+    },
+    "production_store_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a"
+  },
+  "frozen_instruments": {
+    "acquisition_and_snapshot_helper": {
+      "path": "src/repoauditor/eval/opt010_acquisition_qualification.py",
+      "sha256": "fb75947e52a3ec5ff4219ca63c2cd747510821fca72b8237d30ed83471e6fa4c"
+    },
+    "metadata_parser_and_deduplicator": {
+      "path": "src/repoauditor/eval/opt010_paired_wave.py",
+      "sha256": "52ee4c59c41c6823afba07e2a4ac27f565125366159d1d78f7be43586ddad1eb"
+    },
+    "semgrep_runtime": {
+      "path": "src/repoauditor/eval/semgrep_runtime.py",
+      "sha256": "b908ac266f923f35fea290436e11959c11a49829e4566b89c444b25056a3a257"
+    },
+    "sast_adapter": {
+      "path": "src/repoauditor/detect/deterministic/sast_adapter.py",
+      "sha256": "ff7790a1df8aa9cd01752b9865db2578165e9b4a7d83faed3b21023510ca7893"
+    }
+  },
+  "frozen_subjects": [
+    {
+      "order": 1,
+      "source_family": "theonedev/onedev",
+      "stable_identity_sha256": "7808d7614a6ab1fe0f5d8ad3e16eaff4a44477cc2b7be4296ea2e7caa2dc181b",
+      "language": "Java",
+      "mechanism": "ssrf",
+      "exact_commit": "89e2f09b7b0cd9682a32a8b4a1ed863f791570ea",
+      "snapshot_sha256": "f9a6cc28e1093f5d4de299b2f1d17c99d29a845dc66fcb62319e2310edc10103",
+      "snapshot": "data/artifacts/opt010-acquisition-instrument-qualification-wave-1-runtime-identity-retry/subjects/7808d7614a6ab1fe0f5d8ad3e16eaff4a44477cc2b7be4296ea2e7caa2dc181b/snapshot"
+    },
+    {
+      "order": 2,
+      "source_family": "Athou/commafeed",
+      "stable_identity_sha256": "8041f1999440423b3315895e91e58a253f04e7a60ecec3b5e73e9328d33a4ddd",
+      "language": "Java",
+      "mechanism": "ssrf",
+      "exact_commit": "41fc77322cdc02ebe685a1cc1a81e7a5910e5174",
+      "snapshot_sha256": "d62faf0a81a9b940c33b7f9e43941960cb7f4d7548a4cb152c2d127b8076a8b8",
+      "snapshot": "data/artifacts/opt010-supported-primary-augmentation/subjects/8041f1999440423b3315895e91e58a253f04e7a60ecec3b5e73e9328d33a4ddd/snapshot"
+    }
+  ],
+  "runtime_contract": {
+    "artifact_directory": "data/artifacts/opt010-java-ssrf-retained-source-screen",
+    "must_be_absent_before_authorization": true,
+    "semgrep_version": "1.170.0",
+    "installed_import_interpreter": "/opt/homebrew/Cellar/semgrep/1.170.0/libexec/bin/python",
+    "semgrep_binary": "/opt/homebrew/bin/semgrep",
+    "semgrep_log_file": "data/artifacts/opt010-java-ssrf-retained-source-screen/semgrep.log",
+    "semgrep_version_cache_path": "data/artifacts/opt010-java-ssrf-retained-source-screen/semgrep-version-cache",
+    "requirements": [
+      "Verify every frozen input and instrument, both exact snapshot commits and snapshot digests, the qualified scratch-rule digest, production ruleset, store, branch, empty index, exact runtime paths, and initially absent outputs before writing.",
+      "Create the isolated artifact directory and copy the qualified scratch rule byte-for-byte before any Semgrep-capable process.",
+      "Bind SEMGREP_LOG_FILE and SEMGREP_VERSION_CACHE_PATH to the isolated directory for the one import-only check and both scanner processes; seed a fresh version cache with the frozen helper.",
+      "Do not run a standalone Semgrep CLI version command, a general canary, the pinned-default or production supplemental configuration, a registry rule, semgrep.dev contact, installation, downgrade, fallback, tuning, or retry."
+    ]
+  },
+  "screen_contract": {
+    "scanner": "Run the exact qualified scratch rule once over each frozen Java snapshot in order, retain raw SARIF and target reports only in the isolated artifact directory, and require exact rule, CWE-918, target, Semgrep version, scratch-configuration digest, complete-or-empty status, and provenance validation.",
+    "eligibility": "Using only canonical rule metadata and physical locations, accept Java:ssrf results from the exact qualified rule, then perform stable inclusive-transitive path-and-range issue-group deduplication across the two distinct subject identities.",
+    "base_aggregate": {
+      "metadata_compatible_results": 57,
+      "metadata_deduplicated_issue_groups": 48,
+      "by_supported_family": {
+        "Java": 0,
+        "Python": 29,
+        "Ruby": 0,
+        "TypeScript": 19
+      },
+      "by_mechanism": {
+        "command_injection": 30,
+        "sql_injection": 18,
+        "ssrf": 0,
+        "unsafe_deserialization": 0
+      },
+      "supported_families_contributing": 2,
+      "capped_packet_capacity": 39,
+      "provisionally_feasible": false
+    },
+    "recalculation": "Add only the new Java compatible-result and deduplicated-group counts to the frozen base; cap every family at 20; require exactly 40 total packet identities and at least one identity from each Python, TypeScript, Java, and Ruby family. Because frozen Ruby remains zero in this gate, packet feasibility must remain false and no packet may be constructed.",
+    "routing": {
+      "java_groups_positive": "Record Java scanner-cell recovery and Ruby source scarcity as the smallest next separately gated source-acquisition prerequisite.",
+      "java_groups_zero": "Record Java and Ruby source scarcity as the smallest next separately gated source-acquisition prerequisite."
+    },
+    "result_rule": "Persist only aggregate total Java result/group counts, combined family and mechanism counts, capped capacity, contributing-family count, feasibility false, raw-artifact-set digest, and routing. Do not persist normalized candidate or issue-group identities in result evidence or disclose subject-level counts, paths, rules beyond the already-frozen rule identity, symbols, excerpts, or source."
+  },
+  "execution": {
+    "helper": "src/repoauditor/eval/opt010_java_ssrf_retained_source_screen.py",
+    "focused_test": "tests/test_opt_010_java_ssrf_retained_source_screen.py",
+    "artifact": "data/artifacts/opt010-java-ssrf-retained-source-screen/screen-artifact.json",
+    "result": "docs/optimizations/opt-010-java-ssrf-retained-source-screen-result-2026-08-20.json",
+    "sequence": [
+      "Verify immutable bindings, exact snapshots, and absence.",
+      "Freeze the copied scratch rule and runtime bindings.",
+      "Perform one import-only exact-runtime check.",
+      "Run exactly two ordered scratch-rule scans with no retry.",
+      "Reproduce aggregate Java groups and combined capacity, persist one aggregate artifact and result, verify boundaries, and stop."
+    ]
+  },
+  "resource_ceilings": {
+    "maximum_elapsed_minutes": 30,
+    "maximum_new_data_bytes": 10485760,
+    "frozen_snapshot_subjects": 2,
+    "runtime_import_checks": 1,
+    "logical_scanner_processes": 2,
+    "network_reads_or_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "keychain_or_credential_reads": 0,
+    "repository_materializations": 0,
+    "repository_code_executions": 0,
+    "production_store_database_reads": 0,
+    "production_store_mutations": 0,
+    "schema_migrations": 0,
+    "human_reviews": 0,
+    "outcomes_read": 0,
+    "assessments": 0,
+    "labels": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0,
+    "agentic_or_baseline_runs": 0,
+    "workspace_branch_or_index_mutations": 0,
+    "commits": 0,
+    "merges": 0,
+    "pushes": 0,
+    "lifecycle_changes": 0
+  },
+  "stop_conditions": [
+    "Any frozen input, instrument, exact subject, snapshot commit or digest, scratch rule, production ruleset, store, branch, index, runtime, or initially absent output drifts.",
+    "The copied rule is not durable before runtime activity; the exact import fails; either scan is retried, partial, malformed, or uses another configuration; any result has invalid rule, CWE, target, path, range, version, digest, or provenance; or aggregate reproduction fails.",
+    "Any network, provider, credential, acquisition, repository-code, production-database, outcome, assessment, label, training, rescoring, agentic, review, candidate disclosure, packet, git-mutation, lifecycle, or production-ruleset activity occurs, or any ceiling is reached."
+  ],
+  "excluded": [
+    "editing or promoting the production supplemental ruleset; changing the qualified scratch rule, scanner, runtime, parser, deduplicator, source snapshots, prior evidence, store, configuration, CLI, pipeline, or lifecycle",
+    "network or repository acquisition, any other subject or language, repository-code execution, provider or Keychain use, normalized candidate or issue-group persistence or disclosure, packet construction, subject-level finding counts, source rendering, architecture recovery, paired execution, review, outcomes, assessments, and labels",
+    "remaining-primary or reserve activation, Java or Ruby source selection, precision, recall, G03b or G04 decisions, threshold selection, training, rescoring, tuning, recalibration, production-policy changes, OPT-010 promotion or closure, integration, push, and deployment"
+  ],
+  "result_boundary": "This screen may establish only whether the qualified scratch rule recovers aggregate Java SSRF groups in two retained sources and whether Java or Java-plus-Ruby source scarcity remains. It cannot construct a packet, establish finding validity, precision, recall, paired performance, production readiness, or OPT-010 completion.",
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the OPT-010 outcome-blind retained Java SSRF source screen described by opt-010-java-ssrf-retained-source-screen-receipt-2026-08-20.json, limited to exact verification and source scanning of only the already-materialized theonedev/onedev snapshot at 89e2f09b7b0cd9682a32a8b4a1ed863f791570ea and Athou/commafeed snapshot at 41fc77322cdc02ebe685a1cc1a81e7a5910e5174; byte-for-byte reuse of the qualified scratch Java RestTemplate CWE-918 rule without production promotion; one exact import-only Semgrep 1.170.0 check with fresh isolated SEMGREP_LOG_FILE and SEMGREP_VERSION_CACHE_PATH bindings; exactly two ordered offline no-retry scans; scratch-only raw SARIF and target-report retention; aggregate compatible-result and stable issue-group deduplication counts; recomputation of the frozen four-family maximum-20-per-family exact-40 capacity screen while preserving Ruby at zero and forbidding packet construction; and one aggregate artifact and result routing either Ruby-only or Java-and-Ruby source scarcity, with ceilings of 30 minutes, 10 MiB new data, two frozen subjects, one runtime import check, two logical scanner processes, and exactly zero network reads or uploads, provider calls, tokens, cost, Keychain or credential reads, repository materializations or code executions, production-database reads or mutations, assessments, labels, training, rescoring, agentic or baseline runs, human reviews, outcomes, branch or index mutations, commits, merges, pushes, or lifecycle changes. Any other subject, language, source or acquisition; production-rule editing or promotion; scratch-rule tuning or retry; normalized candidate, issue-group, or packet persistence or disclosure; subject-level counts; source rendering; architecture recovery; paired execution; precision, recall, G03b or G04 decisions; threshold selection; recalibration; production-policy changes; OPT-010 promotion or closure; integration; remote push; and deployment remain excluded."
+  }
+}

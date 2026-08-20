@@ -1,0 +1,223 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-010",
+  "status": "authorization-pending",
+  "objective": "Qualify, without outcomes or provider use, whether the four remaining supported-language primary sources can augment the retained wave-one Semgrep pool enough to justify a separately authorized architecture-map and verifier-eligibility gate.",
+  "frozen_inputs": {
+    "source_selection_result": {
+      "path": "docs/optimizations/opt-010-prospective-source-selection-corrected-retry-result-2026-08-19.json",
+      "sha256": "df6e20287538d8ec2fe1cb2606ab7c85a47296c803e59273ae38acbe285f91a1"
+    },
+    "wave_one_result": {
+      "path": "docs/optimizations/opt-010-prospective-acquisition-instrument-qualification-wave-1-runtime-identity-retry-result-2026-08-19.json",
+      "sha256": "e4eb2008eeb4ad2bbac3373aed24a58e3e7e321a0325cf0cb8a0b2887b61710e"
+    },
+    "architecture_result": {
+      "path": "docs/optimizations/opt-010-architecture-mechanism-eligibility-corrected-retry-result-2026-08-20.json",
+      "sha256": "a639f3970c0b3bfee4dbf1cbf22bd17591191ae22ebba4e0a99b0e96efe06cd8"
+    },
+    "paired_foundation_artifact": {
+      "path": "docs/optimizations/opt-010-offline-paired-evaluation-foundation-artifact-2026-08-20.json",
+      "sha256": "0867b665edd271a3bc5797028998bca4cc34cae4a11de7e64db908b2853d258c"
+    },
+    "paired_protocol": {
+      "path": "docs/optimizations/opt-010-paired-evaluation-protocol-2026-08-20.json",
+      "sha256": "a19f0790bdf5bc9042fcd50e1fe029871e089aa48a32eb2e88cf56b24e91e874"
+    },
+    "packet_shortfall_result": {
+      "path": "docs/optimizations/opt-010-outcome-blind-packet-paired-run-result-2026-08-20.json",
+      "sha256": "98e30e5e731ec82d6ada99601c69b5a002c816edc90fd9ab99de580165dd1ca1"
+    },
+    "mechanism_mapping": {
+      "path": "data/artifacts/opt010-outcome-blind-packet-paired-run/mechanism-mapping.json",
+      "sha256": "5a954ed23a788d34dce0b36bda1b98ad3f8fe322915552f7d237fe57627218b0"
+    },
+    "retained_wave_artifact_directory": "data/artifacts/opt010-acquisition-instrument-qualification-wave-1-runtime-identity-retry",
+    "production_store_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a"
+  },
+  "frozen_instruments": {
+    "semgrep_runtime": {
+      "path": "src/repoauditor/eval/semgrep_runtime.py",
+      "sha256": "b908ac266f923f35fea290436e11959c11a49829e4566b89c444b25056a3a257"
+    },
+    "acquisition_qualification": {
+      "path": "src/repoauditor/eval/opt010_acquisition_qualification.py",
+      "sha256": "fb75947e52a3ec5ff4219ca63c2cd747510821fca72b8237d30ed83471e6fa4c"
+    },
+    "packet_parser_and_deduplicator": {
+      "path": "src/repoauditor/eval/opt010_paired_wave.py",
+      "sha256": "52ee4c59c41c6823afba07e2a4ac27f565125366159d1d78f7be43586ddad1eb"
+    },
+    "semgrep_provenance": {
+      "path": "src/repoauditor/detect/deterministic/provenance.py",
+      "sha256": "1500114a953bfee20a03e85d95663ba9c689909d38a4c225a0507d64f70de679"
+    },
+    "sarif_parser": {
+      "path": "src/repoauditor/triage/features.py",
+      "sha256": "8007c655e0f578142a486cfcb857e91d4d39d214d60cd26bfa4c4f030d9106ed"
+    },
+    "retrieval_index": {
+      "path": "src/repoauditor/detect/retrieval/index.py",
+      "sha256": "c440666998bc0898453acc309d23a10b13e95a41360ec23f911e0410da357c08"
+    },
+    "structural_slicer": {
+      "path": "src/repoauditor/falsify/slicing.py",
+      "sha256": "f46e8c3eb7bc519efa9c64f11f226dc6fef944ac911373c3238e6615ca07f0df"
+    },
+    "independent_verifier": {
+      "path": "src/repoauditor/falsify/claims.py",
+      "sha256": "d534c9137236a1e37e2ae88072f24d69b1c6f516ab577175af4dbbf461ad41f6"
+    }
+  },
+  "protected_augmentation_wave": {
+    "protocol_version": "opt010-supported-primary-augmentation-v1",
+    "selection_basis": "Previously reviewed remaining primary orders 7, 8, 10, and 11 are the second frozen primary in each supported language bucket. Go and Rust primary orders 9 and 12 remain unmaterialized verifier-unsupported sources; reserves remain inactive.",
+    "selection_digest_method": "sha256 of the newline-terminated compact JSON array of ordered {order,stable_identity_sha256} objects",
+    "selection_digest_sha256": "dff6ee352796056e8dfc5304af868c0eb4a789c2b092e9de80da14df1a0c7be7",
+    "subjects": [
+      {
+        "order": 7,
+        "repository": "alexta69/metube",
+        "exact_commit": "86954784fd7d284b4397020207d8a33908780e53",
+        "stable_identity_sha256": "86e056d03ce11434bfcb7c0fdfb62ba3dca418fd39dc736b142db71325175ef1",
+        "language": "Python",
+        "mechanisms": [
+          "sql_injection",
+          "command_injection",
+          "ssrf"
+        ]
+      },
+      {
+        "order": 8,
+        "repository": "TriliumNext/Trilium",
+        "exact_commit": "02835932b88b1ebcf9f9981b005716aacfd18513",
+        "stable_identity_sha256": "5058c9f30326d4ced50529fc24fc91c7d30ffd1e4579891ffa2894a08af987ab",
+        "language": "TypeScript",
+        "mechanisms": [
+          "command_injection",
+          "ssrf"
+        ]
+      },
+      {
+        "order": 10,
+        "repository": "Athou/commafeed",
+        "exact_commit": "41fc77322cdc02ebe685a1cc1a81e7a5910e5174",
+        "stable_identity_sha256": "8041f1999440423b3315895e91e58a253f04e7a60ecec3b5e73e9328d33a4ddd",
+        "language": "Java",
+        "mechanisms": [
+          "ssrf"
+        ]
+      },
+      {
+        "order": 11,
+        "repository": "solectrus/solectrus",
+        "exact_commit": "f62cef2f2ce4bc48b51d2d07b8871ae7522e5b63",
+        "stable_identity_sha256": "ac8e82b257e2ba90c415241aa204f7198e9b92ac97bf4980efe692173b4ca8f4",
+        "language": "Ruby",
+        "mechanisms": [
+          "unsafe_deserialization"
+        ]
+      }
+    ],
+    "family_definition": "The four supported source families remain the frozen Python, TypeScript, Java, and Ruby language buckets. New subjects augment their matching bucket without replacing or reclassifying a retained subject.",
+    "unsupported_outer_denominator": [
+      "Go",
+      "Rust"
+    ]
+  },
+  "runtime_and_preflight_contract": {
+    "artifact_directory": "data/artifacts/opt010-supported-primary-augmentation",
+    "must_be_absent_before_authorization": true,
+    "semgrep_version": "1.170.0",
+    "semgrep_log_file": "data/artifacts/opt010-supported-primary-augmentation/semgrep.log",
+    "semgrep_version_cache_path": "data/artifacts/opt010-supported-primary-augmentation/semgrep-version-cache",
+    "requirements": [
+      "Verify every frozen receipt, result, instrument, source identity, production-store digest, main-branch identity, empty index, and initially absent output before any write, scanner, or network process.",
+      "Create the isolated artifact directory and copy the frozen mechanism mapping byte-for-byte into it before any Semgrep-capable process or scanner-artifact access.",
+      "Verify exact Semgrep 1.170.0 by import without starting its CLI, create a fresh workspace-local version cache with the frozen semgrep_runtime helper, and bind both SEMGREP_LOG_FILE and SEMGREP_VERSION_CACHE_PATH to the new directory on every Semgrep-capable process.",
+      "Run separated offline positive-and-clean canaries for Semgrep and supplemental Semgrep. Stop on any failure; do not contact semgrep.dev, use registry rules, install or downgrade a tool, or retry a failed canary."
+    ]
+  },
+  "acquisition_and_scanner_contract": {
+    "sequence": "Only after all preflights pass, process the four subjects strictly in frozen order and stop before the next subject on any failed boundary.",
+    "acquisition": "Shallow-fetch only each exact commit from github.com into its stable-identity directory; verify detached HEAD and object identity; do not expand history, submodules, Git LFS, dependencies, archives, generated assets, or repository code.",
+    "snapshot_and_retrieval": "Create deterministic normalized snapshot and detector-input digests and one in-memory RetrievalIndex digest for each subject. Persist only aggregate index statistics and digests; do not expose retrieval results.",
+    "scanners": [
+      "semgrep",
+      "semgrep-supplemental"
+    ],
+    "scanner_health": "Complete or valid empty output is acceptable. Unavailable, failed, partial, malformed, missing provenance, or incomplete output stops the wave.",
+    "artifact_rule": "Exact public snapshots and raw Semgrep SARIF may be retained only beneath the isolated directory. No derived candidate list, issue-group identity, source path, rule identity, symbol, excerpt, score, rank, prediction, or outcome may be persisted in result evidence."
+  },
+  "aggregate_metadata_feasibility_contract": {
+    "conditional": "Only after all four new subjects complete, read the retained and new Semgrep and supplemental Semgrep SARIF under the already-frozen mechanism mapping.",
+    "mechanism_rule": "A result is metadata-compatible only when canonical rule properties contain exactly one mapped CWE mechanism allowed by its frozen language row. Result text, rule names, severity, confidence, source, counts, and expected performance cannot supply or alter membership.",
+    "deduplication": "Use the frozen inclusive transitive overlap rule within exact subject, canonical relative path, and mechanism. Do not use SARIF fingerprints.",
+    "family_feasibility": "Report only aggregate pre-verifier counts by frozen language family and mechanism. Provisional feasibility requires every supported family to contribute and sum(min(deduplicated_group_count_for_family,20)) to be at least 40.",
+    "interpretation": "Passing only justifies a separately authorized architecture-map and candidate-specific verifier-eligibility gate. It does not freeze a packet or establish 40 fully eligible identities. Failing records a bounded aggregate augmentation shortfall and returns OPT-010 to prerequisite design without reserve activation.",
+    "outcome_blinding": "No security advisory, issue, pull request, exploit report, vulnerability database, human response, assessment, label, outcome, known-vulnerable identity, score, rank, prediction, or expected-performance input may be read or used."
+  },
+  "execution": {
+    "helper": "src/repoauditor/eval/opt010_supported_primary_augmentation.py",
+    "focused_test": "tests/test_opt_010_supported_primary_augmentation.py",
+    "result": "docs/optimizations/opt-010-supported-primary-augmentation-result-2026-08-20.json",
+    "sequence": [
+      "Verify frozen identities and zero-activity boundaries.",
+      "Create the isolated directory and freeze the mechanism mapping before Semgrep activity.",
+      "Run separated offline canaries.",
+      "Acquire, digest, index, and scan only the four exact supported-language primary sources.",
+      "Compute one combined retained-plus-new aggregate metadata-feasibility screen and one result.",
+      "Verify store, branch, index, resource, and disclosure boundaries and stop."
+    ]
+  },
+  "resource_ceilings": {
+    "repositories": 4,
+    "logical_scanner_processes": 12,
+    "retrieval_index_builds": 4,
+    "maximum_elapsed_minutes_per_repository": 180,
+    "maximum_total_elapsed_minutes": 780,
+    "maximum_new_data_bytes": 16106127360,
+    "allowed_network_hosts": [
+      "github.com"
+    ],
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "keychain_or_credential_reads": 0,
+    "repository_code_executions": 0,
+    "dependency_resolutions_or_installations": 0,
+    "other_scanner_processes": 0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "schema_migrations": 0,
+    "human_reviews": 0,
+    "outcomes_read": 0,
+    "assessments": 0,
+    "labels": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0,
+    "agentic_or_baseline_runs": 0,
+    "workspace_branch_or_index_mutations": 0,
+    "commits": 0,
+    "merges": 0,
+    "pushes": 0,
+    "lifecycle_changes": 0
+  },
+  "stop_conditions": [
+    "Any frozen input, instrument, source identity, exact commit, store, branch, index, artifact absence, Semgrep runtime, local rule, or output identity drifts.",
+    "Any preflight fails, a Semgrep-capable process lacks either runtime binding, semgrep.dev is contacted, a registry rule is used, or an unlisted tool or network host is invoked.",
+    "Any repository code, dependency resolver or installer, provider, credential, production store, outcome source, unsupported-language primary, reserve, or remaining unlisted source is accessed.",
+    "Any candidate identity, partial packet, source path, excerpt, rule identity, score, rank, prediction, or expected outcome appears in aggregate result evidence or any ceiling is reached."
+  ],
+  "excluded": [
+    "Go or Rust primary acquisition, reserve activation, any source substitution, architecture recovery, provider or Keychain use, agentic or baseline execution, packet construction or persistence, candidate or packet disclosure, source rendering, and human review",
+    "outcomes, assessments, labels, precision, recall, G03b or G04 decisions, adequacy or production threshold selection, model training, rescoring, fitting, tuning, recalibration, resampling, and production policy or activation",
+    "OPT-010 promotion or closure, OPT-014 or SEC/EDGAR reactivation, OPT-036 use or change, lifecycle changes, branch integration, commits, merges, pushes, deployment, and remote publication"
+  ],
+  "result_boundary": "This gate may establish only whether the combined retained-plus-new supported-language Semgrep metadata pool provisionally clears the fixed 40-identity/four-family capacity screen. It cannot claim candidate-specific verifier eligibility, freeze a packet, run either comparison arm, evaluate recall, change policy, or close OPT-010.",
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the OPT-010 supported-primary augmentation screen described by opt-010-supported-primary-augmentation-receipt-2026-08-20.json, limited to separated offline Semgrep and supplemental Semgrep runtime preflights; exact-commit shallow materialization without repository-code execution of only alexta69/metube at 86954784fd7d284b4397020207d8a33908780e53, TriliumNext/Trilium at 02835932b88b1ebcf9f9981b005716aacfd18513, Athou/commafeed at 41fc77322cdc02ebe685a1cc1a81e7a5910e5174, and solectrus/solectrus at f62cef2f2ce4bc48b51d2d07b8871ae7522e5b63; deterministic snapshot, detector-input, RetrievalIndex, Semgrep, and supplemental Semgrep qualification; and one outcome-blind aggregate retained-plus-new metadata-feasibility screen under the frozen CWE mapping, four-language-family, exact-40, and maximum-20-per-family contract, with ceilings of four repositories, 12 logical scanner processes, four retrieval indexes, 180 minutes per repository, 780 minutes total, 15 GiB new data, only github.com network access, and exactly zero uploads, provider calls, tokens, cost, Keychain or credential reads, repository-code executions, dependency resolutions or installations, other scanners, production-store reads or mutations, assessments, labels, training, rescoring, agentic or baseline runs, human reviews, outcomes, branch or index mutations, commits, merges, pushes, or lifecycle changes. Go and Rust primary acquisition, reserves, architecture recovery, candidate or packet persistence or disclosure, source rendering, paired execution, precision, recall, G03b or G04 decisions, threshold selection, tuning, recalibration, production-policy changes, OPT-010 promotion or closure, OPT-014 or SEC/EDGAR reactivation, OPT-036 use or change, integration, remote push, and deployment remain excluded."
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-009",
+  "protocol_id": "opt009-existing-llm-eligibility-v1",
+  "status": "frozen-for-offline-audit",
+  "date": "2026-08-12",
+  "objective": "Determine whether the existing persistent-store LLM-origin findings can supply a leakage-safe retrospective pilot of in-family/out-of-family novelty as an investigation-depth trigger.",
+  "inventory_scope": {
+    "store": "data/repoauditor.db",
+    "population": "Every finding row with non-null source_lens in the digest-frozen store.",
+    "audit_unit": "Persisted finding record, with aggregate exact-location-plus-lens grouping reported only as a duplication diagnostic.",
+    "identity_disclosure": "No finding identifiers, paths, titles, snippets, scores, ranks, outcomes, or candidate hashes are emitted."
+  },
+  "evidence_eligibility": [
+    "The finding originated from an independently acquired public production or deployment repository, not a purpose-built fixture, benchmark, manufactured control, or protected pre/post holdout.",
+    "The exact repository snapshot and provenance are available and attributable.",
+    "The finding and any novelty assignment can be shown to precede the first human outcome.",
+    "No project-owner assessment, classifier label, answer key, advisory-selected location, or equivalent outcome signal was available to candidate selection.",
+    "The finding can enter an outcome-blind, deduplicated review packet without source or family leakage.",
+    "Its evaluation family is independent of other counted families; repeat runs or aliases of one fixture do not add families."
+  ],
+  "classification": {
+    "evidence_eligible": "May contribute to a retrospective held-out benefit evaluation after a separately frozen packet and review protocol.",
+    "protocol_development_only": "May be used only to test schemas, deterministic grouping, and evaluation plumbing; it cannot support a novelty-benefit claim."
+  },
+  "automatic_exclusions": [
+    "Purpose-built UAT or calibration fixtures and repeat materializations of them.",
+    "Protected pre-fix or post-fix holdouts and any cohort with an external answer key.",
+    "Known-answer CVE or benchmark fixtures selected around a disclosed vulnerability.",
+    "Any finding with a prior human assessment or classifier label for the proposed outcome.",
+    "Any source whose exact provenance cannot be established without inspecting candidate outcomes."
+  ],
+  "outcome_blindness": {
+    "assessment_existence_may_be_read": true,
+    "assessment_outcomes_may_be_read": false,
+    "scores_ranks_severity_confidence_priors_may_be_read": false,
+    "source_content_may_be_rendered": false,
+    "selection_or_review_authorized": false
+  },
+  "audit_decision": "The existing cohort can supply the retrospective pilot only if at least one evidence-eligible identity survives. A positive count does not clear OPT-009 and does not authorize packet selection, review, labeling, training, threshold selection, or policy change.",
+  "bounded_actions": [
+    "Open the store read-only and verify it remains byte-identical.",
+    "Count source_lens findings and assessment existence by frozen provenance category.",
+    "Verify recorded source materialization availability without opening source content.",
+    "Persist one aggregate audit artifact and one descriptive result."
+  ],
+  "excluded": [
+    "Network access or uploads",
+    "Provider calls, tokens, or cost",
+    "Source rendering or human review",
+    "Store mutations, assessments, or labels",
+    "Scoring, ranking, suppression, model training, tuning, or recalibration",
+    "Threshold selection or recommendation",
+    "Production-policy changes",
+    "OPT-009 promotion or closure",
+    "Branch integration or remote push"
+  ]
+}

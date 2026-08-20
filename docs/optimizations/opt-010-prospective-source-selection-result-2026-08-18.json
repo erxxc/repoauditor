@@ -1,0 +1,122 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-010",
+  "status": "complete-aggregate-shortfall-no-selection",
+  "recorded_at": "2026-08-18",
+  "authorization": "The project owner authorized one outcome-blind GitHub metadata-only source selection for exactly twelve primary and four reserve identities, with a fail-closed aggregate-only result and no partial disclosure if sixteen identities did not qualify.",
+  "receipt": {
+    "path": "docs/optimizations/opt-010-prospective-source-selection-receipt-2026-08-18.json",
+    "sha256": "25e0af45fd8e5e0ed21d496f44273a018223dda989b55013e23ecf57fea50e13"
+  },
+  "workspace": {
+    "branch_before": "main",
+    "branch_after": "main",
+    "staged_paths_before": 0,
+    "staged_paths_after": 0,
+    "OPT_036_changed_paths": 10,
+    "OPT_036_overlap_with_current_OPT_010_or_closure_WIP": 0,
+    "index_or_branch_changed": false
+  },
+  "discovery": {
+    "fixed_language_buckets": 4,
+    "candidate_metadata_identities_inspected": 40,
+    "network_reads": 4,
+    "metadata_documents": 4,
+    "README_documents_opened": 0,
+    "license_text_documents_opened": 0,
+    "exact_commit_resolutions": 0,
+    "hosts_used": [
+      "api.github.com"
+    ],
+    "other_hosts_used": 0
+  },
+  "aggregate_filter_closure": {
+    "inspected": 40,
+    "rejected_created_after_2024_08_18": 29,
+    "passed_age_floor": 11,
+    "rejected_missing_or_ambiguous_license_after_age_floor": 3,
+    "passed_license_product_structure_and_prior_exposure_filters": 8,
+    "prior_exposure_matches_among_structurally_eligible": 0,
+    "required_for_complete_selection": 16,
+    "shortfall": 8,
+    "counts_close": true
+  },
+  "aggregate_language_capacity_after_all_filters": {
+    "Python": 2,
+    "TypeScript": 2,
+    "Go": 3,
+    "Rust": 1,
+    "total": 8
+  },
+  "selection": {
+    "primary_identities_selected": 0,
+    "reserve_identities_selected": 0,
+    "selected_identities_disclosed": 0,
+    "partial_list_persisted": false,
+    "stable_identity_hashes_persisted": 0,
+    "exact_commits_persisted": 0,
+    "selection_result": "not-created-because-exact-sixteen-contract-failed"
+  },
+  "interpretation": {
+    "data_absence_claim": false,
+    "result": "The first ten recently updated results in each fixed language bucket were dominated by repositories created after the frozen age cutoff. The bounded pool therefore supplied only eight structurally eligible identities and could not fill the exact sixteen-slot contract.",
+    "bounded_claim": "This is a shortfall in the exact forty-identity discovery pool and query ordering, not evidence that sixteen qualifying public source families do not exist.",
+    "smallest_next_prerequisite": "Separately authorize a corrected metadata-only retry that keeps every eligibility and outcome-blind boundary but places the frozen creation-date ceiling directly in each GitHub query before the forty-identity inspection limit is applied.",
+    "eligibility_floor_relaxation_recommended": false,
+    "source_ceiling_or_adequacy_threshold_selected": false
+  },
+  "store": {
+    "access": "before-and-after-hash-only",
+    "before_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "after_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "byte_identical": true,
+    "reads": 0,
+    "mutations": 0
+  },
+  "validation": {
+    "focused_tests_passed": 6,
+    "focused_tests_failed": 0,
+    "status": "passed",
+    "json_validation": true,
+    "git_diff_check": true
+  },
+  "accounting": {
+    "new_result_documents": 1,
+    "new_focused_test_files": 1,
+    "network_reads": 4,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "repository_materializations": 0,
+    "repository_code_executions": 0,
+    "scanner_processes": 0,
+    "agentic_falsification_runs": 0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "schema_migrations": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0,
+    "branch_operations": 0,
+    "source_commits": 0,
+    "merge_commits": 0,
+    "remote_pushes": 0,
+    "lifecycle_changes": 0
+  },
+  "not_executed": {
+    "partial_identity_disclosure": true,
+    "README_or_license_text_access": true,
+    "exact_commit_resolution": true,
+    "repository_acquisition_or_materialization": true,
+    "source_code_or_security_outcome_access": true,
+    "finding_or_candidate_generation": true,
+    "provider_model_scanner_or_agentic_execution": true,
+    "human_review_assessment_label_or_outcome_entry": true,
+    "threshold_adequacy_training_tuning_or_policy_change": true,
+    "OPT_010_status_change_or_closure": true,
+    "OPT_014_SEC_EDGAR_or_OPT_036_activity": true,
+    "branch_commit_merge_push_or_deployment": true
+  }
+}
