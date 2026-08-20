@@ -1,0 +1,182 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-010",
+  "status": "authorization-pending",
+  "frozen_at": "2026-08-19",
+  "objective": "Retry the outcome-blind GitHub metadata-only source selection after applying the frozen age and maintenance filters inside each query, while retaining every original eligibility, exact-sixteen, no-partial-disclosure, source-access, provider, store, WIP, branch, and lifecycle boundary.",
+  "retained_attempt": {
+    "receipt": {
+      "path": "docs/optimizations/opt-010-prospective-source-selection-receipt-2026-08-18.json",
+      "sha256": "25e0af45fd8e5e0ed21d496f44273a018223dda989b55013e23ecf57fea50e13"
+    },
+    "result": {
+      "path": "docs/optimizations/opt-010-prospective-source-selection-result-2026-08-18.json",
+      "sha256": "8e5a51db3c5b622b543f4ee6603612cb574f06b3099099a560343f238f4fd6e9"
+    },
+    "focused_test": {
+      "path": "tests/test_opt_010_prospective_source_selection.py",
+      "sha256": "e40cda7a5a51130ca3a2e2b5e1c28baa539ea295f0e5dfbf2c1aa1028dbb2b42"
+    },
+    "candidate_metadata_identities_inspected": 40,
+    "network_reads": 4,
+    "metadata_documents": 4,
+    "structurally_eligible_identities": 8,
+    "selected_or_disclosed_identities": 0,
+    "exact_commit_resolutions": 0,
+    "repository_materializations": 0,
+    "provider_calls": 0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "branch_or_index_changes": 0,
+    "interpretation": "The retained shortfall was caused by applying the age cutoff after updated-order query truncation; it is not evidence that sixteen qualifying families do not exist."
+  },
+  "workspace_preflight": {
+    "branch": "main",
+    "committed_main": "1f1dba7a30a86d957510608c25e94077b15d2e8d",
+    "staged_paths": 0,
+    "OPT_036_branch": "opt-036-weak-rng-detect",
+    "OPT_036_head": "0aa7286",
+    "branch_or_index_change_authorized": false
+  },
+  "retained_frozen_inputs": {
+    "protected_cohort_design": {
+      "path": "docs/optimizations/opt-010-protected-cohort-design-2026-08-18.json",
+      "sha256": "bb77f61d14051fb6c5443b30157a92089f8e3ecbf53cb20c69daa2adaa7b12b8"
+    },
+    "protected_cohort_design_result": {
+      "path": "docs/optimizations/opt-010-protected-cohort-design-result-2026-08-18.json",
+      "sha256": "7be64283163abd218310bacb8fd21cb5d865470bfeef32395ca4e28fdaaa069a"
+    },
+    "optimization_status": {
+      "path": "docs/optimizations/optimization-status.json",
+      "sha256": "b08ae0e3a3194eb917c29840e6c133beed47832d3749b493dfbe4dafd3c02791"
+    },
+    "production_store": {
+      "path": "data/repoauditor.db",
+      "sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+      "access": "before-and-after-hash-only"
+    }
+  },
+  "only_query_correction": {
+    "created_ceiling": "created:<=2024-08-18",
+    "maintenance_floor": "pushed:>=2025-08-19",
+    "fixed_common_qualifiers": "topic:self-hosted fork:false archived:false stars:>=100 created:<=2024-08-18 pushed:>=2025-08-19",
+    "sort": "updated",
+    "order": "desc",
+    "queries": [
+      {
+        "language": "Python",
+        "per_page": 10,
+        "q": "topic:self-hosted fork:false archived:false stars:>=100 created:<=2024-08-18 pushed:>=2025-08-19 language:Python"
+      },
+      {
+        "language": "TypeScript",
+        "per_page": 10,
+        "q": "topic:self-hosted fork:false archived:false stars:>=100 created:<=2024-08-18 pushed:>=2025-08-19 language:TypeScript"
+      },
+      {
+        "language": "Go",
+        "per_page": 10,
+        "q": "topic:self-hosted fork:false archived:false stars:>=100 created:<=2024-08-18 pushed:>=2025-08-19 language:Go"
+      },
+      {
+        "language": "Java",
+        "per_page": 4,
+        "q": "topic:self-hosted fork:false archived:false stars:>=100 created:<=2024-08-18 pushed:>=2025-08-19 language:Java"
+      },
+      {
+        "language": "Ruby",
+        "per_page": 3,
+        "q": "topic:self-hosted fork:false archived:false stars:>=100 created:<=2024-08-18 pushed:>=2025-08-19 language:Ruby"
+      },
+      {
+        "language": "Rust",
+        "per_page": 3,
+        "q": "topic:self-hosted fork:false archived:false stars:>=100 created:<=2024-08-18 pushed:>=2025-08-19 language:Rust"
+      }
+    ],
+    "corrected_candidate_pool_size": 40,
+    "selection_rule": "Apply every original eligibility and prior-exposure rule, then deterministic stable-hash ordering with round-robin eligible language buckets, at least four languages, no more than four selected identities per language, and one identity per owner. The first twelve are primary and the next four reserve.",
+    "recurrence_rule": "An identity from the retained unselected pool may qualify in the corrected pool because no prior identity was selected, disclosed, materialized, or outcome-exposed; recurrence grants no priority and remains subject to the same stable-hash ordering.",
+    "no_relaxation": true
+  },
+  "selected_metadata_resolution": {
+    "selected_identities_required": 16,
+    "primary": 12,
+    "reserve": 4,
+    "permitted_after_complete_pool_qualification": [
+      "repository metadata confirmation",
+      "README product and deployability metadata",
+      "recognized public license identity and license text when needed",
+      "exact default-branch HEAD commit resolution"
+    ],
+    "stable_identity_hash": "sha256('opt-010-prospective-source-v1' + normalized_upstream_family + exact_commit)",
+    "shortfall_rule": "If exactly sixteen identities do not qualify, persist only aggregate corrected-retry counts and disclose no partial identity, repository, stable hash, or commit list."
+  },
+  "retained_forbidden_inputs": [
+    "security advisories, CVEs, GHSAs, security issue or pull-request outcomes, exploit reports, vulnerability databases, or known-vulnerability membership",
+    "repository code search, source files beyond README and license metadata, findings, candidate or finding counts, paths, symbols, patches, scanners, architecture maps, or retrieval indexes",
+    "scores, ranks, predicted classes, severity, confidence, priors, expected outcomes, assessments, labels, human finding review, model output, provider activity, or OPT-036 evidence"
+  ],
+  "allowed_outputs_after_authorization": [
+    "docs/optimizations/opt-010-prospective-source-selection-corrected-retry-result-2026-08-19.json",
+    "tests/test_opt_010_prospective_source_selection_corrected_retry.py"
+  ],
+  "resource_ceilings": {
+    "accounting_basis": "cumulative across the retained attempt and corrected retry",
+    "maximum_elapsed_minutes": 45,
+    "maximum_new_data_bytes": 5242880,
+    "candidate_metadata_identities_inspected_retained": 40,
+    "candidate_metadata_identities_inspected_corrected": 40,
+    "candidate_metadata_identities_inspected_cumulative": 80,
+    "network_reads_retained": 4,
+    "network_reads_corrected_maximum": 60,
+    "network_reads_cumulative_maximum": 64,
+    "metadata_documents_retained": 4,
+    "metadata_documents_corrected_maximum": 60,
+    "metadata_documents_cumulative_maximum": 64,
+    "allowed_hosts": [
+      "github.com",
+      "api.github.com"
+    ],
+    "selected_identities": 16,
+    "primary_identities": 12,
+    "reserve_identities": 4,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "repository_materializations": 0,
+    "repository_code_executions": 0,
+    "scanner_processes": 0,
+    "agentic_falsification_runs": 0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "schema_migrations": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0,
+    "branch_operations": 0,
+    "source_commits": 0,
+    "merge_commits": 0,
+    "remote_pushes": 0,
+    "lifecycle_changes": 0
+  },
+  "excluded": [
+    "any eligibility-floor relaxation, popularity or security ranking, partial-list disclosure, result rewriting, or source selection input outside the corrected frozen metadata queries and original contract",
+    "repository acquisition, archive, clone, materialization, code execution, source access beyond README/license metadata, scanning, mapping, indexing, agentic execution, provider use, store access beyond hashing, human finding review, assessment, label, outcome, threshold, adequacy decision, fitting, training, tuning, recalibration, or policy change",
+    "OPT-010 activation, promotion, or closure, OPT-014 or SEC/EDGAR reactivation, OPT-036 use or change, lifecycle reconciliation, full-suite execution, branch or index operation, commit, merge, push, integration, or deployment"
+  ],
+  "stop_conditions": [
+    "Any retained receipt, result, test, frozen input, production-store hash, branch, or zero-staged-path preflight differs.",
+    "Any corrected query omits the exact created ceiling or maintenance floor, or the corrected pool exceeds forty identities.",
+    "Fewer than exactly twelve primary and four reserve identities qualify without relaxing a rule.",
+    "Any selected identity has missing or ambiguous license, ancestry, product, language, maintenance, deployability, prior-exposure, README, or exact-commit metadata.",
+    "Any forbidden source, outcome, provider, agentic, store, lifecycle, branch, index, commit, push, or unlisted-file activity would be required."
+  ],
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the corrected OPT-010 prospective metadata-only source-selection retry described by opt-010-prospective-source-selection-corrected-retry-receipt-2026-08-19.json, retaining the original outcome-blind eligibility, exact-sixteen, stable-hash, language-round-robin, one-owner, no-partial-disclosure, source-access, WIP-isolation, and zero-live-activity boundaries; accepting the retained four-read, forty-identity shortfall with eight structurally eligible identities, zero selection or disclosure, zero exact-commit resolution, and byte-identical unopened production store; and permitting only one corrected forty-identity GitHub metadata pool from the six frozen Python, TypeScript, Go, Java, Ruby, and Rust queries with created:<=2024-08-18 and pushed:>=2025-08-19 applied before updated-order truncation, followed only if sixteen identities qualify by bounded README, license, repository, and exact-default-branch-HEAD metadata resolution, deterministic selection and disclosure for my review of exactly twelve primary and four reserve identities, one corrected result, and one focused test, with cumulative ceilings of 45 minutes, 5 MiB new data, 80 candidate identities, 64 metadata documents and network reads, only github.com and api.github.com network hosts, and exactly zero uploads, provider calls, tokens, cost, repository materializations or code executions, scanner processes, agentic falsification runs, production-store reads or mutations, schema migrations, assessments, labels, model training, rescoring, branch or index operations, commits, merges, pushes, or lifecycle changes. Security advisories, CVEs, security issues or pull requests, exploit reports, vulnerability databases, code search, source files beyond README and license metadata, findings, candidate counts, scores, ranks, predicted classes, severity, confidence, priors, expected outcomes, model output, OPT-036 evidence, threshold or adequacy selection, source acquisition, packet selection, human finding review, fitting, training, tuning, recalibration, production-policy changes, OPT-010 activation, promotion, or closure, OPT-014 or SEC/EDGAR reactivation, full-suite execution, integration, and deployment remain excluded; if exactly sixteen identities do not qualify, persist only aggregate corrected-retry counts and disclose no partial list."
+  }
+}

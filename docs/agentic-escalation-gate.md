@@ -1,6 +1,6 @@
 # Agentic falsification escalation gate
 
-Status: deferred pending measurement prerequisites.
+Status: closed at bounded negative-feasibility scope; production activation was not reached.
 
 This is a post-MVP optimization gate (OPT-010), not part of the current POC Definition of
 Done. See [`optimizations/optimization-register.md`](optimizations/optimization-register.md).
@@ -9,7 +9,22 @@ Repoauditor already runs a bounded observe → retrieve → verdict → self-cri
 tool-using agent that autonomously requests more context is not automatically a correctness
 improvement: it adds correlated model judgments, wider exposure to untrusted repository
 text, and potentially material latency/cost. It must remain opt-in until the following
-evidence exists.
+evidence exists. The prerequisites below are retained as the evaluated historical contract;
+closing OPT-010 does not mark the unmet gates as passed.
+
+## Bounded closure outcome
+
+The isolated read-only containment foundation qualified but remains disabled and disconnected.
+The prospective evaluation path did not satisfy its frozen data prerequisite: the initial
+packet screen yielded 30 deduplicated groups from two families, supported-primary augmentation
+reached capped capacity 39 with two contributing families, retained Java scans contributed
+zero groups, and the final Java/Ruby augmentation stopped under the strict scanner-health
+contract before a complete four-family 40-identity packet existed. Consequently no paired
+G03b comparison, empirical G04 recall evaluation, threshold decision, or production activation
+occurred. Agentic falsification is closed as not justified and not feasible at this evaluated
+scanner, data, verifier, and paired-evaluation scope. This is not a universal impossibility
+claim and does not establish production readiness. Future evaluation requires a new lifecycle
+identity, scope, and authorization.
 
 ## Activation prerequisites
 
@@ -23,18 +38,31 @@ evidence exists.
 2. **Protected evaluation cohort — partial.** The frozen serialize-javascript pre/post pair
    completed outside prompt development and training with terminal usage records, but one
    pair is not a broad real-world cohort.
-3. **Baseline comparison — open/paid.** Compare the current bounded falsifier against the
-   proposed agent on unique issues, reporting precision, recall, abstention coverage,
-   latency, token use, and cost per uniquely validated issue.
+3. **Baseline comparison — G03a documented-pass; G03b pending.** The qualification cycle
+   is explicitly decomposed. **G03a protocol readiness** freezes identical paired subjects
+   and inputs, unique-issue identity, precision, recall, abstention coverage, latency,
+   provider tokens, total cost, cost per uniquely validated issue, outcome blinding, and
+   fail-closed incomplete/unknown-usage handling before qualification. **G03b qualification
+   outcome** remains pending and separately authorized. One specially bounded qualification
+   may be considered only after G01, G02, G03a, the offline invariant portion of G04, G05,
+   G06, and G07 pass. Both G03b and empirical recall safety must pass before production
+   activation. This decomposition grants no provider or experiment authority by itself.
 4. **Recall safety — open/evidence-gated.** Aggressive false-positive reduction must not
    silently suppress true vulnerabilities. Any unresolved case remains reviewable.
 5. **Cohort breakdown — partial/evidence-gated.** Family, analyst-declared mechanism, and
    explicitly sourced SARIF language/detector gates exist; adequate real cohort sizes do
    not yet exist. Missing metadata stays unavailable rather than inferred. Pooled gains
    cannot hide a weak subgroup.
-6. **Read-only tools — design only.** The agent may request indexed source, slices, callers,
-   references, and stored architecture evidence. It may not execute repository code, invoke
-   repository tools, access arbitrary networks, or mutate the checkout.
+6. **Read-only tools — documented-pass for the isolated containment foundation.** A
+   disabled-by-default, configuration-driven facade exposes only bounded indexed source
+   excerpts, structural slices, callers, references, and stored in-memory architecture
+   evidence. It binds every successful response to an exact snapshot commit and retrieval
+   index digest with request/response provenance. The facade owns no filesystem, database,
+   network, subprocess, provider, arbitrary-callable, or mutation interface and is not wired
+   into the challenger or CLI. Focused positive, negative, repeatability, byte-bound,
+   side-effect-sentinel, historical-receipt, and existing non-live compatibility tests pass.
+   The facade remains disabled and disconnected; enabling or integrating it is a separately
+   gated change.
 7. **Independent verification — partial.** Agent-produced claims use the persisted
    `SecurityClaim` contract, bind to an immutable snapshot commit, and are checked by a
    separately versioned deterministic verifier that reopens the snapshot and reconstructs
@@ -61,4 +89,5 @@ recorded architecture/exposure evidence, not raw severity alone. Eligibility, it
 budget, context budget, and tool allowlist must be configuration-driven and recorded in run
 provenance.
 
-Until these gates are satisfied, human review is the safer escalation path.
+The evaluated path is closed without production activation. Any future agentic work must
+re-establish its own frozen gates; the retained facade remains disabled and disconnected.

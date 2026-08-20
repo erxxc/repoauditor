@@ -1,0 +1,299 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-014",
+  "status": "commercial-license-first-screen-complete",
+  "recorded_at": "2026-08-18",
+  "receipt": {
+    "path": "opt-014-commercial-license-first-screen-receipt-2026-08-18.json",
+    "sha256": "abaa40c6a766102bffeba705a1c27887d244f2ab09cb1b84754907aee0b5e638",
+    "authorization_matched": true
+  },
+  "design": {
+    "path": "opt-014-independent-data-acquisition-design-2026-08-18.json",
+    "sha256": "af29a9bd3e1f644fd6ee115daccf59c6da166b45c668941a8f22b4416e09be15"
+  },
+  "prior_discovery": {
+    "path": "opt-014-metadata-source-discovery-result-2026-08-18.json",
+    "sha256": "3da5b5ce5be01b9bf302c4875203e78c3667cec904fd240a3c60ddc0ec6c997d"
+  },
+  "uk_canada_qualification": {
+    "path": "opt-014-uk-canada-access-codebook-qualification-result-2026-08-18.json",
+    "sha256": "72c041056415836b2bd1ae6325ae0301d994c9ada6636fa1bcca9c3abab5aa63"
+  },
+  "ukds_deferral": {
+    "path": "opt-014-ukds-registration-terms-qualification-deferral-2026-08-18.json",
+    "sha256": "4ff1cc6e73959e0336bccf99242821b00e6e170e908b66ebaf86c08397616152",
+    "state": "deferred-commercial-rights-uncertain",
+    "execution_started": false
+  },
+  "outcome_blinding": {
+    "outcome_values_persisted": 0,
+    "outcome_distributions_persisted": 0,
+    "prior_agreement_inspected_or_used": false,
+    "incidental_value_quarantine": {
+      "activated": true,
+      "occurrences": [
+        "Eurostat search results co-mingled enterprise cybersecurity outcome proportions with permitted source and license metadata.",
+        "SEC search results surfaced individual EDGAR filing records while resolving the agency reuse policy."
+      ],
+      "handling": "No outcome proportion, filing content, incident detail, loss value, organization, record, distribution, comparison, or prior agreement from those results was transcribed, persisted, summarized, or used. Outcome-bearing Eurostat sections and individual SEC filing results were quarantined and not opened as evidence."
+    }
+  },
+  "screen_counts": {
+    "total_disclosed_identities": 8,
+    "new_identities": 2,
+    "license_states": {
+      "documented-permissive-commercial-pass": 3,
+      "documented-commercial-conditional": 1,
+      "documented-commercial-fail": 1,
+      "unresolved": 3
+    },
+    "candidate_states": {
+      "commercially-permissive-full-organization-period-candidate": 0,
+      "commercially-permissive-magnitude-only-candidate": 0,
+      "commercially-permissive-aggregate-context-only": 1,
+      "commercial-license-pass-but-structurally-ineligible": 2,
+      "license-conditional-screened-out": 1,
+      "license-fail-screened-out": 1,
+      "license-unresolved-screened-out": 3
+    }
+  },
+  "preexcluded_paths": [
+    {
+      "identity": "UK Data Service study 9285",
+      "state": "preexcluded-without-network",
+      "reason": "The registration and End User Licence route remains deferred for unresolved commercial compatibility."
+    },
+    {
+      "identity": "Statistics Canada CSCSC 2017 record 5244, detailed ID 359489",
+      "state": "preexcluded-without-network",
+      "reason": "The exact 2017 record-level access tier is not currently advertised."
+    }
+  ],
+  "identities": [
+    {
+      "stable_identity_sha256": "1da564efc409daec5c8c9a8bd7e23fa989a112b47a5591899f97b4a0373be0ce",
+      "identity_basis": "vz-risk|VCDB|github-master-metadata|2026-08-18",
+      "title": "VERIS Community Database",
+      "publisher": "Verizon RISK / VERIS community",
+      "new_identity": false,
+      "license_state": "documented-commercial-conditional",
+      "license_evidence": "The frozen official repository metadata states Creative Commons Attribution-ShareAlike 4.0. Commercial use is possible, but the share-alike obligation is reciprocal and therefore does not pass the frozen permissive-only product-rights gate.",
+      "structural_review_performed": false,
+      "candidate_state": "license-conditional-screened-out",
+      "official_urls": [
+        "https://github.com/vz-risk/VCDB"
+      ],
+      "stop_reason": "Share-alike terms caused mandatory rejection before schema review."
+    },
+    {
+      "stable_identity_sha256": "6cdea1dfecdba9254a10ce1bcd419b00ab196e365e72c94058552c46604a9053",
+      "identity_basis": "eurepoc|global-dataset-of-cyber-incidents|1.3|zenodo-14965395",
+      "title": "EuRepoC Global Dataset of Cyber Incidents, version 1.3",
+      "publisher": "European Repository of Cyber Incidents",
+      "new_identity": false,
+      "license_state": "unresolved",
+      "license_evidence": "The frozen official Zenodo metadata has a blank license field; no direct record-level commercial-reuse grant is documented.",
+      "structural_review_performed": false,
+      "candidate_state": "license-unresolved-screened-out",
+      "official_urls": [
+        "https://zenodo.org/records/14965395"
+      ],
+      "stop_reason": "Missing record-level license caused mandatory rejection before schema review."
+    },
+    {
+      "stable_identity_sha256": "e49e3f85c22a6fc39afcbc47d6d28386c2a40de1fc7b8cae36214b15f24d65e6",
+      "identity_basis": "cesnet|warden-alert-capture|1.0.0|zenodo-4683701",
+      "title": "Warden Intrusion Detection Alert Capture, version 1.0.0",
+      "publisher": "CESNET",
+      "new_identity": false,
+      "license_state": "documented-permissive-commercial-pass",
+      "license_evidence": "The frozen official Zenodo metadata states Creative Commons Attribution 4.0, which permits commercial reuse with attribution and no registration, permission, field-of-use, non-commercial, or reciprocal release restriction.",
+      "structural_review_performed": true,
+      "candidate_state": "commercial-license-pass-but-structurally-ineligible",
+      "official_urls": [
+        "https://zenodo.org/records/4683701"
+      ],
+      "structural_result": {
+        "unit": "anonymized intrusion-detection alert",
+        "organization_period": false,
+        "explicit_population_denominator": false,
+        "zero_event_periods": false,
+        "realized_incident_or_loss": false,
+        "reason": "Alerts from a convenience set of sensor operators are not realized organization-period incidents and cannot supply explicit zero-event organization-years."
+      }
+    },
+    {
+      "stable_identity_sha256": "7b63d3303dcd4a34959a4ce6dfb29531c0825005240ea090c06fed5814c511c2",
+      "identity_basis": "eurostat|ICT-usage-in-enterprises|isoc_e|2025-metadata",
+      "title": "Eurostat ICT Usage in Enterprises",
+      "publisher": "Eurostat",
+      "new_identity": false,
+      "license_state": "documented-permissive-commercial-pass",
+      "license_evidence": "Eurostat directly authorizes commercial and non-commercial reuse of its statistical data with source acknowledgement, subject to enumerated exceptions; no written license procedure is required for the screened EU enterprise metadata and aggregates.",
+      "structural_review_performed": true,
+      "candidate_state": "commercially-permissive-aggregate-context-only",
+      "official_urls": [
+        "https://ec.europa.eu/eurostat/help/copyright-notice",
+        "https://ec.europa.eu/eurostat/cache/metadata/EN/isoc_e_esms.htm"
+      ],
+      "structural_result": {
+        "unit": "annual enterprise survey aggregated by national statistical institutes",
+        "organization_period": "present only in upstream national surveys",
+        "explicit_population_denominator": "aggregate survey methodology only",
+        "zero_event_periods": "not available as records",
+        "record_level_access": false,
+        "reason": "Eurostat explicitly states that only aggregated data are transmitted and no microdata are available at Eurostat level. The commercially reusable material is contextual aggregate evidence, not held-out organization-period records."
+      }
+    },
+    {
+      "stable_identity_sha256": "6d1ce9bfa181962f8079c3685c7911b9ade6305127fc1ff7e77168ec0d4c5763",
+      "identity_basis": "uk-dsit|CSBS|2024|govuk-release-2024-04-09",
+      "title": "Cyber Security Breaches Survey 2024",
+      "publisher": "UK Department for Science, Innovation and Technology and Home Office",
+      "new_identity": false,
+      "license_state": "unresolved",
+      "license_evidence": "The GOV.UK publication and technical report use the Open Government Licence, but that publication license does not directly grant record-level response-data reuse. The corresponding record-level UK Data Service identity uses the separately deferred registration and End User Licence route.",
+      "structural_review_performed": false,
+      "candidate_state": "license-unresolved-screened-out",
+      "official_urls": [
+        "https://www.gov.uk/government/statistics/cyber-security-breaches-survey-2024",
+        "https://www.gov.uk/government/statistics/cyber-security-breaches-survey-2024/cyber-security-breaches-survey-2024-technical-report"
+      ],
+      "stop_reason": "Publication-only license wording is not a record-level commercial grant and caused mandatory rejection before schema review."
+    },
+    {
+      "stable_identity_sha256": "4ff7deafd0e58c1ec7e47f3e82659f0209a0651a4bd5105c48853b7b00f6630a",
+      "identity_basis": "us-census|annual-business-survey|restricted-use-firm-microdata|2018-2022-metadata",
+      "title": "U.S. Census Annual Business Survey restricted-use firm microdata",
+      "publisher": "U.S. Census Bureau and National Center for Science and Engineering Statistics",
+      "new_identity": true,
+      "license_state": "documented-commercial-fail",
+      "license_evidence": "The official Census economic-data catalog classifies Annual Business Survey firm microdata as restricted-use. Census states that restricted business microdata are available only to qualified researchers with approved projects through secure Federal Statistical Research Data Centers or an authorized remote program.",
+      "structural_review_performed": false,
+      "candidate_state": "license-fail-screened-out",
+      "official_urls": [
+        "https://www.census.gov/topics/research/guidance/restricted-use-microdata/economic-data.html",
+        "https://www.census.gov/topics/research/guidance/restricted-use-microdata.html"
+      ],
+      "stop_reason": "Restricted-use, qualified-researcher, and approved-project requirements caused mandatory rejection before schema review."
+    },
+    {
+      "stable_identity_sha256": "b530088756ec92eff78405dd536eebe370f9e34cba8a9f2a480aadea8bd7fffc",
+      "identity_basis": "us-sec|edgar|form-8-k-item-1.05|release-33-11216",
+      "title": "SEC EDGAR Form 8-K Item 1.05 material cybersecurity incident disclosures",
+      "publisher": "U.S. Securities and Exchange Commission",
+      "new_identity": true,
+      "license_state": "documented-permissive-commercial-pass",
+      "license_evidence": "The SEC directly states that Government-created sec.gov content and EDGAR public filing content are free to access and reuse without permission.",
+      "structural_review_performed": true,
+      "candidate_state": "commercial-license-pass-but-structurally-ineligible",
+      "official_urls": [
+        "https://www.sec.gov/about/webmaster-frequently-asked-questions",
+        "https://www.sec.gov/resources-small-businesses/small-business-compliance-guides/cybersecurity-risk-management-strategy-governance-incident-disclosure",
+        "https://www.sec.gov/rules-regulations/2023/07/s7-09-22"
+      ],
+      "structural_result": {
+        "unit": "public-company filing concerning a registrant-determined material cybersecurity incident",
+        "organization_period": "a registrant-period frame is conceptually enumerable but not observed under a common zero-event ascertainment process",
+        "explicit_population_denominator": "Exchange Act registrant scope is defined, but filing coverage and compliance dates vary by registrant class",
+        "zero_event_periods": false,
+        "incident_count": "filing events and amendments are not a canonical all-incident count",
+        "realized_loss": "material impact or reasonably likely impact narrative is required, but a complete realized-loss amount is not required",
+        "reason": "Item 1.05 is triggered only after a registrant determines an incident is material, permits limited disclosure delay, and does not observe nonmaterial incidents. Absence of a filing cannot establish an explicit zero-incident organization-period under the frozen contract."
+      }
+    },
+    {
+      "stable_identity_sha256": "cbcbb1d714e589092163ee41a96ebcab9d6a265b1529e15ad2e07aabc6805c0d",
+      "identity_basis": "hhs-ocr|breach-portal|current-and-archive|2026-08-18",
+      "title": "HHS OCR Breach Portal",
+      "publisher": "U.S. Department of Health and Human Services, Office for Civil Rights",
+      "new_identity": false,
+      "license_state": "unresolved",
+      "license_evidence": "Neither the frozen official portal metadata nor the bounded direct license search identified an explicit record-level commercial-reuse grant for the portal collection.",
+      "structural_review_performed": false,
+      "candidate_state": "license-unresolved-screened-out",
+      "official_urls": [
+        "https://ocrportal.hhs.gov/ocr/breach/breach_report_hip.jsf"
+      ],
+      "stop_reason": "Missing record-level commercial license caused mandatory rejection before schema review."
+    }
+  ],
+  "decision": {
+    "result_state": "commercially-permissive-partial-or-context-only",
+    "full_organization_period_candidates": 0,
+    "magnitude_only_candidates": 0,
+    "opt_014_execution_state": "operationally-parked",
+    "opt_014_lifecycle_status": "open-data-gated",
+    "opt_014_closed_or_promoted": false,
+    "data_gate_cleared": false,
+    "source_selected_for_acquisition": false,
+    "next_work_item": "OPT-010",
+    "opt_010_executed": false,
+    "result": "No screened identity combines directly documented permissive commercial record-level rights with the frozen organization-period denominator, explicit zero-event, incident-count, stable-key, version, and lineage contract.",
+    "bounded_negative_claim": "This is a low-effort negative result for the eight disclosed identities and the exact frozen observation and commercial-rights contract. It is not a universal claim that no commercially compatible source can exist.",
+    "remaining_reversible_paths": [
+      "A separately frozen aggregate external-coherence report can use commercially reusable official aggregates for descriptive context but cannot clear the record-level data gate.",
+      "A prospective panel or negotiated commercial data license can be reconsidered later under a new governance and budget decision.",
+      "The deferred UK Data Service path remains preserved but blocked until commercial-rights compatibility is deliberately resolved."
+    ],
+    "handoff": "Park further OPT-014 source work at the current data gate and prepare a separately authorized OPT-010 safety and evaluation step."
+  },
+  "network_and_resource_accounting": {
+    "maximum_elapsed_minutes_respected": true,
+    "new_result_documents": 1,
+    "new_result_bytes_within_5242880": true,
+    "disclosed_candidate_identities": 8,
+    "new_candidate_identities": 2,
+    "unique_metadata_documents_used_as_evidence": 13,
+    "frozen_metadata_documents_reused": 6,
+    "new_official_metadata_documents_used": 7,
+    "allowed_hosts_used_as_evidence": [
+      "github.com",
+      "zenodo.org",
+      "ec.europa.eu",
+      "www.gov.uk",
+      "www.census.gov",
+      "www.sec.gov",
+      "ocrportal.hhs.gov"
+    ],
+    "allowed_hosts_queried_without_usable_new_evidence": [
+      "www.hhs.gov"
+    ],
+    "unlisted_links_followed": 0,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "dataset_downloads": 0,
+    "raw_tables_apis_previews_samples_or_records_read": 0,
+    "outcome_values_persisted": 0,
+    "registrations_applications_or_contacts": 0,
+    "purchases_payments_or_subscriptions": 0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "simulation_runs": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0
+  },
+  "store": {
+    "access": "hash-only-no-database-open",
+    "before_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "after_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "byte_identical": true
+  },
+  "not_executed": {
+    "credentials_login_account_terms_or_protected_portal": true,
+    "registration_application_contact_purchase_payment_or_subscription": true,
+    "dataset_download_table_api_preview_sample_record_or_outcome_access": true,
+    "code_notebook_query_scanner_simulation_or_model_execution": true,
+    "candidate_ranking_source_selection_or_acquisition": true,
+    "linkage_key_adequacy_cohort_or_holdout_selection": true,
+    "evaluation_fitting_prior_methodology_or_policy_change": true,
+    "opt_014_promotion_closure_or_ledger_change": true,
+    "opt_010_execution": true,
+    "branch_integration_remote_push_or_deployment": true
+  }
+}

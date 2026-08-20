@@ -1,0 +1,149 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-010",
+  "status": "authorization-pending",
+  "objective": "Select for project-owner review exactly two untouched Java and two untouched Ruby deployable-product source families by activating one frozen Java reserve nomination and performing one outcome-blind metadata-only search for one additional Java and two Ruby identities.",
+  "frozen_inputs": {
+    "original_source_selection_result": {
+      "path": "docs/optimizations/opt-010-prospective-source-selection-corrected-retry-result-2026-08-19.json",
+      "sha256": "df6e20287538d8ec2fe1cb2606ab7c85a47296c803e59273ae38acbe285f91a1"
+    },
+    "retained_java_source_screen_result": {
+      "path": "docs/optimizations/opt-010-java-ssrf-retained-source-screen-result-2026-08-20.json",
+      "sha256": "cd3f6e3faaa9d8f962e81e6e95103336a7fed604b0d44881bf5b956e997169c1"
+    },
+    "retained_java_source_screen_artifact": {
+      "path": "data/artifacts/opt010-java-ssrf-retained-source-screen/screen-artifact.json",
+      "sha256": "a968c5570237590e92635a1f8c362204a2d5ed253eff649d216849abcaf6bb43"
+    },
+    "java_scratch_rule_qualification_result": {
+      "path": "docs/optimizations/opt-010-java-ssrf-supplemental-rule-qualification-result-2026-08-20.json",
+      "sha256": "b42cba99f93ba542fd0c9d0d14fe39fd2a442c53d19c623157f1d056a18d3bef"
+    },
+    "optimization_status": {
+      "path": "docs/optimizations/optimization-status.json",
+      "sha256": "b08ae0e3a3194eb917c29840e6c133beed47832d3749b493dfbe4dafd3c02791"
+    },
+    "production_store_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a"
+  },
+  "workspace_preflight": {
+    "branch": "main",
+    "committed_main": "1f1dba7a30a86d957510608c25e94077b15d2e8d",
+    "staged_paths": 0,
+    "preserve_existing_wip": true,
+    "branch_or_index_change_authorized": false
+  },
+  "frozen_java_reserve_nomination": {
+    "source_selection_order": 16,
+    "role_before": "reserve",
+    "role_in_this_result": "augmentation-primary-pending-owner-review",
+    "repository": "codelibs/fess",
+    "repository_url": "https://github.com/codelibs/fess",
+    "default_branch": "master",
+    "exact_commit": "41f138b5b91af26413ae6cab05bb6acffa6611df",
+    "stable_identity_sha256": "9f6e322f1bb116d30ef5c417dbe99bf3aaa1ef3ba5ec296a9476c7d3236bd17e",
+    "primary_language": "Java",
+    "license": "Apache-2.0",
+    "README_path": "README.md",
+    "README_sha": "9dee94604aefbf3c92e52ad87aa3be91b65c0917",
+    "selection_basis": "Previously frozen untouched Java reserve; no new metadata read is required unless its exact retained binding fails, in which case the gate stops rather than refreshing it.",
+    "acquisition_authorized": false
+  },
+  "metadata_discovery_contract": {
+    "outcome_blind": true,
+    "queries": [
+      {
+        "language": "Java",
+        "candidate_limit": 15,
+        "q": "topic:self-hosted fork:false archived:false stars:>=100 created:<=2024-08-20 pushed:>=2025-08-20 language:Java",
+        "sort": "updated",
+        "order": "desc"
+      },
+      {
+        "language": "Ruby",
+        "candidate_limit": 15,
+        "q": "topic:self-hosted fork:false archived:false stars:>=100 created:<=2024-08-20 pushed:>=2025-08-20 language:Ruby",
+        "sort": "updated",
+        "order": "desc"
+      }
+    ],
+    "candidate_pool_maximum": 30,
+    "eligibility": [
+      "public non-fork non-archived repository whose primary language exactly matches its query bucket",
+      "created no later than 2024-08-20 and pushed no earlier than 2025-08-20",
+      "README metadata documents an independently deployable self-hosted product rather than a library, framework, template, list, educational example, or hosted-service-only client",
+      "recognized public open-source license identity with accessible license metadata",
+      "exact default-branch HEAD commit and README identity resolvable from public GitHub metadata",
+      "repository family and owner are distinct from the frozen reserve and every prior selected, materialized, outcome-exposed, or OPT-036 family"
+    ],
+    "forbidden_inputs": [
+      "security advisories, CVEs, GHSAs, security issues or pull requests, exploit reports, vulnerability databases, or known-vulnerability membership",
+      "code search, repository source files beyond README and license metadata, dependency manifests, findings, candidate counts, paths, symbols, patches, scanner artifacts, architecture maps, retrieval indexes, or OPT-036 evidence",
+      "scores, ranks, severity, confidence, predictions, outcomes, assessments, labels, human finding reviews, model output, provider activity, or prior agreement"
+    ],
+    "selection": "After eligibility closes, order each language bucket by sha256('opt-010-java-ruby-augmentation-v1' + lowercase repository identity + exact commit). Select the first one eligible new Java identity and first two eligible new Ruby identities, then combine them with the fixed codelibs/fess reserve nomination in Java-first/Ruby-second stable-hash order.",
+    "required_result": {
+      "selected_identities": 4,
+      "Java": 2,
+      "Ruby": 2,
+      "fixed_reserve_identities": 1,
+      "new_metadata_selected_identities": 3,
+      "distinct_owners": 4
+    },
+    "shortfall_rule": "If one new Java and two new Ruby identities do not qualify exactly, persist only aggregate counts and shortfall by language; disclose no partial new identity list and leave the fixed reserve unactivated for acquisition.",
+    "review_boundary": "A complete result may disclose the four repository identities, exact commits, stable hashes, languages, licenses, README identities, and metadata-only selection bases to the project owner for review. It authorizes no acquisition or scanning."
+  },
+  "execution": {
+    "helper": "src/repoauditor/eval/opt010_java_ruby_source_selection.py",
+    "focused_test": "tests/test_opt_010_java_ruby_source_augmentation_selection.py",
+    "result": "docs/optimizations/opt-010-java-ruby-source-augmentation-selection-result-2026-08-20.json"
+  },
+  "resource_ceilings": {
+    "maximum_elapsed_minutes": 30,
+    "maximum_new_data_bytes": 5242880,
+    "candidate_metadata_identities_inspected": 30,
+    "metadata_documents_and_network_reads": 40,
+    "allowed_hosts": [
+      "github.com",
+      "api.github.com"
+    ],
+    "selected_identities": 4,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "repository_materializations": 0,
+    "repository_code_executions": 0,
+    "scanner_processes": 0,
+    "agentic_falsification_runs": 0,
+    "production_store_database_reads": 0,
+    "production_store_mutations": 0,
+    "schema_migrations": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0,
+    "human_finding_reviews": 0,
+    "branch_or_index_operations": 0,
+    "source_commits": 0,
+    "merge_commits": 0,
+    "remote_pushes": 0,
+    "lifecycle_changes": 0
+  },
+  "stop_conditions": [
+    "Any frozen input, reserve identity, store hash, branch, empty index, query, eligibility rule, selection rule, or initially absent output drifts.",
+    "Any query exceeds fifteen candidates or omits an exact age, maintenance, self-hosted, fork, archive, stars, or language qualifier; more than forty metadata reads would be required; or a nonallowed host is needed.",
+    "Fewer than exactly one new Java and two new Ruby identities qualify without relaxing a rule, any owner or repository family repeats, or any selected metadata or exact commit is missing or ambiguous.",
+    "Any source, security, outcome, scanner, provider, store, assessment, label, training, rescoring, review, acquisition, git-mutation, lifecycle, or unlisted-file activity would be required."
+  ],
+  "excluded": [
+    "source acquisition, clone, archive, checkout, materialization, repository-code execution, code search, source access beyond README and license metadata, scanner, retrieval, architecture, provider, agentic, store, assessment, label, outcome, review, training, or rescoring activity",
+    "finding, candidate, score, rank, prediction, severity, confidence, packet, adequacy threshold, source-performance, or prior-agreement inspection or persistence",
+    "production-rule editing or promotion, scratch-rule tuning, source acquisition selection beyond the exact four metadata identities, precision, recall, G03b or G04 decisions, threshold selection, recalibration, production-policy changes, OPT-010 promotion or closure, lifecycle changes, integration, push, and deployment"
+  ],
+  "result_boundary": "A complete result establishes only four metadata-qualified untouched Java/Ruby source identities for owner review. It does not establish source findings, mechanism prevalence, packet adequacy, production readiness, or OPT-010 completion.",
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the OPT-010 outcome-blind Java/Ruby source-augmentation selection described by opt-010-java-ruby-source-augmentation-selection-receipt-2026-08-20.json, limited to nominating the already-frozen untouched codelibs/fess Java reserve at 41f138b5b91af26413ae6cab05bb6acffa6611df for augmentation review without refreshing it; inspecting at most fifteen public GitHub metadata identities each from the exact frozen Java and Ruby self-hosted queries; applying only frozen repository, age, maintenance, deployable-product, README, license, lineage, language, prior-exposure, owner-independence, and exact-default-branch-HEAD rules; deterministic stable-hash selection and disclosure for my review of exactly one additional Java and two Ruby identities combined with that reserve for exactly four identities, two per language and four distinct owners; one metadata-only result and focused test; and production-store before-and-after hashing only, with ceilings of 30 minutes, 5 MiB new data, 30 candidate identities, 40 metadata documents and network reads, only github.com and api.github.com network hosts, and exactly zero uploads, provider calls, tokens, cost, repository materializations or code executions, scanners, agentic runs, production-database reads or mutations, assessments, labels, model training, rescoring, human finding reviews, branch or index operations, commits, merges, pushes, or lifecycle changes. Security advisories, CVEs, security issues or pull requests, exploit reports, vulnerability databases, code search, source beyond README and license metadata, findings, candidate counts, paths, symbols, scores, ranks, predictions, severity, confidence, outcomes, OPT-036 evidence, source acquisition or scanning, packet construction, adequacy or threshold selection, tuning, recalibration, production-policy changes, OPT-010 promotion or closure, integration, remote push, and deployment remain excluded; if exactly four identities do not qualify, persist only aggregate shortfall counts and disclose no partial new list."
+  }
+}

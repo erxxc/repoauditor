@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-014",
+  "status": "reserve-recorded-not-selected",
+  "recorded_at": "2026-08-18",
+  "source_screen": {
+    "path": "opt-014-commercial-license-first-screen-result-2026-08-18.json",
+    "sha256": "9af94242b348378a175528e3ceb4d4c8c01f1cccd6da4036ecc7ca895b47045a"
+  },
+  "reserve_identity": {
+    "stable_identity_sha256": "b530088756ec92eff78405dd536eebe370f9e34cba8a9f2a480aadea8bd7fffc",
+    "identity_basis": "us-sec|edgar|form-8-k-item-1.05|release-33-11216",
+    "title": "SEC EDGAR Form 8-K Item 1.05 material cybersecurity incident disclosures",
+    "publisher": "U.S. Securities and Exchange Commission",
+    "state": "commercially-permissive-structurally-limited-reserve",
+    "source_selected": false,
+    "acquisition_authorized": false
+  },
+  "why_retained": {
+    "commercial_reuse": "The SEC states that Government-created sec.gov content and EDGAR public filing content are free to access and reuse.",
+    "stable_regulatory_identity": "Release 33-11216 and Form 8-K Item 1.05 define a versioned material-cybersecurity-incident disclosure channel with structured-data requirements.",
+    "possible_future_role": "A separately authorized study could evaluate material-incident regulatory disclosure behavior or provide commercially reusable contextual evidence without claiming all-incident coverage."
+  },
+  "hard_limitations": [
+    "Item 1.05 is triggered only after a registrant determines that a cybersecurity incident is material.",
+    "Absence of a filing cannot establish a zero-incident organization-period.",
+    "Nonmaterial incidents are outside the mandatory Item 1.05 channel, and delayed disclosure is possible.",
+    "Filings and amendments are not a canonical count of all incidents.",
+    "A complete realized-loss amount is not required.",
+    "The reserve cannot independently clear OPT-014's full organization-period data gate."
+  ],
+  "future_activation_preconditions": [
+    "Freeze an exact EDGAR form, filing-item, issuer-population, compliance-window, and acquisition-date contract before any filing or issuer data is read.",
+    "Freeze amendment, duplicate, delayed-disclosure, foreign-private-issuer, smaller-reporting-company, and compliance-transition handling before outcome inspection.",
+    "Use a claim boundary limited to material regulatory disclosures; do not treat non-filing issuer-periods as observed zeros.",
+    "Reverify exact reuse terms and any third-party content exceptions at the future acquisition date.",
+    "Require a separate network, data-volume, record-minimization, retention, and commercial-product-use authorization.",
+    "Keep the reserve independent from the Advisen-derived prior or freeze deterministic overlap exclusion before evaluation."
+  ],
+  "current_boundary": {
+    "network_reads": 0,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "dataset_or_filing_downloads": 0,
+    "issuer_or_filing_records_read": 0,
+    "outcomes_read": 0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "source_selected": false,
+    "opt_014_lifecycle_changes": 0
+  },
+  "bounded_interpretation": "This note keeps SEC/EDGAR visible as a reversible, commercially reusable, structurally limited reserve. It does not reopen active OPT-014 source work, select or acquire SEC data, establish a valid zero-period denominator, or clear the OPT-014 data gate."
+}

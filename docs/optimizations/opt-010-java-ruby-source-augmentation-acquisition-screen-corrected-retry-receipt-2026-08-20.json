@@ -1,0 +1,134 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-010",
+  "status": "authorization-pending",
+  "objective": "Correct only the missing immutable canary and pinned-default Semgrep bindings, then retry the otherwise unchanged authorized Java/Ruby source-augmentation acquisition and aggregate capacity screen.",
+  "retained_authority": {
+    "original_receipt": {
+      "path": "docs/optimizations/opt-010-java-ruby-source-augmentation-acquisition-screen-receipt-2026-08-20.json",
+      "sha256": "f85b754e7d26dd52547b213b34008f7992711ed5cea153c17da44f7e3910cfcb"
+    },
+    "retained_stopped_result": {
+      "path": "docs/optimizations/opt-010-java-ruby-source-augmentation-acquisition-screen-result-2026-08-20.json",
+      "sha256": "2d72c1e4ae8d12250309221aec25959371bcacb6dd6991aa54b016e4304c5607"
+    },
+    "accepted_state": {
+      "status": "stopped-preflight-unfrozen-ruby-instrument-bindings",
+      "artifact_directory_created": false,
+      "runtime_import_checks": 0,
+      "logical_scanner_processes": 0,
+      "repositories_materialized": 0,
+      "retrieval_index_builds": 0,
+      "network_reads": 0,
+      "provider_calls": 0,
+      "production_store_mutations": 0,
+      "workspace_branch_or_index_mutations": 0
+    },
+    "retained_boundaries": "Every exact source, order, scanner-cell, acquisition, aggregate-capacity, resource, zero-activity, exclusion, result, workspace, and lifecycle boundary from the original receipt remains in force."
+  },
+  "added_frozen_inputs": {
+    "java_control_manifest": {
+      "path": "data/artifacts/opt010-java-ssrf-supplemental-qualification/control-manifest.json",
+      "sha256": "288f7059e3b545432ff7a9313aea1e4d53b732de874e3e74cf5b5d18b431eb0e"
+    },
+    "java_positive_control": {
+      "path": "data/artifacts/opt010-java-ssrf-supplemental-qualification/controls/01-retained-request-param-uri-positive/FetchController.java",
+      "sha256": "4d83374879c245d526aead0982e48452749e4bdd6ac4d229f1effd2bb6bece13"
+    },
+    "java_clean_control": {
+      "path": "data/artifacts/opt010-java-ssrf-supplemental-qualification/controls/02-retained-fixed-uri-clean/FetchController.java",
+      "sha256": "8fd196b4b983531c9c5f13ca8998829148d4f5e8738c49e86776fe9de1db32a4"
+    },
+    "ruby_scanner_cell_corrected_acceptance_result": {
+      "path": "docs/optimizations/opt-010-java-ruby-scanner-cell-coverage-corrected-acceptance-result-2026-08-20.json",
+      "sha256": "51239ba31b8473dd683cb9e75ac4c32a5d8b9362d0a1b4cf6e4775dd2cb0bca4"
+    },
+    "ruby_scanner_cell_acceptance_artifact": {
+      "path": "data/artifacts/opt010-java-ruby-scanner-cell-coverage/acceptance-artifact.json",
+      "sha256": "0228a7fca978a9a9f0df40fd2d50cf1a46ac373011c2f0796e04bce791a2af6c"
+    },
+    "ruby_fixture_manifest": {
+      "path": "data/artifacts/opt010-java-ruby-scanner-cell-coverage/fixture-manifest.json",
+      "sha256": "06f20f556824dcc13ff8c550d8b68c024f17b109575f6da3073f328d273a3b00"
+    },
+    "ruby_positive_control": {
+      "path": "data/artifacts/opt010-java-ruby-scanner-cell-coverage/fixtures/ruby-deserialization-positive/sessions_controller.rb",
+      "sha256": "822fbea559d8ba9c1fefe374ed7b0190ca8ce5a454d4f33685d299f15dd6fa3f"
+    },
+    "ruby_clean_control": {
+      "path": "data/artifacts/opt010-java-ruby-scanner-cell-coverage/fixtures/ruby-deserialization-clean/sessions_controller.rb",
+      "sha256": "93ce9738e41ec92523ee57e4d4f4ad50486b57c678013d7bdc7055a2d666b774"
+    }
+  },
+  "added_frozen_instruments": {
+    "sast_adapter": {
+      "path": "src/repoauditor/detect/deterministic/sast_adapter.py",
+      "sha256": "ff7790a1df8aa9cd01752b9865db2578165e9b4a7d83faed3b21023510ca7893"
+    },
+    "semgrep_provenance": {
+      "path": "src/repoauditor/detect/deterministic/provenance.py",
+      "sha256": "1500114a953bfee20a03e85d95663ba9c689909d38a4c225a0507d64f70de679"
+    },
+    "scanner_cell_parser_and_validator": {
+      "path": "src/repoauditor/eval/opt010_scanner_cell_coverage.py",
+      "sha256": "fc0dc4177daa1ae0c34777e156f1461af53fb155f50bb969a1f2cd0848a0ca57"
+    }
+  },
+  "correction_contract": {
+    "scope": "Use only the exact existing local Java and Ruby positive and clean controls and their retained qualification evidence. The controls are copied byte-for-byte into the fresh isolated retry directory before the runtime import or any scanner process.",
+    "java_canary": "Run exactly one scan over the copied retained Java positive control and one over the copied retained Java clean control using the byte-identical qualified scratch CWE-918 rule; require the positive to raise exactly one compatible result and the clean to raise zero.",
+    "ruby_canary": "Run exactly one scan over the copied retained Ruby positive control and one over the copied retained Ruby clean control using the exact pinned-default Semgrep configuration and provenance; require at least one compatible CWE-502 result on the positive and zero on the clean.",
+    "implementation": "Permit creation only of the helper and focused test already named by the original receipt. They must verify both receipts, the retained stopped state, every original and added digest, and every original boundary before any write, runtime, scanner, or network process.",
+    "artifact_directory": "data/artifacts/opt010-java-ruby-source-augmentation-acquisition-screen-corrected-retry",
+    "result": "docs/optimizations/opt-010-java-ruby-source-augmentation-acquisition-screen-corrected-retry-result-2026-08-20.json",
+    "immutability": "Do not edit or delete the original receipt, retained stopped result, prior qualification evidence, fixtures, instruments, scratch rule, production rules, or production store."
+  },
+  "cumulative_resource_ceilings": {
+    "repositories": 4,
+    "runtime_import_checks": 1,
+    "logical_scanner_processes": 8,
+    "retrieval_index_builds": 4,
+    "maximum_elapsed_minutes_per_repository": 180,
+    "maximum_total_elapsed_minutes": 780,
+    "maximum_new_data_bytes": 16106127360,
+    "allowed_network_hosts": [
+      "github.com"
+    ],
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "keychain_or_credential_reads": 0,
+    "repository_code_executions": 0,
+    "dependency_resolutions_or_installations": 0,
+    "other_scanner_processes": 0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "schema_migrations": 0,
+    "human_finding_reviews": 0,
+    "outcomes_read": 0,
+    "assessments": 0,
+    "labels": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0,
+    "agentic_or_baseline_runs": 0,
+    "workspace_branch_or_index_mutations": 0,
+    "commits": 0,
+    "merges": 0,
+    "pushes": 0,
+    "lifecycle_changes": 0
+  },
+  "stop_conditions": [
+    "Any original or added frozen digest, retained stop fact, source identity, exact commit, workspace, store, runtime, copied control, configuration, or output-absence binding drifts.",
+    "Any canary does not meet its exact positive and clean expectation, any scanner output or provenance is unavailable or malformed, or any retry, fallback, rule change, semgrep.dev contact, registry resolution, installation, or downgrade is attempted.",
+    "Any activity excluded by the original receipt occurs or any cumulative ceiling is reached."
+  ],
+  "excluded": [
+    "editing or deleting the original receipt, stopped result, qualification evidence, fixtures, instruments, scratch or production rules, source selection, store, lifecycle, or any unlisted file",
+    "any source, scanner, mechanism, rule, provider, credential, network host, candidate, packet, outcome, review, assessment, label, policy, threshold, integration, or deployment activity excluded by the original receipt"
+  ],
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the corrected OPT-010 Java/Ruby source-augmentation acquisition and capacity-screen retry described by opt-010-java-ruby-source-augmentation-acquisition-screen-corrected-retry-receipt-2026-08-20.json, retaining every exact source, order, scanner-cell, acquisition, aggregate-capacity, resource, zero-activity, exclusion, result, workspace, and lifecycle boundary from the original receipt; accepting the retained stopped preflight with no artifact directory, runtime import, scanner, repository, retrieval, network, provider, credential, store, outcome, review, or git activity; permitting only immutable binding and byte-for-byte copying into a fresh corrected-retry directory of the existing frozen Java CWE-918 positive and clean controls, Ruby CWE-502 positive and clean controls, corrected Ruby scanner-cell qualification evidence, pinned-default Semgrep adapter and provenance, and creation of the originally named helper and focused test; then, only if every original and added binding and all four separated canaries pass, exact-commit shallow materialization without repository-code execution of only Suwayomi/Suwayomi-Server at 4b2c19abbc637dfd2c26b9b5eafd326ba92f91ee, codelibs/fess at 41f138b5b91af26413ae6cab05bb6acffa6611df, Multiwoven/multiwoven at 0a68d209009f9009664e96ef1e5d1f23843781b2, and docusealco/docuseal at 004a22c1c88109c7ba0b567df011a8cb13894001; deterministic snapshots, detector-input and RetrievalIndex digests; exactly one qualified scratch Java SSRF scan per Java subject and one pinned-default Semgrep scan per Ruby subject; aggregate stable issue-group deduplication and recomputation of the frozen four-family maximum-20-per-family 40-identity capacity prerequisite; one corrected aggregate artifact and result; with cumulative ceilings of four repositories, one runtime import check, eight logical scanner processes, four retrieval indexes, 180 minutes per repository, 780 minutes total, 15 GiB new data, only github.com network access, and exactly zero uploads, provider calls, tokens, cost, Keychain or credential reads, repository-code executions, dependency resolutions or installations, other scanners, production-store reads or mutations, assessments, labels, training, rescoring, agentic or baseline runs, human finding reviews, outcomes, branch or index mutations, commits, merges, pushes, or lifecycle changes. Any other input, fixture, instrument, source, scanner, rule, source substitution, production-rule edit or promotion, scratch-rule tuning or retry, architecture recovery, candidate or issue-group identity persistence or disclosure, subject-level finding counts, source rendering, packet construction, paired execution, precision, recall, G03b or G04 decision, threshold selection, recalibration, production-policy change, OPT-010 promotion or closure, integration, remote push, and deployment remain excluded."
+  }
+}

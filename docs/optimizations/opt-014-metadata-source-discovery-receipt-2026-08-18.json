@@ -1,0 +1,125 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-014",
+  "status": "authorization-pending",
+  "frozen_at": "2026-08-18",
+  "design": {
+    "path": "opt-014-independent-data-acquisition-design-2026-08-18.json",
+    "sha256": "af29a9bd3e1f644fd6ee115daccf59c6da166b45c668941a8f22b4416e09be15"
+  },
+  "scope": "Conduct one outcome-blind metadata-only discovery of public or publicly described organization-period cyber-incident and realized-loss sources, assign each eligible identity exactly one frozen source tier, persist one metadata-only candidate inventory, disclose all candidate source identities for project-owner review, and stop before source selection or acquisition.",
+  "discovery_contract": {
+    "source_classes": [
+      "official enterprise or organization cybersecurity surveys with explicit respondent denominators and zero-incident responses",
+      "official statistical tables or microdata catalogs describing organization-period incident observations",
+      "public incident or realized-loss research datasets with versioned provenance and documented population construction",
+      "official regulatory or administrative incident collections usable only at the tier supported by their published denominator and ascertainment metadata",
+      "public dataset repositories used only to locate official, versioned, license-bearing metadata records"
+    ],
+    "metadata_fields": [
+      "source title, publisher, canonical URL, and stable release, catalog, DOI, or repository identity",
+      "publisher-stated population, organization unit, observation period, geography, and study vintage",
+      "advertised schema or data-dictionary support for denominator, zero-incident periods, incident count, realized loss, currency, censoring, and population covariates",
+      "collection and ascertainment method, provenance and upstream lineage, update cadence, license or access terms, authentication requirement, advertised format, and advertised size",
+      "documented relationship or possible overlap with IRIS, Advisen, VERIS, DBIR, or other frozen-prior lineage"
+    ],
+    "classification": {
+      "tiers": [
+        "full-organization-period-candidate",
+        "magnitude-only-candidate",
+        "aggregate-context-only",
+        "ineligible"
+      ],
+      "independence_states": [
+        "documented-independent",
+        "deterministic-overlap-exclusion-appears-possible",
+        "unresolved",
+        "circular-or-overlapping"
+      ],
+      "missing_metadata_is_not_inferred": true,
+      "no_ranking_or_scoring": true
+    },
+    "outcome_blinding": {
+      "selection_inputs": "Only source identity, schema, methodology, population, provenance, lineage, license, access, version, format, and size metadata may affect inclusion or classification.",
+      "forbidden_inputs": "Observed incident counts, event rates, loss values, quantiles, distributions, correlations, model fit, agreement with current priors, or any candidate's apparent validation result may not affect discovery or classification.",
+      "incidental_value_quarantine": "If an otherwise permitted metadata page visibly co-mingles headline outcome values, do not transcribe, persist, compare, summarize, or use those values; stop reading that section after the metadata fields are resolved and record only that outcome-bearing content was quarantined.",
+      "raw_records_read": 0
+    },
+    "deterministic_order": [
+      "official organization surveys and official microdata catalogs",
+      "official cross-national statistical catalogs",
+      "public versioned research datasets",
+      "official regulatory and administrative collections",
+      "aggregate context sources"
+    ],
+    "candidate_ceiling": 18,
+    "per_source_document_ceiling": 4,
+    "result": "One aggregate-safe metadata inventory disclosing source identities and classification evidence but no observed outcomes or adequacy judgment."
+  },
+  "allowed_reads": [
+    "Official dataset landing, catalog, release, methodology, schema, data-dictionary, provenance, license, privacy, and access-requirement pages on the enumerated hosts.",
+    "Public repository README, release, license, and file-name or schema metadata on github.com without opening raw data files, source code, notebooks, or dataset rows.",
+    "Metadata-only search results restricted to the enumerated hosts; an unlisted result may not be opened or used as evidence."
+  ],
+  "forbidden_actions": [
+    "Raw, row-level, sample, preview, extract, archive, table, CSV, JSON, database, spreadsheet, or microdata download or rendering",
+    "Outcome, incident-count, loss-value, rate, quantile, distribution, correlation, or performance inspection or persistence",
+    "Credentials, account creation, license or terms acceptance, data-use application, maintainer contact, purchase, or restricted-data request",
+    "Dataset code, notebook, query, API client, repository code, scanner, simulation, fitting, scoring, or model execution",
+    "Candidate ranking, source acquisition selection, adequacy threshold, cohort, holdout, deduplication-key, or evaluation-protocol selection",
+    "Production-store reads or mutations, schema migrations, assessments, labels, model training, or rescoring",
+    "Prior, methodology, policy, optimization lifecycle, branch, remote, or deployment changes"
+  ],
+  "resource_ceilings": {
+    "maximum_elapsed_minutes": 30,
+    "maximum_new_data_bytes": 10485760,
+    "maximum_candidate_identities": 18,
+    "maximum_metadata_documents": 72,
+    "network_hosts": [
+      "gov.uk",
+      "ukdataservice.ac.uk",
+      "statcan.gc.ca",
+      "www23.statcan.gc.ca",
+      "ec.europa.eu",
+      "data.europa.eu",
+      "oecd.org",
+      "census.gov",
+      "data.census.gov",
+      "veriscommunity.net",
+      "github.com",
+      "sec.gov",
+      "data.sec.gov",
+      "hhs.gov",
+      "ocrportal.hhs.gov",
+      "ic3.gov",
+      "zenodo.org",
+      "dataverse.harvard.edu"
+    ],
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "dataset_downloads": 0,
+    "raw_records_read": 0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "simulation_runs": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0
+  },
+  "stop_conditions": [
+    "The bound acquisition design, eligibility result, coherence result, priors, or production-store digest drifts.",
+    "A required page redirects to or requires any unlisted network host.",
+    "Qualification requires opening raw records, outcome distributions, sample previews, executable notebooks, or restricted content.",
+    "Source lineage cannot be classified without reading outcomes; record unresolved and stop on that source.",
+    "The candidate, document, time, or byte ceiling would be exceeded.",
+    "Any source selection, acquisition, adequacy judgment, evaluation, store, model, policy, lifecycle, branch, remote, or deployment action is attempted."
+  ],
+  "result_boundary": "The result may say which disclosed source identities appear structurally eligible by published metadata and which required dimensions remain missing. It may not select a source for acquisition, clear the OPT-014 data gate, judge sample adequacy, inspect or report outcomes, validate or change a prior, or change OPT-014 status.",
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the OPT-014 outcome-blind metadata-only source discovery described by opt-014-metadata-source-discovery-receipt-2026-08-18.json, limited to public metadata for official organization cybersecurity surveys, statistical and microdata catalogs, versioned research datasets, and regulatory or administrative incident collections; classification of at most 18 disclosed source identities as full organization-period candidates, magnitude-only candidates, aggregate context only, or ineligible using only frozen schema, denominator, zero-incident, population, provenance, lineage, license, access, version, format, and size metadata; quarantine of any incidentally visible outcome values; and one metadata-only result for my review, with ceilings of 30 minutes, 10 MiB new data, 72 metadata documents, only gov.uk, ukdataservice.ac.uk, statcan.gc.ca, www23.statcan.gc.ca, ec.europa.eu, data.europa.eu, oecd.org, census.gov, data.census.gov, veriscommunity.net, github.com, sec.gov, data.sec.gov, hhs.gov, ocrportal.hhs.gov, ic3.gov, zenodo.org, and dataverse.harvard.edu network access, and exactly zero uploads, provider calls, tokens, cost, dataset downloads, raw record reads, production-store reads or mutations, assessments, labels, simulation runs, model training, or rescoring. Outcome, incident-count, loss-value, rate, quantile, distribution, correlation, performance, or prior-agreement inspection; credentials, account creation, terms acceptance, data-use applications, maintainer contact, purchase, restricted-data requests, code or notebook execution, candidate ranking, source acquisition selection, adequacy thresholds, cohort or holdout selection, evaluation, fitting, prior or methodology changes, production-policy changes, OPT-014 promotion or closure, OPT-010 execution, branch integration, remote push, and deployment remain excluded."
+  }
+}

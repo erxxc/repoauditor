@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-010",
+  "status": "complete-g03a-and-g06-documented-pass",
+  "recorded_at": "2026-08-18",
+  "authorization": "The project owner authorized one offline G03/G06 containment foundation with zero provider, agentic, cohort, outcome, production-store, lifecycle, branch, or deployment activity.",
+  "execution_evidence": {
+    "corrected_retry_receipt": {
+      "path": "docs/optimizations/opt-010-offline-containment-foundation-corrected-retry-receipt-2026-08-18.json",
+      "sha256": "bef5ff5f1deccda671834b0541dcb1d7f9bae1160fe5164739e39584c3b4402f"
+    },
+    "receipt": {
+      "path": "docs/optimizations/opt-010-offline-containment-foundation-receipt-2026-08-18.json",
+      "sha256": "1eaeade6c9a8dc3fea75d247cbee67e0ddcdd9adb7861394e445d5f380063fcd"
+    },
+    "comparison_protocol": {
+      "path": "docs/optimizations/opt-010-baseline-comparison-protocol-2026-08-18.json",
+      "sha256": "ac7872088d89950e27ffc2e733bc1282a9697d34d2a9add378fb35023c487133"
+    },
+    "read_only_facade": {
+      "path": "src/repoauditor/falsify/read_only_tools.py",
+      "sha256": "20206df2a55e00ca2eb8cacd0544f3062da70b48ea54ac0ae43e222a654222c9"
+    },
+    "aggregate_artifact": {
+      "path": "docs/optimizations/opt-010-offline-containment-foundation-artifact-2026-08-18.json",
+      "sha256": "38a3502552339805a8b0855321e1356a902594232ace506ddf8988544942a502"
+    },
+    "tests": {
+      "isolated_security": {
+        "passed": 19,
+        "failed": 0
+      },
+      "focused_non_live_compatibility": {
+        "passed": 134,
+        "failed": 0
+      },
+      "final_artifact_and_boundary_validation": {
+        "passed": 27,
+        "failed": 0,
+        "status": "passed"
+      },
+      "corrected_retry_complete_focused_suite": {
+        "passed": 147,
+        "failed": 0,
+        "duration_seconds": 4.8
+      }
+    }
+  },
+  "store": {
+    "access": "before-and-after-hash-only",
+    "before_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "after_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "byte_identical": true,
+    "reads": 0,
+    "mutations": 0
+  },
+  "completed_scope": {
+    "G03a": "documented-pass-frozen-paired-comparison-protocol",
+    "G03b": "pending-separate-authorization",
+    "G06": "documented-pass-disabled-isolated-containment-foundation",
+    "facade_enabled": false,
+    "facade_integrated": false,
+    "provider_or_experiment_authority_granted": false
+  },
+  "decision": {
+    "opt_010_status": "open-deferred",
+    "agentic_experiment_permitted": false,
+    "G03b_authorized": false,
+    "production_activation_permitted": false,
+    "foundation_finalized": true,
+    "remaining_gates": {
+      "G02": "partial-protected-cohort-insufficient",
+      "G03b": "pending-separate-authorization",
+      "G04": "partial-recall-safety-needs-offline-invariant-and-later-empirical-evidence",
+      "G05": "partial-protected-subgroups-insufficient",
+      "G07": "partial-verifier-coverage-not-yet-bound-to-a-frozen-cohort"
+    },
+    "smallest_next_prerequisite": "Separately authorize an outcome-blind offline protected-cohort and subgroup eligibility design that freezes source independence, subject identity rules, family, mechanism, language, detector metadata, terminal-observation completeness, and prospective sufficiency calculations without acquiring repositories, selecting outcomes, or running an agent.",
+    "why_next": "G02 and G05 define the protected population; that frozen mechanism and language inventory is required before G07 verifier coverage can be judged adequate and before G04 empirical recall safety or G03b can be specified."
+  },
+  "preserved_boundaries": {
+    "current_challenger_changed": false,
+    "retrieval_or_slicing_changed": false,
+    "claims_or_verifier_changed": false,
+    "CLI_or_pipeline_changed": false,
+    "provider_or_model_changed": false,
+    "cohort_or_candidate_selected": false,
+    "outcomes_or_scores_read": false,
+    "threshold_or_policy_selected": false,
+    "OPT_010_lifecycle_changed": false,
+    "OPT_014_or_SEC_EDGAR_activated": false,
+    "branch_integrated_or_pushed": false,
+    "deployed": false
+  },
+  "accounting": {
+    "new_implementation_files": 1,
+    "new_test_files": 2,
+    "new_protocols": 1,
+    "aggregate_artifacts": 1,
+    "result_documents": 1,
+    "network_reads": 0,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "schema_migrations": 0,
+    "repository_materializations": 0,
+    "repository_code_executions": 0,
+    "scanner_processes": 0,
+    "agentic_falsification_runs": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0
+  }
+}

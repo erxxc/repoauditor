@@ -151,13 +151,15 @@ priorities here.
 - [x] Audit EPSS, KEV, exposure, control strength, loss scale, and baseline applicability
   for double counting. `organization_all_event_v1` now consumes the IRIS organization rate
   once, retains findings as non-allocating context, and fails closed on malformed aggregate
-  streams. Category attribution and remediation deltas remain unavailable under OPT-014.
+  streams. Category attribution and remediation deltas remain unavailable at OPT-014's
+  closed descriptive scope.
 - [x] Inventory current prior applicability through the read-only `quant-audit`.
-- [~] Continue the prior-scope roadmap: exact July 2022 feed metadata and the 2012–2021
-  data vintage are now recorded. Establish data coverage, run prior-predictive/held-out
-  checks, then consider versioned hierarchical
-  priors. Explicitly separate aleatory variability from epistemic uncertainty. Never
-  fabricate subgroup scaling.
+- [x] Close OPT-014 at its bounded descriptive scope. The exact July 2022 feed metadata and
+  2012–2021 data vintage are recorded, and a frozen 200,000-draw report reproduces the
+  configured neutral-baseline implications. No independent organization-period data passed
+  the commercial-rights and structural gates, so held-out validation, hierarchical priors,
+  remediation effects, and portfolio optimization were not justified. SEC/EDGAR remains an
+  inactive material-disclosure-context reserve; future work requires a new lifecycle scope.
 
 ## P5 — gated later capabilities
 
@@ -165,9 +167,11 @@ priorities here.
   The 2026-08-01 Anthropic snapshot prices exact `claude-opus-4-8` usage while unknown
   usage, models, providers, and pricing modifiers remain unavailable. Authoritative token
   observations stay separate from calculated cost.
-- [ ] Keep agentic falsification opt-in and deferred until every escalation gate is met:
-  protected evaluation, baseline comparison, recall safety, cohort breakdowns, read-only
-  tools, and independent deterministic certificate verification.
+- [x] Close OPT-010 at bounded negative-feasibility scope. The disabled read-only facade
+  remains qualified and disconnected, but the outcome-blind source path did not yield the
+  frozen four-family 40-identity packet and therefore never reached paired comparison or
+  empirical recall evaluation. This is not a universal impossibility or production-readiness
+  claim; any future agentic evaluation is newly scoped work.
 - [x] Retire the unused placeholder `report/templates/memo_v1.md`; memo generation remains
   on its single programmatic, benchmarked path.
 
@@ -511,12 +515,11 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
 
 ### C — methodology blocked
 
-1. Resolve the confirmed organization-frequency error before changing quantitative output:
-   the IRIS organization-level annual rate is currently repeated per finding. Choose no
-   allocation/decomposition until a defensible source or explicit model specification exists.
-   OPT-011 now implements that specification: one organization-year all-event unit uses the
-   IRIS rate once, while findings remain non-allocating evidence. Category attribution and
-   remediation deltas remain unavailable pending OPT-014's data gate.
+1. [x] Resolve the confirmed organization-frequency error without fabricating allocation.
+   OPT-011 implements one organization-year all-event unit using the IRIS rate once while
+   findings remain non-allocating evidence. OPT-014's subsequent descriptive coherence and
+   bounded source-feasibility work is closed without category attribution, remediation
+   deltas, held-out validation, or portfolio claims; any expansion is newly governed work.
 
 ### D — paid/network deferred
 
@@ -563,17 +566,19 @@ backlog below is exhausted. Existing limits remain unchanged during that pause.
 3. Add dated/cached EPSS and KEV enrichment only with fixed stale/offline behavior and
    real-CVE-only matching.
 4. [x] Add provider dollar cost only from a dated, versioned provider/model price source.
-5. Consider agentic falsification only after every gate in
-   [agentic-escalation-gate.md](agentic-escalation-gate.md) is satisfied.
+5. [x] Close the evaluated agentic-falsification path without activation. The retained
+   containment foundation and negative feasibility evidence remain available, while future
+   agentic work requires a new lifecycle identity and authorization.
 
 ## Pre-tuning checkpoint
 
 The current evidence-backed decision is reconciled in
 [pre-tuning-readiness.md](pre-tuning-readiness.md). Tuning remains on hold: 104 usable human
 labels exist, but only 36 have compatible stored scores across 7 engagements, below the
-40-label/8-family activation gate. Applicable organization/incident data also remains absent
-for OPT-014. Same-store calibration, OPT-011, and OPT-004 are complete. This hold is a
-deliberate evidence decision, not an incomplete tuning run.
+40-label/8-family activation gate. Applicable organization/incident data remained absent,
+so OPT-014 is closed at its bounded descriptive scope rather than treating modeled outputs
+as validation evidence. Same-store calibration, OPT-011, and OPT-004 are complete. This hold
+is a deliberate evidence decision, not an incomplete tuning run.
 
 ## Large-repository detection safety
 

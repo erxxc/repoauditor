@@ -1,0 +1,119 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-010",
+  "status": "complete-offline-paired-evaluation-foundation",
+  "recorded_at": "2026-08-20",
+  "authorization": "The project owner authorized one offline evaluation-only paired foundation with scripted synthetic fixtures, fixed packet and decision rules, bounded read-only tools, and zero prospective, provider, credential, store, or lifecycle activity.",
+  "execution_evidence": {
+    "receipt": {
+      "path": "docs/optimizations/opt-010-offline-paired-evaluation-foundation-receipt-2026-08-20.json",
+      "sha256": "d54d16ccbcae2511d6e45a46d11ff0d46c605be4252d0dfd90efdc64fde25f11"
+    },
+    "receipt_test": {
+      "path": "tests/test_opt_010_offline_paired_evaluation_foundation_receipt.py",
+      "sha256": "2dfd0edc42050d45055f0a4c762d407ba1588ca682da8c4c1a685af1aed2775f"
+    },
+    "protocol": {
+      "path": "docs/optimizations/opt-010-paired-evaluation-protocol-2026-08-20.json",
+      "sha256": "a19f0790bdf5bc9042fcd50e1fe029871e089aa48a32eb2e88cf56b24e91e874"
+    },
+    "agent_prompt": {
+      "path": "src/repoauditor/eval/prompts/opt010_agent_qualification_v1.md",
+      "sha256": "a736559e3a3c27e6c2e194db181bc223867e16d98b8304c3f6c3f4c109f0a8bb"
+    },
+    "helper": {
+      "path": "src/repoauditor/eval/opt010_paired_foundation.py",
+      "sha256": "cffbf7f107ae70dc4fefa5520fc08f82f0a634cdeb2988f19bb1419ac88d5790"
+    },
+    "focused_test": {
+      "path": "tests/test_opt_010_paired_evaluation_foundation.py",
+      "sha256": "e11160eabd6242ca7d36febacca7bfc667435db8a5317da48dd1a3db34de8ade"
+    },
+    "artifact": {
+      "path": "docs/optimizations/opt-010-offline-paired-evaluation-foundation-artifact-2026-08-20.json",
+      "sha256": "0867b665edd271a3bc5797028998bca4cc34cae4a11de7e64db908b2853d258c"
+    },
+    "initial_synthetic_suite": {
+      "passed": 17,
+      "failed": 0,
+      "expected_pre_result_skipped": 1,
+      "duration_seconds": 0.18
+    },
+    "final_focused_suite": {
+      "passed": 18,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "qualification": {
+    "paired_runner": "documented-pass-evaluation-only",
+    "read_only_tool_boundary": "documented-pass-existing-facade-only",
+    "terminal_completeness": "documented-pass-synthetic",
+    "G04_offline_invariants": "documented-pass-synthetic",
+    "G07_supported_envelope": "documented-pass-python-typescript-java-ruby-seven-cells",
+    "aggregate_language_coverage": "partial-go-rust-retained-verifier-unsupported",
+    "future_packet": "frozen-exactly-40-stable-issue-group-identities",
+    "future_outcome_rule": "both classes required with no post-outcome repair",
+    "future_decision_rules": "frozen-pareto-and-strict-recall-safety"
+  },
+  "store": {
+    "access": "before-and-after-hash-only",
+    "before_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "after_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "byte_identical": true,
+    "reads": 0,
+    "mutations": 0
+  },
+  "accounting": {
+    "new_data_bytes": 33012,
+    "network_reads": 0,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "keychain_or_credential_reads": 0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "schema_migrations": 0,
+    "repository_materializations": 0,
+    "repository_code_executions": 0,
+    "scanner_processes": 0,
+    "prospective_snapshots_or_scanner_artifacts_opened": 0,
+    "findings_or_candidates_created_or_read": 0,
+    "outcomes_read": 0,
+    "assessments": 0,
+    "labels": 0,
+    "agentic_provider_runs": 0,
+    "baseline_provider_runs": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0,
+    "human_reviews": 0,
+    "workspace_branch_or_index_mutations": 0,
+    "commits": 0,
+    "merges": 0,
+    "pushes": 0,
+    "lifecycle_changes": 0
+  },
+  "gate_assessment": {
+    "G01": "documented-pass-retained",
+    "G02": "documented-pass-exact-six-subject-identity-envelope",
+    "G03a": "documented-pass-frozen-protocol",
+    "G03b": "pending-prospective-packet-run-review-outcomes",
+    "G04_offline_invariants": "documented-pass",
+    "G04_empirical": "pending-blinded-human-outcomes",
+    "G05": "documented-pass-fixed-language-mechanism-metadata",
+    "G06": "documented-pass-eval-isolated-read-only-tools",
+    "G07": "documented-pass-bounded-supported-envelope-aggregate-coverage-partial",
+    "OPT_010_status": "open-deferred",
+    "production_activation_permitted": false
+  },
+  "decision": {
+    "current_authority_exhausted": true,
+    "smallest_next_prerequisite": "Separately authorize outcome-blind extraction and deterministic selection of exactly 40 supported stable issue-group identities from the retained wave-one scanner artifacts, followed only if the packet freezes successfully by blinded paired baseline and agent execution under the frozen protocol. Human outcomes and empirical evaluation remain later gates.",
+    "why_remaining_sources_are_not_next": "The other six primaries repeat the same six-language mix, add two verifier-unsupported subjects, and are not required by any frozen adequacy threshold.",
+    "G03b_completed": false,
+    "G04_empirical_completed": false,
+    "OPT_010_closed": false
+  },
+  "result_boundary": "Offline paired-evaluation readiness only. No prospective finding, candidate, packet, provider experiment, outcome, empirical metric, production activation, or lifecycle claim was made."
+}

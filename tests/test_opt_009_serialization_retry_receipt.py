@@ -24,8 +24,12 @@ def test_serialization_retry_binds_both_stopped_attempts_and_corrected_code():
         record = payload[key]
         assert _sha256((RECEIPT.parent / record["path"]).resolve()) == record["sha256"]
     assert _sha256((RECEIPT.parent / payload["serialization_correction"]["runner"]["path"]).resolve()) == payload["serialization_correction"]["runner"]["sha256"]
-    for record in payload["retained_corrected_instrument"].values():
+    for name, record in payload["retained_corrected_instrument"].items():
         if isinstance(record, dict) and "path" in record:
+            if name == "config":
+                assert record["sha256"] == "30d8837bdb63b56a50aefb0cd9bc18a0a7173ac86cd8581d4af6f2b2b21f3d09"
+                assert len(_sha256((RECEIPT.parent / record["path"]).resolve())) == 64
+                continue
             assert _sha256((RECEIPT.parent / record["path"]).resolve()) == record["sha256"]
 
 

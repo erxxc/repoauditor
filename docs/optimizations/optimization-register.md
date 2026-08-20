@@ -1,22 +1,19 @@
 # Optimization Register
 
-Status: authoritative post-MVP work list as of 2026-08-18. POC acceptance is complete.
+Status: authoritative post-MVP work list as of 2026-08-20. POC acceptance is complete.
 
 Current execution priorities
 
 OPT-035 publishes the canonical machine-readable lifecycle ledger at
-[`optimization-status.json`](optimization-status.json). It records 33 closed and 2 open
-items. Every open item remains subject to its activation gate; priority does not waive it.
+[`optimization-status.json`](optimization-status.json). It records 35 closed and zero open
+items. There is no remaining execution priority.
 The dated [`outstanding-work checkpoint`](outstanding-work-checkpoint-2026-08-07.json)
 is immutable historical evidence of the 2026-08-07 state; it is not a live derived view.
 The accepted POC Definition of Done remains complete.
 
-| Priority | Open item | Gate |
-|---:|---|---|
-| 1 | OPT-014 — predictive checks and portfolio modeling | data |
-| 2 | OPT-010 — agentic falsification | safety and evaluation |
+There are no open optimization items.
 
-OPT-001 through OPT-009, OPT-011 through OPT-013, and OPT-015 through OPT-035 are closed at their approved scope. Optional
+OPT-001 through OPT-035 are closed at their approved scope. Optional
 expansion of a closed bounded scope must be proposed as new work rather than silently
 reopening its lifecycle state.
 
@@ -579,9 +576,22 @@ III. Detection and falsification depth
       [`closure result`](opt-009-closure-result-2026-08-18.json) binds the retained negative
       evidence — DoD impact: none.
 
-   D. OPT-010 — Agentic falsification — deferred — owner: AppSec architecture — source:
-      `../agentic-escalation-gate.md` — activate only after every documented safety and
-      evaluation prerequisite passes — DoD impact: none.
+   D. OPT-010 — Agentic falsification — closed at bounded negative-feasibility scope —
+      owner: AppSec architecture — source: `../agentic-escalation-gate.md`. The isolated,
+      disabled read-only containment facade qualified, and the paired protocol and
+      fail-closed invariants were frozen. The outcome-blind prospective path nevertheless
+      did not produce the predeclared four-family 40-identity packet: the initial screen
+      supplied 30 groups from two families; supported-primary augmentation reached capped
+      capacity 39 with two contributing families; retained Java scans added zero groups;
+      and the final Java/Ruby augmentation stopped under its strict scanner-health contract
+      after both Java subjects and before a complete Ruby screen. No paired G03b comparison,
+      empirical G04 recall evaluation, threshold, or production activation was reached.
+      OPT-010 is therefore not justified and not feasible at its evaluated scanner, data,
+      verifier, and paired-evaluation scope. This is neither a universal impossibility claim
+      nor evidence of production readiness. The qualified facade remains disabled and
+      disconnected; future agentic evaluation requires a new lifecycle identity and scope.
+      The [`closure result`](opt-010-bounded-negative-feasibility-closure-result-2026-08-20.json)
+      binds the retained evidence — DoD impact: none.
 
 IV. Quantitative enrichment
 
@@ -600,7 +610,8 @@ IV. Quantitative enrichment
       records `organization_all_event_v1`: one marked modeling unit, one IRIS frequency
       stream, neutral organization defaults or explicit `*` overrides, immutable historical
       semantics, and aligned simulation/audit/report surfaces. OPT-011 is closed; category
-      attribution and remediation deltas remain unavailable and OPT-014 remains data-gated.
+      attribution and remediation deltas remain unavailable at OPT-014's closed descriptive
+      scope and require newly governed work if revisited.
 
    B. OPT-012 — Dated cached EPSS/KEV enrichment — implemented — owner: threat-data
       engineering — source: `../prior-scope-roadmap.md`. The frozen
@@ -623,9 +634,19 @@ IV. Quantitative enrichment
       no distribution input or quantitative result changed. Implemented — DoD impact: none.
 
    D. OPT-014 — Prior-predictive checks, held-out validation, hierarchical priors,
-      backtesting, and portfolio optimization — deferred/data-gated — owner:
-      quantitative-methodology — source: `../prior-scope-roadmap.md` — activate only with
-      applicable organization/incident data — DoD impact: none.
+      backtesting, and portfolio optimization — closed at bounded descriptive scope — owner:
+      quantitative-methodology — source: `../prior-scope-roadmap.md`. The offline audit
+      found no eligible observed organization-period outcomes. The frozen 200,000-draw
+      prior-predictive report reproduced the configured neutral-baseline implications but
+      established no validation, calibration, representativeness, or decision-grade claim.
+      Bounded public and controlled-access discovery found no source satisfying the exact
+      commercial-rights, denominator, explicit-zero, incident-count, stable-key, version,
+      and lineage contract; this is not a universal data-impossibility claim. SEC/EDGAR is
+      retained only as an inactive material-disclosure-context reserve, and non-filing
+      periods are not zero-incident observations. The
+      [`closure result`](opt-014-descriptive-scope-closure-result-2026-08-18.json) binds the
+      evidence and requires any future outcome, disclosure, hierarchical, remediation, or
+      portfolio study to use a new lifecycle identity — DoD impact: none.
 
 V. Intake
 

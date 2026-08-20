@@ -1,0 +1,134 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-010",
+  "status": "authorization-pending",
+  "objective": "Correct only the false-negative Java scratch-rule provenance assertion, then rerun the unchanged Java/Ruby augmentation acquisition and aggregate capacity screen from fresh runtime and scanner state.",
+  "retained_authority": {
+    "original_receipt": {
+      "path": "docs/optimizations/opt-010-java-ruby-source-augmentation-acquisition-screen-receipt-2026-08-20.json",
+      "sha256": "f85b754e7d26dd52547b213b34008f7992711ed5cea153c17da44f7e3910cfcb"
+    },
+    "corrected_retry_receipt": {
+      "path": "docs/optimizations/opt-010-java-ruby-source-augmentation-acquisition-screen-corrected-retry-receipt-2026-08-20.json",
+      "sha256": "6f2fedaee0ad698ec550aecdc0ad2a80f0595b1a5dc036839565c9ca9831829f"
+    },
+    "first_stopped_result": {
+      "path": "docs/optimizations/opt-010-java-ruby-source-augmentation-acquisition-screen-result-2026-08-20.json",
+      "sha256": "2d72c1e4ae8d12250309221aec25959371bcacb6dd6991aa54b016e4304c5607"
+    },
+    "corrected_retry_stopped_result": {
+      "path": "docs/optimizations/opt-010-java-ruby-source-augmentation-acquisition-screen-corrected-retry-result-2026-08-20.json",
+      "sha256": "3b64fde50e0794c9db26c3e770fe6688884f7e67b61ebbb6b71b595fad1c9406"
+    },
+    "pre_correction_helper": {
+      "path": "src/repoauditor/eval/opt010_java_ruby_source_augmentation_acquisition.py",
+      "sha256": "00208ab4f17597e7cf9dbc3cd50f839d9b64f39774c06d69e19d900f753c004f"
+    },
+    "pre_correction_focused_test": {
+      "path": "tests/test_opt_010_java_ruby_source_augmentation_acquisition.py",
+      "sha256": "807a44cd348834193cb517be751f92486ab95946683958d1858619683ad58b36"
+    }
+  },
+  "retained_corrected_attempt_evidence": {
+    "canary_manifest": {
+      "path": "data/artifacts/opt010-java-ruby-source-augmentation-acquisition-screen-corrected-retry/canary-manifest.json",
+      "sha256": "614cdd28a81d3da64aa86d2d9172c5fc457a1c9e49b74608484346000649721a"
+    },
+    "runtime_import_check": {
+      "path": "data/artifacts/opt010-java-ruby-source-augmentation-acquisition-screen-corrected-retry/runtime-import-check.json",
+      "sha256": "463c35aa2f0810906eac408d3c10b7a5e75083e8e24232207f552f6979c4a839"
+    },
+    "java_positive_sarif": {
+      "path": "data/artifacts/opt010-java-ruby-source-augmentation-acquisition-screen-corrected-retry/canary-scans/01/semgrep.sarif",
+      "sha256": "3943075beb1f7145e26b319cd6f042acfa53f832f2bd93d7aeddbfd566f4f8b5"
+    },
+    "java_positive_target_report": {
+      "path": "data/artifacts/opt010-java-ruby-source-augmentation-acquisition-screen-corrected-retry/canary-scans/01/semgrep-targets.json",
+      "sha256": "fa905975b88b94d8ae64f6899d67813d8e1aa4bd35ab83564eabd8b86d111de4"
+    },
+    "copied_scratch_rule": {
+      "path": "data/artifacts/opt010-java-ruby-source-augmentation-acquisition-screen-corrected-retry/candidate-rule.json",
+      "sha256": "03aa9e47ca6e38efa7970a24a8f682ebc2f98029285b11014e50b6cb46636210"
+    },
+    "copied_mechanism_mapping": {
+      "path": "data/artifacts/opt010-java-ruby-source-augmentation-acquisition-screen-corrected-retry/mechanism-mapping.json",
+      "sha256": "5a954ed23a788d34dce0b36bda1b98ad3f8fe322915552f7d237fe57627218b0"
+    }
+  },
+  "accepted_stopped_state": {
+    "status": "stopped-before-aggregate-capacity-screen",
+    "stop_reason": "RuntimeError: Java scan or provenance failed",
+    "runtime_import_checks": 1,
+    "logical_scanner_processes": 1,
+    "repositories_materialized": 0,
+    "retrieval_index_builds": 0,
+    "network_hosts_used": [],
+    "provider_calls": 0,
+    "production_store_mutations": 0,
+    "workspace_branch_or_index_mutations": 0,
+    "new_data_bytes": 38929
+  },
+  "diagnosis": {
+    "scanner_execution": "The retained Java positive canary completed under Semgrep 1.170.0 with valid target evidence, no errors, one scanned file, and one SARIF result whose exact canonical rule metadata contains CWE-918.",
+    "false_negative": "The helper reused the adapter's YAML '- id:' textual rule counter for the frozen JSON scratch configuration. That counter correctly reported zero textual YAML ids but was incorrectly required to equal one, causing the post-scan provenance check to fail.",
+    "authorized_correction": "Change only Java scratch-rule validation to parse the copied JSON configuration structurally, require exactly one exact rule with CWE-918 metadata, and require the SARIF driver and every result to resolve to that exact canonical rule and mechanism. Retain all existing version, digest, target, error, location, and complete-or-empty checks. Ruby pinned-default validation is unchanged.",
+    "not_a_rule_change": true,
+    "not_a_scanner_change": true,
+    "not_a_source_change": true
+  },
+  "final_retry_contract": {
+    "artifact_directory": "data/artifacts/opt010-java-ruby-source-augmentation-acquisition-screen-final-retry",
+    "result": "docs/optimizations/opt-010-java-ruby-source-augmentation-acquisition-screen-final-retry-result-2026-08-20.json",
+    "implementation": "Permit only the diagnosed validation correction in the existing helper and the minimum corresponding focused-test assertion. All pre-correction hashes remain immutable historical evidence rather than current-file expectations.",
+    "fresh_execution": "Verify every original, corrected, final, retained-result, retained-evidence, source, store, workspace, and instrument binding; create a fresh isolated directory; copy the exact same controls, mapping, and scratch rule; perform a fresh import check and all four canaries; and do not reuse the prior canary output as a pass.",
+    "continuation": "Only after all four fresh canaries pass, execute the original exact four-source acquisition, snapshot, detector-input, RetrievalIndex, cell-specific source scans, aggregate deduplication, capacity screen, result, and stop boundaries unchanged."
+  },
+  "cumulative_resource_ceilings": {
+    "repositories": 4,
+    "runtime_import_checks": 2,
+    "logical_scanner_processes": 9,
+    "retrieval_index_builds": 4,
+    "maximum_elapsed_minutes_per_repository": 180,
+    "maximum_total_elapsed_minutes": 780,
+    "maximum_new_data_bytes": 16106127360,
+    "allowed_network_hosts": [
+      "github.com"
+    ],
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "keychain_or_credential_reads": 0,
+    "repository_code_executions": 0,
+    "dependency_resolutions_or_installations": 0,
+    "other_scanner_processes": 0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "schema_migrations": 0,
+    "human_finding_reviews": 0,
+    "outcomes_read": 0,
+    "assessments": 0,
+    "labels": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0,
+    "agentic_or_baseline_runs": 0,
+    "workspace_branch_or_index_mutations": 0,
+    "commits": 0,
+    "merges": 0,
+    "pushes": 0,
+    "lifecycle_changes": 0
+  },
+  "stop_conditions": [
+    "Any original, corrected, final, retained-result, retained-evidence, source, store, workspace, runtime, instrument, copied fixture, mapping, scratch-rule, or initially absent final output binding drifts.",
+    "The helper or test differs beyond the exact diagnosed validation correction; the fresh Java JSON structure, SARIF canonical rule, CWE-918 mechanism, location, version, digest, target, or error check fails; or any fresh canary fails.",
+    "Any retry beyond this single final retry, fallback, rule or scanner change, source substitution, semgrep.dev contact, registry resolution, installation, downgrade, activity excluded by the original or corrected receipts, or cumulative ceiling is reached."
+  ],
+  "excluded": [
+    "editing or deleting either prior receipt, either stopped result, retained artifact, raw scanner evidence, fixture, mapping, scratch or production rule, scanner, source selection, production store, or any unlisted helper or test",
+    "any other source, input, rule, scanner, mechanism, retry, provider, credential, network host, candidate, packet, outcome, review, assessment, label, policy, threshold, integration, or deployment activity excluded by the original and corrected receipts"
+  ],
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the final corrected OPT-010 Java/Ruby source-augmentation acquisition and capacity-screen retry described by opt-010-java-ruby-source-augmentation-acquisition-screen-final-retry-receipt-2026-08-20.json, retaining every boundary from the original and corrected receipts; accepting the retained corrected attempt with one successful Semgrep 1.170.0 Java positive canary process, one runtime import, 38,929 new bytes, zero repository acquisitions, retrieval indexes, network, provider, credential, store, outcome, review, or git activity, and immutable raw evidence showing one exact CWE-918 result; permitting only correction of the existing helper and minimum focused test so the copied JSON scratch rule is structurally validated as exactly one canonical CWE-918 rule and its SARIF driver and results are validated against that rule without requiring the adapter's YAML-text rule counter to equal one; then, only after every original, corrected, final, retained-evidence, source, store, workspace, runtime, and instrument binding passes, creating a fresh final-retry directory, copying the same frozen controls, mapping, and scratch rule byte-for-byte, performing one fresh import check and all four fresh separated canaries, and only if they pass, exact-commit shallow materialization without repository-code execution of only Suwayomi/Suwayomi-Server at 4b2c19abbc637dfd2c26b9b5eafd326ba92f91ee, codelibs/fess at 41f138b5b91af26413ae6cab05bb6acffa6611df, Multiwoven/multiwoven at 0a68d209009f9009664e96ef1e5d1f23843781b2, and docusealco/docuseal at 004a22c1c88109c7ba0b567df011a8cb13894001; deterministic snapshots, detector-input and RetrievalIndex digests; exactly one qualified scratch Java SSRF scan per Java subject and one unchanged pinned-default Semgrep scan per Ruby subject; aggregate stable issue-group deduplication and recomputation of the frozen four-family maximum-20-per-family 40-identity capacity prerequisite; one final aggregate artifact and result; with cumulative ceilings of four repositories, two runtime import checks, nine logical scanner processes, four retrieval indexes, 180 minutes per repository, 780 minutes total, 15 GiB new data, only github.com network access, and exactly zero uploads, provider calls, tokens, cost, Keychain or credential reads, repository-code executions, dependency resolutions or installations, other scanners, production-store reads or mutations, assessments, labels, training, rescoring, agentic or baseline runs, human finding reviews, outcomes, branch or index mutations, commits, merges, pushes, or lifecycle changes. Any other helper or test change, input, fixture, source, scanner, rule, retry, source substitution, production-rule edit or promotion, scratch-rule tuning, architecture recovery, candidate or issue-group identity persistence or disclosure, subject-level finding counts, source rendering, packet construction, paired execution, precision, recall, G03b or G04 decision, threshold selection, recalibration, production-policy change, OPT-010 promotion or closure, integration, remote push, and deployment remain excluded."
+  }
+}

@@ -1,0 +1,241 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-014",
+  "design_id": "opt014-independent-organization-incident-acquisition-v1",
+  "status": "design-frozen-source-selection-not-authorized",
+  "frozen_at": "2026-08-18",
+  "objective": "Define a governed, outcome-blind path for discovering and qualifying independent organization-period incident and loss data before any dataset is selected, downloaded, or inspected for outcome values.",
+  "evidence_basis": {
+    "offline_eligibility_audit": {
+      "path": "opt-014-offline-eligibility-audit-result-2026-08-18.json",
+      "sha256": "95c4166f7002ff09ad5e5278d6417e21581d3d0a19ceef8398b7c2e21f9b6454",
+      "eligible_observed_organization_period_records": 0,
+      "data_gate_cleared": false
+    },
+    "prior_predictive_coherence_report": {
+      "path": "opt-014-prior-predictive-coherence-result-2026-08-18.json",
+      "sha256": "fd5a690164420a89549ba005b228e75fc622ed4558ae0fe0ab97106d1ac47b7d",
+      "coherence_checks_passed": 7,
+      "data_gate_cleared": false
+    },
+    "frozen_priors": {
+      "path": "../../priors.yaml",
+      "sha256": "f6a49336a1e7aa72ed1e360e90649036364983b3792ddfd97a203d18d85287e9",
+      "frequency_source_vintage": "2012-01-01/2021-12-31",
+      "frequency_source_snapshot": "2022-07"
+    },
+    "production_store": {
+      "path": "../../data/repoauditor.db",
+      "sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+      "access_for_this_design": "none"
+    }
+  },
+  "claim_boundary": {
+    "structural_source_eligibility_is_not_sample_adequacy": true,
+    "metadata_qualification_is_not_outcome_validation": true,
+    "a_qualified_source_does_not_clear_the_data_gate": true,
+    "permitted_claim": "The design can identify sources whose published metadata makes them candidates for a later governed acquisition and evaluation protocol.",
+    "prohibited_claims": [
+      "The current IRIS priors are calibrated or representative.",
+      "Any candidate has adequate power, coverage, or cohort support before records are acquired under a separately frozen protocol.",
+      "Incident or loss data without an explicit organization-period denominator can validate annual event frequency.",
+      "A source used to derive the frozen priors can independently validate those same priors.",
+      "Repository findings, assessments, labels, scores, or simulated losses are observed organization-period outcomes."
+    ]
+  },
+  "target_observation_contract": {
+    "primary_unit": "organization-period",
+    "preferred_period": "organization-year",
+    "required_fields": [
+      "source_dataset_identity_and_version",
+      "stable_deidentified_organization_key",
+      "observation_window_start",
+      "observation_window_end",
+      "exposure_duration",
+      "explicit_inclusion_and_ascertainment_rule",
+      "incident_count_including_explicit_zero",
+      "collection_method",
+      "source_provenance",
+      "license_and_permitted_use"
+    ],
+    "required_frequency_properties": [
+      "The population denominator is explicit and reconstructable.",
+      "Zero-incident organization-periods are observed or derivable under the same ascertainment process as positive periods.",
+      "Incident definitions and reporting thresholds are stable or versioned over the observation window.",
+      "Duplicate organizations and duplicate incidents can be detected without retaining direct organization identity in project artifacts."
+    ],
+    "required_loss_fields_when_loss_is_claimed": [
+      "realized_loss_amount",
+      "currency",
+      "price_or_conversion_date",
+      "inflation_or_currency_normalization_convention",
+      "censoring_or_truncation_indicator",
+      "reporting_threshold_or_missingness_rule"
+    ],
+    "target_population_metadata": [
+      "organization_revenue_or_size_band",
+      "industry_or_sector",
+      "geography_and_regulatory_environment",
+      "observation_vintage",
+      "technology_or_architecture_scope_if_available",
+      "exposure_and_control_maturity_if_measured"
+    ],
+    "optional_remediation_fields": [
+      "intervention_identity_and_timestamp",
+      "intervention_assignment_mechanism",
+      "pre_intervention_window",
+      "post_intervention_window",
+      "contemporaneous_control_or_comparator",
+      "outcome_ascertainment_consistency"
+    ],
+    "optional_portfolio_fields": [
+      "portfolio_unit",
+      "membership_window",
+      "dependency_evidence",
+      "decision_objective",
+      "decision_constraints"
+    ]
+  },
+  "independence_and_leakage_contract": {
+    "prior_source_exclusion": "Records used to derive the IRIS 2012-2021 Advisen-based frequency or magnitude priors are not independent held-out outcomes. A candidate must document non-overlap or support deterministic overlap exclusion before evaluation.",
+    "required_checks_before_outcome_access": [
+      "Freeze the candidate dataset version and source digest or immutable release identity.",
+      "Document lineage, contributors, study period, and any known upstream aggregation sources.",
+      "Compare lineage and vintage metadata with the frozen prior sources without reading outcome values.",
+      "Freeze organization/time leakage controls and deduplication keys before evaluation records are materialized.",
+      "Freeze target population, cohort dimensions, holdout rule, and adequacy criteria before outcome distributions are inspected."
+    ],
+    "ineligible_as_independent_outcomes": [
+      "IRIS or Advisen observations used to construct the frozen priors",
+      "synthetic, simulated, imputed, or model-generated outcomes",
+      "repository findings, triage records, assessments, classifier labels, severity, EPSS, KEV, and deal-risk values",
+      "aggregates whose underlying population overlaps the prior source and cannot be deterministically separated",
+      "sources selected or filtered using agreement with current priors or model performance"
+    ]
+  },
+  "source_eligibility_tiers": [
+    {
+      "tier": "full-organization-period-candidate",
+      "qualifies_for": [
+        "later frequency validation",
+        "later magnitude validation when realized-loss fields are present",
+        "later held-out or chronological evaluation when independent units and time support it"
+      ],
+      "metadata_requirements": [
+        "explicit population denominator",
+        "explicit or derivable zero-incident organization-periods",
+        "organization-period windows and incident counts",
+        "documented incident definition and ascertainment",
+        "versioned provenance, license, population scope, and study vintage",
+        "documented independence or deterministic overlap-exclusion capability"
+      ]
+    },
+    {
+      "tier": "magnitude-only-candidate",
+      "qualifies_for": [
+        "later conditional-positive loss analysis only"
+      ],
+      "metadata_requirements": [
+        "incident-level realized loss with currency and censoring metadata",
+        "versioned provenance, license, population scope, and study vintage",
+        "documented independence or deterministic overlap-exclusion capability"
+      ],
+      "cannot_support": [
+        "annual incident frequency validation",
+        "zero-event mass validation",
+        "organization-period calibration"
+      ]
+    },
+    {
+      "tier": "aggregate-context-only",
+      "qualifies_for": [
+        "methodology context and source landscape documentation"
+      ],
+      "cannot_support": [
+        "held-out outcome validation",
+        "model fitting or recalibration",
+        "hierarchical cohort estimation",
+        "remediation-effect or portfolio estimation"
+      ]
+    },
+    {
+      "tier": "ineligible",
+      "examples": [
+        "synthetic or model-generated outcomes",
+        "unknown or circular lineage",
+        "no legally compatible access or use terms",
+        "unverifiable population or observation process",
+        "performance-selected or outcome-peeked source"
+      ]
+    }
+  ],
+  "future_metadata_only_discovery_contract": {
+    "authorization_required": true,
+    "source_identity_disclosure_required_for_review": true,
+    "allowed_metadata_reads": [
+      "official dataset landing page and release catalog",
+      "schema, data dictionary, methodology, provenance, and collection description",
+      "license, terms of use, privacy statement, and access prerequisites",
+      "stated population, study dates, release version, format, and advertised download size",
+      "authentication and data-use-agreement requirements without submitting an application"
+    ],
+    "forbidden_during_discovery": [
+      "raw or row-level dataset download",
+      "record, outcome, incident-count, loss-value, summary-distribution, or model-performance inspection",
+      "source selection based on agreement with the frozen priors",
+      "dataset code, notebook, query, API client, or repository-code execution",
+      "production-store access or mutation",
+      "dataset ranking, scoring, adequacy judgment, holdout selection, fitting, resampling, or simulation",
+      "contacting maintainers, accepting licenses, requesting credentials, or submitting data-use applications"
+    ],
+    "deterministic_funnel": [
+      "Enumerate candidate identities only within separately authorized hosts and source classes.",
+      "Verify official ownership, immutable or versioned release identity, provenance, and license metadata.",
+      "Classify the advertised schema against the observation contract without inspecting records or outcome distributions.",
+      "Classify independence from the frozen prior sources as documented, overlap-excludable, unresolved, or circular.",
+      "Assign exactly one source eligibility tier; do not rank candidates within a tier.",
+      "Persist a metadata-only candidate inventory and disclose identities for project-owner review.",
+      "Stop before download, credential request, terms acceptance, record access, or candidate selection for acquisition."
+    ],
+    "network_hosts": "not_selected; a later receipt must enumerate exact hosts before any network read",
+    "candidate_count_or_adequacy_threshold": "not_selected",
+    "outcome_blinding": "Candidate eligibility is based only on predeclared schema, provenance, independence, license, population, and access metadata. Outcome values and distributions remain unread."
+  },
+  "privacy_and_governance": {
+    "discovery_identity_rule": "Dataset identities may be disclosed for review; organization, person, incident, victim, and source-record identities may not be collected or persisted during discovery.",
+    "future_acquisition_preconditions": [
+      "documented lawful access and license compatibility",
+      "data minimization and purpose limitation",
+      "stable deidentification or pseudonymization before project persistence",
+      "retention, deletion, and access-control rules",
+      "field-level provenance and transformation chronology",
+      "prohibition on reidentification and uncontrolled onward disclosure",
+      "separate approval for restricted, sensitive, or data-use-agreement material"
+    ],
+    "production_store_rule": "No external outcome data enters the production store until a separately authorized schema, migration, import, and rollback protocol exists."
+  },
+  "post_discovery_decision_branches": {
+    "full_candidate_available": "Freeze one later exact-acquisition and evaluation receipt, including immutable source version, data ceilings, allowed hosts, privacy controls, target population, adequacy criteria, deduplication, leakage controls, and organization/time holdout rules before any outcome access.",
+    "magnitude_only_candidate_available": "Consider a separately authorized magnitude-only evaluation. Annual frequency, zero-event mass, hierarchical organization cohorts, remediation effects, and portfolio claims remain blocked.",
+    "only_aggregate_context_available": "Do not treat contextual aggregates as validation data; retain OPT-014 as data-gated or pursue bounded closure.",
+    "no_defensible_candidate_available": "Record a bounded negative-feasibility result and consider OPT-014 closure at the available-evidence scope without a universal impossibility claim."
+  },
+  "completion_boundary": "This design freezes eligibility, independence, governance, and metadata-only discovery rules. It does not authorize network access, candidate enumeration or disclosure, dataset selection, license acceptance, raw data acquisition, outcome access, adequacy thresholds, evaluation, fitting, model or prior changes, OPT-014 lifecycle changes, branch integration, remote push, or deployment.",
+  "accounting": {
+    "network_reads": 0,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "dataset_identities_selected": 0,
+    "dataset_records_read": 0,
+    "organization_or_incident_identities_read": 0,
+    "adequacy_thresholds_selected": 0,
+    "holdouts_or_cohorts_selected": 0,
+    "simulation_runs": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0
+  }
+}

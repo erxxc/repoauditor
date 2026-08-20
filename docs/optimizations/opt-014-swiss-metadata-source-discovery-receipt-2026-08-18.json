@@ -1,0 +1,114 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-014",
+  "status": "authorization-pending",
+  "frozen_at": "2026-08-18",
+  "design": {
+    "path": "opt-014-independent-data-acquisition-design-2026-08-18.json",
+    "sha256": "af29a9bd3e1f644fd6ee115daccf59c6da166b45c668941a8f22b4416e09be15"
+  },
+  "prior_discovery": {
+    "path": "opt-014-metadata-source-discovery-result-2026-08-18.json",
+    "sha256": "3da5b5ce5be01b9bf302c4875203e78c3667cec904fd240a3c60ddc0ec6c997d",
+    "data_gate_cleared": false,
+    "full_tier_candidates": 1,
+    "acquisition_ready_candidates": 0
+  },
+  "scope": "Conduct one supplemental outcome-blind metadata-only discovery limited to Swiss federal government statistical, open-data, and cyber-administration pages for organization-period cybersecurity incident, breach, and realized-loss sources; classify and disclose at most eight new Swiss source identities; persist one supplemental result; and stop before source selection or acquisition.",
+  "discovery_contract": {
+    "jurisdiction": "Switzerland",
+    "source_classes": [
+      "Swiss Federal Statistical Office enterprise ICT, cybersecurity, e-commerce, innovation, or business-survey metadata",
+      "Swiss federal open-data catalog records for enterprise or organization cybersecurity incidents and losses",
+      "Swiss National Cyber Security Centre administrative collection metadata only when the publisher states population, reporting, schema, coverage, and access rules",
+      "Swiss federal government methodology, questionnaire, variable, quality, license, and access documents linked from those source families"
+    ],
+    "languages": ["German", "French", "Italian", "English"],
+    "classification_tiers": [
+      "full-organization-period-candidate",
+      "magnitude-only-candidate",
+      "aggregate-context-only",
+      "ineligible"
+    ],
+    "required_metadata": [
+      "official source identity, publisher, canonical URL, release or catalog identity, and version or vintage",
+      "statistical unit, target population, denominator construction, observation period, zero-incident support, and incident-count support",
+      "realized-loss, currency, censoring, missingness, organization-size, sector, and geography fields when advertised",
+      "collection and ascertainment method, provenance, upstream lineage, license, access terms, format, and advertised size",
+      "documented relationship or possible overlap with IRIS, Advisen, VERIS, DBIR, and the already discovered Canadian and Eurostat source families"
+    ],
+    "outcome_blinding": {
+      "permitted_inputs": "Only identity, schema, questionnaire, methodology, population, provenance, lineage, license, access, version, format, and size metadata may affect classification.",
+      "forbidden_inputs": "Incident counts observed in the population, event rates, loss values, quantiles, distributions, correlations, apparent model fit, or agreement with the frozen priors may not be inspected or used.",
+      "incidental_value_quarantine": "If an otherwise permitted Swiss metadata page co-mingles outcome values, do not transcribe, persist, compare, summarize, or use them; stop reading that section after required metadata is resolved and record only that quarantine occurred.",
+      "translation_rule": "Use publisher-provided language variants or direct metadata wording only. No translation provider, uploaded text, or model call is authorized."
+    },
+    "deterministic_funnel": [
+      "Search Federal Statistical Office enterprise survey and variable metadata first.",
+      "Search the federal open-data catalog second.",
+      "Search National Cyber Security Centre and federal administrative metadata third.",
+      "Classify each new identity against the frozen observation and independence contract without ranking.",
+      "Persist one supplemental identity inventory and stop before any data, sample, preview, table, or record access."
+    ],
+    "candidate_ceiling": 8,
+    "per_source_document_ceiling": 4
+  },
+  "allowed_reads": [
+    "Official landing, catalog, release, methodology, questionnaire, schema, variable-list, provenance, quality, license, privacy, and access-requirement pages on the exact enumerated hosts.",
+    "Metadata-only search results restricted to the enumerated hosts; an unlisted result or redirect may not be opened or used as evidence.",
+    "Document headers and metadata sections only; linked data tables, downloads, previews, and outcome-bearing report sections remain excluded."
+  ],
+  "forbidden_actions": [
+    "Raw, row-level, sample, preview, extract, table, cube, API-data response, archive, CSV, JSON, database, spreadsheet, or microdata download or rendering",
+    "Outcome, incident-count, loss-value, rate, quantile, distribution, correlation, performance, or prior-agreement inspection or persistence",
+    "Credentials, account creation, cookie or terms acceptance beyond passive navigation, data-use application, maintainer contact, purchase, or restricted-data request",
+    "Code, notebook, query, API client, scanner, simulation, fitting, scoring, model, or translation-provider execution",
+    "Candidate ranking, acquisition selection, adequacy threshold, cohort, holdout, deduplication-key, evaluation-protocol, prior, methodology, or policy selection",
+    "Production-store access or mutation, schema migration, assessment, label, training, rescoring, OPT-014 lifecycle change, OPT-010 execution, branch integration, remote push, or deployment"
+  ],
+  "resource_ceilings": {
+    "maximum_elapsed_minutes": 20,
+    "maximum_new_data_bytes": 5242880,
+    "maximum_candidate_identities": 8,
+    "maximum_metadata_documents": 32,
+    "network_hosts": [
+      "bfs.admin.ch",
+      "www.bfs.admin.ch",
+      "dam-api.bfs.admin.ch",
+      "pxweb.bfs.admin.ch",
+      "www.swissstats.bfs.admin.ch",
+      "opendata.swiss",
+      "www.opendata.swiss",
+      "ncsc.admin.ch",
+      "www.ncsc.admin.ch",
+      "admin.ch",
+      "www.admin.ch",
+      "news.admin.ch"
+    ],
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "dataset_downloads": 0,
+    "raw_records_read": 0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "simulation_runs": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0
+  },
+  "stop_conditions": [
+    "The acquisition design, prior discovery result, frozen priors, or production-store digest drifts.",
+    "A required page redirects to or loads metadata from an unlisted host.",
+    "Qualification requires opening a data table, API data response, raw record, preview, download, outcome distribution, executable content, or restricted material.",
+    "The candidate, document, time, or byte ceiling would be exceeded.",
+    "Any source selection, acquisition, adequacy judgment, evaluation, store, model, policy, lifecycle, branch, remote, or deployment action is attempted."
+  ],
+  "result_boundary": "The supplemental result may disclose and structurally classify up to eight Swiss source identities and list missing dimensions. It may not select an acquisition source, clear the OPT-014 data gate, judge adequacy, report outcomes, validate or change a prior, or change OPT-014 status.",
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the OPT-014 Swiss-government outcome-blind metadata-only source discovery described by opt-014-swiss-metadata-source-discovery-receipt-2026-08-18.json, limited to Swiss Federal Statistical Office enterprise survey metadata, federal open-data catalog records, National Cyber Security Centre administrative collection metadata, and linked official methodology, questionnaire, variable, quality, license, and access documents; classification and disclosure of at most eight new Swiss source identities using only frozen unit, denominator, zero-incident, incident-count, loss-field, population, provenance, lineage, license, access, version, format, and size metadata; quarantine of any incidentally visible outcome values; and one supplemental metadata-only result, with ceilings of 20 minutes, 5 MiB new data, 32 metadata documents, only bfs.admin.ch, www.bfs.admin.ch, dam-api.bfs.admin.ch, pxweb.bfs.admin.ch, www.swissstats.bfs.admin.ch, opendata.swiss, www.opendata.swiss, ncsc.admin.ch, www.ncsc.admin.ch, admin.ch, www.admin.ch, and news.admin.ch network access, and exactly zero uploads, provider calls, tokens, cost, dataset downloads, raw record reads, production-store reads or mutations, assessments, labels, simulation runs, model training, or rescoring. Data tables, cubes, API data responses, previews, samples, raw records, outcome values or distributions, credentials, account creation, terms acceptance, applications, contact, purchase, code or translation-provider execution, candidate ranking, source acquisition selection, adequacy thresholds, cohort or holdout selection, evaluation, fitting, prior or methodology changes, production-policy changes, OPT-014 promotion or closure, OPT-010 execution, branch integration, remote push, and deployment remain excluded."
+  }
+}

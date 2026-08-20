@@ -1,0 +1,129 @@
+{
+  "schema_version": "opt010-bounded-negative-feasibility-closure-final-retry-receipt-v1",
+  "optimization": "OPT-010",
+  "status": "authorization-pending",
+  "objective": "Resolve the corrected receipt test's self-referential pre-retry hash assertions, then complete the unchanged bounded negative-feasibility closure only if all focused and full offline non-live validation passes.",
+  "retained_authority": {
+    "original_receipt": {"path": "docs/optimizations/opt-010-bounded-negative-feasibility-closure-receipt-2026-08-20.json", "sha256": "3549c74f0bf880df69e0eebcd43176b45364621b90a7b6a547387ff80c662e4f"},
+    "corrected_retry_receipt": {"path": "docs/optimizations/opt-010-bounded-negative-feasibility-closure-corrected-retry-receipt-2026-08-20.json", "sha256": "b3b46cda472d83ec1ca6d52289d879bcb2f433f75011dce1b670e27a17f5c44a"},
+    "stopped_result": {"path": "docs/optimizations/opt-010-bounded-negative-feasibility-closure-result-2026-08-20.json", "sha256": "346db5007ef56b0858c37bce99ada1bf0b1709126a173d8d9fc6d1c78552e368"},
+    "stopped_closure_test": {"path": "tests/test_opt_010_bounded_negative_feasibility_closure.py", "sha256": "cd35b3dd960b36833aa82b850bd7fd7314d5381430b93556919730c7de3d324e"},
+    "corrected_retry_receipt_test_before_reconciliation": {"path": "tests/test_opt_010_bounded_negative_feasibility_closure_corrected_retry_receipt.py", "sha256": "e2cfc242087ae2f9ddd47c466edd53c584e35f1ac5cc48806c5d02119edf81c5"}
+  },
+  "retained_attempts": {
+    "original_full_suite_stop": {"passed": 1204, "failed": 17, "skipped": 2, "deselected": 27},
+    "corrected_retry_focused_reconciliation": {"passed": 66, "failed": 0, "files_reconciled": 12},
+    "corrected_retry_pre_full_suite_stop": {
+      "receipt_test_passed": 3,
+      "receipt_test_failed": 2,
+      "diagnosis": "The corrected receipt test compared the mutable stopped result, closure test, and twelve now-authorized reconciled tests to their pre-retry hashes after those files were authorized to evolve.",
+      "full_suite_started": false
+    },
+    "restored_lifecycle": {"closed": 34, "open": 1, "total": 35, "open_priority": ["OPT-010"]},
+    "historical_checkpoint_sha256": "5161994703f9768f250cc2b7de4dfdcb4ac26632858495391843b9690291562c",
+    "production_store_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "configuration_sha256": "c0f3a6569fb0d5c4f90464a5ce143ae8112b5918e261303c1d5acbf5b8a47680",
+    "configuration_schema_sha256": "e92d255470b83882fa46f88d4a7501ea6b0e44d7d58f00269ee48f455529c3d9",
+    "workspace": {"branch": "main", "head": "1f1dba7a30a86d957510608c25e94077b15d2e8d", "index_empty": true},
+    "live_or_mutating_activity": 0
+  },
+  "retained_twelve_reconciliations": [
+    {"path": "tests/test_opt_009_closure_result.py", "sha256": "8a4c392e8e352fe4fcdf399be240aeb3f0503fe286b6d518aafdb5f74f53bd64"},
+    {"path": "tests/test_opt_009_corrected_retry_receipt.py", "sha256": "e28723668c2665f003b19eb1c3a5918fb80063753ce221e511c293dc6268a237"},
+    {"path": "tests/test_opt_009_serialization_retry_receipt.py", "sha256": "e0f60ad81abd31e055b7fea3ac8c33034cf5e943e679d2191d73c52060567979"},
+    {"path": "tests/test_opt_010_architecture_mechanism_eligibility_final_retry_receipt.py", "sha256": "0d902c4c2731cf2b0ca033c2f5ecc0d5961e46173570a6a8c2c29c7c559ab7ab"},
+    {"path": "tests/test_opt_010_bounded_negative_feasibility_closure_receipt.py", "sha256": "ede97c5eba532a1638fbc7a7684ed23a81f63e82009342274ef7d8ad9cf41635"},
+    {"path": "tests/test_opt_010_java_ruby_source_augmentation_selection_receipt.py", "sha256": "f4f273d520d453cd51930099dd80f9b0391d1722588e523dbe5a698d1b56f3e8"},
+    {"path": "tests/test_opt_010_offline_paired_evaluation_foundation_receipt.py", "sha256": "ed7ddea6dbf1c539744243f1a7c58ca945396d23182254b26fe08794b10cb5d6"},
+    {"path": "tests/test_opt_010_prospective_source_selection_receipt.py", "sha256": "ef48560ae6cb6ace45b70a7505acf196f9b671e6b8d37db80dc0fccad10d2fe6"},
+    {"path": "tests/test_opt_014_descriptive_scope_closure.py", "sha256": "e0413a5d10e1a81012348ab45cbcb4572f12eb38f6ff45c35e2716623d2119c1"},
+    {"path": "tests/test_opt_014_descriptive_scope_closure_receipt.py", "sha256": "823f1565da3dd81a273f0eef6c0e297c367b7235ad4595b3377279d3fb8a8122"},
+    {"path": "tests/test_opt_014_eligibility_audit.py", "sha256": "f28d536f492f0fe42d20934992013730f2bc13c53c73d41a8403fea63a5d5dc4"},
+    {"path": "tests/test_opt_014_prior_predictive.py", "sha256": "8118a2ce80642147c3dd957ef994398811642b6402f919a721a98cfa9a1f388e"}
+  ],
+  "only_additional_reconciliation": {
+    "path": "tests/test_opt_010_bounded_negative_feasibility_closure_corrected_retry_receipt.py",
+    "pre_reconciliation_sha256": "e2cfc242087ae2f9ddd47c466edd53c584e35f1ac5cc48806c5d02119edf81c5",
+    "permitted_change": "Preserve every pre-retry hash as immutable historical receipt evidence; compare current files only when they are not authorized mutable outputs, and validate the finalized lifecycle/result independently after closure.",
+    "receipt_or_evidence_edits": 0,
+    "implementation_or_helper_edits": 0
+  },
+  "execution": {
+    "order": [
+      "verify all retained authority, twelve-reconciliation, lifecycle, checkpoint, store, configuration, workspace, and zero-activity bindings",
+      "reconcile only the corrected retry receipt test and run it with all twelve retained reconciliations",
+      "only if focused validation passes, repeat the original six-document and two-current-test lifecycle reconciliation",
+      "finalize only the existing closure result and focused closure test at the unchanged bounded interpretation",
+      "run the full offline non-live suite once and stop on any failure"
+    ],
+    "lifecycle_after": {"closed": 35, "open": 0, "total": 35, "remaining_priority": []},
+    "opt_010_after": {"status": "closed", "gate": "none", "next_priority": null},
+    "facade_after": "qualified-disabled-and-disconnected",
+    "integration": "not-authorized"
+  },
+  "allowlist_addition": [
+    "tests/test_opt_010_bounded_negative_feasibility_closure_corrected_retry_receipt.py"
+  ],
+  "effective_allowlist": [
+    "docs/optimizations/optimization-status.json",
+    "docs/optimizations/optimization-register.md",
+    "docs/documentation-status.md",
+    "docs/project-priorities.md",
+    "docs/triage-accuracy-roadmap.md",
+    "docs/agentic-escalation-gate.md",
+    "tests/test_documentation_current_state.py",
+    "tests/test_outstanding_work_checkpoint.py",
+    "tests/test_opt_010_architecture_mechanism_eligibility.py",
+    "tests/test_opt_010_java_ruby_scanner_cell_coverage_corrected_acceptance_retry_receipt.py",
+    "tests/test_opt_010_java_ruby_source_augmentation_acquisition_screen_final_retry_receipt.py",
+    "tests/test_opt_010_offline_containment_foundation_receipt.py",
+    "tests/test_opt_010_offline_readiness_audit_receipt.py",
+    "tests/test_opt_010_protected_cohort_design_receipt.py",
+    "tests/test_opt_010_readiness_audit.py",
+    "tests/test_opt_009_closure_result.py",
+    "tests/test_opt_009_corrected_retry_receipt.py",
+    "tests/test_opt_009_serialization_retry_receipt.py",
+    "tests/test_opt_010_architecture_mechanism_eligibility_final_retry_receipt.py",
+    "tests/test_opt_010_bounded_negative_feasibility_closure_receipt.py",
+    "tests/test_opt_010_java_ruby_source_augmentation_selection_receipt.py",
+    "tests/test_opt_010_offline_paired_evaluation_foundation_receipt.py",
+    "tests/test_opt_010_prospective_source_selection_receipt.py",
+    "tests/test_opt_014_descriptive_scope_closure.py",
+    "tests/test_opt_014_descriptive_scope_closure_receipt.py",
+    "tests/test_opt_014_eligibility_audit.py",
+    "tests/test_opt_014_prior_predictive.py",
+    "tests/test_opt_010_bounded_negative_feasibility_closure_corrected_retry_receipt.py",
+    "tests/test_opt_010_bounded_negative_feasibility_closure.py",
+    "docs/optimizations/opt-010-bounded-negative-feasibility-closure-result-2026-08-20.json"
+  ],
+  "cumulative_resource_ceilings": {
+    "maximum_elapsed_minutes": 45,
+    "maximum_new_data_bytes": 2097152,
+    "network_reads_or_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "keychain_or_credential_reads": 0,
+    "repository_materializations_or_code_executions": 0,
+    "scanner_processes": 0,
+    "production_store_reads_or_mutations": 0,
+    "schema_migrations": 0,
+    "assessments": 0,
+    "labels": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0,
+    "agentic_or_baseline_runs": 0,
+    "human_reviews": 0,
+    "outcomes_read": 0,
+    "workspace_branch_or_index_mutations": 0,
+    "commits": 0,
+    "merges": 0,
+    "pushes": 0,
+    "deployments": 0
+  },
+  "excluded": "Every exclusion from the original and corrected receipts remains in force. Any other test, evidence, receipt, artifact, helper, implementation, configuration, store, checkpoint, source, scanner, policy, lifecycle expansion, OPT-014 or SEC/EDGAR reactivation, OPT-036 use or change, integration, deployment, or unlisted file change remains excluded.",
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the final corrected OPT-010 bounded negative-feasibility closure retry described by opt-010-bounded-negative-feasibility-closure-final-retry-receipt-2026-08-20.json, retaining every evidence, bounded-interpretation, containment, resource, zero-activity, exclusion, lifecycle, and no-integration boundary from the original and corrected receipts; accepting the retained original full-suite stop with 1,204 passed, 17 failed, two skipped, and 27 deselected, the twelve completed historical-state reconciliations with 66 focused passes, and the corrected retry pre-full-suite stop with three receipt-test passes and two failures caused only by self-referential comparison of authorized mutable outputs to their pre-retry hashes, with restored 34-closed/1-open lifecycle state, byte-identical historical checkpoint and production store, unchanged configuration, main branch and HEAD, empty index, and zero live or git activity; permitting only reconciliation of tests/test_opt_010_bounded_negative_feasibility_closure_corrected_retry_receipt.py so all pre-retry hashes remain immutable historical evidence while authorized current outputs are validated independently; then, only if that test and all retained focused reconciliations pass, repeating the original six-document and two-current-test lifecycle reconciliation, finalizing the existing bounded closure result and focused test at exactly 35 closed and zero open items with no remaining priority and the qualified read-only facade still disabled and disconnected, and running the full offline non-live suite once, with cumulative ceilings of 45 minutes, 2 MiB new data, and exactly zero network reads or uploads, provider calls, tokens, cost, Keychain or credential reads, repository materializations or code executions, scanner processes, production-store reads or mutations, schema migrations, assessments, labels, training, rescoring, agentic or baseline runs, human reviews, outcomes, branch or index mutations, commits, merges, pushes, or deployments. Any other test, evidence, receipt, artifact, helper, implementation, configuration, store, checkpoint, source, scanner, policy, OPT-014 or SEC/EDGAR reactivation, OPT-036 use or change, lifecycle expansion, integration, deployment, or unlisted file change remains excluded."
+  }
+}

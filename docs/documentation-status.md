@@ -1,6 +1,6 @@
 # Documentation status and authority
 
-Current as of **2026-08-18**.
+Current as of **2026-08-20**.
 
 Use this page to distinguish live project state from retained execution history. A dated
 receipt or result is not stale merely because it says an authorization was pending or an
@@ -10,7 +10,7 @@ step. They must not be interpreted as the current lifecycle state.
 ## Current authoritative state
 
 - [`optimizations/optimization-status.json`](optimizations/optimization-status.json) is the
-  machine-readable lifecycle authority: **33 closed, 2 open, 35 total**.
+  machine-readable lifecycle authority: **35 closed, 0 open, 35 total**.
 - [`optimizations/optimization-register.md`](optimizations/optimization-register.md) is the
   narrative authority for scope, owners, activation gates, and chronological outcomes.
 - [`project-priorities.md`](project-priorities.md) records current work sequencing.
@@ -18,8 +18,19 @@ step. They must not be interpreted as the current lifecycle state.
   is byte-identical historical evidence of the 2026-08-07 state; it is not a live derived
   checkpoint and is not expected to match the current lifecycle ledger.
 
-The two open optimizations, in priority order, are OPT-014 and OPT-010. No paid
-provider execution is currently authorized. The outcome-blind, zero-provider OPT-002
+There are no open optimization items and no remaining execution priority. No paid provider execution is currently authorized. OPT-010 is closed as not justified and not feasible at
+its evaluated scanner, data, verifier, and paired-evaluation scope. Its disabled and
+disconnected read-only containment foundation remains qualified, but no complete frozen
+four-family packet, paired comparison, empirical recall evaluation, threshold, or production
+activation was reached. This is not a universal impossibility or production-readiness claim;
+future agentic evaluation requires a new lifecycle identity and authorization. OPT-014 is
+closed at its bounded descriptive
+prior-predictive and negative data-feasibility scope: no qualifying observed organization-period data was found,
+and no validation, calibration, representativeness, hierarchical, remediation-effect, or
+portfolio-readiness claim was made. SEC/EDGAR remains an inactive material-disclosure
+context reserve; a non-filing period is not treated as a zero-incident observation. Any
+future quantitative outcome study requires a new lifecycle identity and separately frozen
+data and evaluation contract. The outcome-blind, zero-provider OPT-002
 [`acquisition protocol`](optimizations/opt-002-independent-acquisition-protocol-2026-08-07.json)
 is frozen; its repository materialization, deterministic scan, scoring, and review packet
 remain separately gated. The

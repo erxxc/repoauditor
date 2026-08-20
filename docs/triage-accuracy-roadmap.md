@@ -8,7 +8,7 @@ The [prior-scope roadmap](prior-scope-roadmap.md) separately records future quan
 prior expansion; it does not change the current risk model.
 
 Status: **post-MVP optimization roadmap**. The implemented safeguards remain authoritative,
-but open maturity work is deferred in
+but remaining maturity ideas are non-lifecycle future work described in
 [`optimizations/optimization-register.md`](optimizations/optimization-register.md). Current
 MVP execution is tracked only in [`poc-recovery-plan.md`](poc-recovery-plan.md).
 
@@ -214,6 +214,24 @@ evaluation capacity, and the isolated instrument did not qualify. This establish
 that OPT-009 was not justified or feasible at its evaluated scope, not that novelty
 prioritization is universally impossible. Any future attempt is newly scoped work with a
 new lifecycle identity and untouched evidence.
+
+OPT-014 is likewise closed at a bounded evidence scope rather than held open indefinitely
+behind unavailable data. Its deterministic prior-predictive report establishes internal
+coherence of the configured anonymous neutral organization-year baseline, not predictive
+validation, calibration, representativeness, or portfolio readiness. The bounded public and
+controlled-access screens found no source meeting the frozen commercial-rights and full
+organization-period contract; that result is not a universal data-impossibility claim.
+SEC/EDGAR remains an inactive material-disclosure-context reserve, and non-filing periods
+are not zero-incident observations. Any future observed-outcome or portfolio study is new
+work with a separately frozen lifecycle, estimand, rights, data, and evaluation contract.
+
+OPT-010 is closed at a bounded negative-feasibility scope. The isolated read-only tool
+facade remains qualified, disabled, and disconnected, while the frozen prospective path
+failed to assemble its exact 40-identity packet across four supported families. It therefore
+did not proceed to paired G03b comparison, empirical G04 recall evaluation, thresholding, or
+production activation. This establishes neither universal impossibility nor production
+readiness. Any future agentic evaluation, scanner-policy change, verifier expansion, source
+augmentation, packet, paired run, or activation is new work under a separate lifecycle.
 
 ## Explicit non-goals
 

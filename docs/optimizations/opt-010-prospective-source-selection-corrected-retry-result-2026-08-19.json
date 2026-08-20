@@ -1,0 +1,431 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-010",
+  "status": "complete-sixteen-identities-selected-for-owner-review",
+  "recorded_at": "2026-08-19",
+  "authorization": "The project owner authorized one corrected outcome-blind GitHub metadata-only source-selection retry with exact age and maintenance query filters, twelve primary and four reserve identities, and zero source, finding, outcome, provider, store, or branch activity.",
+  "receipt": {
+    "path": "docs/optimizations/opt-010-prospective-source-selection-corrected-retry-receipt-2026-08-19.json",
+    "sha256": "aa09731c4adafd34ce3bc5a9c5095b0a8f86515daf73e68b6bbf0f5e7bfbdbf1"
+  },
+  "retained_attempt": {
+    "result_sha256": "8e5a51db3c5b622b543f4ee6603612cb574f06b3099099a560343f238f4fd6e9",
+    "candidate_metadata_identities_inspected": 40,
+    "network_reads": 4,
+    "selected_or_disclosed_identities": 0,
+    "exact_commit_resolutions": 0
+  },
+  "corrected_discovery": {
+    "queries": 6,
+    "candidate_metadata_identities_inspected": 40,
+    "repository_search_reads": 6,
+    "eligible_exact_commit_reads": 28,
+    "selected_README_metadata_reads": 16,
+    "network_reads": 50,
+    "metadata_documents": 50,
+    "hosts_used": [
+      "api.github.com"
+    ],
+    "other_hosts_used": 0,
+    "source_files_opened": 0,
+    "README_source_persisted": 0,
+    "license_source_persisted": 0
+  },
+  "cumulative_accounting": {
+    "candidate_metadata_identities_inspected": 80,
+    "network_reads": 54,
+    "metadata_documents": 54,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "repository_materializations": 0,
+    "repository_code_executions": 0,
+    "scanner_processes": 0,
+    "agentic_falsification_runs": 0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "schema_migrations": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0,
+    "branch_operations": 0,
+    "source_commits": 0,
+    "merge_commits": 0,
+    "remote_pushes": 0,
+    "lifecycle_changes": 0
+  },
+  "aggregate_filter_closure": {
+    "inspected": 40,
+    "rejected_missing_or_ambiguous_license": 8,
+    "rejected_non_product_or_template": 2,
+    "rejected_prior_exposure": 2,
+    "eligible": 28,
+    "counts_close": true,
+    "selected": 16,
+    "unselected_eligible": 12
+  },
+  "selection_contract": {
+    "selection_key": "sha256('opt-010-prospective-source-v1' + lowercase repository identity + exact commit)",
+    "language_bucket_order": [
+      "Python",
+      "TypeScript",
+      "Go",
+      "Java",
+      "Ruby",
+      "Rust"
+    ],
+    "ordering": "Stable-hash order within each language followed by round-robin language buckets; first twelve primary, next four reserve.",
+    "primary": 12,
+    "reserve": 4,
+    "selected": 16,
+    "distinct_languages": 6,
+    "maximum_selected_per_language": 3,
+    "maximum_selected_per_owner": 1,
+    "partial_list": false
+  },
+  "selected_identities": [
+    {
+      "order": 1,
+      "role": "primary",
+      "repository": "unslothai/unsloth",
+      "repository_url": "https://github.com/unslothai/unsloth",
+      "default_branch": "main",
+      "exact_commit": "489fab4a71f83dd4e02a430f560884c3d052c575",
+      "stable_identity_sha256": "1a1517101c0f8ee6e27ab189961f246bd5f7a8a9e70c5e0cae75132ba12f3bdd",
+      "primary_language": "Python",
+      "license": "Apache-2.0",
+      "README_path": "README.md",
+      "README_sha": "16e12a12fe93fb823047958f9ef05e0cef891367",
+      "selection_basis": "A maintained self-hosted interface for local model training and execution with substantial data, model, and integration surfaces.",
+      "pre_outcome_mechanism_hypotheses": [
+        "file, content, template, command, or data-processing boundaries",
+        "cross-service, integration, webhook, or outbound-request boundaries"
+      ]
+    },
+    {
+      "order": 2,
+      "role": "primary",
+      "repository": "amruthpillai/reactive-resume",
+      "repository_url": "https://github.com/amruthpillai/reactive-resume",
+      "default_branch": "main",
+      "exact_commit": "dbbab6fd7610cf1472d0e0377fc0e966faf7acda",
+      "stable_identity_sha256": "3fca500d6ca3d5ce0c0547bd7055e448d46f39d8ad49ab770683d0631f63b4d6",
+      "primary_language": "TypeScript",
+      "license": "MIT",
+      "README_path": "README.md",
+      "README_sha": "51ec614af16026bfebcde9ec3679df598cdd57b3",
+      "selection_basis": "A maintained self-hosted resume-building product with user content, templates, export, and application workflow surfaces.",
+      "pre_outcome_mechanism_hypotheses": [
+        "identity, authorization, role, or tenant boundaries",
+        "file, content, template, command, or data-processing boundaries"
+      ]
+    },
+    {
+      "order": 3,
+      "role": "primary",
+      "repository": "0xJacky/nginx-ui",
+      "repository_url": "https://github.com/0xJacky/nginx-ui",
+      "default_branch": "dev",
+      "exact_commit": "f1b8d846eab834daf6a95e30e3d02d329fdcb0d4",
+      "stable_identity_sha256": "3476b18f12ad5bdd4e7c89c0aa5249cb2d97e2f7697f73ac4ef4d052d6195378",
+      "primary_language": "Go",
+      "license": "AGPL-3.0",
+      "README_path": "README.md",
+      "README_sha": "042fad4fa2cbfb4fbbefe6a6dcedafb4287c4ccb",
+      "selection_basis": "A maintained self-hosted Nginx administration product with configuration, certificate, scheduling, and operational-control surfaces.",
+      "pre_outcome_mechanism_hypotheses": [
+        "identity, authorization, role, or tenant boundaries",
+        "file, content, template, command, or data-processing boundaries"
+      ]
+    },
+    {
+      "order": 4,
+      "role": "primary",
+      "repository": "theonedev/onedev",
+      "repository_url": "https://github.com/theonedev/onedev",
+      "default_branch": "main",
+      "exact_commit": "89e2f09b7b0cd9682a32a8b4a1ed863f791570ea",
+      "stable_identity_sha256": "7808d7614a6ab1fe0f5d8ad3e16eaff4a44477cc2b7be4296ea2e7caa2dc181b",
+      "primary_language": "Java",
+      "license": "MIT",
+      "README_path": "readme.md",
+      "README_sha": "16e79bd635d2c7466161ac5e21ea7be515a39162",
+      "selection_basis": "A maintained self-hosted development platform with Git hosting, CI/CD, packages, workspaces, projects, and collaboration workflows.",
+      "pre_outcome_mechanism_hypotheses": [
+        "identity, authorization, role, or tenant boundaries",
+        "business workflows and state transitions",
+        "cross-service, integration, webhook, or outbound-request boundaries"
+      ]
+    },
+    {
+      "order": 5,
+      "role": "primary",
+      "repository": "pglombardo/PasswordPusher",
+      "repository_url": "https://github.com/pglombardo/PasswordPusher",
+      "default_branch": "master",
+      "exact_commit": "c8fd1dc18fc55b570c2acc06ded6b37f05da6ee5",
+      "stable_identity_sha256": "a7f7b694aa9c4b90dc6ec650283ce10f25f214a52a0e1a280a0cd4b4ff9299bc",
+      "primary_language": "Ruby",
+      "license": "Apache-2.0",
+      "README_path": "README.md",
+      "README_sha": "e803aab0c9b53c29d8d44f768e877e2eb186bcf7",
+      "selection_basis": "A maintained self-hosted sensitive-information sharing product with expiration, deletion, file sharing, and audit workflows.",
+      "pre_outcome_mechanism_hypotheses": [
+        "identity, authorization, role, or tenant boundaries",
+        "business workflows and state transitions",
+        "file, content, template, command, or data-processing boundaries"
+      ]
+    },
+    {
+      "order": 6,
+      "role": "primary",
+      "repository": "SinTan1729/chhoto-url",
+      "repository_url": "https://github.com/SinTan1729/chhoto-url",
+      "default_branch": "main",
+      "exact_commit": "7d36ccbd585bd326adfff45982bb0a4d760287c1",
+      "stable_identity_sha256": "5d499169e2daafc100b54798d3e12f43627130324ed98d438804ff2cbc3f6342",
+      "primary_language": "Rust",
+      "license": "MIT",
+      "README_path": "README.md",
+      "README_sha": "12b3e2e208198437e4d37c43ca1e8933fbd4aacf",
+      "selection_basis": "A maintained self-hosted URL-shortening web application with redirect, input, persistence, and administration surfaces.",
+      "pre_outcome_mechanism_hypotheses": [
+        "identity, authorization, role, or tenant boundaries",
+        "business workflows and state transitions",
+        "cross-service, integration, webhook, or outbound-request boundaries"
+      ]
+    },
+    {
+      "order": 7,
+      "role": "primary",
+      "repository": "alexta69/metube",
+      "repository_url": "https://github.com/alexta69/metube",
+      "default_branch": "master",
+      "exact_commit": "86954784fd7d284b4397020207d8a33908780e53",
+      "stable_identity_sha256": "86e056d03ce11434bfcb7c0fdfb62ba3dca418fd39dc736b142db71325175ef1",
+      "primary_language": "Python",
+      "license": "AGPL-3.0",
+      "README_path": "README.md",
+      "README_sha": "a5710eb0ce63c9c6d0e1002381c5396048a5cab7",
+      "selection_basis": "A maintained self-hosted video-download web product with remote URL retrieval, media processing, and filesystem output surfaces.",
+      "pre_outcome_mechanism_hypotheses": [
+        "cross-service, integration, webhook, or outbound-request boundaries",
+        "file, content, template, command, or data-processing boundaries"
+      ]
+    },
+    {
+      "order": 8,
+      "role": "primary",
+      "repository": "TriliumNext/Trilium",
+      "repository_url": "https://github.com/TriliumNext/Trilium",
+      "default_branch": "main",
+      "exact_commit": "02835932b88b1ebcf9f9981b005716aacfd18513",
+      "stable_identity_sha256": "5058c9f30326d4ced50529fc24fc91c7d30ffd1e4579891ffa2894a08af987ab",
+      "primary_language": "TypeScript",
+      "license": "AGPL-3.0",
+      "README_path": "README.md",
+      "README_sha": "616799e42622ac1911f65001a6f7b1b2c1d78278",
+      "selection_basis": "A maintained self-hosted knowledge-base product with notes, scripts, attachments, synchronization, and content organization.",
+      "pre_outcome_mechanism_hypotheses": [
+        "identity, authorization, role, or tenant boundaries",
+        "file, content, template, command, or data-processing boundaries"
+      ]
+    },
+    {
+      "order": 9,
+      "role": "primary",
+      "repository": "clidey/whodb",
+      "repository_url": "https://github.com/clidey/whodb",
+      "default_branch": "main",
+      "exact_commit": "1ed87bcf43813e325059d5230a8f847db5011564",
+      "stable_identity_sha256": "722db7379060110a8005c2715bda5a6dfb65678504affbf664e80263112ed33f",
+      "primary_language": "Go",
+      "license": "Apache-2.0",
+      "README_path": "README.md",
+      "README_sha": "e67dc11cbe31ab543c423ae35e1e8c6ceeeea36e",
+      "selection_basis": "A maintained self-hosted database administration product spanning multiple database connections, queries, catalogs, and lineage surfaces.",
+      "pre_outcome_mechanism_hypotheses": [
+        "identity, authorization, role, or tenant boundaries",
+        "cross-service, integration, webhook, or outbound-request boundaries",
+        "file, content, template, command, or data-processing boundaries"
+      ]
+    },
+    {
+      "order": 10,
+      "role": "primary",
+      "repository": "Athou/commafeed",
+      "repository_url": "https://github.com/Athou/commafeed",
+      "default_branch": "master",
+      "exact_commit": "41fc77322cdc02ebe685a1cc1a81e7a5910e5174",
+      "stable_identity_sha256": "8041f1999440423b3315895e91e58a253f04e7a60ecec3b5e73e9328d33a4ddd",
+      "primary_language": "Java",
+      "license": "Apache-2.0",
+      "README_path": "README.md",
+      "README_sha": "1c45b7856c02f96e80233a0c2ee82f041b5de41f",
+      "selection_basis": "A maintained self-hosted RSS reader with account, subscription, remote-feed retrieval, parsing, and presentation surfaces.",
+      "pre_outcome_mechanism_hypotheses": [
+        "identity, authorization, role, or tenant boundaries",
+        "cross-service, integration, webhook, or outbound-request boundaries",
+        "file, content, template, command, or data-processing boundaries"
+      ]
+    },
+    {
+      "order": 11,
+      "role": "primary",
+      "repository": "solectrus/solectrus",
+      "repository_url": "https://github.com/solectrus/solectrus",
+      "default_branch": "develop",
+      "exact_commit": "f62cef2f2ce4bc48b51d2d07b8871ae7522e5b63",
+      "stable_identity_sha256": "ac8e82b257e2ba90c415241aa204f7198e9b92ac97bf4980efe692173b4ca8f4",
+      "primary_language": "Ruby",
+      "license": "AGPL-3.0",
+      "README_path": "README.md",
+      "README_sha": "3424bce9d643e1aea2f6daa1f8c330e932bfc04b",
+      "selection_basis": "A maintained self-hosted photovoltaic dashboard with telemetry ingestion, monitoring, calculations, and external data-source surfaces.",
+      "pre_outcome_mechanism_hypotheses": [
+        "business workflows and state transitions",
+        "cross-service, integration, webhook, or outbound-request boundaries",
+        "file, content, template, command, or data-processing boundaries"
+      ]
+    },
+    {
+      "order": 12,
+      "role": "primary",
+      "repository": "gbbirkisson/spis",
+      "repository_url": "https://github.com/gbbirkisson/spis",
+      "default_branch": "main",
+      "exact_commit": "2396094b754ef6d7112b1a19c858dc5bc6cc823b",
+      "stable_identity_sha256": "a833045b722729a66ee6bdff263656fa8846959b6a8f6bf30e2cc5778130e306",
+      "primary_language": "Rust",
+      "license": "GPL-3.0",
+      "README_path": "README.md",
+      "README_sha": "2bbd4fdb68985a0736d73f54f761a1e9d2b81e60",
+      "selection_basis": "A maintained self-hosted private image server with upload, media, persistence, and presentation surfaces.",
+      "pre_outcome_mechanism_hypotheses": [
+        "identity, authorization, role, or tenant boundaries",
+        "file, content, template, command, or data-processing boundaries"
+      ]
+    },
+    {
+      "order": 13,
+      "role": "reserve",
+      "repository": "rommapp/romm",
+      "repository_url": "https://github.com/rommapp/romm",
+      "default_branch": "master",
+      "exact_commit": "42e8043372522089a3bd724e8f4a0635aa1c6bf9",
+      "stable_identity_sha256": "b5f303853e6988a82c15de716654734d2dee5059959df7b84d943589b87f20e6",
+      "primary_language": "Python",
+      "license": "AGPL-3.0",
+      "README_path": "README.md",
+      "README_sha": "eda2c73b96d5aa261552d63138557627b6f22be6",
+      "selection_basis": "A maintained self-hosted media-library manager and player with accounts, metadata, files, and external integrations.",
+      "pre_outcome_mechanism_hypotheses": [
+        "identity, authorization, role, or tenant boundaries",
+        "cross-service, integration, webhook, or outbound-request boundaries",
+        "file, content, template, command, or data-processing boundaries"
+      ]
+    },
+    {
+      "order": 14,
+      "role": "reserve",
+      "repository": "jeffvli/feishin",
+      "repository_url": "https://github.com/jeffvli/feishin",
+      "default_branch": "development",
+      "exact_commit": "fb0041a86459e3e934eb1ba8501b8a979b6dfd9e",
+      "stable_identity_sha256": "6e92561b5e1b8d51c9e601d0568e8f7d841bac1da61f27eabbd95e826f65f6a4",
+      "primary_language": "TypeScript",
+      "license": "GPL-3.0",
+      "README_path": "README.md",
+      "README_sha": "e50b9407f58523e4a45745039550f00248b90fcd",
+      "selection_basis": "A maintained self-hosted music player integrating multiple media-server protocols and local presentation workflows.",
+      "pre_outcome_mechanism_hypotheses": [
+        "cross-service, integration, webhook, or outbound-request boundaries",
+        "file, content, template, command, or data-processing boundaries"
+      ]
+    },
+    {
+      "order": 15,
+      "role": "reserve",
+      "repository": "umputun/tg-spam",
+      "repository_url": "https://github.com/umputun/tg-spam",
+      "default_branch": "master",
+      "exact_commit": "d37cd741258284c77417d6adf3b62c59f9743f20",
+      "stable_identity_sha256": "8e632369acb25a87860741f261cfb6857fbff4184c311a810d9fb2ce5f71cdb4",
+      "primary_language": "Go",
+      "license": "MIT",
+      "README_path": "README.md",
+      "README_sha": "c5754a3b1fbd64b8712690bd0d77aed9f77a7b97",
+      "selection_basis": "A maintained self-hosted anti-spam bot and server with messaging integration, moderation workflow, and content-classification surfaces.",
+      "pre_outcome_mechanism_hypotheses": [
+        "business workflows and state transitions",
+        "cross-service, integration, webhook, or outbound-request boundaries",
+        "file, content, template, command, or data-processing boundaries"
+      ]
+    },
+    {
+      "order": 16,
+      "role": "reserve",
+      "repository": "codelibs/fess",
+      "repository_url": "https://github.com/codelibs/fess",
+      "default_branch": "master",
+      "exact_commit": "41f138b5b91af26413ae6cab05bb6acffa6611df",
+      "stable_identity_sha256": "9f6e322f1bb116d30ef5c417dbe99bf3aaa1ef3ba5ec296a9476c7d3236bd17e",
+      "primary_language": "Java",
+      "license": "Apache-2.0",
+      "README_path": "README.md",
+      "README_sha": "9dee94604aefbf3c92e52ad87aa3be91b65c0917",
+      "selection_basis": "A maintained self-hosted enterprise search product with web, file, database, cloud-source, crawl, parsing, indexing, and API surfaces.",
+      "pre_outcome_mechanism_hypotheses": [
+        "identity, authorization, role, or tenant boundaries",
+        "cross-service, integration, webhook, or outbound-request boundaries",
+        "file, content, template, command, or data-processing boundaries"
+      ]
+    }
+  ],
+  "decision": {
+    "result_state": "complete-awaiting-project-owner-source-review",
+    "source_selection_complete": true,
+    "source_acquisition_authorized": false,
+    "reserve_activation_authorized": false,
+    "adequacy_threshold_selected": false,
+    "OPT_010_status": "open",
+    "agentic_experiment_permitted": false,
+    "next_prerequisite": "Project-owner review of the disclosed metadata-only identities, followed only after explicit approval by a separately frozen exact-commit acquisition and scanner/instrument qualification receipt."
+  },
+  "workspace": {
+    "branch_before": "main",
+    "branch_after": "main",
+    "staged_paths_before": 0,
+    "staged_paths_after": 0,
+    "index_or_branch_changed": false,
+    "OPT_036_used_or_changed": false
+  },
+  "store": {
+    "access": "before-and-after-hash-only",
+    "before_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "after_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "byte_identical": true,
+    "reads": 0,
+    "mutations": 0
+  },
+  "validation": {
+    "focused_tests_passed": 7,
+    "focused_tests_failed": 0,
+    "status": "passed",
+    "json_validation": true,
+    "git_diff_check": true
+  },
+  "not_executed": {
+    "security_advisory_CVE_issue_PR_or_exploit_access": true,
+    "repository_code_search_or_source_access": true,
+    "finding_candidate_score_rank_prediction_or_outcome_access": true,
+    "repository_acquisition_materialization_or_execution": true,
+    "scanner_map_index_provider_model_or_agentic_execution": true,
+    "review_assessment_label_training_tuning_or_policy_change": true,
+    "OPT_010_activation_promotion_or_closure": true,
+    "OPT_014_SEC_EDGAR_or_OPT_036_activity": true,
+    "full_suite_branch_commit_merge_push_integration_or_deployment": true
+  }
+}

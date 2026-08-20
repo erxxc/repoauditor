@@ -1,0 +1,155 @@
+{
+  "schema_version": 1,
+  "artifact_id": "opt010-offline-g03-g06-foundation-v1",
+  "optimization": "OPT-010",
+  "status": "complete-g03a-and-g06-documented-pass",
+  "recorded_at": "2026-08-18",
+  "input_bindings": {
+    "receipt_sha256": "1eaeade6c9a8dc3fea75d247cbee67e0ddcdd9adb7861394e445d5f380063fcd",
+    "readiness_result_sha256": "79f45658b3d1a4f07fafa6dbbdeca4673d36c807d1c8ecf539e131503b040602",
+    "production_store_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a"
+  },
+  "authorized_output_bindings": {
+    "agentic_gate_sha256": "17112f367776373eba27c754311e99a982ddab3a3c65bb7f85afd50eb66767dd",
+    "configuration_sha256": "c0f3a6569fb0d5c4f90464a5ce143ae8112b5918e261303c1d5acbf5b8a47680",
+    "configuration_schema_sha256": "e92d255470b83882fa46f88d4a7501ea6b0e44d7d58f00269ee48f455529c3d9",
+    "read_only_facade_sha256": "20206df2a55e00ca2eb8cacd0544f3062da70b48ea54ac0ae43e222a654222c9",
+    "security_tests_sha256": "1e378642e5b45661dd1a892509f54422edd057533e8939672542b9a138c1e1e2",
+    "gate_tests_sha256": "3e3dc2a9e20fe53786f69c65f999190860ca4d94ecc26390610fe9f690c61de0",
+    "historical_receipt_test_sha256": "c7f2c2e16ff6032cd256d5a378bd35a8ccc1c0e4c34963bc51700bb6640e711f",
+    "comparison_protocol_sha256": "ac7872088d89950e27ffc2e733bc1282a9697d34d2a9add378fb35023c487133"
+  },
+  "G03_decomposition": {
+    "G03a": {
+      "state": "documented-pass",
+      "protocol": "opt010-g03a-paired-baseline-v1",
+      "fixed": [
+        "identical paired inputs",
+        "stable unique-issue identity",
+        "eight aggregate performance, abstention, usage, latency, and cost metrics",
+        "outcome blinding",
+        "fail-closed incomplete, unknown-usage, verifier-abstention, and subgroup rules"
+      ]
+    },
+    "G03b": {
+      "state": "pending-separate-authorization",
+      "provider_or_experiment_authority": false,
+      "production_activation_authority": false
+    }
+  },
+  "containment_qualification": {
+    "default_enabled": false,
+    "wired_to_challenger": false,
+    "wired_to_cli": false,
+    "typed_allowlist": [
+      "indexed_source_excerpt",
+      "structural_slice",
+      "callers",
+      "references",
+      "architecture_evidence"
+    ],
+    "configured_bounds": {
+      "maximum_calls": 12,
+      "maximum_results_per_call": 5,
+      "maximum_context_lines": 12,
+      "maximum_query_characters": 256,
+      "maximum_response_bytes": 32768
+    },
+    "binding_and_provenance": {
+      "snapshot_commit": "required-exact",
+      "retrieval_index_digest": "required-exact",
+      "request_digest": "sha256-canonical-json",
+      "response_digest": "sha256-canonical-json",
+      "call_ordinal": "recorded",
+      "response_bytes_and_bounds": "recorded"
+    },
+    "positive_tools_tested": 5,
+    "negative_boundaries_tested": [
+      "disabled access",
+      "unknown tool",
+      "unexpected arguments",
+      "parent traversal",
+      "absolute POSIX and Windows paths",
+      "NUL and control bytes",
+      "unindexed symlink escape attempt",
+      "snapshot drift",
+      "repository drift",
+      "retrieval-index drift",
+      "invalid and out-of-source line ranges",
+      "oversized query",
+      "oversized response",
+      "call-budget exhaustion",
+      "filesystem read or write sentinel",
+      "production-store connection sentinel",
+      "network socket and URL opener sentinels",
+      "subprocess sentinel",
+      "byte-repeatability"
+    ],
+    "isolated_security_suite": {
+      "passed": 19,
+      "failed": 0
+    },
+    "focused_non_live_compatibility_suite": {
+      "passed": 134,
+      "failed": 0,
+      "covered": [
+        "configuration",
+        "retrieval",
+        "slicing",
+        "claims",
+        "falsification",
+        "convergence",
+        "prompt security",
+        "regression"
+      ]
+    },
+    "optional_lint": {
+      "status": "not-run-tool-unavailable",
+      "dependency_installed": false,
+      "qualification_blocker": false
+    },
+    "all_required_tests_passed": true,
+    "G06_state": "documented-pass-isolated-containment-foundation"
+  },
+  "gate_states_after": {
+    "G01": "documented-pass",
+    "G02": "partial",
+    "G03a": "documented-pass",
+    "G03b": "pending-separate-authorization",
+    "G04": "partial",
+    "G05": "partial",
+    "G06": "documented-pass",
+    "G07": "partial"
+  },
+  "authority": {
+    "agent_enabled": false,
+    "agent_integrated": false,
+    "provider_calls": 0,
+    "agentic_falsification_runs": 0,
+    "baseline_comparisons": 0,
+    "cohort_selections": 0,
+    "outcomes_read": 0,
+    "thresholds_selected": 0,
+    "production_policy_changes": 0,
+    "OPT_010_status_changes": 0,
+    "OPT_014_or_SEC_EDGAR_activations": 0
+  },
+  "accounting": {
+    "network_reads": 0,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "schema_migrations": 0,
+    "repository_materializations": 0,
+    "repository_code_executions": 0,
+    "scanner_processes": 0,
+    "agentic_falsification_runs": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0
+  }
+}

@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-010",
+  "status": "authorization-pending",
+  "frozen_at": "2026-08-18",
+  "retained_attempt": {
+    "status": "stopped-historical-receipt-test-reconciliation-required",
+    "implementation_security_tests_passed": 19,
+    "focused_non_live_compatibility_tests_passed": 134,
+    "final_boundary_tests_passed": 26,
+    "final_boundary_tests_failed": 1,
+    "provider_calls": 0,
+    "agentic_runs": 0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "source_commits": 0,
+    "merge_commits": 0
+  },
+  "retained_bindings": {
+    "agentic_gate": "270762fe71e87e6cdc76c9caa7b6e76c673502c692611a950b049eea8d43772a",
+    "configuration": "c0f3a6569fb0d5c4f90464a5ce143ae8112b5918e261303c1d5acbf5b8a47680",
+    "configuration_schema": "e92d255470b83882fa46f88d4a7501ea6b0e44d7d58f00269ee48f455529c3d9",
+    "read_only_facade": "20206df2a55e00ca2eb8cacd0544f3062da70b48ea54ac0ae43e222a654222c9",
+    "security_tests": "1e378642e5b45661dd1a892509f54422edd057533e8939672542b9a138c1e1e2",
+    "gate_tests": "a0606ece4d02423bc29be60fc32f2e306ced3aaeb9baf89ec367ae3ec6fc24b9",
+    "historical_receipt_test": "9efb4e28583164292cf7915866d3ccb3f208c037e97c4761a50f88fc5bf20951",
+    "comparison_protocol": "ac7872088d89950e27ffc2e733bc1282a9697d34d2a9add378fb35023c487133",
+    "qualification_artifact": "d284c85e4ce2b6f7625f0797da0e9a6c16d83cd17824b58d1b86a368a11d0edb",
+    "stopped_result": "1b75e03bdbc04a601b1d788872fb5cdc7d055a3f9febee19a7389377e1c9d32c",
+    "optimization_status": "a8d33e0d3f27e686b120213689223fb29b83834245ffc2f0b147f33f7842c6fa",
+    "production_store": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a"
+  },
+  "scope": "Retain the completed G03a protocol and G06 implementation and security evidence; reconcile exactly one historical receipt test so immutable frozen inputs remain bound to their original receipt digests while the three explicitly authorized mutable outputs—agentic gate, configuration, and configuration schema—are instead bound to the aggregate qualification artifact; rerun the same offline suites; and only if every test passes, finalize G06 documented-pass in the gate, artifact, focused result test, and existing result.",
+  "allowed_file_changes": [
+    "tests/test_opt_010_offline_containment_foundation_receipt.py",
+    "docs/agentic-escalation-gate.md",
+    "tests/test_opt_010_gate_decomposition.py",
+    "docs/optimizations/opt-010-offline-containment-foundation-artifact-2026-08-18.json",
+    "docs/optimizations/opt-010-offline-containment-foundation-result-2026-08-18.json"
+  ],
+  "exact_test_reconciliation": {
+    "immutable_receipt_inputs": [
+      "readiness_artifact",
+      "readiness_result",
+      "optimization_status",
+      "production_store",
+      "challenger",
+      "claims",
+      "slicing",
+      "retrieval_index",
+      "architecture_schema"
+    ],
+    "authorized_mutable_outputs": [
+      "agentic_gate",
+      "configuration",
+      "config_schema"
+    ],
+    "rule": "The historical test must continue comparing immutable inputs to the original receipt. For the three named authorized mutable outputs only, it must compare current digests to the current aggregate artifact's authorized_output_bindings. It may not update, replace, or weaken the original receipt or ignore any other drift."
+  },
+  "resource_ceilings": {
+    "maximum_elapsed_minutes": 10,
+    "maximum_new_data_bytes": 102400,
+    "maximum_test_reconciliations": 1,
+    "network_reads": 0,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "schema_migrations": 0,
+    "repository_materializations": 0,
+    "repository_code_executions": 0,
+    "scanner_processes": 0,
+    "agentic_falsification_runs": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0,
+    "source_commits": 0,
+    "merge_commits": 0
+  },
+  "excluded": [
+    "any configuration, facade, protocol, challenger, retrieval, slicing, claims, map, CLI, provider, store, migration, scanner, or pipeline implementation change",
+    "any weakening or rewriting of the original receipt or its immutable input digests",
+    "provider or agent execution, G03b, cohort or candidate selection, outcomes, scores, thresholds, labels, assessments, tuning, recalibration, training, lifecycle changes, OPT-014 or SEC/EDGAR activation, branch integration, remote push, or deployment"
+  ],
+  "stop_conditions": [
+    "Any retained implementation, protocol, immutable input, lifecycle, or production-store digest drifts.",
+    "The test reconciliation would ignore drift beyond the three named authorized mutable outputs.",
+    "Any implementation or unlisted file would need modification.",
+    "Any focused security, compatibility, receipt, artifact, or boundary test fails after the exact reconciliation."
+  ],
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the corrected OPT-010 offline G03/G06 containment foundation retry described by opt-010-offline-containment-foundation-corrected-retry-receipt-2026-08-18.json, accepting the retained stopped attempt with 19 passing implementation security tests, 134 passing focused non-live compatibility tests, 26 passing and one failing final boundary test, zero provider or agentic activity, and byte-identical unopened production store; permitting only one historical receipt-test reconciliation so immutable frozen inputs remain checked against their original receipt digests while only the explicitly authorized agentic gate, configuration, and configuration-schema outputs are checked against the aggregate qualification artifact; then rerunning the same offline suites and, only if every test passes, finalizing G06 documented-pass in the gate, focused result test, aggregate artifact, and existing descriptive result, with ceilings of 10 minutes, 100 KiB new data, one test reconciliation, and exactly zero network reads, uploads, provider calls, tokens, cost, production-store reads or mutations, schema migrations, repository materializations or code executions, scanner processes, agentic falsification runs, assessments, labels, model training, rescoring, source commits, or merge commits. Any implementation, protocol, original receipt, immutable-input binding, challenger, retrieval, slicing, claims, map, CLI, provider, store, migration, scanner, pipeline, lifecycle, OPT-014 or SEC/EDGAR, branch, push, deployment, cohort, outcome, score, threshold, tuning, or recalibration change remains excluded."
+  }
+}

@@ -1,0 +1,195 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-010",
+  "status": "authorization-pending",
+  "objective": "Freeze and qualify the smallest offline-only paired-evaluation foundation required before any G03b provider experiment or G04 empirical outcome evaluation: an eval-isolated runner, fail-closed terminal-observation and recall invariants, a prospectively bounded verifier-supported envelope, and fixed comparison decision rules.",
+  "frozen_inputs": {
+    "agentic_gate": {
+      "path": "docs/agentic-escalation-gate.md",
+      "sha256": "17112f367776373eba27c754311e99a982ddab3a3c65bb7f85afd50eb66767dd"
+    },
+    "containment_artifact": {
+      "path": "docs/optimizations/opt-010-offline-containment-foundation-artifact-2026-08-18.json",
+      "sha256": "38a3502552339805a8b0855321e1356a902594232ace506ddf8988544942a502"
+    },
+    "baseline_protocol": {
+      "path": "docs/optimizations/opt-010-baseline-comparison-protocol-2026-08-18.json",
+      "sha256": "ac7872088d89950e27ffc2e733bc1282a9697d34d2a9add378fb35023c487133"
+    },
+    "protected_cohort_design": {
+      "path": "docs/optimizations/opt-010-protected-cohort-design-2026-08-18.json",
+      "sha256": "bb77f61d14051fb6c5443b30157a92089f8e3ecbf53cb20c69daa2adaa7b12b8"
+    },
+    "architecture_mechanism_result": {
+      "path": "docs/optimizations/opt-010-architecture-mechanism-eligibility-corrected-retry-result-2026-08-20.json",
+      "sha256": "a639f3970c0b3bfee4dbf1cbf22bd17591191ae22ebba4e0a99b0e96efe06cd8"
+    },
+    "production_store_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a"
+  },
+  "frozen_implementation_bindings": {
+    "read_only_tools": {
+      "path": "src/repoauditor/falsify/read_only_tools.py",
+      "sha256": "20206df2a55e00ca2eb8cacd0544f3062da70b48ea54ac0ae43e222a654222c9"
+    },
+    "current_challenger": {
+      "path": "src/repoauditor/falsify/challenger.py",
+      "sha256": "ab50f969979c1fe2c2e961b78455bdf91e72fa7e9459c1291ec30f34aca9610c"
+    },
+    "outcome_schema": {
+      "path": "src/repoauditor/falsify/outcome.py",
+      "sha256": "7a3ca5a67a65ee18733b521ee7489c1220cc65b7725f29db7bb9b73a86c05cb9"
+    },
+    "current_prompt": {
+      "path": "src/repoauditor/falsify/prompts/falsification_v3.md",
+      "sha256": "c5b3de5c946310bec064c92f43de989c58e9472a443cdae97a7d4b1ee8ed55eb"
+    },
+    "current_self_critique_prompt": {
+      "path": "src/repoauditor/falsify/prompts/falsification_selfcritique_v2.md",
+      "sha256": "92abbfdc97d1d631c29ec14f10a4f962d04c58ee1e6ecde9ed6494046594a355"
+    },
+    "configuration": {
+      "path": "src/repoauditor/config.py",
+      "sha256": "e92d255470b83882fa46f88d4a7501ea6b0e44d7d58f00269ee48f455529c3d9"
+    }
+  },
+  "supported_qualification_envelope": {
+    "freeze_before_candidate_or_outcome_access": true,
+    "outer_subject_denominator": 6,
+    "supported_subject_languages": ["Python", "TypeScript", "Java", "Ruby"],
+    "unsupported_outer_denominator_languages": ["Go", "Rust"],
+    "mechanism_cells": {
+      "Python": ["sql_injection", "command_injection", "ssrf"],
+      "TypeScript": ["command_injection", "ssrf"],
+      "Java": ["ssrf"],
+      "Ruby": ["unsafe_deserialization"]
+    },
+    "unsupported_rule": "Go and Rust remain explicit verifier_unsupported terminal outer-denominator states. They are not silently dropped, pooled into supported languages, or treated as negative outcomes.",
+    "activation_boundary": "Any future positive qualification could apply only to the exact supported language/mechanism cells. Broad-language or universal agent activation remains prohibited.",
+    "G07_interpretation": "This foundation may qualify G07 only for the bounded supported envelope; aggregate six-subject coverage remains partial because Go and Rust are unsupported."
+  },
+  "paired_runner_contract": {
+    "location": "src/repoauditor/eval/opt010_paired_foundation.py",
+    "prompt": "src/repoauditor/eval/prompts/opt010_agent_qualification_v1.md",
+    "scope": "Evaluation-only in-memory orchestration over synthetic fixtures. It may call the current bounded falsifier arm and an agent arm whose only evidence operations route through AgentReadOnlyTools.",
+    "production_integration": false,
+    "agent_tool_configuration": {
+      "enabled_only_inside_eval_runner": true,
+      "allowlist": [
+        "indexed_source_excerpt",
+        "structural_slice",
+        "callers",
+        "references",
+        "architecture_evidence"
+      ],
+      "maximum_agent_iterations": 3,
+      "maximum_tool_calls_per_identity": 12,
+      "maximum_results_per_call": 5,
+      "maximum_context_lines": 12,
+      "maximum_query_characters": 256,
+      "maximum_response_bytes": 32768
+    },
+    "fail_closed_tool_rule": "Unknown, malformed, out-of-budget, digest-drifted, or unavailable tool requests produce a terminal abstention or failure; they never fall through to filesystem, database, network, subprocess, arbitrary callable, or mutation access.",
+    "offline_backend": "Scripted deterministic fixtures only. No production model, credential, provider backend, or raw prospective source may be loaded by this receipt."
+  },
+  "terminal_and_recall_invariants": {
+    "terminal_states": [
+      "confirmed",
+      "killed",
+      "unresolved",
+      "abstained",
+      "failed",
+      "timed_out",
+      "budget_exhausted",
+      "parser_failed",
+      "verifier_failed",
+      "verifier_unsupported",
+      "not_applicable"
+    ],
+    "complete_pair_rule": "Every frozen issue-group identity has exactly one terminal observation for each arm. A missing or duplicate arm observation blocks evaluation and remains in the denominator.",
+    "recall_rule": "For an actionable human outcome, only confirmed counts as recalled. Killed, unresolved, abstained, failed, timed out, budget exhausted, parser failed, verifier failed, and missing all count as not recalled; they remain reviewable and visible.",
+    "monotonic_safety_rule": "The agent may not kill or omit an actionable identity that the baseline confirmed. Any such identity is an automatic G04 failure, independent of pooled metrics.",
+    "non_actionable_rule": "For a non-actionable outcome, killed counts as correctly rejected; confirmed is a false positive; unresolved or abstained remains neither silently correct nor excluded.",
+    "outcome_blinding": "Both arms and all terminal chronology are frozen before human outcomes are accessible."
+  },
+  "frozen_future_packet_contract": {
+    "packet_size": 40,
+    "basis": "The already-frozen historical descriptive reference contains 40 decided identities. This is a fixed qualification packet size, not a production threshold or broad representativeness claim.",
+    "identity": "Stable issue-group hashes only, deduplicated before selection.",
+    "ordering": "Outcome-blind round-robin by supported source family, then mechanism cell, then stable identity hash.",
+    "family_rule": "All four supported source families must contribute at least one eligible identity; no family may contribute more than half the packet.",
+    "shortfall_rule": "If exactly 40 eligible issue groups cannot be frozen before outcomes, the later packet gate stops as insufficient. It may not activate remaining sources, reserves, unsupported languages, or post-outcome substitution.",
+    "both_class_rule": "Both outcome classes are required for a final qualification, but this can be checked only after blinded review and cannot be repaired by post-outcome packet replacement."
+  },
+  "frozen_future_decision_rules": {
+    "reporting_unit": "Stable issue-group identity with paired arm observations and one blinded human outcome.",
+    "metrics": [
+      "unique validated issues",
+      "precision",
+      "recall",
+      "abstention coverage",
+      "provider latency",
+      "provider input, output, cache-read, and cache-write tokens",
+      "known dated-price cost",
+      "cost per uniquely validated issue"
+    ],
+    "G04_pass": "Agent recall is at least baseline recall overall and in every reportable subgroup, and zero baseline-confirmed actionable identity is killed or omitted by the agent.",
+    "G03b_pass": "G04 passes; agent precision is at least baseline precision; neither arm has incomplete terminal observations or unavailable usage; cost per uniquely validated issue is available; and the agent is strictly better on at least one of unique validated issues, precision, recall, abstention coverage, or cost per uniquely validated issue without being worse on any of those metrics.",
+    "subgroup_rule": "Family, mechanism, language, and detector subgroups are reportable only when membership was frozen pre-outcome, both outcome classes are present, and both arms are complete. An unavailable subgroup blocks a broad qualification claim and cannot be hidden by pooled results.",
+    "zero_denominator_rule": "Undefined precision, recall, or cost-per-validated-issue remains unavailable and blocks a pass; it is never assigned zero or one.",
+    "insufficient_rule": "Packet shortfall, one-class outcomes, incomplete arms, unknown usage, unsupported pricing, unreportable required subgroup, or failure of either pass rule yields insufficient or not-qualified evidence; no threshold, cohort, or packet may be repaired after outcomes."
+  },
+  "execution": {
+    "sequence": [
+      "Verify every frozen digest, main branch, empty index, byte-identical production store, and absence of all authorized output paths before writing.",
+      "Write the decision protocol and evaluation-only agent prompt before constructing the runner.",
+      "Implement the isolated paired runner without modifying any production challenger, facade, configuration, CLI, store, scanner, retrieval, map, pipeline, or prompt path.",
+      "Run synthetic positive, negative, abstention, unsupported-language, malformed-tool, budget, digest-drift, missing-arm, duplicate-arm, unknown-usage, zero-denominator, subgroup, and monotonic-recall tests.",
+      "Persist one aggregate artifact and one descriptive result; verify the production store byte-identical and stop."
+    ],
+    "protocol": "docs/optimizations/opt-010-paired-evaluation-protocol-2026-08-20.json",
+    "artifact": "docs/optimizations/opt-010-offline-paired-evaluation-foundation-artifact-2026-08-20.json",
+    "result": "docs/optimizations/opt-010-offline-paired-evaluation-foundation-result-2026-08-20.json",
+    "focused_test": "tests/test_opt_010_paired_evaluation_foundation.py"
+  },
+  "resource_ceilings": {
+    "maximum_elapsed_minutes": 20,
+    "maximum_new_data_bytes": 2097152,
+    "network_reads": 0,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "keychain_or_credential_reads": 0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "schema_migrations": 0,
+    "repository_materializations": 0,
+    "repository_code_executions": 0,
+    "scanner_processes": 0,
+    "prospective_snapshots_or_scanner_artifacts_opened": 0,
+    "findings_or_candidates_created_or_read": 0,
+    "outcomes_read": 0,
+    "assessments": 0,
+    "labels": 0,
+    "agentic_provider_runs": 0,
+    "baseline_provider_runs": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0,
+    "human_reviews": 0,
+    "workspace_branch_or_index_mutations": 0,
+    "commits": 0,
+    "merges": 0,
+    "pushes": 0,
+    "lifecycle_changes": 0
+  },
+  "result_boundary": "This foundation may document paired-runner readiness, the G04 offline invariant portion, and G07 only for the prospectively bounded supported envelope. It cannot execute or pass G03b, perform empirical G04 evaluation, inspect or select findings, claim broad-language safety, activate production behavior, or close OPT-010.",
+  "excluded": [
+    "prospective source, snapshot, scanner-artifact, finding, candidate, packet, outcome, assessment, label, score, rank, severity, confidence, model-output, or identity access or disclosure",
+    "provider, credential, network, repository, scanner, production-store, baseline experiment, agentic experiment, human review, outcome import, empirical metric, resampling, tuning, recalibration, production threshold, recommendation, policy, activation, deployment, or OPT-010 lifecycle activity",
+    "modification or integration of existing challenger, read-only facade, config, CLI, store, migration, scanner, retrieval, slicer, verifier, map, pipeline, production prompt, OPT-014, SEC/EDGAR, OPT-036, branch, index, commit, merge, or push state"
+  ],
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the OPT-010 offline paired-evaluation foundation described by opt-010-offline-paired-evaluation-foundation-receipt-2026-08-20.json, limited to one evaluation-only in-memory paired runner over scripted synthetic fixtures; one versioned agent qualification prompt whose only evidence operations use the existing bounded AgentReadOnlyTools facade; freezing before any finding or outcome access of a 40-identity future packet contract, complete paired terminal states, strict actionable-recall and monotonic no-silent-kill invariants, fixed G03b/G04 Pareto decision rules, and a qualification envelope limited to the frozen Python, TypeScript, Java, and Ruby mechanism cells while retaining Go and Rust as explicit verifier-unsupported outer-denominator states; one protocol, one helper, one prompt, one focused test, one aggregate artifact, and one descriptive result, with ceilings of 20 minutes, 2 MiB new data, and exactly zero network reads or uploads, provider calls, tokens, cost, Keychain or credential reads, production-store reads or mutations, schema migrations, repository materializations or code executions, scanner processes, prospective snapshot or scanner-artifact access, findings or candidates created or read, outcomes, assessments, labels, agentic or baseline provider runs, model training, rescoring, human reviews, workspace branch or index mutations, commits, merges, pushes, or lifecycle changes. Existing challenger, read-only facade, configuration, CLI, store, migration, scanner, retrieval, slicer, verifier, map, pipeline, and production prompt changes or integration; prospective candidate or packet selection or disclosure; source rendering; provider-backed paired comparison; empirical recall evaluation; outcome import; resampling; tuning; recalibration; threshold selection beyond the frozen qualification rules; production-policy change or activation; OPT-010 promotion or closure; remaining-source or reserve activation; OPT-014 or SEC/EDGAR reactivation; OPT-036 use or change; branch integration; remote push; and deployment remain excluded."
+  }
+}

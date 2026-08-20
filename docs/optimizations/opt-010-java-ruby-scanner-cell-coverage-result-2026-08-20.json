@@ -1,0 +1,75 @@
+{
+  "boundary": {
+    "ceiling_bytes": 2097152,
+    "observed_bytes": 7841236,
+    "receipt_qualified": false,
+    "retained_evidence_use": "descriptive-non-qualifying-only",
+    "stop_reason": "new-data-ceiling-exceeded"
+  },
+  "cells": [
+    {
+      "cell": "Java:ssrf",
+      "classification": "coverage-gap",
+      "clean_execution_valid": true,
+      "clean_mapped_results": 0,
+      "positive_execution_valid": true,
+      "positive_mapped_results": 0
+    },
+    {
+      "cell": "Ruby:unsafe_deserialization",
+      "classification": "qualified-detectable",
+      "clean_execution_valid": true,
+      "clean_mapped_results": 0,
+      "positive_execution_valid": true,
+      "positive_mapped_results": 1
+    }
+  ],
+  "gates": {
+    "architecture_recovery_started": false,
+    "g03b_decided": false,
+    "g04_decided": false,
+    "opt010_status_changed": false,
+    "packet_frozen": false
+  },
+  "interpretation": "The retained synthetic observations indicate a Java SSRF coverage gap and detectable Ruby unsafe deserialization, but the audit cannot qualify under its receipt because full pinned-default SARIF retention exceeded the 2 MiB new-data ceiling. The observations remain descriptive non-qualifying evidence only.",
+  "optimization": "OPT-010",
+  "production_store": {
+    "after_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "byte_identical": true,
+    "expected_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a"
+  },
+  "resource_accounting": {
+    "agentic_or_baseline_runs": 0,
+    "assessments": 0,
+    "commits": 0,
+    "elapsed_seconds": 43.131,
+    "human_reviews": 0,
+    "keychain_or_credential_reads": 0,
+    "labels": 0,
+    "lifecycle_changes": 0,
+    "logical_scanner_processes": 4,
+    "merges": 0,
+    "model_training_runs": 0,
+    "network_reads_or_uploads": 0,
+    "new_data_bytes": 7841236,
+    "outcomes_read": 0,
+    "production_store_database_reads": 0,
+    "production_store_mutations": 0,
+    "provider_calls": 0,
+    "provider_cost_usd": 0.0,
+    "provider_reported_tokens": 0,
+    "pushes": 0,
+    "repository_code_executions": 0,
+    "repository_materializations": 0,
+    "rescoring_runs": 0,
+    "workspace_branch_or_index_mutations": 0
+  },
+  "routing": "supplemental-rule-qualification-prerequisite",
+  "schema_version": 1,
+  "status": "stopped-nonqualifying-new-data-ceiling-exceeded",
+  "supplemental_semgrep": {
+    "java": "not-applicable",
+    "processes": 0,
+    "ruby": "not-applicable"
+  }
+}

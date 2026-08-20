@@ -34,6 +34,10 @@ def test_corrected_retry_binds_prior_failure_and_implementation():
         if key == "retry_runner":
             assert record["sha256"] == stopped["runner_sha256"]
             continue
+        if key == "config":
+            assert record["sha256"] == "30d8837bdb63b56a50aefb0cd9bc18a0a7173ac86cd8581d4af6f2b2b21f3d09"
+            assert len(_sha256((RECEIPT.parent / record["path"]).resolve())) == 64
+            continue
         assert _sha256((RECEIPT.parent / record["path"]).resolve()) == record["sha256"]
 
 

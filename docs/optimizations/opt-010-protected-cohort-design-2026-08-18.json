@@ -1,0 +1,145 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-010",
+  "status": "frozen-descriptive-design",
+  "recorded_at": "2026-08-18",
+  "authorization_receipt": {
+    "path": "docs/optimizations/opt-010-protected-cohort-design-receipt-2026-08-18.json",
+    "sha256": "692f3a5e56628855a8e449796a3fb7bff495e134b99a2e8d4b4b01178ce0c7a3"
+  },
+  "purpose": "Define the outcome-blind G02/G05 population and metadata contract before any protected source, subject, repository, cohort, holdout, or outcome is selected.",
+  "protection_sequence": [
+    "Freeze an independent source-family identity from metadata that contains no finding, advisory outcome, score, rank, severity, confidence, or expected-performance input.",
+    "Freeze repository identity, exact commit, immutable snapshot-digest slot, detector-input-digest slot, architecture-map-digest slot, and protocol version before materialization or execution.",
+    "Freeze family, mechanism, language, and detector-provenance schemas before any terminal observation exists.",
+    "Assign the protection timestamp and immutable selection digest before repository materialization, scanning, provider use, or human review.",
+    "Retain every later terminal state, including failure, timeout, budget exhaustion, parser or verifier failure, abstention, and unavailable authoritative usage."
+  ],
+  "source_independence": {
+    "eligible_only_if": [
+      "The source family was absent from development, training, prompting, detector construction, scanner qualification, prior evaluation, protected holdouts, and human-review source pools before protection.",
+      "The product is independently authored and deployable rather than a tutorial, benchmark, deliberately vulnerable application, generated fixture, starter template, or recovery demonstration.",
+      "The family partition is frozen before source materialization or any outcome-bearing inspection."
+    ],
+    "family_partition": "Forks, clones, mirrors, shared-upstream derivatives, release variants, and vulnerable/fixed or other paired snapshots remain one source family.",
+    "fail_closed": "Any unresolved ancestry or prior-exposure question makes the family unavailable, not eligible."
+  },
+  "subject_identity": {
+    "required_fields": [
+      "source_family_id",
+      "repository_identity",
+      "exact_commit",
+      "snapshot_sha256",
+      "detector_input_sha256",
+      "architecture_map_sha256",
+      "protocol_version",
+      "protection_timestamp",
+      "selection_digest"
+    ],
+    "pairing_rule": "All paired variants share one source_family_id and one partition assignment.",
+    "drift_rule": "A mismatch in commit, snapshot, detector input, architecture map, protocol, or selection digest stops the subject; it may not be repaired after outcomes by silent substitution."
+  },
+  "subgroup_metadata": {
+    "family": {
+      "source": "frozen source-lineage metadata",
+      "missing_rule": "unavailable"
+    },
+    "mechanism": {
+      "source": "analyst-declared pre-outcome mechanism vocabulary",
+      "prohibited_inference": [
+        "rule names",
+        "finding descriptions",
+        "scores",
+        "model output",
+        "outcomes"
+      ],
+      "missing_rule": "unavailable"
+    },
+    "language": {
+      "source": "explicit authoritative source or SARIF sourceLanguage metadata",
+      "prohibited_inference": [
+        "file extension",
+        "rule name",
+        "finding text"
+      ],
+      "missing_rule": "unavailable"
+    },
+    "detector_provenance": {
+      "source": "authoritative frozen execution provenance",
+      "required_fields": [
+        "detector_name",
+        "detector_version",
+        "configuration_digest",
+        "prompt_or_rule_identity_when_applicable"
+      ],
+      "missing_rule": "unavailable"
+    },
+    "reporting_rule": "A subgroup is descriptive only when its membership and denominator were frozen before outcomes and every member has a terminal observation; pooled results may not conceal an unavailable or incomplete subgroup."
+  },
+  "terminal_observation": {
+    "required_states": [
+      "completed",
+      "failed",
+      "timed_out",
+      "budget_exhausted",
+      "parser_failed",
+      "verifier_failed",
+      "abstained",
+      "not_applicable"
+    ],
+    "usage_rule": "Provider usage is recorded only from authoritative provider responses. Rejected or interrupted attempts with unavailable usage remain unavailable and are never assigned zero.",
+    "denominator_rule": "Every protected subject and comparison arm remains in the frozen denominator; an incomplete subject may not be silently removed.",
+    "completeness_rule": "G02/G05 eligibility requires terminal state, detector provenance, and all predeclared subgroup fields or explicit unavailable values for every protected subject."
+  },
+  "sufficiency_arithmetic": {
+    "nature": "descriptive candidate-design arithmetic only; no adequacy threshold is selected or recommended",
+    "frozen_historical_reference": {
+      "overall_decided_identities": 40,
+      "evaluation_families": 8,
+      "both_classes_required": true,
+      "dimension_cohort_decided_identities": 40,
+      "dimension_cohort_both_classes_required": true
+    },
+    "marginal_coverage_formula": "For mutually exclusive values, a design that applies the frozen 40-decided reference to every reported value requires at least 40 * max(mechanism_value_count, language_value_count, detector_value_count) terminal decided identities, in addition to eight source families and both-class requirements.",
+    "intersectional_coverage_formula": "If every mechanism-by-language-by-detector intersection were reported against the same reference, the arithmetic count would be 40 * mechanism_value_count * language_value_count * detector_value_count; this is not a selected design or recommendation.",
+    "illustrative_non_selected_scenarios": [
+      {
+        "mechanism_values": 2,
+        "language_values": 2,
+        "detector_values": 1,
+        "marginal_reference_count": 80,
+        "intersectional_reference_count": 160
+      },
+      {
+        "mechanism_values": 4,
+        "language_values": 2,
+        "detector_values": 2,
+        "marginal_reference_count": 160,
+        "intersectional_reference_count": 640
+      }
+    ],
+    "terminal_attrition_formula": "planned identities = ceiling(required terminal identities / (1 - assumed attrition fraction))",
+    "illustrative_attrition_for_40": [
+      {
+        "assumed_attrition_fraction": 0.0,
+        "planned_identities": 40
+      },
+      {
+        "assumed_attrition_fraction": 0.1,
+        "planned_identities": 45
+      },
+      {
+        "assumed_attrition_fraction": 0.2,
+        "planned_identities": 50
+      }
+    ]
+  },
+  "decision_boundary": {
+    "selected_threshold": null,
+    "recommended_threshold": null,
+    "selected_source_or_cohort": false,
+    "outcome_accessed": false,
+    "agent_execution_authorized": false,
+    "OPT_036_admitted": false
+  }
+}

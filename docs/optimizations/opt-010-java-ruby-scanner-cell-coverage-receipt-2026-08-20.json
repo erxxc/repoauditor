@@ -1,0 +1,216 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-010",
+  "status": "authorization-pending",
+  "objective": "Determine offline whether the frozen Semgrep instrument can detect the two empty supported mechanism cells, Java SSRF and Ruby unsafe deserialization, before spending effort on additional sources or changing any scanner rule.",
+  "frozen_inputs": {
+    "corrected_augmentation_acceptance_result": {
+      "path": "docs/optimizations/opt-010-supported-primary-augmentation-corrected-acceptance-result-2026-08-20.json",
+      "sha256": "040d11c802fba031f17434c6271dee61bdfb4c7f1bde837d9021ca6b2557e955"
+    },
+    "corrected_augmentation_acceptance_artifact": {
+      "path": "data/artifacts/opt010-supported-primary-augmentation/acceptance-artifact.json",
+      "sha256": "d2cdd3a5d4a8b8244abd64fea04da44c819e600b611a8e580c75161ba7599e31"
+    },
+    "paired_protocol": {
+      "path": "docs/optimizations/opt-010-paired-evaluation-protocol-2026-08-20.json",
+      "sha256": "a19f0790bdf5bc9042fcd50e1fe029871e089aa48a32eb2e88cf56b24e91e874"
+    },
+    "mechanism_mapping": {
+      "path": "data/artifacts/opt010-supported-primary-augmentation/mechanism-mapping.json",
+      "sha256": "5a954ed23a788d34dce0b36bda1b98ad3f8fe322915552f7d237fe57627218b0"
+    },
+    "retained_semgrep_canary": {
+      "path": "data/artifacts/opt010-supported-primary-augmentation/canary-semgrep.json",
+      "sha256": "54cdc71c6c18450d9ca39e8c09a4dd2500738d873a13f4f965cbbf91853a8fd4"
+    },
+    "retained_supplemental_canary": {
+      "path": "data/artifacts/opt010-supported-primary-augmentation/canary-semgrep-supplemental.json",
+      "sha256": "31ce141852aae4a7630052dd04f859aecf3f419c6c70889426add621d81ecc65"
+    },
+    "production_store_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a"
+  },
+  "frozen_instruments": {
+    "semgrep_runtime": {
+      "path": "src/repoauditor/eval/semgrep_runtime.py",
+      "sha256": "b908ac266f923f35fea290436e11959c11a49829e4566b89c444b25056a3a257"
+    },
+    "sast_adapter": {
+      "path": "src/repoauditor/detect/deterministic/sast_adapter.py",
+      "sha256": "ff7790a1df8aa9cd01752b9865db2578165e9b4a7d83faed3b21023510ca7893"
+    },
+    "semgrep_provenance": {
+      "path": "src/repoauditor/detect/deterministic/provenance.py",
+      "sha256": "1500114a953bfee20a03e85d95663ba9c689909d38a4c225a0507d64f70de679"
+    },
+    "pinned_default_rules_archive": {
+      "path": "src/repoauditor/detect/deterministic/semgrep-default.yml.gz",
+      "sha256": "100b29f7ea523d3a30895e5c34daa35bb1d6d668684fcf5be27d827c46415fc1"
+    },
+    "supplemental_rules": {
+      "path": "src/repoauditor/detect/deterministic/semgrep-supplemental.yml",
+      "sha256": "e3b5ce91d91dcf194eff6fd1a0cdb9b6214a31a71b661075534d919143017963"
+    }
+  },
+  "runtime_contract": {
+    "artifact_directory": "data/artifacts/opt010-java-ruby-scanner-cell-coverage",
+    "must_be_absent_before_authorization": true,
+    "semgrep_version": "1.170.0",
+    "installed_import_interpreter": "/opt/homebrew/Cellar/semgrep/1.170.0/libexec/bin/python",
+    "semgrep_binary": "/opt/homebrew/bin/semgrep",
+    "semgrep_log_file": "data/artifacts/opt010-java-ruby-scanner-cell-coverage/semgrep.log",
+    "semgrep_version_cache_path": "data/artifacts/opt010-java-ruby-scanner-cell-coverage/semgrep-version-cache",
+    "requirements": [
+      "Verify every frozen input, instrument, store, branch, empty index, exact installed interpreter path, binary path, and initially absent output before writing.",
+      "Create the isolated artifact directory, copy the frozen mechanism mapping byte-for-byte, and persist the exact frozen fixtures before any Semgrep-capable process.",
+      "Bind SEMGREP_LOG_FILE and SEMGREP_VERSION_CACHE_PATH to the isolated directory for every Semgrep-capable process; seed one fresh cache with the frozen semgrep_runtime helper.",
+      "Run exactly one import-only version check with the explicitly frozen installed interpreter. Do not probe the project .venv, start the Semgrep CLI for a standalone version check, install or downgrade a tool, contact semgrep.dev, use registry rules, or retry a failed process.",
+      "Require both retained canary reports and their exact pinned provenance to pass before fixture scanning. Do not rerun general canaries."
+    ]
+  },
+  "frozen_fixture_contract": {
+    "freeze_before_scanner_process": true,
+    "fixtures": [
+      {
+        "cell": "Java:ssrf",
+        "expectation": "positive",
+        "path": "fixtures/java-ssrf-positive/FetchController.java",
+        "source_lines": [
+          "import java.net.URI;",
+          "import org.springframework.web.bind.annotation.GetMapping;",
+          "import org.springframework.web.bind.annotation.RequestParam;",
+          "import org.springframework.web.client.RestTemplate;",
+          "",
+          "class FetchController {",
+          "  @GetMapping(\"/fetch\")",
+          "  String fetch(@RequestParam String url) {",
+          "    return new RestTemplate().getForObject(URI.create(url), String.class);",
+          "  }",
+          "}"
+        ],
+        "construct": "HTTP request parameter flows to a RestTemplate outbound URL sink without validation"
+      },
+      {
+        "cell": "Java:ssrf",
+        "expectation": "clean",
+        "path": "fixtures/java-ssrf-clean/FetchController.java",
+        "source_lines": [
+          "import org.springframework.web.client.RestTemplate;",
+          "",
+          "class FetchController {",
+          "  private static final String HEALTH_URL = \"https://example.invalid/health\";",
+          "  String fetchHealth() {",
+          "    return new RestTemplate().getForObject(HEALTH_URL, String.class);",
+          "  }",
+          "}"
+        ],
+        "construct": "fixed compile-time URL reaches the same outbound client without request-controlled input"
+      },
+      {
+        "cell": "Ruby:unsafe_deserialization",
+        "expectation": "positive",
+        "path": "fixtures/ruby-deserialization-positive/sessions_controller.rb",
+        "source_lines": [
+          "require \"base64\"",
+          "",
+          "class SessionsController",
+          "  def restore",
+          "    payload = params[:payload]",
+          "    session = Marshal.load(Base64.decode64(payload))",
+          "    render json: session",
+          "  end",
+          "end"
+        ],
+        "construct": "request-controlled bytes flow to Ruby Marshal.load"
+      },
+      {
+        "cell": "Ruby:unsafe_deserialization",
+        "expectation": "clean",
+        "path": "fixtures/ruby-deserialization-clean/sessions_controller.rb",
+        "source_lines": [
+          "require \"json\"",
+          "",
+          "class SessionsController",
+          "  def restore",
+          "    session = JSON.parse(params[:payload], symbolize_names: false)",
+          "    render json: session",
+          "  end",
+          "end"
+        ],
+        "construct": "request-controlled JSON uses a data-only parser and does not invoke Marshal.load"
+      }
+    ],
+    "fixture_rule": "The helper must render each source_lines array joined by newline with one final newline, persist a manifest digest before runtime import or scanner activity, and refuse any content, path, cell, expectation, or ordering drift."
+  },
+  "coverage_contract": {
+    "scanner": "Only the frozen pinned-default Semgrep configuration may run over each fixture in frozen order: Java positive, Java clean, Ruby positive, Ruby clean.",
+    "logical_scanner_processes": 4,
+    "supplemental_applicability": "Inspect only the frozen supplemental provenance and declared extension boundary. Record Java and Ruby as not applicable; do not run supplemental Semgrep because its frozen applicability is JavaScript/TypeScript only.",
+    "per_cell_classification": {
+      "qualified-detectable": "positive output is valid and has at least one result whose canonical rule metadata contains exactly the frozen cell CWE mechanism; clean output is valid with zero such results; both executions have exact version and pinned provenance",
+      "coverage-gap": "both outputs and provenance are valid, the clean control has zero mapped-cell results, and the positive control has zero mapped-cell results",
+      "clean-control-failure": "the clean control has one or more mapped-cell results",
+      "scanner-or-provenance-failure": "either output, target inventory, exact version, pinned configuration, SARIF, or rule metadata is unavailable, partial, malformed, or inconsistent"
+    },
+    "routing": {
+      "all_cells_qualified_detectable": "Record source-scarcity as the supported next diagnosis; do not select or acquire a source.",
+      "any_coverage_gap": "Record a separately authorized supplemental-rule qualification as the supported next prerequisite; do not author or change a rule in this gate.",
+      "any_control_or_scanner_failure": "Stop as instrument-audit failure without a routing recommendation."
+    },
+    "result_boundary": "Counts and classifications are synthetic-instrument evidence only. They cannot establish production recall, source prevalence, candidate validity, packet adequacy, or a production-policy change."
+  },
+  "execution": {
+    "helper": "src/repoauditor/eval/opt010_scanner_cell_coverage.py",
+    "focused_test": "tests/test_opt_010_scanner_cell_coverage.py",
+    "artifact": "data/artifacts/opt010-java-ruby-scanner-cell-coverage/coverage-artifact.json",
+    "result": "docs/optimizations/opt-010-java-ruby-scanner-cell-coverage-result-2026-08-20.json",
+    "sequence": [
+      "Verify immutable bindings and absence.",
+      "Freeze the copied mapping, four fixtures, and fixture manifest.",
+      "Seed the isolated Semgrep cache and perform the one exact installed-runtime import check.",
+      "Verify retained canaries and run the four ordered offline fixture scans.",
+      "Classify both cells, persist one aggregate artifact and result, verify all boundaries, and stop."
+    ]
+  },
+  "resource_ceilings": {
+    "maximum_elapsed_minutes": 10,
+    "maximum_new_data_bytes": 2097152,
+    "logical_scanner_processes": 4,
+    "network_reads_or_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "keychain_or_credential_reads": 0,
+    "repository_materializations": 0,
+    "repository_code_executions": 0,
+    "production_store_database_reads": 0,
+    "production_store_mutations": 0,
+    "schema_migrations": 0,
+    "human_reviews": 0,
+    "outcomes_read": 0,
+    "assessments": 0,
+    "labels": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0,
+    "agentic_or_baseline_runs": 0,
+    "workspace_branch_or_index_mutations": 0,
+    "commits": 0,
+    "merges": 0,
+    "pushes": 0,
+    "lifecycle_changes": 0
+  },
+  "stop_conditions": [
+    "Any frozen receipt, result, artifact, mapping, canary, implementation, rule archive, supplemental rule, store, branch, index, installed runtime path, fixture, manifest, or initially absent output drifts.",
+    "The artifact directory, mapping, fixtures, or manifest is not durable before a Semgrep-capable process; either runtime binding is absent; the exact installed import fails; a general canary is rerun; a registry rule, semgrep.dev, network host, retry, or unlisted scanner is used.",
+    "Any scan exceeds its frozen fixture, order, process, time, or data boundary; any output or provenance is partial or malformed; or any source repository, production finding, candidate, outcome, provider, credential, store, git mutation, or lifecycle surface is accessed."
+  ],
+  "excluded": [
+    "production or retained repository source access, repository acquisition, source rendering to the project owner, production candidate or finding generation, packet construction, architecture recovery, provider or Keychain use, agentic or baseline execution, human review, outcomes, assessments, and labels",
+    "new or edited Semgrep rules, supplemental-rule authoring, scanner configuration changes, scanner installation or downgrade, retries, model training, rescoring, fitting, tuning, recalibration, threshold selection, precision or recall claims, production-policy changes, OPT-010 promotion or closure, lifecycle changes, integration, push, and deployment"
+  ],
+  "result_boundary": "This audit may classify only whether the current frozen scanner instrument recognizes the two frozen synthetic supported cells. It cannot prove real-source availability, finding correctness, empirical recall, packet feasibility, paired-arm performance, production readiness, or OPT-010 completion.",
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the OPT-010 offline Java/Ruby scanner-cell coverage audit described by opt-010-java-ruby-scanner-cell-coverage-receipt-2026-08-20.json, limited to freezing before scanner activity one positive and one clean synthetic fixture for Java CWE-918 SSRF and Ruby CWE-502 unsafe deserialization; one exact import-only Semgrep 1.170.0 check using only /opt/homebrew/Cellar/semgrep/1.170.0/libexec/bin/python with fresh isolated SEMGREP_LOG_FILE and SEMGREP_VERSION_CACHE_PATH bindings; verification without rerun of the retained Semgrep and supplemental Semgrep canaries; exactly four ordered offline pinned-default Semgrep fixture scans; static confirmation that frozen supplemental Semgrep is not applicable to Java or Ruby; aggregate per-cell classification as qualified-detectable, coverage-gap, clean-control-failure, or scanner-or-provenance-failure; and one routing result, with ceilings of 10 minutes, 2 MiB new data, four logical scanner processes, and exactly zero network reads or uploads, provider calls, tokens, cost, Keychain or credential reads, repository materializations or code executions, production-database reads or mutations, assessments, labels, training, rescoring, agentic or baseline runs, human reviews, outcomes, branch or index mutations, commits, merges, pushes, or lifecycle changes. Production or retained repository source access, source rendering, candidate or packet activity, architecture recovery, new or edited scanner rules, scanner configuration changes, installation, downgrade, retries, precision or recall claims, threshold selection, tuning, recalibration, production-policy changes, OPT-010 promotion or closure, integration, remote push, and deployment remain excluded."
+  }
+}

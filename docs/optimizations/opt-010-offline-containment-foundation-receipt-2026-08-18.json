@@ -1,0 +1,182 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-010",
+  "status": "authorization-pending",
+  "frozen_at": "2026-08-18",
+  "scope": "Resolve the G03 experiment-readiness circularity and implement the G06 containment foundation entirely offline. Split baseline comparison into G03a frozen-protocol readiness and G03b later bounded qualification outcome without authorizing provider use; add one disabled-by-default configuration-driven read-only tool facade over an already-built retrieval index, one trusted finding subject, and one stored in-memory architecture map; qualify its typed allowlist, immutable snapshot and index binding, deterministic output, per-call provenance, fail-closed limits, and negative security boundaries; persist one protocol, one aggregate qualification artifact, and one descriptive result; and stop.",
+  "frozen_inputs": {
+    "agentic_gate": {
+      "path": "../agentic-escalation-gate.md",
+      "sha256": "6ec12b12918c7449866b47b96564d3a815a4efda67739e643aee7cf609e43cfe"
+    },
+    "readiness_artifact": {
+      "path": "opt-010-offline-readiness-audit-artifact-2026-08-18.json",
+      "sha256": "2c8969f26c4203b9bd9bd6f31645a41480d95f9526960cce3c5339d8de946ca5"
+    },
+    "readiness_result": {
+      "path": "opt-010-offline-readiness-audit-result-2026-08-18.json",
+      "sha256": "79f45658b3d1a4f07fafa6dbbdeca4673d36c807d1c8ecf539e131503b040602"
+    },
+    "optimization_status": {
+      "path": "optimization-status.json",
+      "sha256": "a8d33e0d3f27e686b120213689223fb29b83834245ffc2f0b147f33f7842c6fa",
+      "expected_opt_010_status": "open"
+    },
+    "production_store": {
+      "path": "../../data/repoauditor.db",
+      "sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+      "access": "before-and-after-hash-only"
+    },
+    "configuration": {
+      "path": "../../config.toml",
+      "sha256": "30d8837bdb63b56a50aefb0cd9bc18a0a7173ac86cd8581d4af6f2b2b21f3d09"
+    },
+    "config_schema": {
+      "path": "../../src/repoauditor/config.py",
+      "sha256": "0a383712be62f3ee5005fb0a2f9c02065bb15430e89a63130be5018de36c94ae"
+    },
+    "challenger": {
+      "path": "../../src/repoauditor/falsify/challenger.py",
+      "sha256": "ab50f969979c1fe2c2e961b78455bdf91e72fa7e9459c1291ec30f34aca9610c"
+    },
+    "claims": {
+      "path": "../../src/repoauditor/falsify/claims.py",
+      "sha256": "d534c9137236a1e37e2ae88072f24d69b1c6f516ab577175af4dbbf461ad41f6"
+    },
+    "slicing": {
+      "path": "../../src/repoauditor/falsify/slicing.py",
+      "sha256": "f46e8c3eb7bc519efa9c64f11f226dc6fef944ac911373c3238e6615ca07f0df"
+    },
+    "retrieval_index": {
+      "path": "../../src/repoauditor/detect/retrieval/index.py",
+      "sha256": "c440666998bc0898453acc309d23a10b13e95a41360ec23f911e0410da357c08"
+    },
+    "architecture_schema": {
+      "path": "../../src/repoauditor/map/schema.py",
+      "sha256": "727c8647f65395535e12495f7d004231ed86548bbf9ac0383fefbd64c7bc84c3"
+    }
+  },
+  "g03_decomposition_contract": {
+    "G03a": {
+      "name": "baseline-comparison-protocol-readiness",
+      "pass_evidence": [
+        "one immutable protocol fixes identical paired subjects and inputs for the current bounded falsifier and proposed agent",
+        "the protocol fixes unique-issue identity, precision, recall, abstention coverage, latency, provider tokens, total cost, and cost per uniquely validated issue before any qualification outcome",
+        "the protocol keeps outcomes blinded until both arms have terminal predictions and usage",
+        "the protocol defines missing usage, incomplete arms, verifier abstention, and cohort or subgroup insufficiency as fail-closed blockers"
+      ]
+    },
+    "G03b": {
+      "name": "bounded-qualification-outcome",
+      "state_after_this_work": "pending-separate-authorization",
+      "rule": "G03b can be evaluated only by a later specially authorized provider-backed qualification after G01, G02, G03a, the offline invariant portion of G04, G05, G06, and G07 pass. G03b and empirical recall safety must pass before any production activation."
+    },
+    "policy_boundary": "This decomposition removes a logical cycle but grants no provider, agent, experiment, threshold, or production authority."
+  },
+  "g06_implementation_contract": {
+    "default_state": "disabled",
+    "facade_inputs": [
+      "one already-built RetrievalIndex",
+      "one trusted Finding subject",
+      "one stored in-memory ArchitectureMap",
+      "one exact snapshot commit",
+      "one expected deterministic retrieval-index digest",
+      "validated AgentReadOnlyToolsConfig"
+    ],
+    "typed_allowlist": [
+      "indexed_source_excerpt",
+      "structural_slice",
+      "callers",
+      "references",
+      "architecture_evidence"
+    ],
+    "configuration_bounds": [
+      "enabled",
+      "allowlist",
+      "maximum_calls",
+      "maximum_results_per_call",
+      "maximum_context_lines",
+      "maximum_query_characters",
+      "maximum_response_bytes"
+    ],
+    "required_enforcement": [
+      "reject every operation while disabled",
+      "reject tools absent from the exact allowlist",
+      "reject snapshot-commit or retrieval-index-digest drift before returning evidence",
+      "accept only canonical index-relative paths already known to the retrieval index",
+      "reject absolute paths, parent traversal, NUL bytes, symlink escape attempts, empty or oversized queries, invalid line ranges, and exhausted call budgets",
+      "truncate only at explicit structural result boundaries and reject any response still exceeding the byte ceiling",
+      "return deterministic JSON-safe evidence plus tool, ordinal, snapshot commit, index digest, request digest, response digest, and boundedness metadata for every successful call",
+      "expose no filesystem object, database connection, network client, subprocess interface, repository mutation primitive, or arbitrary callable"
+    ],
+    "qualification": [
+      "deterministic positive tests for all five allowed tools over synthetic ephemeral fixture source only",
+      "negative tests for disabled access, unknown tools, traversal, absolute paths, NUL bytes, symlink escape, snapshot drift, index drift, oversized queries, invalid ranges, result limits, response-byte limits, and call-budget exhaustion",
+      "monkeypatched sentinels proving no subprocess, socket, URL opener, store connection, or write primitive is reached",
+      "repeatability test proving byte-identical responses and provenance for identical frozen sessions"
+    ],
+    "integration_boundary": "The facade is not wired into challenger.py, the CLI, any provider client, or any production pipeline by this work."
+  },
+  "allowed_file_changes": [
+    "docs/agentic-escalation-gate.md",
+    "config.toml",
+    "src/repoauditor/config.py",
+    "src/repoauditor/falsify/read_only_tools.py",
+    "tests/test_read_only_agent_tools.py",
+    "tests/test_opt_010_gate_decomposition.py",
+    "docs/optimizations/opt-010-baseline-comparison-protocol-2026-08-18.json",
+    "docs/optimizations/opt-010-offline-containment-foundation-artifact-2026-08-18.json",
+    "docs/optimizations/opt-010-offline-containment-foundation-result-2026-08-18.json"
+  ],
+  "deterministic_sequence": [
+    "Verify every frozen input digest and the unchanged OPT-010 open lifecycle state.",
+    "Freeze the G03a/G03b comparison protocol and reconcile only the agentic escalation gate document.",
+    "Add a disabled-by-default validated configuration section and the isolated read-only facade without editing the current challenger, retrieval, slicing, claims, map, CLI, provider, store, or migration implementations.",
+    "Run focused positive, negative, repeatability, configuration, retrieval, slicing, claims, prompt-security, and non-live regression tests with network and mutation sentinels.",
+    "Persist one aggregate qualification artifact and one descriptive result, hash the production store again, and stop.",
+    "Report G03a and G06 as pass only if every frozen contract and negative test passes; otherwise retain partial or documented-fail status without workaround."
+  ],
+  "resource_ceilings": {
+    "maximum_elapsed_minutes": 30,
+    "maximum_new_data_bytes": 1048576,
+    "maximum_new_implementation_files": 1,
+    "maximum_new_test_files": 2,
+    "maximum_new_protocols": 1,
+    "maximum_aggregate_artifacts": 1,
+    "maximum_result_documents": 1,
+    "network_reads": 0,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "schema_migrations": 0,
+    "repository_materializations": 0,
+    "repository_code_executions": 0,
+    "scanner_processes": 0,
+    "agentic_falsification_runs": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0
+  },
+  "excluded": [
+    "production or raw-snapshot source rendering",
+    "provider, model, prompt, planner, challenger, claim, slicer, retrieval-index, architecture-map, CLI, store, migration, scanner, or pipeline integration changes",
+    "agent execution, provider calls, baseline comparison execution, protected cohort or candidate selection, outcomes, labels, assessments, scores, ranks, thresholds, tuning, recalibration, or model training",
+    "G03b qualification, empirical recall evaluation, OPT-010 activation, promotion, closure, optimization-ledger changes, OPT-014 acquisition, SEC/EDGAR activation, branch integration, remote push, or deployment"
+  ],
+  "stop_conditions": [
+    "Any frozen input or production-store digest drifts before implementation begins.",
+    "The facade would need direct filesystem, database, network, subprocess, checkout-mutation, arbitrary-callable, provider, or scanner access.",
+    "A negative security test fails or an excluded interface is reachable.",
+    "The existing challenger, retrieval, slicing, claims, map, CLI, provider, store, migration, lifecycle, OPT-014, or SEC/EDGAR files would need modification.",
+    "Any unlisted file would change or any time, byte, file-count, test-count, protocol, artifact, result, or zero-activity ceiling would be exceeded."
+  ],
+  "result_boundary": "This work may make G03a and G06 documented-pass and identify the remaining G02, G04, G05, G07, and G03b evidence prerequisites. It may not run or integrate an agent, authorize G03b, select a cohort, reveal or use outcomes, call a provider, alter findings or labels, recommend a performance threshold, change production policy, activate or close OPT-010, reopen OPT-014, activate SEC/EDGAR, integrate a branch, push remotely, or deploy.",
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the OPT-010 offline G03/G06 containment foundation described by opt-010-offline-containment-foundation-receipt-2026-08-18.json, limited to splitting baseline comparison into G03a frozen-protocol readiness and G03b later separately authorized qualification outcome without granting provider or experiment authority; implementing one disabled-by-default configuration-driven read-only tool facade over an already-built retrieval index, one trusted finding subject, and one stored in-memory architecture map; exposing only bounded indexed source excerpts, structural slices, callers, references, and architecture evidence; enforcing exact snapshot and index binding, typed allowlisting, deterministic response and provenance digests, call, query, context, result, and byte ceilings, and fail-closed negative boundaries against disabled or unknown tools, traversal, absolute paths, NUL bytes, symlink escape, digest drift, invalid ranges, oversized requests or responses, budget exhaustion, filesystem, database, network, subprocess, arbitrary-callable, and mutation access; one frozen comparison protocol, focused synthetic-fixture and non-live tests, one aggregate qualification artifact, and one descriptive result, with ceilings of 30 minutes, 1 MiB new data, one new implementation file, two new test files, one protocol, one artifact, one result, and exactly zero network reads, uploads, provider calls, tokens, cost, production-store reads or mutations, schema migrations, repository materializations or code executions, scanner processes, agentic falsification runs, assessments, labels, model training, or rescoring. Production or raw-snapshot source rendering, provider, model, prompt, planner, challenger, claim, slicer, retrieval-index, architecture-map, CLI, store, migration, scanner, or pipeline integration changes, baseline comparison execution, protected cohort or candidate selection, outcomes, scores, thresholds, tuning, recalibration, G03b qualification, empirical recall evaluation, production-policy changes, OPT-010 activation, promotion, or closure, optimization-ledger changes, OPT-014 or SEC/EDGAR activation, branch integration, remote push, and deployment remain excluded."
+  }
+}

@@ -1,0 +1,147 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-010",
+  "status": "stopped-preflight-osv-version-drift",
+  "recorded_at": "2026-08-20T03:45:14Z",
+  "authorization": "The project owner authorized one corrected six-family wave-one retry with immutable stopped evidence, fresh runtime and canaries, one no-resolution pip-audit correction, exact OSV Scanner 2.3.8, and acquisition only after every preflight passed.",
+  "execution_evidence": {
+    "receipt": {
+      "path": "docs/optimizations/opt-010-prospective-acquisition-instrument-qualification-wave-1-corrected-retry-receipt-2026-08-19.json",
+      "sha256": "d06ac0e2c21d1ce34ceba9227be6b8c0df91f38839ff4e712cf378807bca4fa4"
+    },
+    "helper": {
+      "path": "src/repoauditor/eval/opt010_acquisition_qualification.py",
+      "sha256": "fb75947e52a3ec5ff4219ca63c2cd747510821fca72b8237d30ed83471e6fa4c",
+      "scope": "isolated exact-source qualification and no-resolution pip-audit only"
+    },
+    "artifact_directory": "data/artifacts/opt010-acquisition-instrument-qualification-wave-1-corrected-retry",
+    "new_data_bytes_filesystem_blocks": 45056
+  },
+  "retained_attempt_verification": {
+    "status": "passed",
+    "original_receipt_sha256": "4145acd756a0f9a2de0c2c3b42d863e3ca18543c673ff20cab9fd51b68e25108",
+    "original_result_sha256": "f762ce9d6a0b543c2e8ff7028038ac806105f8e0d88faeb067a369b1956a24c5",
+    "original_artifact_directory_immutable": true
+  },
+  "runtime": {
+    "fresh_directory_created_before_semgrep": true,
+    "semgrep_import_only_version": "1.170.0",
+    "semgrep_cli_started_for_version_check": false,
+    "semgrep_version_cache": {
+      "fresh": true,
+      "sha256": "0fbfdaf492bcc0666bcf9f161aba76b11ba5a96da8fec9623e1df159e173fb6f"
+    },
+    "semgrep_log_and_version_cache_bound": true,
+    "semgrep_dev_contact": false,
+    "registry_rules_used": false
+  },
+  "canaries": [
+    {
+      "order": 1,
+      "scanner": "semgrep",
+      "expected_version": "1.170.0",
+      "observed_version": "1.170.0",
+      "functional_status": "passed",
+      "identity_status": "passed",
+      "artifact_sha256": "54cdc71c6c18450d9ca39e8c09a4dd2500738d873a13f4f965cbbf91853a8fd4"
+    },
+    {
+      "order": 2,
+      "scanner": "semgrep-supplemental",
+      "expected_version": "1.170.0",
+      "observed_version": "1.170.0",
+      "functional_status": "passed",
+      "identity_status": "passed",
+      "artifact_sha256": "31ce141852aae4a7630052dd04f859aecf3f419c6c70889426add621d81ecc65"
+    },
+    {
+      "order": 3,
+      "scanner": "gitleaks",
+      "expected_version": "8.30.1",
+      "observed_version": "8.30.1",
+      "functional_status": "passed",
+      "identity_status": "passed",
+      "artifact_sha256": "c71940f5ca639f5885ec7cc54fb2fcc73a9b0faadc19a25bdacbaed5225db5a0"
+    },
+    {
+      "order": 4,
+      "scanner": "pip-audit-direct-no-deps",
+      "expected_version": "2.10.1",
+      "observed_version": "2.10.1",
+      "functional_status": "passed",
+      "identity_status": "passed",
+      "dependency_resolution": false,
+      "dependency_installation": false,
+      "artifact_sha256": "dd019d87ad47f7310629f999bb7fa215049bac1c2640927a4cfe3d5ce7dd5cbc"
+    },
+    {
+      "order": 5,
+      "scanner": "osv-scanner",
+      "expected_version": "2.3.8",
+      "observed_version": "2.4.0",
+      "functional_status": "passed",
+      "positive_status": "complete",
+      "clean_status": "not-applicable",
+      "identity_status": "failed-version-drift",
+      "artifact_sha256": "eefc32fa9d1628528c2cc7762bf95b16e58b4a2af6001e5ea99fd7d9a778cb99"
+    }
+  ],
+  "stop": {
+    "trigger": "The functional OSV canary passed but the installed scanner reported 2.4.0 instead of frozen 2.3.8.",
+    "rule": "Any frozen tool-version identity drift is a stop condition before acquisition.",
+    "stopped_before": [
+      "GitHub acquisition",
+      "repository materialization",
+      "repository scanner execution",
+      "snapshot or detector-input digest generation",
+      "RetrievalIndex construction",
+      "verifier-eligibility inventory"
+    ],
+    "retry_or_substitution_attempted": false,
+    "tool_install_or_downgrade_attempted": false
+  },
+  "store": {
+    "access": "before-and-after-hash-only",
+    "before_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "after_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "byte_identical": true,
+    "reads": 0,
+    "mutations": 0
+  },
+  "accounting": {
+    "new_logical_scanner_canaries": 5,
+    "cumulative_logical_scanner_canaries": 9,
+    "repositories_materialized": 0,
+    "repository_scanners": 0,
+    "retrieval_indexes": 0,
+    "repository_code_executions": 0,
+    "dependency_resolutions": 0,
+    "dependency_installations": 0,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "assessments": 0,
+    "labels": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0,
+    "human_finding_reviews": 0,
+    "agentic_runs": 0,
+    "workspace_branch_or_index_operations": 0,
+    "commits": 0,
+    "merges": 0,
+    "pushes": 0,
+    "lifecycle_changes": 0
+  },
+  "decision": {
+    "wave_one_complete": false,
+    "G02": "unchanged-partial",
+    "G05": "unchanged-partial",
+    "G07": "unchanged-partial",
+    "OPT_010_status": "open-deferred",
+    "smallest_next_prerequisite": "Separately authorize one runtime-identity-corrected retry that immutably retains both stopped attempts, freezes the already functionally qualified installed OSV Scanner 2.4.0 binary identity, creates a fresh runtime directory, reruns all canaries, and resumes the unchanged six-source wave only after every functional and identity gate passes.",
+    "current_authority_exhausted": true
+  }
+}

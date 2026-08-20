@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-010",
+  "status": "stopped-pre-provider-credential-environment-unavailable",
+  "execution_evidence": {
+    "receipt": {
+      "path": "docs/optimizations/opt-010-architecture-mechanism-eligibility-receipt-2026-08-20.json",
+      "sha256": "c46ab9f19aa0947f300cd22e2404a988e0d0f7b5b014885cf6b98e3cf6c33df0"
+    },
+    "receipt_test": {
+      "path": "tests/test_opt_010_architecture_mechanism_eligibility_receipt.py",
+      "sha256": "f8fd87242c0135eb56f23b4dd4f4fe30c47eff183c35f384df5c36b1c73c3fae"
+    },
+    "helper": {
+      "path": "src/repoauditor/eval/opt010_architecture_eligibility.py",
+      "sha256": "57146df0dd7570e22392943bd12a2a9db20f910892107e7bcb1b63dd8f691bd4"
+    },
+    "focused_test": {
+      "path": "tests/test_opt_010_architecture_mechanism_eligibility.py",
+      "sha256": "b01b10f21e326fce4fadf33b68d0454f41728a489ae6ba5c37774be1796ac9d4"
+    },
+    "mechanism_matrix": {
+      "path": "data/artifacts/opt010-architecture-mechanism-eligibility/mechanism-matrix.json",
+      "sha256": "734d7bc40e54323b5bee963110c92f445b05f28c795e25f23884ede1d0e57ec3"
+    }
+  },
+  "pre_provider_checks": {
+    "frozen_bindings_passed": 8,
+    "frozen_bindings_failed": 0,
+    "mechanism_matrix_frozen_before_source_or_credential_access": true,
+    "exact_snapshot_detector_and_retrieval_identities_passed": 6,
+    "workspace_branch": "main",
+    "workspace_index_empty": true,
+    "keychain_item_reaudited_after_stop": "present-without-secret-output",
+    "provider_environment_at_attempt": "ANTHROPIC_API_KEY-unavailable"
+  },
+  "provider_accounting": {
+    "attempts": 0,
+    "source_transmissions": 0,
+    "provider_reported_tokens": 0,
+    "known_dated_price_cost_usd": 0.0,
+    "unknown_usage_attempts": 0
+  },
+  "production_store": {
+    "expected_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "after_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "byte_identical": true,
+    "reads": 0,
+    "mutations": 0
+  },
+  "resource_accounting": {
+    "new_data_bytes": 25585,
+    "repository_materializations": 0,
+    "repository_code_executions": 0,
+    "scanner_processes": 0,
+    "findings_or_candidates_created": 0,
+    "assessments": 0,
+    "labels": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0,
+    "human_reviews": 0,
+    "agentic_runs": 0,
+    "workspace_branch_or_index_mutations": 0,
+    "commits": 0,
+    "merges": 0,
+    "pushes": 0,
+    "lifecycle_changes": 0,
+    "other_network_activity": 0
+  },
+  "gate_assessment": {
+    "G02": "unchanged-partial",
+    "G05": "unchanged-partial",
+    "G07": "unchanged-partial",
+    "G03b": "not-authorized",
+    "G04_empirical_recall": "not-authorized",
+    "OPT_010_status": "open-deferred"
+  },
+  "stop": {
+    "reason": "The direct Anthropic runtime did not receive ANTHROPIC_API_KEY from the existing cloud-chain environment. No provider request was constructed or sent.",
+    "retry_attempted": false,
+    "current_authority_exhausted": true,
+    "smallest_correction": "Bind and load the existing repoauditor-anthropic Keychain item ephemerally, preserve the exact matrix-only artifact state, and resume only after every frozen check passes again."
+  }
+}

@@ -1,0 +1,100 @@
+{
+  "aggregate_metadata_feasibility": {
+    "by_mechanism": {
+      "command_injection": 30,
+      "sql_injection": 18,
+      "ssrf": 0,
+      "unsafe_deserialization": 0
+    },
+    "by_supported_family": {
+      "Java": 0,
+      "Python": 29,
+      "Ruby": 0,
+      "TypeScript": 19
+    },
+    "capped_packet_capacity": 39,
+    "metadata_compatible_results": 57,
+    "metadata_deduplicated_issue_groups": 48,
+    "provisionally_feasible": false,
+    "scanner_artifact_set_sha256": "358372d74a08da7f2f078a1258b5f6f43acfecdaec5df907d688d3cf0f6ea568",
+    "supported_families_contributing": 2
+  },
+  "augmentation": {
+    "go_rust_or_reserve_sources_activated": 0,
+    "subjects_completed": 4,
+    "subjects_frozen": 4,
+    "supported_language_families": [
+      "Java",
+      "Python",
+      "Ruby",
+      "TypeScript"
+    ]
+  },
+  "decision": {
+    "architecture_and_verifier_gate_justified": false,
+    "g03b_decided": false,
+    "g04_decided": false,
+    "opt010_status_changed": false,
+    "packet_frozen": false,
+    "paired_execution_started": false,
+    "receipt_qualified": false
+  },
+  "interpretation": "The retained outcome-blind scan evidence shows that the combined metadata pool remains insufficient, but the execution cannot qualify the authorized gate because an initial project-environment Semgrep import probe failed and triggered the receipt's preflight stop condition. Later activity is retained as descriptive non-qualifying evidence only.",
+  "optimization": "OPT-010",
+  "preflight_chronology": {
+    "correct_installed_runtime_import": {
+      "semgrep_cli_started": false,
+      "status": "passed",
+      "version": "1.170.0"
+    },
+    "initial_project_environment_import": {
+      "failure_type": "ModuleNotFoundError",
+      "network_activity": 0,
+      "scanner_processes": 0,
+      "semgrep_cli_started": false,
+      "status": "failed"
+    },
+    "receipt_stop_condition_triggered": true,
+    "retained_evidence_use": "descriptive-non-qualifying-only"
+  },
+  "production_store": {
+    "after_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "byte_identical": true,
+    "expected_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a"
+  },
+  "resource_accounting": {
+    "agentic_or_baseline_runs": 0,
+    "assessments": 0,
+    "commits": 0,
+    "dependency_resolutions_or_installations": 0,
+    "elapsed_seconds": 162.88,
+    "human_reviews": 0,
+    "keychain_or_credential_reads": 0,
+    "labels": 0,
+    "lifecycle_changes": 0,
+    "logical_scanner_processes": 12,
+    "merges": 0,
+    "model_training_runs": 0,
+    "network_hosts_used": [
+      "github.com"
+    ],
+    "network_uploads": 0,
+    "new_data_bytes": 212757009,
+    "other_scanner_processes": 0,
+    "outcomes_read": 0,
+    "production_store_mutations": 0,
+    "production_store_reads": 0,
+    "provider_calls": 0,
+    "provider_cost_usd": 0.0,
+    "provider_reported_tokens": 0,
+    "pushes": 0,
+    "repositories_materialized": 4,
+    "repository_code_executions": 0,
+    "rescoring_runs": 0,
+    "retrieval_index_builds": 4,
+    "workspace_branch_or_index_mutations": 0
+  },
+  "schema_version": 1,
+  "status": "completed-evidence-nonqualifying-preflight-deviation",
+  "stop_reason": "initial-project-environment-semgrep-import-failed"
+}

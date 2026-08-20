@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "frozen_at": "2026-08-18",
+  "optimization": "OPT-014",
+  "status": "authorization-pending",
+  "protocol": {
+    "path": "opt-014-prior-predictive-coherence-protocol-2026-08-18.json",
+    "sha256": "d67c59ddc61646571b1161ed822d2f80801fb9625733288e9c845725ab6c9cb0"
+  },
+  "scope": "Generate one aggregate-only deterministic descriptive prior-predictive coherence report for the current neutral organization-level all-event industry baseline, using only the frozen configured priors and pure non-persisting simulation engine.",
+  "preconditions": {
+    "branch": "main",
+    "head": "1f1dba7a30a86d957510608c25e94077b15d2e8d",
+    "eligibility_audit_result": {
+      "path": "opt-014-offline-eligibility-audit-result-2026-08-18.json",
+      "sha256": "95c4166f7002ff09ad5e5278d6417e21581d3d0a19ceef8398b7c2e21f9b6454",
+      "observed_outcome_capacity": 0,
+      "data_gate_cleared": false
+    },
+    "production_store": {
+      "path": "../../data/repoauditor.db",
+      "sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a"
+    },
+    "optimization_status": "open-data-gated"
+  },
+  "authorized_files": {
+    "helper": "../../src/repoauditor/eval/prior_predictive.py",
+    "tests": [
+      "../../tests/test_opt_014_prior_predictive.py",
+      "../../tests/test_opt_014_prior_predictive_receipt.py"
+    ],
+    "artifact": "../../data/artifacts/opt014-prior-predictive-coherence.json",
+    "result": "opt-014-prior-predictive-coherence-result-2026-08-18.json"
+  },
+  "generation_contract": {
+    "methodology_version": "organization_all_event_v1",
+    "anonymous_organization_years": 200000,
+    "seed": 2014,
+    "batch_count": 20,
+    "trials_per_batch": 10000,
+    "exposure": 1.0,
+    "control_strength": 0.0,
+    "loss_scale": 1.0,
+    "raw_draws_persisted": false,
+    "store_rows_persisted": 0
+  },
+  "result_contract": {
+    "aggregate_metrics_only": true,
+    "coherence_checks_required": 7,
+    "fixed_exceedance_points_usd": [100000, 1000000, 10000000, 50000000, 100000000],
+    "validation_claim_permitted": false,
+    "data_gate_may_be_cleared": false,
+    "prior_or_policy_change_permitted": false,
+    "required_disposition": "OPT-014 remains open and data-gated; independently governed data acquisition or bounded closure remains a separate decision."
+  },
+  "resource_ceilings": {
+    "maximum_elapsed_minutes": 10,
+    "maximum_new_data_bytes": 5242880,
+    "in_memory_prior_predictive_generations": 1,
+    "anonymous_organization_years": 200000,
+    "network_reads": 0,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "persisted_simulation_runs": 0,
+    "persisted_risk_scenarios": 0,
+    "persisted_prior_sources": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0
+  },
+  "stop_conditions": [
+    "Any protocol, audit-result, prior, configuration, pure-engine, store, lifecycle, branch, or HEAD digest/precondition differs from its frozen value.",
+    "Any source or identity-bearing repository, finding, assessment, label, incident, loss, or organization record would be read or emitted.",
+    "Any raw simulated draw would be persisted or any production-store row would be read beyond hashing, written, migrated, or reinterpreted.",
+    "Any of the seven frozen coherence checks fails, fixed-seed aggregate output is not deterministic, or an aggregate metric is nonfinite or outside its mathematical range.",
+    "Any validation, calibration, representativeness, decision-quality, remediation-value, or portfolio-optimality claim would be made.",
+    "Any fitting, model comparison, backtest, resample, threshold, new prior, hierarchy, category allocation, remediation effect, dependency, portfolio optimization, tuning, policy, lifecycle, OPT-010, branch, remote, or deployment action is attempted.",
+    "Any resource ceiling is reached or a focused offline test, JSON validation, digest check, or accounting invariant fails."
+  ],
+  "completion_boundary": "After one aggregate artifact and one descriptive result are persisted with seven passing coherence checks, deterministic focused tests, and a byte-identical production store, stop. OPT-014 remains open/data-gated; no acquisition, fitting, validation, policy, lifecycle, branch, or deployment action is authorized.",
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the OPT-014 bounded descriptive prior-predictive coherence report described by opt-014-prior-predictive-coherence-receipt-2026-08-18.json, limited to one aggregate-only deterministic in-memory generation of 200,000 anonymous organization-years with seed 2014 under the frozen organization_all_event_v1 neutral baseline, current IRIS frequency and magnitude priors, and pure non-persisting simulation engine; analytic source-reproduction checks, zero-event mass, annual and conditional-positive loss summaries, five frozen exceedance points, top-one-percent tail concentration, twenty fixed batch stability summaries, one helper, focused tests, aggregate artifact, and descriptive result; with ceilings of 10 minutes, 5 MiB new data, one in-memory generation, and exactly zero network reads, uploads, provider calls, tokens, cost, production-store reads beyond before/after hashing, production-store mutations, persisted simulation runs, risk scenarios, prior sources, assessments, labels, model training, or rescoring. Raw draw persistence, identities or source/outcome records, observed-outcome validation, calibration or representativeness claims, fitting, model comparison, backtesting, resampling, adequacy thresholds, holdout or cohort selection, new priors, hierarchical estimation, category allocation, remediation-effect estimates, dependency assumptions, portfolio optimization, tuning, recalibration, threshold selection or recommendation, production-policy changes, OPT-014 promotion or closure, OPT-010 execution, branch integration, remote push, and deployment remain excluded."
+  }
+}

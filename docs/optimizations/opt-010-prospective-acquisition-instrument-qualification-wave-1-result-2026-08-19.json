@@ -1,0 +1,156 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-010",
+  "status": "stopped-preflight-pip-audit-failed",
+  "recorded_at": "2026-08-20T03:32:17Z",
+  "authorization": "The project owner authorized the exact six-family prospective acquisition and offline instrument-qualification wave one, including separated runtime and scanner canaries, exact-commit materialization only after every preflight passed, aggregate-only evidence, and zero provider, repository-code, store, review, label, training, git-integration, or lifecycle activity.",
+  "execution_evidence": {
+    "receipt": {
+      "path": "docs/optimizations/opt-010-prospective-acquisition-instrument-qualification-wave-1-receipt-2026-08-19.json",
+      "sha256": "4145acd756a0f9a2de0c2c3b42d863e3ca18543c673ff20cab9fd51b68e25108"
+    },
+    "receipt_test": {
+      "path": "tests/test_opt_010_prospective_acquisition_instrument_qualification_wave_1_receipt.py",
+      "sha256": "662123111f9a9ff7542dbc940a0a0c1944f3627bb8043a9b8356ccc4f7c7e586",
+      "passed": 6,
+      "failed": 0
+    },
+    "artifact_directory": "data/artifacts/opt010-acquisition-instrument-qualification-wave-1",
+    "artifact_directory_initially_absent": true,
+    "new_data_bytes_filesystem_blocks": 20480
+  },
+  "frozen_input_verification": {
+    "status": "passed-before-write-or-network",
+    "source_selection_sha256": "df6e20287538d8ec2fe1cb2606ab7c85a47296c803e59273ae38acbe285f91a1",
+    "protected_cohort_design_sha256": "bb77f61d14051fb6c5443b30157a92089f8e3ecbf53cb20c69daa2adaa7b12b8",
+    "baseline_comparison_protocol_sha256": "ac7872088d89950e27ffc2e733bc1282a9697d34d2a9add378fb35023c487133",
+    "selection_digest_sha256": "583772fe5f533aecaa306660783ff49d7ed0f84d5fc3f2d8cc09a08f7bb456d0",
+    "implementation_and_rule_digests_passed": 10,
+    "branch": "main",
+    "staged_paths": 0
+  },
+  "runtime_preflight": {
+    "artifact_directory_created_before_semgrep_capable_process": true,
+    "semgrep_import_only_verification": {
+      "status": "passed",
+      "version": "1.170.0",
+      "cli_started": false,
+      "runtime": "/opt/homebrew/Cellar/semgrep/1.170.0/libexec/bin/python"
+    },
+    "semgrep_version_cache": {
+      "path": "data/artifacts/opt010-acquisition-instrument-qualification-wave-1/semgrep-version-cache",
+      "sha256": "1bfc2f461f6ef86737de9b4d0ae4d685b91e2de2daa07e4292a87b04a0782b43",
+      "fresh": true
+    },
+    "semgrep_bindings": {
+      "log_file_bound_on_every_semgrep_process": true,
+      "version_cache_bound_on_every_semgrep_process": true,
+      "semgrep_dev_contact": false,
+      "registry_rules_used": false
+    }
+  },
+  "canaries": [
+    {
+      "order": 1,
+      "scanner": "semgrep",
+      "class": "offline",
+      "version": "1.170.0",
+      "status": "passed",
+      "artifact_sha256": "54cdc71c6c18450d9ca39e8c09a4dd2500738d873a13f4f965cbbf91853a8fd4"
+    },
+    {
+      "order": 2,
+      "scanner": "semgrep-supplemental",
+      "class": "offline",
+      "version": "1.170.0",
+      "status": "passed",
+      "artifact_sha256": "31ce141852aae4a7630052dd04f859aecf3f419c6c70889426add621d81ecc65"
+    },
+    {
+      "order": 3,
+      "scanner": "gitleaks",
+      "class": "offline",
+      "version": "8.30.1",
+      "status": "passed",
+      "artifact_sha256": "c71940f5ca639f5885ec7cc54fb2fcc73a9b0faadc19a25bdacbaed5225db5a0"
+    },
+    {
+      "order": 4,
+      "scanner": "pip-audit",
+      "class": "advisory",
+      "version": "2.10.1",
+      "status": "failed",
+      "positive_control_status": "failed",
+      "clean_control_status": "failed",
+      "failure_class": "no-json-output-under-no-dependency-installation-boundary",
+      "artifact_sha256": "ebeb80f365d9ae28e9a8d7980cbf597059c00f25046c908cfbce7027ee06b5e2"
+    },
+    {
+      "order": 5,
+      "scanner": "osv-scanner",
+      "class": "advisory",
+      "version": "2.3.8",
+      "status": "not-attempted-after-required-preflight-failure"
+    }
+  ],
+  "stop": {
+    "trigger": "The frozen pip-audit positive-and-clean canary did not produce valid JSON while dependency installation was prohibited.",
+    "receipt_rule": "Every separated scanner canary must pass before acquisition; a failed canary is a stop condition.",
+    "stopped_before": [
+      "OSV canary",
+      "GitHub acquisition",
+      "repository materialization",
+      "repository scanners",
+      "retrieval-index construction",
+      "verifier-eligibility inventory"
+    ],
+    "retry_attempted": false,
+    "fallback_or_workaround_attempted": false,
+    "broadened_network_host_attempted": false
+  },
+  "store": {
+    "access": "before-and-after-hash-only",
+    "before_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "after_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "byte_identical": true,
+    "reads": 0,
+    "mutations": 0
+  },
+  "accounting": {
+    "repositories_materialized": 0,
+    "exact_commit_resolutions": 0,
+    "repository_code_executions": 0,
+    "dependency_installations": 0,
+    "logical_scanner_canaries_attempted": 4,
+    "logical_repository_scanners_attempted": 0,
+    "retrieval_index_builds": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "network_uploads": 0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "schema_migrations": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0,
+    "human_finding_reviews": 0,
+    "agentic_falsification_runs": 0,
+    "branch_or_index_operations": 0,
+    "source_commits": 0,
+    "merge_commits": 0,
+    "remote_pushes": 0,
+    "lifecycle_changes": 0
+  },
+  "decision": {
+    "wave_one_complete": false,
+    "subject_terminal_observations": 0,
+    "G02": "unchanged-partial",
+    "G05": "unchanged-partial",
+    "G07": "unchanged-partial",
+    "OPT_010_status": "open-deferred",
+    "smallest_next_prerequisite": "A separately authorized corrected preflight retry must define a no-dependency-installation pip-audit canary invocation that yields authoritative JSON, retain this failed evidence immutably, rerun all separated canaries in a fresh artifact directory, and only then resume the same six frozen identities.",
+    "current_authority_exhausted": true
+  }
+}

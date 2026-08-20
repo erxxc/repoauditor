@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-014",
+  "status": "authorization-pending",
+  "frozen_at": "2026-08-18",
+  "original_receipt": {
+    "path": "docs/optimizations/opt-014-descriptive-scope-closure-receipt-2026-08-18.json",
+    "sha256": "239b5c1af6180e1b39ca7887a6cb94797dabc7be0e2b12695e3990fb91035d6b"
+  },
+  "stopped_preflight": {
+    "status": "stopped-before-lifecycle-change-validation-file-not-allowlisted",
+    "reason": "The original validation contract requires tests/test_opt_014_descriptive_scope_closure.py, but that nonexistent focused result test was omitted from allowed_file_changes_after_authorization.",
+    "current_branch": "main",
+    "lifecycle_files_changed": 0,
+    "historical_checkpoint_changed": false,
+    "production_store_changed": false,
+    "OPT_010_files_changed": 0,
+    "source_commits": 0,
+    "merge_commits": 0,
+    "network_reads": 0,
+    "provider_calls": 0
+  },
+  "retained_contract": {
+    "scope": "Every evidence, interpretation, lifecycle, SEC/EDGAR reserve, historical-checkpoint, production-store, resource, zero-activity, deferred-integration, and excluded-action boundary from the original receipt remains unchanged.",
+    "lifecycle_after_closure": {
+      "closed": 34,
+      "open": 1,
+      "total": 35,
+      "sole_open_item": "OPT-010",
+      "OPT_010_next_priority": 1
+    },
+    "SEC_EDGAR_state": "inactive-material-disclosure-context-reserve",
+    "full_offline_non_live_suite": "deferred-to-separate-branch-integration-receipt",
+    "branch_or_commit_activity_authorized": false
+  },
+  "only_correction": {
+    "add_to_allowed_file_changes": "tests/test_opt_014_descriptive_scope_closure.py",
+    "purpose": "Create one focused result test that validates the finalized bounded interpretation, 34-closed/1-open lifecycle state, sole-open OPT-010 priority, inactive SEC/EDGAR reserve, immutable historical checkpoint, byte-identical production store, zero live activity, and deferred full-suite/integration boundary.",
+    "other_original_allowlist_or_semantic_change": false
+  },
+  "corrected_allowed_file_changes_after_authorization": [
+    "docs/optimizations/optimization-status.json",
+    "docs/optimizations/optimization-register.md",
+    "docs/documentation-status.md",
+    "docs/project-priorities.md",
+    "docs/triage-accuracy-roadmap.md",
+    "tests/test_documentation_current_state.py",
+    "tests/test_outstanding_work_checkpoint.py",
+    "tests/test_opt_014_descriptive_scope_closure.py",
+    "docs/optimizations/opt-014-descriptive-scope-closure-result-2026-08-18.json"
+  ],
+  "resource_ceilings": {
+    "accounting_basis": "cumulative across the stopped preflight and corrected retry",
+    "maximum_elapsed_minutes": 15,
+    "maximum_new_data_bytes": 1048576,
+    "network_reads": 0,
+    "network_uploads": 0,
+    "provider_calls": 0,
+    "provider_reported_tokens": 0,
+    "provider_cost_usd": 0.0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "schema_migrations": 0,
+    "assessments_written": 0,
+    "labels_written": 0,
+    "simulation_runs": 0,
+    "model_training_runs": 0,
+    "rescoring_runs": 0,
+    "source_commits": 0,
+    "merge_commits": 0,
+    "remote_pushes": 0,
+    "branch_operations": 0
+  },
+  "stop_conditions": [
+    "Any original receipt, frozen evidence, historical checkpoint, or production-store digest differs.",
+    "Any correction beyond adding the one named focused closure test to the original allowlist would be required.",
+    "Any lifecycle summary differs from 34 closed, one open, 35 total with OPT-010 as the sole open priority-one item.",
+    "Any interpretation implies predictive validation, calibration, representativeness, portfolio readiness, zero incidents from SEC non-filings, or universal data impossibility.",
+    "Any focused validation fails or any unlisted file, network, provider, source, outcome, store, simulation, model, policy, OPT-010, branch, commit, merge, push, full-suite, or deployment activity would be required."
+  ],
+  "authorization": {
+    "granted": false,
+    "required_statement": "I authorize the corrected OPT-014 bounded descriptive-scope closure retry described by opt-014-descriptive-scope-closure-corrected-retry-receipt-2026-08-18.json, retaining every evidence, interpretation, lifecycle, SEC/EDGAR reserve, historical-checkpoint, production-store, resource, zero-activity, deferred-integration, and exclusion boundary from the original closure receipt; accepting the stopped preflight with zero lifecycle, checkpoint, store, OPT-010, branch, commit, network, or provider changes; and permitting only addition of tests/test_opt_014_descriptive_scope_closure.py to the original allowlist so one focused result test can validate the finalized bounded interpretation, 34-closed/1-open lifecycle with OPT-010 as the sole priority-one item, inactive SEC/EDGAR reserve, immutable historical checkpoint, byte-identical production store, zero live activity, and deferred full-suite and integration boundary; then performing the originally authorized lifecycle reconciliation and one closure result, with cumulative ceilings of 15 minutes, 1 MiB new data, and exactly zero network reads, uploads, provider calls, tokens, cost, production-store reads or mutations, schema migrations, assessments, labels, simulation runs, model training, rescoring, source commits, merge commits, remote pushes, or branch operations. Any other allowlist, test, evidence, methodology, policy, OPT-010, source, outcome, SEC/EDGAR activation, full-suite, integration, deployment, historical-evidence, or unlisted file change remains excluded."
+  }
+}
