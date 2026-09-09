@@ -14,6 +14,7 @@ from .provenance import supplemental_semgrep_provenance
 from .sast_adapter import SastAdapter
 from .sca_adapter import ScaAdapter
 from .secrets_adapter import SecretsAdapter
+from .registry import scanner_plugin_canary_runners
 
 
 class CanaryProbe(BaseModel):
@@ -101,6 +102,13 @@ def _provenance_passed(
         return all(
             item.configuration_resolution == "embedded-default"
             and item.configuration == "gitleaks embedded default"
+            for item in executions
+        )
+    if scanner == "weak_rng":
+        return all(
+            item.configuration_resolution == "embedded-default"
+            and item.configuration == "weak_rng builtin idioms"
+            and item.version == "weak_rng@v1"
             for item in executions
         )
     if scanner == "pip-audit":
@@ -298,6 +306,7 @@ CANARY_RUNNERS = {
     "gitleaks": _gitleaks_canary,
     "pip-audit": _pip_audit_canary,
     "osv-scanner": _osv_canary,
+    **scanner_plugin_canary_runners(),
 }
 
 

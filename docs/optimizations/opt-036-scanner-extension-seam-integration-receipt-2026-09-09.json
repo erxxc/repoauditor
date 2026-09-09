@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "status": "authorized",
+  "authorized_at": "2026-09-09",
+  "optimization": "OPT-036",
+  "objective": "Commit and publish the completed bounded OPT-036 scanner-extension seam for review without merging it.",
+  "completed_requalification": {
+    "path": "docs/optimizations/opt-036-scanner-extension-seam-requalification-corrected-retry-result-2026-09-09.json",
+    "sha256": "98931c535550500394b1a48a70f1d0bac19ce9e3d98fadeed4ba34c6c254cc01",
+    "required_status": "completed"
+  },
+  "integration": {
+    "source_branch": "codex/weak-rng-security-hardening",
+    "target_branch": "main",
+    "source_commits": 1,
+    "remote_pushes": 1,
+    "pull_requests": 1,
+    "merges": 0,
+    "deployments": 0
+  },
+  "excluded_worktree_entries": [
+    ".envrc",
+    ".gitleaksignore",
+    ".pre-commit-config.yaml",
+    ".superset/",
+    "docs/NIGHTLY_SCAN.md",
+    "prompts/",
+    "database-permission changes",
+    "unrelated security hardening"
+  ],
+  "activity_ceilings": {
+    "provider_calls": 0,
+    "key_or_keychain_reads": 0,
+    "evidence_transfers_from_prng_lattice_lab": 0,
+    "source_changes_after_authorization": 0,
+    "commits": 1,
+    "pushes": 1,
+    "pull_requests": 1,
+    "merges": 0,
+    "deployments": 0,
+    "allowed_network_hosts": ["github.com", "api.github.com"]
+  },
+  "required_statement": "I authorize the OPT-036 bounded commit and PR publication described by opt-036-scanner-extension-seam-integration-receipt-2026-09-09.json, limited to verifying the completed corrected requalification result; staging and committing only the authorized OPT-036 registry, weak-RNG integration, documentation, lifecycle, receipts, results, and tests on codex/weak-rng-security-hardening; excluding .envrc, .superset, pre-commit, Gitleaks, nightly-scan, database-permission, and unrelated security-hardening files; pushing only that branch; and opening one PR against main, with exactly one commit, no merge, no deployment, no provider activity, and network access limited to GitHub. Any source change, evidence transfer from PRNG lattice lab, key access, or unrelated file inclusion remains excluded."
+}

@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "id": "weak_rng",
+  "module": "repoauditor.detect.deterministic.plugins.weak_rng",
+  "adapter_factory": "create_adapter",
+  "canary_runner": "run_canary",
+  "target_count_bases": ["scanner-reported-files"]
+}

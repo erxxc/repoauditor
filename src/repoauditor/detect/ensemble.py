@@ -461,6 +461,7 @@ def run_ensemble(
         "gitleaks": sum(c.producer == "gitleaks" for c in tool_candidates),
         "pip-audit": sum(c.producer == "pip-audit" for c in tool_candidates),
         "osv-scanner": sum(c.producer == "osv-scanner" for c in tool_candidates),
+        "weak_rng": sum(c.source_tool == "weak_rng" for c in tool_candidates),
         "llm-ensemble": sum(f.source_lens is not None for f in all_findings),
     }
     return DetectionRun(
@@ -637,6 +638,7 @@ def _run_deterministic_adapters(
     """
     from .deterministic import SastAdapter, ScaAdapter, SecretsAdapter
     from .deterministic.provenance import supplemental_semgrep_provenance
+    from .deterministic.registry import create_scanner_plugin_adapters
 
     timeout = config.detect.tool_timeout_seconds
     sast = SastAdapter(timeout, sarif_output_path=sarif_output_path)
@@ -655,7 +657,8 @@ def _run_deterministic_adapters(
     )
     sca = ScaAdapter(timeout)
     secrets = SecretsAdapter(timeout)
-    adapters = [sast, supplemental, sca, secrets]
+    plugin_adapters = create_scanner_plugin_adapters(timeout)
+    adapters = [sast, supplemental, sca, secrets, *plugin_adapters]
     candidates: list[CandidateFinding] = []
     with ThreadPoolExecutor(max_workers=len(adapters)) as pool:
         for cands in pool.map(lambda a: _safe_run(a, snapshot_path), adapters):
@@ -669,6 +672,7 @@ def _run_deterministic_adapters(
         "semgrep-supplemental": supplemental.run_status or "failed",
         **sca.run_statuses,
         "gitleaks": secrets.run_status,
+        **{adapter.tool_name: adapter.run_status for adapter in plugin_adapters},
     }
     failures = {
         name: detail
@@ -677,6 +681,10 @@ def _run_deterministic_adapters(
             "semgrep-supplemental": supplemental.failure_detail,
             **sca.failure_details,
             "gitleaks": secrets.failure_detail,
+            **{
+                adapter.tool_name: adapter.failure_detail
+                for adapter in plugin_adapters
+            },
         }.items()
         if detail
     }
@@ -685,6 +693,7 @@ def _run_deterministic_adapters(
         supplemental.execution(),
         *sca.executions(),
         secrets.execution(),
+        *(adapter.execution() for adapter in plugin_adapters),
     ]
     return (
         candidates,

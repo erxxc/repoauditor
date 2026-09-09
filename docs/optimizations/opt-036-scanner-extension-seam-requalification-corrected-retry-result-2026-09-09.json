@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "status": "completed",
+  "optimization": "OPT-036",
+  "receipt": {
+    "path": "docs/optimizations/opt-036-scanner-extension-seam-requalification-corrected-retry-receipt-2026-09-09.json",
+    "sha256": "9f24dfbe79ff12db5a69e461014746bac3252a22256a823cbcb510e7de9d858a"
+  },
+  "retained_stopped_result": {
+    "path": "docs/optimizations/opt-036-scanner-extension-seam-requalification-result-2026-09-09.json",
+    "sha256": "c0f0b22a8eb8b65bdfb4a5783317c7a28894baba31298e0c13059e5876bfc1bd",
+    "retroactively_qualified": false
+  },
+  "implementation_bindings": {
+    "registry": {"path": "src/repoauditor/detect/deterministic/registry.py", "sha256": "eeeea526adb51028ad8d8416d8622f172ea9ab042735f4b5208665606346005d"},
+    "weak_rng_manifest": {"path": "src/repoauditor/detect/deterministic/plugins/weak_rng.json", "sha256": "7ccf037f5d82eee1d3bdb3ae4a86e5de05f4acbf139253ca167277e328d0cebc"},
+    "weak_rng_registration": {"path": "src/repoauditor/detect/deterministic/plugins/weak_rng.py", "sha256": "7d091dbf0d07a6f7ae5d4d321d20f31b01e96b50d98ed5dd79bf5a62b2b6989f"},
+    "weak_rng_adapter": {"path": "src/repoauditor/detect/deterministic/weak_rng_adapter.py", "sha256": "d3fa22149675450450da5708c95c4a8c8303364d72efb5136537b8e02a52f867"},
+    "scanner_roster": {"path": "src/repoauditor/detect/deterministic/execution.py", "sha256": "c45c1c05036494e85fee9a1247df147bb95add5c58cf11f773b37219278295f1"},
+    "canary_orchestration": {"path": "src/repoauditor/detect/deterministic/canaries.py", "sha256": "f8463534c714dd8ab27fdaf8c6172a4b3da44b923e7cc85397bea4328f108dca"},
+    "ensemble": {"path": "src/repoauditor/detect/ensemble.py", "sha256": "9226c111ba997ecbe48c699c18129b9aea836078831f9360a57ebc4e36c0cc78"}
+  },
+  "qualification": {
+    "package_local_manifest_only": true,
+    "third_party_plugins": 0,
+    "arbitrary_filesystem_discovery": 0,
+    "adapter_identity_validation": "passed",
+    "invalid_manifest_negative_boundaries": "passed",
+    "weak_rng_positive_and_clean_canary": "passed",
+    "prng_lattice_lab_imports_executions_or_artifacts": 0,
+    "automatic_actionability_or_severity_upgrades": 0
+  },
+  "validation": {
+    "focused_passed": 68,
+    "full_expression": "not live and not integration",
+    "full_passed": 1235,
+    "full_skipped": 2,
+    "full_deselected": 36,
+    "full_elapsed_seconds": 100.20,
+    "external_scanner_processes": 0
+  },
+  "lifecycle": {
+    "ledger": {"path": "docs/optimizations/optimization-status.json", "sha256": "4992df97583da83ab82f3ea6042e8c435af5923ecef0cb0247c5a35b00be8f91"},
+    "summary": {"closed": 36, "open": 0, "total": 36},
+    "opt_036": "closed-bounded-syntactic-detector-and-package-local-seam"
+  },
+  "activity": {
+    "network_reads": 0,
+    "uploads": 0,
+    "provider_calls": 0,
+    "tokens": 0,
+    "cost_usd": 0,
+    "keychain_reads": 0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "repository_materializations": 0,
+    "external_scanner_processes": 0,
+    "assessments": 0,
+    "labels": 0,
+    "training_runs": 0,
+    "rescoring_runs": 0,
+    "commits": 0,
+    "merges": 0,
+    "pushes": 0,
+    "deployments": 0
+  },
+  "interpretation": "OPT-036 is complete only at the bounded Java syntactic candidate-detector and trusted package-local registration-seam scope. No recovery, exploitability, actionability, exhaustive-recall, or production-policy claim is made."
+}

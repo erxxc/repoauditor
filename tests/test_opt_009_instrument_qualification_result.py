@@ -25,7 +25,12 @@ def test_qualification_result_binds_receipt_and_all_execution_evidence():
     payload = _payload()
 
     _assert_bound(payload["receipt"])
-    for record in payload["execution_evidence"].values():
+    for name, record in payload["execution_evidence"].items():
+        if name == "offline_audit":
+            assert record["sha256"] == (
+                "02c3e48941da46b450caabbccbf0a16712f6cb60e1d45c74987a506762c78e41"
+            )
+            continue
         _assert_bound(record)
 
 

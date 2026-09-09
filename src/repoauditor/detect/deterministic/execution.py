@@ -7,6 +7,8 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from .registry import discover_scanner_plugins, scanner_plugin_target_count_bases
+
 
 ScannerStatus = Literal[
     "complete",
@@ -18,12 +20,15 @@ ScannerStatus = Literal[
     "disabled",
 ]
 
-DETERMINISTIC_SCANNERS = (
+_CORE_SCANNERS = (
     "semgrep",
     "semgrep-supplemental",
     "pip-audit",
     "osv-scanner",
     "gitleaks",
+)
+DETERMINISTIC_SCANNERS = _CORE_SCANNERS + tuple(
+    plugin.id for plugin in discover_scanner_plugins()
 )
 
 SCANNER_TARGET_COUNT_BASES = {
@@ -32,6 +37,7 @@ SCANNER_TARGET_COUNT_BASES = {
     "pip-audit": ("submitted-manifests",),
     "osv-scanner": ("submitted-root", "submitted-manifests"),
     "gitleaks": ("submitted-root",),
+    **scanner_plugin_target_count_bases(),
 }
 
 

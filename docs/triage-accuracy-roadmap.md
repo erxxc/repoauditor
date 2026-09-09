@@ -233,6 +233,11 @@ production activation. This establishes neither universal impossibility nor prod
 readiness. Any future agentic evaluation, scanner-policy change, verifier expansion, source
 augmentation, packet, paired run, or activation is new work under a separate lifecycle.
 
+OPT-036 is closed at its bounded Java syntactic weak-RNG and scanner-extension scope. The
+detector is a first-class deterministic candidate producer behind a fail-closed,
+package-local manifest seam. It does not execute or ingest the PRNG lattice lab and does not
+establish trust-boundary crossing, state recovery, exploitability, or actionability.
+
 ## Explicit non-goals
 
 - No automatic “optimal” P(actionable) threshold.

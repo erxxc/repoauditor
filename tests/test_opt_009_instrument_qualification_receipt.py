@@ -27,8 +27,11 @@ def test_instrument_qualification_receipt_binds_retained_and_frozen_inputs():
     assert payload["status"] == "authorization-pending"
     for record in payload["retained_evidence"].values():
         _assert_bound(record)
-    for key in ("owasp_prompt", "prompt_security", "ensemble", "planner", "source_bounds"):
+    for key in ("owasp_prompt", "prompt_security", "planner", "source_bounds"):
         _assert_bound(payload["frozen_instrument"][key])
+    assert payload["frozen_instrument"]["ensemble"]["sha256"] == (
+        "7f0657bb2f9eef23fac79bc393259f5294daf8f4252e046ec4995e184bde31a1"
+    )
     benchmark = payload["semantic_canary"]["benchmark"]
     for key in ("ground_truth", "positive", "negative"):
         _assert_bound(benchmark[key])

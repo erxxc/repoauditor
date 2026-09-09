@@ -2,7 +2,7 @@
 
 Status: implemented for deterministic scanner execution evidence.
 
-Every official or supplemental Semgrep, gitleaks, pip-audit, and OSV-Scanner execution now
+Every official or supplemental Semgrep, gitleaks, pip-audit, OSV-Scanner, and weak-RNG execution now
 retains the binary version when available, a normalized invocation, configuration identity
 and resolution outcome, and applicable ruleset or advisory-source metadata. Normalized
 invocations use placeholders such as `$SNAPSHOT`, `$MANIFEST`, and `$REPORT` so temporary

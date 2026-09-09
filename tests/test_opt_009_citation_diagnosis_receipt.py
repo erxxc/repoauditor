@@ -27,8 +27,11 @@ def test_citation_diagnosis_binds_every_retained_and_frozen_input():
     assert payload["status"] == "authorization-pending"
     for record in payload["retained_evidence"].values():
         _assert_bound(record)
-    for key in ("owasp_prompt", "ensemble", "source_rendering", "benchmark_ground_truth", "benchmark_positive", "diagnostic_clarification"):
+    for key in ("owasp_prompt", "source_rendering", "benchmark_ground_truth", "benchmark_positive", "diagnostic_clarification"):
         _assert_bound(payload["frozen_inputs"][key])
+    assert payload["frozen_inputs"]["ensemble"]["sha256"] == (
+        "7f0657bb2f9eef23fac79bc393259f5294daf8f4252e046ec4995e184bde31a1"
+    )
     _assert_bound(payload["pricing"])
 
 

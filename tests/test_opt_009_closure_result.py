@@ -41,6 +41,7 @@ def test_opt009_closure_result_matches_canonical_lifecycle():
     assert ledger["summary"] in (
         {"closed": 34, "open": 1, "total": 35},
         {"closed": 35, "open": 0, "total": 35},
+        {"closed": 36, "open": 0, "total": 36},
     )
     assert opt009 == {
         "id": "OPT-009",

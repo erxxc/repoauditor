@@ -9,6 +9,7 @@ findings when its binary is absent, so a partial toolchain never breaks a run.
 from .sast_adapter import SastAdapter
 from .sca_adapter import ScaAdapter
 from .secrets_adapter import SecretsAdapter
+from .weak_rng_adapter import WeakRngAdapter
 from .execution import DETERMINISTIC_SCANNERS, ScannerExecution
 from .canaries import (
     ScannerCanaryReport,
@@ -20,6 +21,7 @@ __all__ = [
     "SastAdapter",
     "ScaAdapter",
     "SecretsAdapter",
+    "WeakRngAdapter",
     "ScannerExecution",
     "DETERMINISTIC_SCANNERS",
     "ScannerCanaryReport",
