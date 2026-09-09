@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "status": "authorized",
+  "authorized_at": "2026-09-09",
+  "optimization": "OPT-036",
+  "objective": "Introduce one bounded package-local scanner registration seam, register the existing weak-RNG detector, and preserve OPT-009 and OPT-010 receipt-time evidence as history.",
+  "retained_uncommitted_attempt": {
+    "ensemble": {"path": "src/repoauditor/detect/ensemble.py", "sha256": "d89c6ac22911bb816005f974711f489947633422e5fe736c84b6963cefeb9808"},
+    "scanner_roster": {"path": "src/repoauditor/detect/deterministic/execution.py", "sha256": "f1887990ce8040ecc5975359508d898b27d021d841f21621f62f8afb7295a6bf"},
+    "scanner_canaries": {"path": "src/repoauditor/detect/deterministic/canaries.py", "sha256": "4a82ac9b7ff7b99027a0b8fb33d83cd1e86df8c10e9ab09541a39b5f8323f59c"},
+    "modified_opt010_receipt_test": {"path": "tests/test_opt_010_prospective_acquisition_instrument_qualification_wave_1_receipt.py", "sha256": "7d96f4d3bf1488e3c028c9cb187cdc59e17976e07bf23cc270936ba2cc5d173b"},
+    "source_commits": 0,
+    "merge_commits": 0
+  },
+  "authorized_scope": {
+    "registration": "Deterministic discovery of validated manifests only beneath repoauditor.detect.deterministic.plugins; no entry points, sys.path scanning, arbitrary filesystem discovery, or third-party loading.",
+    "historical_evidence": "All prior receipts, results, artifacts, and embedded digests remain byte-identical. Affected tests retain their literal receipt-time digests and validate current implementation separately.",
+    "weak_rng": "Java-only syntactic candidates with no PRNG-lattice-lab import, execution, or artifact ingestion and no automatic actionability or severity upgrade.",
+    "lifecycle": "Admit and close OPT-036 at this bounded scanner-extension and syntactic-detector scope; retain 0 open items."
+  },
+  "resource_ceilings": {
+    "minutes": 45,
+    "new_tracked_bytes": 2097152,
+    "network_reads": 0,
+    "uploads": 0,
+    "provider_calls": 0,
+    "tokens": 0,
+    "cost_usd": 0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "commits": 0,
+    "merges": 0,
+    "pushes": 0
+  },
+  "excluded": [
+    "dynamic third-party plugins",
+    "arbitrary filesystem discovery",
+    "PRNG recovery execution or payload transport",
+    "source disclosure",
+    "automatic actionability or severity upgrades",
+    "OPT-009 or OPT-010 reopening beyond historical-binding reconciliation",
+    "unrelated implementation changes",
+    "deployment"
+  ],
+  "required_statement": "I authorize the OPT-036 scanner-extension seam and bounded OPT-009/OPT-010 requalification described by opt-036-scanner-extension-seam-requalification-receipt-2026-09-09.json, limited to preserving the existing uncommitted attempt; separating database-permission, nightly-scan, Gitleaks, pre-commit, and CI hardening from the detector change; introducing one deterministic package-local scanner discovery and registration seam; migrating the existing scanner roster, canary orchestration, and ensemble consumption to that seam; registering the existing weak-RNG adapter without PRNG-lattice-lab execution or artifact ingestion; preserving all historical receipts, results, hashes, and stopped evidence unchanged; reconciling only the specifically affected OPT-009 and OPT-010 historical-binding tests so receipt-time digests remain historical evidence while current implementation is validated independently; adding focused registry, weak-RNG, canary, provenance, and negative-boundary tests; admitting and closing OPT-036 at this bounded syntactic-detector scope; producing one requalification result; and running the full offline non-live and local-evidence suites, with ceilings of 45 minutes and 2 MiB new tracked data, and exactly zero network reads, uploads, provider calls, tokens, cost, Keychain reads, production-store reads or mutations, repository materializations, scanners beyond synthetic in-process canaries, assessments, labels, training, rescoring, commits, merges, pushes, or deployment. Dynamic third-party plugin loading, arbitrary filesystem discovery, PRNG recovery execution, source or payload disclosure, automatic actionability or severity upgrades, OPT-009 or OPT-010 reopening beyond historical-binding reconciliation, and unrelated file changes remain excluded."
+}

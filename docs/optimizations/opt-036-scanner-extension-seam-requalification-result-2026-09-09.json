@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "status": "stopped-scanner-process-boundary-exceeded",
+  "optimization": "OPT-036",
+  "receipt": {
+    "path": "docs/optimizations/opt-036-scanner-extension-seam-requalification-receipt-2026-09-09.json",
+    "sha256": "1ae345ceb55e9825b0959c22c9f2bf311a1b1627216b1f2a4215e29eef0e4d81"
+  },
+  "stop": {
+    "cause": "An unfiltered pytest invocation entered integration coverage and started an external Gitleaks synthetic-fixture scan before interruption.",
+    "authorized_scanner_boundary": "synthetic in-process canaries only",
+    "observed_external_scanner_processes": "at-least-one-gitleaks",
+    "qualification_completed": false,
+    "lifecycle_finalized": false
+  },
+  "retained_implementation": {
+    "package_local_manifest_discovery": true,
+    "third_party_entry_points": false,
+    "arbitrary_filesystem_discovery": false,
+    "weak_rng_registered": true,
+    "prng_lattice_lab_imported_executed_or_ingested": false,
+    "source_commits": 0,
+    "merge_commits": 0,
+    "remote_pushes": 0
+  },
+  "validation": {
+    "focused_registry_detector_and_canary_passed": 54,
+    "focused_historical_and_lifecycle_passed_before_stop_reconciliation": 76,
+    "compliant_offline_non_live_after_reconciliation": {
+      "passed": 1235,
+      "skipped": 2,
+      "deselected": 36,
+      "elapsed_seconds": 98.69
+    },
+    "interpretation": "The later compliant suite is retained engineering evidence but cannot retroactively cure the earlier receipt ceiling breach."
+  },
+  "restored_state": {
+    "lifecycle_summary": {"closed": 35, "open": 0, "total": 35},
+    "opt_036_admitted_or_closed": false,
+    "production_store_mutations": 0,
+    "provider_calls": 0,
+    "network_reads": 0,
+    "commits": 0,
+    "merges": 0,
+    "pushes": 0
+  },
+  "required_next_step": "A corrected retry must explicitly accept this retained stopped attempt and authorize validation without external scanner execution before OPT-036 lifecycle finalization."
+}

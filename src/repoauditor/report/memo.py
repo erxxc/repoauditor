@@ -171,7 +171,10 @@ def _as_of_lines(
     elif semgrep_status not in (None, "complete", "empty"):
         coverage_text = f"incomplete; Semgrep status={semgrep_status}"
     else:
-        coverage_text = "complete: Semgrep, gitleaks, pip-audit, OSV-Scanner available"
+        coverage_text = (
+            "complete: Semgrep, supplemental Semgrep, gitleaks, pip-audit, "
+            "OSV-Scanner, and weak-RNG detector available"
+        )
 
     triage = stages.get("triage", {})
     evaluations = triage.get("evaluations") or []

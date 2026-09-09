@@ -1,7 +1,7 @@
 # Scanner Deployment Canaries
 
 Status: implemented for the official and RepoAuditor supplemental Semgrep passes, gitleaks,
-pip-audit, and OSV-Scanner.
+pip-audit, OSV-Scanner, and the embedded weak-RNG detector.
 
 Run the isolated deployment check with:
 
@@ -25,6 +25,7 @@ generated candidate findings.
 | gitleaks | Synthetic Stripe-shaped credential | Environment-placeholder text |
 | pip-audit | Exact pin of a known vulnerable package | Applicable, deliberately empty requirements file |
 | OSV-Scanner | Exact pin of a known vulnerable package | Root with no supported manifest (`not-applicable`) |
+| Weak RNG | Java `new Random()` token generation | Java `SecureRandom` construction |
 
 Each positive control must produce validated output, at least one applicable target, and at
 least one finding. Each clean control must produce validated empty output over at least one
@@ -36,6 +37,8 @@ Semgrep control intentionally uses a repository-local rule so the canary itself 
 depend on mutable registry resolution. The supplemental control uses the exact packaged
 owned ruleset and therefore also verifies its digest, rule count, positive behavior, clean
 behavior, separate execution identity, and candidate attribution.
+The weak-RNG control uses the production in-process adapter and verifies its embedded
+configuration and snapshot-bound retrieval path without starting a subprocess.
 Likewise, advisory counts may change as vulnerability databases change; the check requires a
 nonzero positive result rather than an exact count. Pinning and retaining scanner
 configuration and advisory provenance is tracked separately in OPT-024.

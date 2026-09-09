@@ -12,7 +12,7 @@ The job installs the same exact scanner binary versions used by bounded UAT and 
 repoauditor scanner-canaries --output scanner-canaries.json
 ```
 
-The command exits nonzero unless all five scanner passes satisfy their positive,
+The command exits nonzero unless all six scanner passes satisfy their positive,
 clean/not-applicable, target-count, producer-schema, and scanner-specific provenance
 controls. Provenance qualification requires:
 
@@ -24,6 +24,7 @@ controls. Provenance qualification requires:
 - live-service identity and UTC advisory query time for applicable pip-audit and OSV runs;
   and
 - an explicit OSV `not-applicable` result where the negative root has no manifest.
+- the embedded `weak_rng@v1` identity and its Java positive/clean controls.
 
 The workflow publishes the JSON report to the GitHub step summary and retains it with the raw
 binary-version output for 30 days, including failed runs when those files were produced.

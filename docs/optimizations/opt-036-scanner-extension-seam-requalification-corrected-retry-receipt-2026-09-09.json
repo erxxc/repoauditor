@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "status": "authorized",
+  "authorized_at": "2026-09-09",
+  "optimization": "OPT-036",
+  "objective": "Verify the retained scanner-extension seam without external scanner execution and finalize the bounded OPT-036 lifecycle.",
+  "retained_authority": {
+    "original_receipt": {
+      "path": "docs/optimizations/opt-036-scanner-extension-seam-requalification-receipt-2026-09-09.json",
+      "sha256": "1ae345ceb55e9825b0959c22c9f2bf311a1b1627216b1f2a4215e29eef0e4d81"
+    },
+    "stopped_result": {
+      "path": "docs/optimizations/opt-036-scanner-extension-seam-requalification-result-2026-09-09.json",
+      "sha256": "c0f0b22a8eb8b65bdfb4a5783317c7a28894baba31298e0c13059e5876bfc1bd"
+    }
+  },
+  "accepted_stopped_state": {
+    "cause": "at-least-one external Gitleaks synthetic-fixture process from an inadvertently unfiltered pytest invocation",
+    "later_filtered_suite": {"passed": 1235, "skipped": 2, "deselected": 36},
+    "lifecycle": {"closed": 35, "open": 0, "total": 35},
+    "provider_calls": 0,
+    "network_reads": 0,
+    "production_store_mutations": 0,
+    "commits": 0,
+    "merges": 0,
+    "pushes": 0,
+    "deployments": 0
+  },
+  "permitted_retry": {
+    "source_implementation_changes": "none unless a focused or filtered test demonstrates a failure",
+    "focused_tests": ["package registry", "weak-RNG", "canary", "capability", "historical binding", "current lifecycle"],
+    "full_suite_expression": "not live and not integration",
+    "external_scanner_processes": 0,
+    "final_lifecycle": {"closed": 36, "open": 0, "total": 36},
+    "result_count": 1
+  },
+  "resource_ceilings": {
+    "minutes": 30,
+    "new_tracked_bytes": 1048576,
+    "network_reads": 0,
+    "uploads": 0,
+    "provider_calls": 0,
+    "tokens": 0,
+    "cost_usd": 0,
+    "keychain_reads": 0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "repository_materializations": 0,
+    "external_scanner_processes": 0,
+    "assessments": 0,
+    "labels": 0,
+    "training_runs": 0,
+    "rescoring_runs": 0,
+    "commits": 0,
+    "merges": 0,
+    "pushes": 0,
+    "deployments": 0
+  },
+  "required_statement": "I authorize the corrected OPT-036 scanner-extension seam requalification retry described by opt-036-scanner-extension-seam-requalification-corrected-retry-receipt-2026-09-09.json, retaining every implementation, evidence, historical-digest, package-local discovery, weak-RNG, PRNG-lattice-lab exclusion, resource, and no-integration boundary from the original receipt; accepting the retained stopped result caused by at least one external Gitleaks synthetic-fixture process from an inadvertently unfiltered test invocation, followed by 1,235 passing, two skipped, and 36 deselected correctly filtered offline non-live tests, restored 35-closed/0-open lifecycle state, zero provider, network, production-store mutation, commit, merge, push, or deployment activity; permitting only verification of the retained stopped state, focused package-registry and historical-binding tests, one correctly filtered not live and not integration suite with no external scanner processes, finalization of OPT-036 at its bounded package-local scanner-extension and Java syntactic weak-RNG scope, reconciliation to 36 closed and zero open items, and one corrected result, with ceilings of 30 minutes, 1 MiB new tracked data, and exactly zero network reads, uploads, provider calls, tokens, cost, Keychain reads, production-store reads or mutations, repository materializations, external scanner processes, assessments, labels, training, rescoring, commits, merges, pushes, or deployment. Any source implementation change beyond correcting a demonstrated test failure, third-party plugin loading, arbitrary filesystem discovery, PRNG recovery execution or artifact ingestion, source disclosure, automatic actionability or severity upgrade, unrelated hardening, integration, or deployment remains excluded."
+}

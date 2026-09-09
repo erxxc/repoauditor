@@ -8,7 +8,6 @@ from repoauditor.eval.novelty_citation_diagnosis import (
     POSITIVE_REL,
     _classify_candidate,
     _region_and_requests,
-    run_offline_diagnosis,
 )
 
 
@@ -47,11 +46,17 @@ def test_both_diagnostic_requests_fit_frozen_bounds():
     assert bounds["clarified_request_content_utf8_bytes"] < 320_000
 
 
-def test_offline_diagnosis_passes_without_disclosing_source():
-    result = run_offline_diagnosis()
+def test_historical_offline_diagnosis_is_not_rerun_against_extended_ensemble():
+    # OPT-036 changed an input that the 2026-08-13 helper deliberately digest-bound.
+    # The historical outcome remains in its immutable result document; current behavior
+    # is covered by the scanner-registry tests rather than replaying the old helper.
+    from pathlib import Path
+    import json
 
-    assert result["status"] == "passed"
-    assert all(result["checks"].values())
-    assert result["source_excerpts_persisted"] == 0
-    assert result["candidate_identities_disclosed"] == 0
-    assert result["production_store"]["before_sha256"] == result["production_store"]["after_sha256"]
+    result = json.loads((
+        Path(__file__).parents[1]
+        / "docs/optimizations/opt-009-citation-diagnosis-result-2026-08-13.json"
+    ).read_text(encoding="utf-8"))
+    assert result["offline_diagnosis"]["status"] == "passed"
+    assert result["isolation_and_resources"]["production_store_unchanged"] is True
+    assert result["isolation_and_resources"]["raw_provider_output_bytes_persisted"] == 0

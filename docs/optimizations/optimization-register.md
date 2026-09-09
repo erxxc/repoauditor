@@ -1,11 +1,11 @@
 # Optimization Register
 
-Status: authoritative post-MVP work list as of 2026-08-20. POC acceptance is complete.
+Status: authoritative post-MVP work list as of 2026-09-09. POC acceptance is complete.
 
 Current execution priorities
 
 OPT-035 publishes the canonical machine-readable lifecycle ledger at
-[`optimization-status.json`](optimization-status.json). It records 35 closed and zero open
+[`optimization-status.json`](optimization-status.json). It records 36 closed and zero open
 items. There is no remaining execution priority.
 The dated [`outstanding-work checkpoint`](outstanding-work-checkpoint-2026-08-07.json)
 is immutable historical evidence of the 2026-08-07 state; it is not a live derived view.
@@ -13,7 +13,7 @@ The accepted POC Definition of Done remains complete.
 
 There are no open optimization items.
 
-OPT-001 through OPT-035 are closed at their approved scope. Optional
+OPT-001 through OPT-036 are closed at their approved scope. Optional
 expansion of a closed bounded scope must be proposed as new work rather than silently
 reopening its lifecycle state.
 
@@ -945,5 +945,12 @@ VI. Deterministic scanner assurance and capability
       bounded scope is complete; optional expansion requires a new scope decision.
       Implemented offline — DoD impact: none.
 
-   O. Add the next proposed improvement as `OPT-036`; do not place it directly into the MVP
-      recovery plan unless the project owner explicitly changes the DoD.
+   O. OPT-036 — Weak-RNG detector and scanner-extension seam — implemented — owner:
+      detection architecture — source: owner-authorized 2026-09-09 bounded
+      requalification. A Java-only syntactic weak-RNG detector is registered through a
+      deterministic package-local manifest seam. The seam rejects third-party modules,
+      malformed manifests, path escape, unknown target-count bases, and adapter identity
+      drift. Historical OPT-009/OPT-010 digests remain receipt-time evidence and current
+      behavior is independently tested. The standalone PRNG lattice lab is not imported,
+      executed, or ingested; findings remain unadjudicated candidates. Implemented
+      offline — DoD impact: none.

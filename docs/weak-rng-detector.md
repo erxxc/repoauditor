@@ -23,28 +23,16 @@ Comments and test sources (`sourcefiles.is_test_source`) are skipped; `SecureRan
 never matched. Each finding carries a concrete location, a stable `identity_key` (the
 enclosing symbol + idiom, for matching/dedup), and a per-idiom confidence.
 
-## Status: standalone detector; framework integration SHELVED
+## Status: integrated deterministic detector
 
-This change ships **only the detector**: `weak_rng_adapter.py` (`detect_in_source` +
-`WeakRngAdapter`, which already implements the OPT-022 `ScannerExecution` contract) and
-its unit tests. It imports the existing `ScannerExecution` / `CandidateFinding` shapes
-read-only and touches no other file — a purely additive module.
+`WeakRngAdapter` is registered in `DETERMINISTIC_SCANNERS`, the ensemble runner,
+deployment canaries, CLI summaries, execution evidence, and the capability matrix. The
+historical OPT-010 receipt digests remain receipt-time evidence and are tested separately
+from the current extended scanner surface.
 
-Registering it as a live first-class scanner — adding it to `DETERMINISTIC_SCANNERS`
-(`execution.py`), a deployment canary (`canaries.py`), the ensemble runner
-(`ensemble.py`), and the OPT-030 capability matrix — is **deliberately shelved**. Every
-one of those integration points is digest-frozen by *closed* optimization instruments:
-`ensemble.py` by OPT-009 (2026-08-13), and `execution.py` + `canaries.py` by OPT-010's
-instrument-qualification receipt (2026-08-19), whose digest sits at the root of a ~20-deep
-tamper-evident hash chain across the closed OPT-010 lifecycle. Editing any of them would
-invalidate preserved evidence, and there is no non-frozen seam to register a scanner
-through (those files are both the definition and the consumption points for the roster).
-
-So repoauditor's deterministic-scanner extension surface is, as of the OPT-010 closure,
-frozen shut for new scanners. Reopening it — via an owner-authorized re-qualification of
-the affected instruments, or a re-architected registration seam — is its own scoped piece
-of work; the live wiring of `weak_rng` waits on it. Until then this detector is available
-as a module and exercised by its tests, but is not part of a live detect pass.
+The standalone `prng-lattice-lab` remains corroboration context only. RepoAuditor does
+not import it, execute it, ingest its artifacts, or make detector results contingent on
+its availability.
 
 ## Claim boundary
 
@@ -55,13 +43,12 @@ one is a reproducible state-recovery demonstration (built in the harness), not a
 
 ## Execution contract
 
-`WeakRngAdapter` already implements the OPT-022 `ScannerExecution` contract, ready for
-the shelved registration. Applicability is the presence of Java source; `target_count` is
+`WeakRngAdapter` implements the OPT-022 `ScannerExecution` contract. Applicability is the
+presence of Java source; `target_count` is
 the number of `.java` files considered, basis `scanner-reported-files`. So `empty` (Java
 present, no idioms) is distinguishable from `not-applicable` (no Java) and from `failed`,
-per OPT-022. A deployment canary (isolated positive `new java.util.Random()` vs. clean
-`SecureRandom`-only control, no external binary) is written and ships with the shelved
-integration, not in this detector-only change.
+per OPT-022. Its deployment canary uses an isolated positive `new java.util.Random()` and
+clean `SecureRandom`-only control without an external binary.
 
 ## Blind spots
 

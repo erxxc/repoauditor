@@ -88,6 +88,19 @@ def test_canary_provenance_is_scanner_specific():
         canaries._clean_probe(clean),
     )
 
+    weak_rng = _execution("weak_rng", "complete", 1, 1).model_copy(update={
+        "version": "weak_rng@v1",
+        "invocation": ("weak_rng", "scan", "$SNAPSHOT"),
+        "configuration": "weak_rng builtin idioms",
+        "configuration_resolution": "embedded-default",
+    })
+    weak_rng_clean = weak_rng.model_copy(update={"status": "empty", "finding_count": 0})
+    assert canaries._provenance_passed(
+        "weak_rng",
+        canaries._positive_probe(weak_rng),
+        canaries._clean_probe(weak_rng_clean),
+    )
+
 
 def test_canary_orchestrator_never_persists_findings(monkeypatch):
     seen_roots = []
@@ -102,6 +115,7 @@ def test_canary_orchestrator_never_persists_findings(monkeypatch):
         ("gitleaks", "gitleaks"),
         ("pip-audit", "pip-audit"),
         ("osv-scanner", "osv-scanner"),
+        ("weak_rng", "weak_rng"),
     ):
         monkeypatch.setitem(
             canaries.CANARY_RUNNERS,
@@ -119,6 +133,7 @@ def test_canary_orchestrator_never_persists_findings(monkeypatch):
     assert all(item["provenance_passed"] for item in rendered["results"])
     assert {item["scanner"] for item in rendered["results"]} == {
         "semgrep", "semgrep-supplemental", "gitleaks", "pip-audit", "osv-scanner",
+        "weak_rng",
     }
     assert seen_roots
     assert all(not root.exists() for root in seen_roots)

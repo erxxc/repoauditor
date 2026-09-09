@@ -16,14 +16,8 @@ licenses one is a reproducible state-recovery demonstration (built in the harnes
 a prior. Matching is syntactic, so findings are review candidates, never automatic
 actionable findings.
 
-Scope (OPT-036): Java idioms. This module is the standalone detector: `detect_in_source`
-plus a `WeakRngAdapter` that already implements the OPT-022 `ScannerExecution` contract
-(applicable / empty / not-applicable, target counts, provenance), so it is ready to
-register as a first-class deterministic scanner. Wiring it into the live framework
-(`DETERMINISTIC_SCANNERS`, the deployment canary, the OPT-030 capability matrix, and the
-ensemble runner) is deliberately SHELVED: those integration points are digest-frozen by
-closed OPT-009/OPT-010 instrument chains, so registering a new scanner has to wait until
-the scanner-extension surface is reopened as its own owner-scoped change. The
+Scope (OPT-036): Java idioms. The adapter is registered as a first-class deterministic
+scanner with explicit execution evidence and deployment canaries. The
 `nextint_odd`/`bit_length` leak-model breadth and other languages remain follow-ups.
 """
 
@@ -201,6 +195,12 @@ class WeakRngAdapter:
             self.run_status = "not-applicable"
             return []
         self._applicable = True
+        if index is not None:
+            if (
+                index.snapshot_path is None
+                or index.snapshot_path.resolve() != snapshot_path.resolve()
+            ):
+                raise ValueError("retrieval index is not bound to the submitted snapshot")
         index = index or RetrievalIndex().build(snapshot_path)
         candidates = detect_in_source(index)
         self._finding_count = len(candidates)

@@ -89,7 +89,7 @@ def test_finding_locations_and_identity(tmp_path):
     assert "issueToken" in ctor.identity_key and ctor.identity_key.startswith("weak-rng:")
 
 
-# --- OPT-022 execution contract (framework registration shelved; see the module docstring)
+# --- OPT-022 execution contract
 def test_execution_complete_when_java_and_idioms_present(tmp_path):
     adapter = WeakRngAdapter()
     prod = tmp_path / "src" / "main" / "java" / "TokenService.java"
@@ -120,3 +120,15 @@ def test_execution_not_applicable_without_java(tmp_path):
     ex = adapter.execution()
     assert ex.status == "not-applicable" and ex.applicable is False
     assert ex.target_count == 0 and ex.applicability_detail
+
+
+def test_rejects_index_bound_to_another_snapshot(tmp_path):
+    submitted = tmp_path / "submitted"
+    other = tmp_path / "other"
+    submitted.mkdir()
+    other.mkdir()
+    (submitted / "Token.java").write_text("class Token { Random r = new Random(); }\n")
+    (other / "Other.java").write_text("class Other {}\n")
+
+    with pytest.raises(ValueError, match="not bound"):
+        WeakRngAdapter().run(submitted, RetrievalIndex().build(other))

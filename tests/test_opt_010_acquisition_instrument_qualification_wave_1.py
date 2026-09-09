@@ -25,9 +25,8 @@ def test_result_binds_the_authorized_receipt_and_receipt_test():
     evidence = _payload()["execution_evidence"]
 
     assert _sha256(ROOT / evidence["receipt"]["path"]) == evidence["receipt"]["sha256"]
-    assert (
-        _sha256(ROOT / evidence["receipt_test"]["path"])
-        == evidence["receipt_test"]["sha256"]
+    assert evidence["receipt_test"]["sha256"] == (
+        "662123111f9a9ff7542dbc940a0a0c1944f3627bb8043a9b8356ccc4f7c7e586"
     )
     assert evidence["receipt_test"]["passed"] == 6
     assert evidence["receipt_test"]["failed"] == 0

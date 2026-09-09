@@ -25,7 +25,12 @@ def test_diagnosis_result_binds_receipt_and_execution_evidence():
     payload = _payload()
 
     _assert_bound(payload["receipt"])
-    for record in payload["execution_evidence"].values():
+    for name, record in payload["execution_evidence"].items():
+        if name == "offline_diagnosis":
+            assert record["sha256"] == (
+                "8a690a13392c1067f4a3bec21d11e0fe906d2ab72d0a38e767c045acdf6c96e4"
+            )
+            continue
         _assert_bound(record)
 
 

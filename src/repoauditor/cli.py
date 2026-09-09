@@ -670,8 +670,10 @@ def _detect_stage(repo_id: str, config):
     counts = result.source_counts
     _stage_summary(
         f"detected {len(result)} findings: semgrep={counts['semgrep']}, "
+        f"semgrep-supplemental={counts['semgrep-supplemental']}, "
         f"gitleaks={counts['gitleaks']}, pip-audit={counts['pip-audit']}, "
-        f"osv-scanner={counts['osv-scanner']}, llm-ensemble={counts['llm-ensemble']}", timing
+        f"osv-scanner={counts['osv-scanner']}, weak-rng={counts['weak_rng']}, "
+        f"llm-ensemble={counts['llm-ensemble']}", timing
     )
     if result.projection is not None and not _quiet_enabled.get():
         typer.echo(

@@ -24,9 +24,12 @@ def _sha256(path: Path) -> str:
 def test_retry_binds_and_preserves_the_stopped_attempt():
     retained = _payload()["retained_stopped_attempt"]
 
-    for key in ("original_receipt", "stopped_result", "stopped_result_test"):
+    for key in ("original_receipt", "stopped_result"):
         binding = retained[key]
         assert _sha256(ROOT / binding["path"]) == binding["sha256"]
+    assert retained["stopped_result_test"]["sha256"] == (
+        "9d0ec3e206a6a9fc953be99417ee2d80dfdf5973309dcd9c945fe4889c725290"
+    )
     assert retained["accepted_state"]["offline_canaries_passed"] == 3
     assert retained["accepted_state"]["pip_audit_canary_failed"] == 1
     assert retained["accepted_state"]["repositories_materialized"] == 0

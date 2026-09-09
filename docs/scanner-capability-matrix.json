@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
-  "updated_at": "2026-08-01",
-  "optimization": "OPT-030, OPT-034",
+  "updated_at": "2026-09-08",
+  "optimization": "OPT-030, OPT-034, OPT-036",
   "claim_boundary": {
     "execution_health": "A passing execution contract or canary establishes only that the configured adapter ran and produced validated output over disclosed targets.",
     "detection_capability": "Capabilities describe implemented rule or advisory coverage; they do not establish exhaustive recall, exploitability, actionability, or project-wide precision.",
@@ -96,6 +96,22 @@
       "blind_spots": ["--no-git means repository history is not inspected", "Matches can be placeholders, examples, test values, or revoked credentials", "No match does not establish safety of runtime or external secrets"],
       "canary": "Synthetic Stripe-shaped credential and an environment-placeholder negative control.",
       "evidence": ["scanner-provenance.md#other-scanners", "scanner-deployment-canaries.md#controls", "deterministic-tool-deployment-audit-2026-07-29.json"]
+    },
+    {
+      "id": "weak_rng",
+      "category": "RepoAuditor-owned predictable-randomness analysis",
+      "adapter": "WeakRngAdapter",
+      "producer": "weak_rng",
+      "mechanisms": ["Java java.util.Random construction", "Java Math.random calls", "Apache Commons RandomStringUtils non-secure generation"],
+      "ecosystems": ["Java"],
+      "applicability": "Applicable when at least one non-test .java source file exists in the exact submitted snapshot.",
+      "inputs": ["Java source indexed from the submitted repository snapshot"],
+      "target_count_bases": ["scanner-reported-files"],
+      "configuration": "Embedded weak_rng@v1 idiom set; index binding to the submitted snapshot is verified before detection.",
+      "strengths": ["Offline and deterministic", "Stable file, line, enclosing-symbol, and idiom identities", "Skips comments, test sources, SecureRandom, and RandomStringUtils secure variants"],
+      "blind_spots": ["Java-only syntactic coverage", "A match does not prove security-sensitive use, attacker observation, state recovery, or exploitability", "Aliases, wrappers, indirect data flow, and unimplemented generator idioms may be missed"],
+      "canary": "Java new Random positive and SecureRandom negative controls using the production adapter.",
+      "evidence": ["weak-rng-detector.md", "scanner-deployment-canaries.md#controls"]
     }
   ]
 }
