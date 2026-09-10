@@ -116,6 +116,7 @@ def test_canary_orchestrator_never_persists_findings(monkeypatch):
         ("pip-audit", "pip-audit"),
         ("osv-scanner", "osv-scanner"),
         ("weak_rng", "weak_rng"),
+        ("weak_rng_py", "weak_rng_py"),
     ):
         monkeypatch.setitem(
             canaries.CANARY_RUNNERS,
@@ -133,7 +134,7 @@ def test_canary_orchestrator_never_persists_findings(monkeypatch):
     assert all(item["provenance_passed"] for item in rendered["results"])
     assert {item["scanner"] for item in rendered["results"]} == {
         "semgrep", "semgrep-supplemental", "gitleaks", "pip-audit", "osv-scanner",
-        "weak_rng",
+        "weak_rng", "weak_rng_py",
     }
     assert seen_roots
     assert all(not root.exists() for root in seen_roots)

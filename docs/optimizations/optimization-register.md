@@ -5,16 +5,17 @@ Status: authoritative post-MVP work list as of 2026-09-09. POC acceptance is com
 Current execution priorities
 
 OPT-035 publishes the canonical machine-readable lifecycle ledger at
-[`optimization-status.json`](optimization-status.json). It records 37 closed and zero open
-item. OPT-037 is the sole execution priority, gated first on a separately authorized,
-aggregate-only lattice-lab fixture transfer and Tier-0 exact-oracle qualification.
+[`optimization-status.json`](optimization-status.json). It records 38 closed and zero open
+items with no remaining execution priority.
 The dated [`outstanding-work checkpoint`](outstanding-work-checkpoint-2026-08-07.json)
 is immutable historical evidence of the 2026-08-07 state; it is not a live derived view.
 The accepted POC Definition of Done remains complete.
 
-There are no open optimization items. New work requires a new lifecycle identity and scope.
+OPT-038 is closed at its bounded package-local Python syntactic-detector scope. It remains a
+substring-based candidate detector with no recovery, exploitability, actionability,
+exhaustive-recall, or production-policy claim.
 
-OPT-001 through OPT-036 are closed at their approved scope. Optional
+OPT-001 through OPT-037 are closed at their approved scope. Optional
 expansion of a closed bounded scope must be proposed as new work rather than silently
 reopening its lifecycle state.
 
@@ -974,3 +975,16 @@ VI. Deterministic scanner assurance and capability
       design was not qualified. Memo and integrity disclosure is informational only and
       changes no threshold, prior, policy, or production behavior. OPT-037 is closed at
       this bounded available-evidence scope — DoD impact: none.
+
+   Q. OPT-038 — Python weak-RNG syntactic detector — closed — owner: detection architecture
+      — source: local donor commit `10057b6574cbd4ce5663af9399ef69a46b9ec7f4`.
+      The donor is qualified for bounded correction and additive import through the existing
+      package-local scanner seam. It passed 22 focused tests and has no three-way conflict
+      with current main. Known limitations include missed aliased imports, possible shadowed
+      identifier and string-literal false positives, inconsistent donor target-count wording,
+      and coupling to private Java-adapter helpers. The frozen implementation receipt requires
+      explicit claim and target-count boundaries before execution. No donor code has been
+      imported, and no recovery, exploitability, actionability, exhaustive-recall, lattice-lab,
+      production-scan, or policy claim is authorized. The corrected implementation passed
+      32 focused tests and the 1,296-test filtered offline suite and is closed at that bounded
+      scope — DoD impact: none.

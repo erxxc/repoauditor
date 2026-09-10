@@ -58,3 +58,17 @@ clean `SecureRandom`-only control without an external binary.
 - Java only in this first pass; `nextInt(oddBound)` bias modelling and other languages are
   follow-ups.
 - No claim of exhaustive recall.
+
+## Python random plugin (`weak_rng_py`)
+
+The additive package-local `weak_rng_py` plugin detects direct textual calls to selected
+Python `random` APIs. It reports deterministic, snapshot-bound candidates at initial
+`MEDIUM` severity, excludes canonical test paths from findings and target counts, and uses
+`random.getrandbits` plus `secrets.token_hex` as synthetic canary controls. It does not
+import, execute, or ingest PRNG lattice-lab.
+
+This is substring-only coverage. Aliased or `from random import ...` calls may be missed;
+shadowed `random` identifiers and string literals can match. `secrets` and
+`random.SystemRandom` are excluded, but a match still does not establish security-sensitive
+use, attacker observation, state recovery, exploitability, actionability, or exhaustive
+recall. Those limitations are frozen in focused tests rather than inferred away.

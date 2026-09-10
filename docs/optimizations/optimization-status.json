@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
   "updated_at": "2026-09-10",
-  "optimization": "OPT-037",
+  "optimization": "OPT-038",
   "status_definitions": {
     "closed": "The approved scope is implemented or the bounded investigation is complete; optional expansion requires a new scope decision.",
     "open": "The approved scope is not complete and remains subject to its recorded activation gate."
   },
   "priority_policy": "Rank open items by likely security or operational impact, then readiness of existing evidence, then implementation cost. A rank does not waive the recorded activation gate.",
-  "summary": {"closed": 37, "open": 0, "total": 37},
+  "summary": {"closed": 38, "open": 0, "total": 38},
   "items": [
     {"id": "OPT-001", "title": "Reviewed-label growth", "status": "closed", "gate": "none", "next_priority": null},
     {"id": "OPT-002", "title": "Family-aware bootstrap ranges", "status": "closed", "gate": "none", "next_priority": null},
@@ -45,6 +45,7 @@
     {"id": "OPT-034", "title": "Scanner target-count bases", "status": "closed", "gate": "none", "next_priority": null},
     {"id": "OPT-035", "title": "Canonical optimization status ledger", "status": "closed", "gate": "none", "next_priority": null},
     {"id": "OPT-036", "title": "Weak-RNG detector and scanner-extension seam", "status": "closed", "gate": "none", "next_priority": null},
-    {"id": "OPT-037", "title": "Calibration evidence", "status": "closed", "gate": "none", "next_priority": null}
+    {"id": "OPT-037", "title": "Calibration evidence", "status": "closed", "gate": "none", "next_priority": null},
+    {"id": "OPT-038", "title": "Python weak-RNG syntactic detector", "status": "closed", "gate": "none", "next_priority": null}
   ]
 }

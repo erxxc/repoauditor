@@ -12,15 +12,15 @@ from repoauditor.detect.deterministic import registry
 def test_registry_discovers_weak_rng_with_stable_contract():
     plugins = registry.discover_scanner_plugins()
 
-    assert [plugin.id for plugin in plugins] == ["weak_rng"]
+    assert [plugin.id for plugin in plugins] == ["weak_rng", "weak_rng_py"]
     assert plugins[0].module == (
         "repoauditor.detect.deterministic.plugins.weak_rng"
     )
     assert plugins[0].target_count_bases == ("scanner-reported-files",)
     assert len(plugins[0].manifest_sha256) == 64
     adapters = registry.create_scanner_plugin_adapters(1)
-    assert [adapter.tool_name for adapter in adapters] == ["weak_rng"]
-    assert set(registry.scanner_plugin_canary_runners()) == {"weak_rng"}
+    assert [adapter.tool_name for adapter in adapters] == ["weak_rng", "weak_rng_py"]
+    assert set(registry.scanner_plugin_canary_runners()) == {"weak_rng", "weak_rng_py"}
 
 
 @pytest.mark.parametrize(

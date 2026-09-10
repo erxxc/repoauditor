@@ -38,7 +38,7 @@ def test_opt009_closure_result_matches_canonical_lifecycle():
     opt009 = next(item for item in ledger["items"] if item["id"] == "OPT-009")
 
     assert payload["lifecycle"]["summary"] == {"closed": 33, "open": 2, "total": 35}
-    assert ledger["summary"] == {"closed": 37, "open": 0, "total": 37}
+    assert ledger["summary"] == {"closed": 38, "open": 0, "total": 38}
     assert opt009 == {
         "id": "OPT-009",
         "title": "Novelty prioritization",

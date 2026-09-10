@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "updated_at": "2026-09-08",
-  "optimization": "OPT-030, OPT-034, OPT-036",
+  "optimization": "OPT-030, OPT-034, OPT-036, OPT-038",
   "claim_boundary": {
     "execution_health": "A passing execution contract or canary establishes only that the configured adapter ran and produced validated output over disclosed targets.",
     "detection_capability": "Capabilities describe implemented rule or advisory coverage; they do not establish exhaustive recall, exploitability, actionability, or project-wide precision.",
@@ -112,6 +112,22 @@
       "blind_spots": ["Java-only syntactic coverage", "A match does not prove security-sensitive use, attacker observation, state recovery, or exploitability", "Aliases, wrappers, indirect data flow, and unimplemented generator idioms may be missed"],
       "canary": "Java new Random positive and SecureRandom negative controls using the production adapter.",
       "evidence": ["weak-rng-detector.md", "scanner-deployment-canaries.md#controls"]
+    },
+    {
+      "id": "weak_rng_py",
+      "category": "RepoAuditor-owned predictable-randomness analysis",
+      "adapter": "WeakRngPyAdapter",
+      "producer": "weak_rng_py",
+      "mechanisms": ["Direct textual Python random.getrandbits calls", "Direct textual Python random.Random construction", "Selected direct textual Python random module calls"],
+      "ecosystems": ["Python"],
+      "applicability": "Applicable when at least one non-test .py source file exists in the exact submitted snapshot.",
+      "inputs": ["Python source indexed from the submitted repository snapshot"],
+      "target_count_bases": ["scanner-reported-files"],
+      "configuration": "Embedded weak_rng_py@v1 substring idiom set; index binding to the submitted snapshot is verified before detection.",
+      "strengths": ["Offline and deterministic", "Stable file, line, enclosing-symbol, and idiom identities", "Skips canonical test paths and excludes secrets and random.SystemRandom"],
+      "blind_spots": ["Substring-only Python coverage", "Aliased and from-import calls are missed", "Shadowed random identifiers and string literals can match", "A match does not prove security-sensitive use, attacker observation, state recovery, exploitability, or actionability"],
+      "canary": "Python random.getrandbits positive and secrets.token_hex negative controls using the package-local adapter.",
+      "evidence": ["weak-rng-detector.md", "optimizations/opt-038-implementation-receipt-2026-09-10.json"]
     }
   ]
 }

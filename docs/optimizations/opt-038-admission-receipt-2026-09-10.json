@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-038",
+  "objective": "Admit a separately bounded Python weak-RNG syntactic detector after OPT-037 closure without reopening OPT-036 or importing lattice-lab execution evidence.",
+  "authorized_source": {
+    "repository": "repoauditor",
+    "local_unpushed_commit": "10057b6574cbd4ce5663af9399ef69a46b9ec7f4",
+    "parent": "ec03d6699fd647b6d5f9f3ebca754832747d12d9"
+  },
+  "admission_contract": {
+    "current_summary": {"closed": 37, "open": 1, "total": 38},
+    "sole_open_item": "OPT-038",
+    "next_priority": 1,
+    "activation_gate": "bounded donor-code implementation qualification",
+    "opt_036_state": "closed and historically immutable",
+    "opt_037_state": "closed and historically immutable"
+  },
+  "authorized_actions": [
+    "lifecycle admission",
+    "offline donor-code qualification",
+    "eight-file reconciliation against current main",
+    "bounded implementation receipt creation before code import"
+  ],
+  "excluded": [
+    "donor commit merge or cherry-pick",
+    "implementation import before the implementation receipt exists",
+    "lattice-lab import, execution, or artifact ingestion",
+    "production-store access or mutation",
+    "repository scanning or candidate generation",
+    "automatic severity or actionability upgrade",
+    "network, provider, credential, commit, push, merge, or deployment activity"
+  ],
+  "authorization": "Authorization accepted to perform actions 1-4 listed"
+}
