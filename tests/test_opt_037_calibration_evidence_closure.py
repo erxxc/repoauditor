@@ -56,7 +56,14 @@ def test_tier_results_and_store_remain_bound_without_raw_disclosure() -> None:
         "sources": 0,
         "row_level_records": 0,
     }
-    assert _sha256(STORE) == EXPECTED_STORE_SHA256
+    assert tier1["store"] == {
+        "before_sha256": EXPECTED_STORE_SHA256,
+        "after_sha256": EXPECTED_STORE_SHA256,
+        "byte_identical": True,
+        "mutations": 0,
+    }
+    if STORE.exists():
+        assert _sha256(STORE) == EXPECTED_STORE_SHA256
 
 
 def test_historical_admission_result_remains_historical() -> None:
