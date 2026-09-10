@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "objective": "Prepare a bounded pull request for safe public-repository consideration without changing repository visibility or settings.",
+  "base": {
+    "branch": "main",
+    "tier_0_commit": "14868b7",
+    "origin_main": "ec03d66"
+  },
+  "allowed_changes": [
+    ".gitignore",
+    ".github/CODEOWNERS",
+    ".github/dependabot.yml",
+    ".github/pull_request_template.md",
+    ".github/workflows/bounded-uat.yml",
+    ".github/workflows/live-tests.yml",
+    ".github/workflows/public-corpus.yml",
+    ".github/workflows/tests.yml",
+    "SECURITY.md",
+    "THIRD_PARTY_NOTICES.md",
+    "docs/optimizations/github-publication-readiness-receipt-2026-09-10.json",
+    "docs/optimizations/github-publication-readiness-result-2026-09-10.json",
+    "docs/optimizations/opt-037-tier-1-readiness-receipt-2026-09-10.json",
+    "docs/optimizations/opt-037-tier-1-readiness-result-2026-09-10.json",
+    "src/repoauditor/analyze/calibration_readiness.py",
+    "tests/test_github_publication_readiness.py",
+    "tests/test_opt_037_tier_1_readiness.py"
+  ],
+  "action_pins": {
+    "actions/checkout@v4": "11d5960a326750d5838078e36cf38b85af677262",
+    "actions/cache@v4": "0057852bfaa89a56745cba8c7296529d2fc39830",
+    "astral-sh/setup-uv@v6": "d0cc045d04ccac9d8b7881df0226f9e82c39688e",
+    "actions/setup-python@v5": "a26af69be951a213d495a4c3e4e4022e16d87065",
+    "actions/setup-go@v5": "40f1582b2485089dde7abd97c1529aa768e1baff",
+    "actions/upload-artifact@v4": "ea165f8d65b6e75b540449e92b4886f43607fa02",
+    "actions/download-artifact@v4": "d3f86a106a0bac45b974a628896c90dbdf5c8093"
+  },
+  "required_validation": [
+    "full-history Gitleaks with redaction",
+    "focused publication-readiness tests",
+    "pytest -m 'not integration and not live'"
+  ],
+  "excluded": [
+    "repository visibility or settings changes",
+    "branch protection or security-feature activation",
+    "history rewriting or author-identity removal",
+    "provider or production-store activity",
+    "merge or deployment",
+    "unrelated untracked files"
+  ],
+  "required_statement": "I authorize the bounded GitHub publication-readiness PR described by github-publication-readiness-receipt-2026-09-10.json, limited to preserving the existing committed OPT-037 Tier-0 work; committing the completed aggregate-only OPT-037 Tier-1 readiness receipt, helper, result, and focused test; adding SECURITY.md, CODEOWNERS, a pull-request template, Dependabot configuration, third-party fixture notices, and explicit .envrc exclusion; pinning existing GitHub Actions dependencies to verified commit SHAs without changing workflow triggers, permissions, secrets, paid execution, scanner scope, or operational behavior; adding focused static readiness tests; running Gitleaks over full Git history and the correctly filtered offline non-live suite; creating one publication-readiness branch and commit; pushing only that branch; and opening one PR against main, with network access limited to GitHub and exactly zero repository-visibility changes, provider calls, credential disclosure, production-store reads or mutations, simulations, calibration calculations, assessments, labels, training, rescoring, deployment, or merge. History rewriting, author-identity removal, fixture-source expansion, license replacement, GitHub settings changes, branch-protection changes, vulnerability-alert activation, automated-security-fix activation, secret creation or rotation, visibility changes, and unrelated untracked files remain excluded and require separate authorization."
+}

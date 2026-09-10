@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "status": "completed-ready",
+  "optimization": "OPT-037",
+  "receipt": {
+    "path": "docs/optimizations/opt-037-tier-1-readiness-receipt-2026-09-10.json",
+    "sha256": "8ffaab7f217b643a062d15def546abe51826d565b93a59170d69b8e1ff847f36"
+  },
+  "bindings": {
+    "helper": {"path": "src/repoauditor/analyze/calibration_readiness.py", "sha256": "a82a792cb8329a7a2f7eb04f10864da4e0f9fb0da37eb7f99cc82aa783712643"},
+    "focused_test": {"path": "tests/test_opt_037_tier_1_readiness.py", "sha256": "c114e14522504cc66473d8a4b1ab7329ea3bc5e57363b3cdf2b8346abdb16e86"},
+    "artifact": {"path": "data/artifacts/opt037-tier1-readiness.json", "sha256": "606ff02571f084010ab11fe2af0371ace869a275b310920803c75c1657563301"}
+  },
+  "store": {
+    "before_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "after_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "byte_identical": true,
+    "mutations": 0
+  },
+  "aggregate_readiness": {
+    "joined_rows": 299,
+    "excluded_non_authoritative_rows": 14,
+    "excluded_chronology_failure_rows": 76,
+    "excluded_missing_assessment_rows": 0,
+    "excluded_missing_compatibility_rows": 0,
+    "compatible_rows": 162,
+    "duplicate_rows_removed": 58,
+    "eligible_identities": 104,
+    "positive_identities": 24,
+    "negative_identities": 80,
+    "evaluation_families": 15,
+    "compatibility_digest": "310fa764b46b714535c982d3cf1383435cade02e0d005b9f29c484ad3d0cf070",
+    "all_included_scores_precede_first_assessment": true,
+    "all_included_labels_authoritative": true,
+    "all_included_scores_compatible": true,
+    "both_classes": true,
+    "minimum_40_identities": true,
+    "minimum_8_families": true,
+    "ready": true
+  },
+  "validation": {
+    "focused_passed": 12,
+    "focused_failed": 0,
+    "focused_elapsed_seconds": 0.10,
+    "full_expression": "not live and not integration",
+    "full_passed": 1270,
+    "full_skipped": 2,
+    "full_deselected": 36,
+    "full_failed": 0,
+    "full_elapsed_seconds": 97.56
+  },
+  "disclosure": {
+    "identities": 0,
+    "individual_scores": 0,
+    "individual_outcomes": 0,
+    "rationales": 0,
+    "findings": 0,
+    "sources": 0,
+    "row_level_records": 0
+  },
+  "activity": {
+    "network_reads": 0,
+    "uploads": 0,
+    "provider_calls": 0,
+    "tokens": 0,
+    "cost_usd": 0,
+    "credential_reads": 0,
+    "production_store_mutations": 0,
+    "schema_migrations": 0,
+    "reliability_tables": 0,
+    "threshold_selections": 0,
+    "training_runs": 0,
+    "rescoring_runs": 0,
+    "policy_changes": 0,
+    "lifecycle_changes": 0,
+    "commits": 0,
+    "pushes": 0,
+    "deployments": 0
+  },
+  "interpretation": "The current store contains a sufficient temporally valid, authoritative, compatible, identity-deduplicated cohort for a separately authorized descriptive Tier-1 reliability calculation. Ineligible historical rows remain retained and excluded. No reliability metric or threshold was calculated."
+}

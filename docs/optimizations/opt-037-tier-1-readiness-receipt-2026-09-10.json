@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-037",
+  "objective": "Audit whether authoritative real outcomes support a temporally valid, identity-deduplicated Tier-1 reliability cohort.",
+  "store": {
+    "path": "data/repoauditor.db",
+    "before_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "access": "read-only aggregate audit"
+  },
+  "allowed_outputs": [
+    "src/repoauditor/analyze/calibration_readiness.py",
+    "tests/test_opt_037_tier_1_readiness.py",
+    "data/artifacts/opt037-tier1-readiness.json",
+    "docs/optimizations/opt-037-tier-1-readiness-receipt-2026-09-10.json",
+    "docs/optimizations/opt-037-tier-1-readiness-result-2026-09-10.json"
+  ],
+  "eligibility": {
+    "authoritative_sources": ["manual", "derived_review"],
+    "chronology": "score timestamp strictly precedes first assessment timestamp",
+    "compatibility_fields": ["model_name", "model_version", "feature_schema_version", "calibration"],
+    "identity_rule": "one latest eligible pre-assessment score per exact finding identity within the newest compatible cohort",
+    "minimum_identities": 40,
+    "minimum_families": 8,
+    "both_classes_required": true
+  },
+  "disclosure": "aggregate counts and compatibility digest only; no identity, probability, outcome row, rationale, finding, source, or row-level disclosure",
+  "excluded": [
+    "store mutation or migration", "reliability table implementation", "Tier-1 metric calculation", "memo or integrity integration", "threshold selection", "training or rescoring", "network, provider, or credential activity", "policy or lifecycle changes", "commit, push, or deployment"
+  ],
+  "required_statement": "I authorize the OPT-037 Tier-1 offline reliability-readiness audit described by opt-037-tier-1-readiness-receipt-2026-09-10.json, limited to one aggregate-only read-only audit of the production store’s existing persisted actionability scores, authoritative later human labels and assessments, evaluation-family mappings, and current triage-statistics compatibility logic; strict verification of score-before-first-assessment chronology, manual or derived-review label provenance, compatible model name and version, feature-schema version and calibration identity, effective identity deduplication, both-class presence, at least 40 eligible scored labels, and at least eight evaluation families; one pure readiness helper, focused synthetic tests, aggregate artifact and descriptive result; and production-store before-and-after hashing, with exactly zero identity, score, rationale, finding, source, or row-level disclosure, store mutation, schema migration, reliability-table implementation, memo or integrity integration, threshold selection, training, rescoring, network, provider, credential, policy, lifecycle, commit, push, or deployment activity. Tier-1 outcome reliability calculation and reporting remain separately authorized after readiness passes."
+}
