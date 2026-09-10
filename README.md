@@ -12,6 +12,15 @@ You do not need a security background to run it. Findings are leads to review, n
 that a system has been compromised. See [`repoauditor-scaffold.md`](repoauditor-scaffold.md)
 for the design and [`CLAUDE.md`](CLAUDE.md) for the project’s architectural rules.
 
+## Citation and archival metadata
+
+Citation metadata is provided in [`CITATION.cff`](CITATION.cff), with Zenodo-specific
+release metadata in [`.zenodo.json`](.zenodo.json). The planned first archival release is
+`v0.1.0`; its bounded scope and publication steps are documented in
+[`docs/releases/v0.1.0.md`](docs/releases/v0.1.0.md) and
+[`docs/zenodo-release-checklist.md`](docs/zenodo-release-checklist.md). The related PRNG
+Lattice Lab is independent evidence and is not imported or executed by RepoAuditor.
+
 The owner-confirmed POC acceptance boundary is
 [`docs/poc-definition-of-done.md`](docs/poc-definition-of-done.md). Current MVP work is
 limited to [`docs/poc-recovery-plan.md`](docs/poc-recovery-plan.md); tuning and future
