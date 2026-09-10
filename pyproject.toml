@@ -32,8 +32,8 @@ dependencies = [
     # languages with no wired grammar fall back to lexical indexing (logged, never a gap).
     # 0.26.0 corrupts TypeScript node coordinates and can segfault while walking a
     # valid Juice Shop source file; 0.25.2 is verified against that pinned corpus.
-    "tree-sitter>=0.26.0,<0.27",
-    "tree-sitter-language-pack>=1.16.2",
+    "tree-sitter>=0.25,<0.26",
+    "tree-sitter-language-pack>=1.13",
 ]
 
 [project.scripts]
