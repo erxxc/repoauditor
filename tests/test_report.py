@@ -103,6 +103,10 @@ def test_memo_ranks_by_deal_weight_and_attaches_appendix(cfg):
     assert "Appendix: Quantitative Risk Model" in memo
     assert "FAIR" in memo and "## Methodology & confidence" in memo
     assert "deal-risk" in memo.lower()
+    assert "## Calibration evidence availability" in memo
+    assert "Tier 0 exact-oracle coverage is available" in memo
+    assert "Tier 2 estimator-coverage evidence is unavailable" in memo
+    assert "does not establish predictive validity" in memo
 
 
 def test_memo_uses_aggregate_frequency_without_repetition_blocker(cfg, monkeypatch):

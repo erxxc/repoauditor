@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "status": "completed",
+  "optimization": "OPT-037",
+  "receipt": {
+    "path": "docs/optimizations/opt-037-calibration-evidence-closure-receipt-2026-09-10.json",
+    "sha256": "028601cb54e86035b0d539ec0a0d07222f2d74f3d9794b9c5da22e5ebe57a816"
+  },
+  "preserved_evidence": {
+    "tier_0_result": {
+      "path": "docs/optimizations/opt-037-tier-0-calibration-qualification-result-2026-09-10.json",
+      "sha256": "900965f7710c50f691c729d682e488e1a7f310855c76ed9abc382fe9d0f95177"
+    },
+    "tier_1_readiness_result": {
+      "path": "docs/optimizations/opt-037-tier-1-readiness-result-2026-09-10.json",
+      "sha256": "ce6e86530979bec7bf0e0958fa4cfadac313e94ed0d1648324134842a5b06ae8"
+    },
+    "tier_1_reliability_result": {
+      "path": "docs/optimizations/opt-037-tier-1-reliability-result-2026-09-10.json",
+      "sha256": "35b069257cadbdc052321a886da4fae32560fca201586aec798f5c860136d9db"
+    }
+  },
+  "calibration_evidence": {
+    "tier_0": "available: exact-oracle aggregate coverage qualification",
+    "tier_1": {
+      "availability": "available: descriptive reliability only",
+      "eligible_outcomes": 104,
+      "evaluation_families": 15,
+      "brier_score": 0.20942146996839234,
+      "fixed_bin_expected_calibration_error": 0.2139422480962178
+    },
+    "tier_2": "unavailable: estimator and independent-reference design not qualified",
+    "interpretation": "informational only; no predictive-validity, representativeness, causal, production-calibration, optimal-threshold, or decision-grade claim"
+  },
+  "implementation_bindings": {
+    "quantitative_integrity": {
+      "path": "src/repoauditor/analyze/integrity.py",
+      "sha256": "d54845a8097d566645ed1aa6c0f1726ff918df39b215c85e200ec0575f1fd23e"
+    },
+    "leadership_memo": {
+      "path": "src/repoauditor/report/memo.py",
+      "sha256": "96bb54dcc8fee66e8c2c2f2fa672af78a3505259854e18b890fe2fdf8bac6f4a"
+    }
+  },
+  "lifecycle": {
+    "ledger": {
+      "path": "docs/optimizations/optimization-status.json",
+      "sha256": "592da01e78d53b03ea8a39d19c7341598de6f5255641ddcb0e0b5b6d8271809e"
+    },
+    "summary": {"closed": 37, "open": 0, "total": 37},
+    "remaining_priority": [],
+    "opt_037": "closed-bounded-calibration-evidence"
+  },
+  "validation": {
+    "focused_passed": 97,
+    "full_expression": "not integration and not live",
+    "full_passed": 1286,
+    "full_skipped": 2,
+    "full_deselected": 36,
+    "full_elapsed_seconds": 95.78,
+    "gitleaks_commits_scanned": 183,
+    "gitleaks_leaks": 0
+  },
+  "production_store": {
+    "before_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "after_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "reads": 0,
+    "mutations": 0
+  },
+  "publication": {
+    "base_commit": "cc27e90269fc739a6bbd03b1770ceff200139686",
+    "branch": "codex/opt-037-calibration-closure",
+    "source_commits_authorized": 1,
+    "merge_performed": false,
+    "deployment_performed": false
+  },
+  "activity": {
+    "provider_calls": 0,
+    "credential_reads": 0,
+    "lattice_lab_imports_or_executions": 0,
+    "simulations": 0,
+    "fitting_or_training_runs": 0,
+    "rescoring_runs": 0,
+    "threshold_selections": 0,
+    "schema_migrations": 0,
+    "merges": 0,
+    "deployments": 0
+  }
+}
