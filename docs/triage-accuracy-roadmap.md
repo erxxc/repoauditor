@@ -11,7 +11,8 @@ There are no open lifecycle items. OPT-037 closed after Tier 0 exact-oracle cove
 Tier 1 descriptive reliability table over 104 temporally valid, model-compatible outcomes
 across 15 evaluation families. Neither tier selected a threshold. Tier 2 remains
 unavailable because predictive loss quantiles and estimator-confidence intervals answer
-different questions and no independent-reference design was qualified.
+different questions and no independent-reference design was qualified. OPT-038 closed at
+bounded package-local Python weak-RNG syntactic-detector qualification.
 
 Status: **post-MVP optimization roadmap**. The implemented safeguards remain authoritative,
 but remaining maturity ideas are non-lifecycle future work described in

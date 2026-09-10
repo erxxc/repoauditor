@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "status": "completed-bounded-qualification",
+  "optimization": "OPT-038",
+  "receipt": {
+    "path": "docs/optimizations/opt-038-implementation-receipt-2026-09-10.json",
+    "sha256": "c3fc3d0347b3c5fa0121fbf4f3618d8fa00fae65151ee727d6e9bc53f185d092"
+  },
+  "source": {
+    "donor_commit": "10057b6574cbd4ce5663af9399ef69a46b9ec7f4",
+    "manifest_import": "exact donor blob",
+    "implementation_import": "donor blob with authorized bounded corrections",
+    "existing_files": "additively reconciled against current main"
+  },
+  "bindings": {
+    "manifest": {"path": "src/repoauditor/detect/deterministic/plugins/weak_rng_py.json", "sha256": "e0164df24e77ddb4a0f6f23c9fdd6ce4488fa8d4bb4428d14ab00829059dcaa6"},
+    "implementation": {"path": "src/repoauditor/detect/deterministic/plugins/weak_rng_py.py", "sha256": "c9f8ec1791902e074fe10a524a9745a5433c8ecad47a15c54c217e46602b73e2"},
+    "focused_test": {"path": "tests/test_weak_rng_py.py", "sha256": "b60bbabc4511eedb5732c601048de3cdc8868dafcfbdfd908ed2bb5851ce14d2"},
+    "registry_test": {"path": "tests/test_scanner_plugin_registry.py", "sha256": "da3591c9a7bfe3ddd41a882a980bf722ee747dd1392687bd6846f01120cbe572"},
+    "canary_test": {"path": "tests/test_scanner_canaries.py", "sha256": "dc0ca7f5b0eca23e15291cd77c17e0ad9bab625d4417a22a92fad88f1cbcea70"},
+    "capability_json": {"path": "docs/scanner-capability-matrix.json", "sha256": "de8e950f42bb3c8b2cb791a743f2158fd4f00da5e8d4c9aaba974450957c67e6"},
+    "capability_markdown": {"path": "docs/scanner-capability-matrix.md", "sha256": "5b07330d2328171f206bdcd5f894c751a63d7fec4f8fce4ac7e2dff42c0666cc"},
+    "detector_documentation": {"path": "docs/weak-rng-detector.md", "sha256": "43aeea638808772a8152be98d353fdef31e5b02f9db3b62807dded546341d33a"}
+  },
+  "qualified_contract": {
+    "package_local_discovery_only": true,
+    "snapshot_binding_fail_closed": true,
+    "non_test_python_target_count": true,
+    "positive_and_clean_synthetic_canary": true,
+    "provenance_identity": "weak_rng_py@v1",
+    "initial_severity": "medium",
+    "automatic_actionability_or_severity_upgrade": false,
+    "substring_only": true,
+    "known_alias_miss_tested": true,
+    "known_shadowed_identifier_candidate_tested": true,
+    "known_string_literal_candidate_tested": true
+  },
+  "validation": {
+    "focused_passed": 32,
+    "focused_failed": 0,
+    "full_expression": "not integration and not live",
+    "full_passed": 1296,
+    "full_skipped": 2,
+    "full_deselected": 36,
+    "full_elapsed_seconds": 96.05
+  },
+  "activity": {
+    "network_reads": 0,
+    "uploads": 0,
+    "provider_calls": 0,
+    "credential_reads": 0,
+    "external_scanner_processes": 0,
+    "lattice_lab_imports_or_executions": 0,
+    "prng_recovery_or_artifact_ingestion": 0,
+    "production_repository_scans": 0,
+    "candidate_persistence": 0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "assessments": 0,
+    "labels": 0,
+    "training_runs": 0,
+    "rescoring_runs": 0,
+    "commits": 0,
+    "pushes": 0,
+    "merges": 0,
+    "deployments": 0
+  },
+  "lifecycle": {
+    "opt_038": "open-pending-separately-authorized-closure",
+    "summary": {"closed": 37, "open": 1, "total": 38}
+  },
+  "interpretation": "The Python weak-RNG plugin is qualified only as a bounded substring-based syntactic candidate detector. It makes no recovery, exploitability, actionability, exhaustive-recall, production-readiness, or policy claim."
+}

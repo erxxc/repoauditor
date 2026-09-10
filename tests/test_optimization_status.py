@@ -22,7 +22,7 @@ def test_optimization_status_is_contiguous_unique_and_complete():
     ids = [item["id"] for item in items]
 
     assert ledger["schema_version"] == 1
-    assert ids == [f"OPT-{number:03d}" for number in range(1, 38)]
+    assert ids == [f"OPT-{number:03d}" for number in range(1, 39)]
     assert len(ids) == len(set(ids))
     assert set(ledger["status_definitions"]) == {"closed", "open"}
     assert {item["status"] for item in items} <= {"closed", "open"}

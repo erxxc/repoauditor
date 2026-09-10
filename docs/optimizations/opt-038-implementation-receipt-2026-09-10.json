@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-038",
+  "objective": "Qualify an additive package-local Python random-module syntactic detector through the existing scanner-extension seam.",
+  "source_binding": {
+    "donor_commit": "10057b6574cbd4ce5663af9399ef69a46b9ec7f4",
+    "qualification_result": "docs/optimizations/opt-038-donor-code-qualification-result-2026-09-10.json",
+    "current_main": "0a90d31770361f274d4ea855a771485d0dd4e196"
+  },
+  "allowed_implementation": [
+    "add the weak_rng_py package-local manifest and implementation",
+    "add synthetic positive, clean, exclusion, provenance, snapshot-binding, and negative-boundary tests",
+    "reconcile registry and canary tests additively",
+    "reconcile the scanner capability matrix and weak-RNG documentation without replacing current evidence",
+    "run only synthetic in-process canaries and offline non-live tests",
+    "produce one aggregate implementation qualification result"
+  ],
+  "required_corrections": [
+    "document substring-only detection and known alias, shadowing, and string-literal limitations",
+    "make target-count semantics explicit and internally consistent",
+    "verify the adapter rejects a RetrievalIndex bound to another snapshot",
+    "retain medium initial severity and no automatic actionability upgrade",
+    "retain package-local deterministic discovery only"
+  ],
+  "allowed_files": [
+    "src/repoauditor/detect/deterministic/plugins/weak_rng_py.json",
+    "src/repoauditor/detect/deterministic/plugins/weak_rng_py.py",
+    "tests/test_weak_rng_py.py",
+    "tests/test_scanner_plugin_registry.py",
+    "tests/test_scanner_canaries.py",
+    "docs/scanner-capability-matrix.json",
+    "docs/scanner-capability-matrix.md",
+    "docs/weak-rng-detector.md",
+    "docs/optimizations/opt-038-implementation-qualification-result-2026-09-10.json"
+  ],
+  "excluded": [
+    "editing existing weak_rng Java plugin or adapter",
+    "third-party plugin or arbitrary filesystem discovery",
+    "PRNG recovery or lattice-lab execution or artifact ingestion",
+    "production repository scanning or candidate persistence",
+    "source or payload disclosure",
+    "automatic severity or actionability upgrade",
+    "production-store access or mutation",
+    "network, provider, credential, assessment, label, training, rescoring, commit, push, merge, or deployment activity",
+    "OPT-038 closure or production-policy change"
+  ],
+  "resource_ceiling": {
+    "minutes": 20,
+    "new_tracked_bytes": 1048576,
+    "external_scanner_processes": 0
+  },
+  "authorization_state": "receipt frozen; implementation execution requires separate explicit authorization",
+  "required_statement": "I authorize the OPT-038 bounded Python weak-RNG syntactic-detector implementation qualification described by opt-038-implementation-receipt-2026-09-10.json, limited to additive import from exact local donor commit 10057b6574cbd4ce5663af9399ef69a46b9ec7f4 of the package-local weak_rng_py manifest, implementation, synthetic tests, and reconciled current documentation, capability-matrix, registry, and canary tests; correction and explicit testing of substring-only claim boundaries, alias, shadowing, string-literal, target-count, snapshot-binding, medium-severity, provenance, and package-local discovery limits; synthetic in-process canaries, one aggregate qualification result, and the correctly filtered offline non-live suite, with ceilings of 20 minutes, 1 MiB new tracked data, and exactly zero network reads, uploads, providers, credentials, external scanner processes, lattice-lab imports or execution, PRNG recovery or artifact ingestion, production repository scanning, candidate persistence, source or payload disclosure, production-store reads or mutations, assessments, labels, training, rescoring, commits, pushes, merges, deployments, automatic severity or actionability upgrades, production-policy changes, or OPT-038 closure. Editing the existing Java weak_rng plugin or adapter, third-party plugin loading, arbitrary filesystem discovery, additional scanner families, and any unlisted file change remain excluded."
+}

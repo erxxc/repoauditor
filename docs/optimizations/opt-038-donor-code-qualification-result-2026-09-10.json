@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "status": "qualified-with-bounded-corrections-required",
+  "optimization": "OPT-038",
+  "donor": {
+    "commit": "10057b6574cbd4ce5663af9399ef69a46b9ec7f4",
+    "parent": "ec03d6699fd647b6d5f9f3ebca754832747d12d9",
+    "tree": "b4379287a07703bd1a9a3e973e81be3f16a24d65",
+    "current_main": "0a90d31770361f274d4ea855a771485d0dd4e196",
+    "three_way_conflicts": 0
+  },
+  "eight_file_inventory": {
+    "docs/scanner-capability-matrix.json": "a46533b2ac49d4c3c40b9458b448c92e6b2ca6ef7e5e3e39949509b73778b4a7",
+    "docs/scanner-capability-matrix.md": "71134571679f276e355a969a2f9b957b0408bb75802c1725a44a73cc664c5fec",
+    "docs/weak-rng-detector.md": "9a8ff7c1de07ae02af02985cf27db84177b2e98a7ca1545984b2cc6309460cf5",
+    "src/repoauditor/detect/deterministic/plugins/weak_rng_py.json": "e0164df24e77ddb4a0f6f23c9fdd6ce4488fa8d4bb4428d14ab00829059dcaa6",
+    "src/repoauditor/detect/deterministic/plugins/weak_rng_py.py": "35e7e6dfe8d036907cfed676a0f08933f7b76fa6d43c441d81a3c7697dea22f0",
+    "tests/test_scanner_canaries.py": "dc0ca7f5b0eca23e15291cd77c17e0ad9bab625d4417a22a92fad88f1cbcea70",
+    "tests/test_scanner_plugin_registry.py": "da3591c9a7bfe3ddd41a882a980bf722ee747dd1392687bd6846f01120cbe572",
+    "tests/test_weak_rng_py.py": "61ddfae69b80bb2ffbecd40d9c53f0571fa17ee9e171daa3b9440e2ae6c01366"
+  },
+  "qualification": {
+    "focused_tests_passed": 22,
+    "focused_tests_failed": 0,
+    "package_local_manifest_only": true,
+    "arbitrary_filesystem_or_third_party_loading": false,
+    "lattice_lab_import_execution_or_artifact_ingestion": false,
+    "initial_severity": "medium",
+    "automatic_actionability_upgrade": false
+  },
+  "bounded_limitations": [
+    "syntactic substring detector; no exploitability or predictability proof",
+    "aliased and from-import random calls are not detected",
+    "shadowed random identifiers and strings can produce false positives",
+    "test-path exclusion is applied to findings while the donor target count includes all Python source files",
+    "the donor imports two private path/comment helpers from the Java adapter"
+  ],
+  "required_reconciliation": [
+    "import the two new plugin files and focused test from their exact donor blobs",
+    "reapply capability-matrix and documentation changes onto current main rather than replacing current files",
+    "reconcile current canary and registry tests additively",
+    "freeze the syntactic claim boundary and target-count semantics in tests and documentation"
+  ],
+  "interpretation": "The donor is suitable for bounded implementation qualification, not direct merge. Qualification makes no exhaustive-recall, exploitability, recovery, actionability, or production-policy claim."
+}

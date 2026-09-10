@@ -10,7 +10,7 @@ step. They must not be interpreted as the current lifecycle state.
 ## Current authoritative state
 
 - [`optimizations/optimization-status.json`](optimizations/optimization-status.json) is the
-  machine-readable lifecycle authority: **37 closed, 0 open, 37 total**.
+  machine-readable lifecycle authority: **38 closed, 0 open, 38 total**.
 - [`optimizations/optimization-register.md`](optimizations/optimization-register.md) is the
   narrative authority for scope, owners, activation gates, and chronological outcomes.
 - [`project-priorities.md`](project-priorities.md) records current work sequencing.
@@ -23,8 +23,10 @@ aggregate exact-oracle coverage boundary without importing or executing lattice-
 reported descriptive reliability over 104 temporally valid outcomes across 15 evaluation
 families (Brier 0.209421; fixed ten-bin ECE 0.213942). Tier 2 remains unavailable. These are
 informational observations, not predictive-validity, representativeness, causal,
-production-calibration, decision-grade, threshold, prior, or policy claims. There are no
-open optimization items or remaining priority. OPT-036 is
+production-calibration, decision-grade, threshold, prior, or policy claims. OPT-038 is
+closed at its bounded package-local Python substring-detector scope; no recovery,
+exploitability, actionability, exhaustive-recall, lattice-lab, or policy claim is made.
+There are no open optimization items or remaining priority. OPT-036 is
 closed at its bounded package-local scanner-extension and Java syntactic weak-RNG scope;
 it neither executes nor ingests the standalone PRNG lattice lab. No paid provider execution is currently authorized. OPT-010 is closed as not justified and not feasible at
 its evaluated scanner, data, verifier, and paired-evaluation scope. Its disabled and

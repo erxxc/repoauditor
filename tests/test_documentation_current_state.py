@@ -28,15 +28,14 @@ def test_documentation_authority_matches_canonical_lifecycle():
         )
     ]
 
-    assert ledger["summary"] == {"closed": 37, "open": 0, "total": 37}
+    assert ledger["summary"] == {"closed": 38, "open": 0, "total": 38}
     assert open_ids == []
     assert checkpoint["optimization_summary"] == {"closed": 32, "open": 3, "total": 35}
     assert [
         item["id"] for item in checkpoint["open_optimizations_in_priority_order"]
     ] == ["OPT-009", "OPT-014", "OPT-010"]
-    assert "37 closed, 0 open, 37 total" in authority
-    assert "There are no" in authority
-    assert "open optimization items or remaining priority" in authority
+    assert "38 closed, 0 open, 38 total" in authority
+    assert "There are no open optimization items or remaining priority" in authority
     assert "byte-identical historical evidence" in authority
     assert "not expected to match the current lifecycle ledger" in authority
     assert "No paid" in authority and "provider execution is currently authorized" in authority

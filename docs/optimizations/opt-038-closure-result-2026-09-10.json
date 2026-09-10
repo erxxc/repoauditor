@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "status": "closed-bounded-syntactic-detector",
+  "optimization": "OPT-038",
+  "evidence_bindings": {
+    "admission_result": {"path": "docs/optimizations/opt-038-admission-result-2026-09-10.json", "sha256": "a1c2e597d14ff536dba347060e5011589125e9ac501f8960ea3754fcd70dec29"},
+    "implementation_receipt": {"path": "docs/optimizations/opt-038-implementation-receipt-2026-09-10.json", "sha256": "c3fc3d0347b3c5fa0121fbf4f3618d8fa00fae65151ee727d6e9bc53f185d092"},
+    "qualification_result": {"path": "docs/optimizations/opt-038-implementation-qualification-result-2026-09-10.json", "sha256": "27a90b965382b01bfd47c27a1d01c7736141cab3d4dbece6260e237152c275e0"},
+    "implementation": {"path": "src/repoauditor/detect/deterministic/plugins/weak_rng_py.py", "sha256": "c9f8ec1791902e074fe10a524a9745a5433c8ecad47a15c54c217e46602b73e2"},
+    "manifest": {"path": "src/repoauditor/detect/deterministic/plugins/weak_rng_py.json", "sha256": "e0164df24e77ddb4a0f6f23c9fdd6ce4488fa8d4bb4428d14ab00829059dcaa6"},
+    "lifecycle": {"path": "docs/optimizations/optimization-status.json", "sha256": "78cf0efcd352db532e6f5750beada9effcb2e369a92e73d1f2d433ed4fb0cb7e"}
+  },
+  "lifecycle": {"summary": {"closed": 38, "open": 0, "total": 38}, "remaining_priority": []},
+  "qualification": {
+    "focused_passed": 32,
+    "full_passed_before_closure_reconciliation": 1296,
+    "final_full_passed": 1298,
+    "full_skipped": 2,
+    "full_deselected": 36,
+    "final_full_elapsed_seconds": 97.69,
+    "gitleaks_commits_scanned": 187,
+    "gitleaks_leaks": 0,
+    "package_local_only": true,
+    "substring_only": true,
+    "initial_severity": "medium"
+  },
+  "activity": {
+    "lattice_lab_imports_or_executions": 0,
+    "prng_recovery_or_artifact_ingestion": 0,
+    "production_scans": 0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "provider_calls": 0,
+    "credential_reads": 0,
+    "automatic_upgrades": 0,
+    "merges": 0,
+    "deployments": 0
+  },
+  "interpretation": "OPT-038 is closed only at the bounded package-local substring-detector scope. Known alias misses and shadowed-identifier or string-literal candidates remain explicitly tested limitations; no recovery, exploitability, actionability, exhaustive-recall, production-readiness, or policy claim is made."
+}

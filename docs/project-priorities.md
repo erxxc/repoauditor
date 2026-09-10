@@ -10,8 +10,8 @@ recovery plan is retained as the historical MVP execution record.
 
 There is no current post-MVP optimization priority. OPT-037 closed after bounded Tier-0
 exact-oracle coverage and Tier-1 descriptive reliability evidence; Tier 2 remains
-unavailable. Any further work, including a Python weak-RNG detector, requires a new
-lifecycle identity and authorization. No threshold, prior, or policy change was made.
+unavailable. OPT-038 closed after bounded Python weak-RNG syntactic-detector qualification.
+No threshold, prior, or policy change was made.
 
 The methodology-specific detail remains authoritative in
 [triage-accuracy-roadmap.md](triage-accuracy-roadmap.md),

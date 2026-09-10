@@ -26,7 +26,7 @@ def test_opt037_closes_only_at_bounded_available_evidence_scope() -> None:
     item = next(item for item in ledger["items"] if item["id"] == "OPT-037")
     disclosure = calibration_evidence_disclosure()
 
-    assert ledger["summary"] == {"closed": 37, "open": 0, "total": 37}
+    assert ledger["summary"] == {"closed": 38, "open": 0, "total": 38}
     assert item == {
         "id": "OPT-037",
         "title": "Calibration evidence",

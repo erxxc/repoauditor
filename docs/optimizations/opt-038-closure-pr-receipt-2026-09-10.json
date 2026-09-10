@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-038",
+  "objective": "Close the qualified Python weak-RNG detector at its bounded syntactic scope and publish one review PR.",
+  "preserved_evidence": [
+    "opt-038-admission-result-2026-09-10.json",
+    "opt-038-donor-code-qualification-result-2026-09-10.json",
+    "opt-038-implementation-qualification-result-2026-09-10.json"
+  ],
+  "closure_contract": {
+    "summary": {"closed": 38, "open": 0, "total": 38},
+    "remaining_priority": [],
+    "scope": "package-local Python substring-based weak-RNG candidate detector",
+    "claims_excluded": ["recovery", "exploitability", "actionability", "exhaustive recall", "production readiness", "production policy"]
+  },
+  "publication": {
+    "branch": "codex/opt-038-python-weak-rng",
+    "base": "0a90d31770361f274d4ea855a771485d0dd4e196",
+    "commits": 1,
+    "pull_requests": 1,
+    "merges": 0,
+    "deployments": 0,
+    "network_host": "github.com"
+  },
+  "required_validation": ["focused closure and detector tests", "full offline non-live suite", "full-history Gitleaks"],
+  "excluded": ["lattice-lab import or execution", "PRNG recovery or artifact ingestion", "production scanning", "store access or mutation", "provider or credential use", "automatic severity or actionability upgrade", "merge", "deployment", "unrelated file changes"],
+  "authorization": "Great, authorized to begin next steps. Lattice lab activity is working in parallel"
+}
