@@ -7,10 +7,11 @@ tool-use remains deferred until usage accounting and recall-safe evaluation exis
 The [prior-scope roadmap](prior-scope-roadmap.md) separately records future quantitative
 prior expansion; it does not change the current risk model.
 
-OPT-037 is the sole current lifecycle item. Its Tier 0 exact-oracle coverage qualification
-precedes any Tier 1 reliability table over temporally valid, model-compatible outcomes.
-Neither tier selects a threshold. Tier 2 remains design-gated because predictive loss
-quantiles and estimator-confidence intervals answer different questions.
+There are no open lifecycle items. OPT-037 closed after Tier 0 exact-oracle coverage and a
+Tier 1 descriptive reliability table over 104 temporally valid, model-compatible outcomes
+across 15 evaluation families. Neither tier selected a threshold. Tier 2 remains
+unavailable because predictive loss quantiles and estimator-confidence intervals answer
+different questions and no independent-reference design was qualified.
 
 Status: **post-MVP optimization roadmap**. The implemented safeguards remain authoritative,
 but remaining maturity ideas are non-lifecycle future work described in

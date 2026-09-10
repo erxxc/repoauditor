@@ -10,6 +10,7 @@ from repoauditor import cli
 from repoauditor.analyze.integrity import (
     AuditLevel,
     audit_resolved_inputs,
+    calibration_evidence_disclosure,
     quantitative_disclosure,
     render_quant_audit,
 )
@@ -101,6 +102,23 @@ def test_audit_blocks_repeated_organization_frequency_per_finding(tmp_config):
     assert disclosure is not None
     assert "EXPERIMENTAL QUANTITATIVE OUTPUT" in disclosure
     assert "NOT DECISION-GRADE" in disclosure
+
+
+def test_calibration_evidence_is_informational_and_bounded(tmp_config):
+    result = audit_resolved_inputs([], _config(tmp_config, "10m_to_100m"))
+    issue = next(
+        item for item in result.issues
+        if item.code == "calibration_evidence_availability"
+    )
+    text = calibration_evidence_disclosure()
+
+    assert issue.level is AuditLevel.INFO
+    assert result.blocking == 0
+    assert "Tier 0 exact-oracle coverage is available" in text
+    assert "104 temporally valid outcomes across 15 evaluation families" in text
+    assert "Brier=0.209421" in text and "ECE=0.213942" in text
+    assert "Tier 2 estimator-coverage evidence is unavailable" in text
+    assert "does not establish predictive validity" in text
 
 
 def test_audit_does_not_flag_frequency_repetition_for_one_finding(tmp_config):

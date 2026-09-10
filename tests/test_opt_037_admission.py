@@ -22,16 +22,16 @@ def test_opt037_is_admitted_but_every_execution_tier_remains_gated():
     receipt = _json(DOCS / "opt-037-admission-receipt-2026-09-09.json")
     item = next(item for item in ledger["items"] if item["id"] == "OPT-037")
 
-    assert ledger["summary"] == {"closed": 36, "open": 1, "total": 37}
-    assert item["status"] == "open" and item["next_priority"] == 1
-    assert "Separately authorized" in item["gate"]
+    assert ledger["summary"] == {"closed": 37, "open": 0, "total": 37}
+    assert item["status"] == "closed" and item["next_priority"] is None
+    assert item["gate"] == "none"
     assert receipt["admission_contract"]["lab_artifacts_transferred"] == 0
     assert receipt["admission_contract"]["calibration_implementations"] == 0
     assert all(value == 0 or value == 0.0 for value in receipt["activity_ceilings"].values())
 
     result = _json(DOCS / "opt-037-admission-result-2026-09-09.json")
     assert result["status"] == "completed"
-    assert result["lifecycle"]["summary"] == ledger["summary"]
+    assert result["lifecycle"]["summary"] == {"closed": 36, "open": 1, "total": 37}
     assert result["activity"] == receipt["activity_ceilings"]
 
 

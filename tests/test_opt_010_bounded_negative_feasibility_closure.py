@@ -23,8 +23,8 @@ def test_opt010_remains_closed_while_current_lifecycle_advances_independently():
     ledger = _json(LEDGER)
     opt010 = next(item for item in ledger["items"] if item["id"] == "OPT-010")
 
-    assert ledger["summary"] == {"closed": 36, "open": 1, "total": 37}
-    assert [item["id"] for item in ledger["items"] if item["status"] == "open"] == ["OPT-037"]
+    assert ledger["summary"] == {"closed": 37, "open": 0, "total": 37}
+    assert [item["id"] for item in ledger["items"] if item["status"] == "open"] == []
     assert opt010 == {
         "id": "OPT-010",
         "title": "Agentic falsification",

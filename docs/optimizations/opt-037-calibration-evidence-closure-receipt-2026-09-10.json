@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-037",
+  "objective": "Integrate bounded available-tier calibration disclosure, close OPT-037, and publish the change for review without expanding the evidence claims.",
+  "completed_scope": {
+    "tier_0": "available: exact-oracle aggregate coverage qualification",
+    "tier_1": "available: descriptive reliability over 104 outcomes and 15 families",
+    "tier_2": "unavailable: estimator and independent-reference design not qualified"
+  },
+  "interpretation": "informational only; no predictive-validity, representativeness, causal, production-calibration, optimal-threshold, or decision-grade claim",
+  "lifecycle_target": {"closed": 37, "open": 0, "total": 37, "remaining_priority": []},
+  "base": {"origin_main": "cc27e90269fc739a6bbd03b1770ceff200139686"},
+  "branch": "codex/opt-037-calibration-closure",
+  "required_validation": ["focused disclosure and lifecycle tests", "full offline non-live suite", "full-history Gitleaks"],
+  "excluded": [
+    "Tier-2 design or execution", "OPT-038 admission or donor-code use",
+    "weak-RNG Python plugin activity", "production policy or threshold changes",
+    "lattice-lab import or execution", "production-store access or mutation",
+    "provider, credential, simulation, fitting, training, rescoring, merge, or deployment activity"
+  ],
+  "required_statement": "I authorize the OPT-037 bounded calibration-evidence integration, closure, and PR described by opt-037-calibration-evidence-closure-receipt-2026-09-10.json, limited to preserving the completed Tier-0 exact-oracle qualification and Tier-1 descriptive reliability calculation; adding one informational calibration-evidence disclosure to the leadership memo and quantitative-integrity output that reports Tier 0 available, Tier 1 available with cohort size, family count, Brier score and fixed-bin expected calibration error, and Tier 2 unavailable; explicitly prohibiting predictive-validity, representativeness, causal, production-calibration, optimal-threshold, or decision-grade claims; marking OPT-037 closed at that bounded scope; updating the lifecycle authority to exactly 37 closed and zero open items with no remaining priority; reconciling only optimization-status.json, optimization-register.md, documentation-status.md, project-priorities.md, triage-accuracy-roadmap.md, directly affected memo and integrity code, focused tests, current-lifecycle assertions, and historical-state tests so immutable receipt-time evidence remains historical while current state is asserted independently; producing one closure result; preserving all lattice-lab fixtures, receipts, results, production store, and unrelated untracked files unchanged; safely advancing local main only to public origin/main merge cc27e90269fc739a6bbd03b1770ceff200139686; creating one fresh codex/opt-037-calibration-closure branch, one commit, and one PR against main; and running Gitleaks plus the full offline non-live suite, with network access limited to GitHub and exactly zero provider calls, credentials, lattice-lab imports or execution, simulation, fitting, training, rescoring, threshold selection, production-store reads or mutations, schema migrations, merge, or deployment. Tier-2 design or execution, OPT-038 admission or donor-code use, weak-RNG Python plugin activity, policy changes, historical-evidence edits, and unrelated file changes remain excluded."
+}
