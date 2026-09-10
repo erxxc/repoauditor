@@ -27,8 +27,8 @@ def test_closure_lifecycle_is_historical_and_current_state_is_independent():
     opt_014 = next(item for item in ledger["items"] if item["id"] == "OPT-014")
 
     assert result["lifecycle"]["summary"] == {"closed": 34, "open": 1, "total": 35}
-    assert ledger["summary"] == {"closed": 36, "open": 1, "total": 37}
-    assert [item["id"] for item in open_items] == ["OPT-037"]
+    assert ledger["summary"] == {"closed": 37, "open": 0, "total": 37}
+    assert [item["id"] for item in open_items] == []
     assert opt_014["status"] == "closed"
     assert opt_014["gate"] == "none"
     assert opt_014["next_priority"] is None

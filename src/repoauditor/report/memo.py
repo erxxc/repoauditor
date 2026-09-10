@@ -33,7 +33,11 @@ import shutil
 from pathlib import Path
 
 from ..analyze.deal_risk import weigh_deal_risk
-from ..analyze.integrity import audit_quantitative_inputs, quantitative_disclosure
+from ..analyze.integrity import (
+    audit_quantitative_inputs,
+    calibration_evidence_disclosure,
+    quantitative_disclosure,
+)
 from ..analyze.risk_quant import QuantificationArtifacts, generate_appendix
 from ..config import Config, get_config
 from ..matching import SourceRef, has_independent_corroboration, source_of
@@ -317,6 +321,12 @@ def build_memo(
         quantification is not None and quantification.audit_recorded
     )
     lines += _as_of_lines(repo_id, config, audited_simulation=audited_simulation)
+    lines += [
+        "## Calibration evidence availability",
+        "",
+        calibration_evidence_disclosure(),
+        "",
+    ]
     lines += [
         "## Appendix: Quantitative Risk Model (FAIR / Monte Carlo)",
         "",

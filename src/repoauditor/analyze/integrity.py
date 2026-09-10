@@ -45,6 +45,20 @@ _EXPERIMENTAL_DISCLOSURE = (
     "decisions. Run `repoauditor quant-audit <repo-id>` for the attributable evidence."
 )
 
+_CALIBRATION_EVIDENCE = (
+    "Calibration evidence: Tier 0 exact-oracle coverage is available; Tier 1 descriptive "
+    "reliability is available over 104 temporally valid outcomes across 15 evaluation "
+    "families (Brier=0.209421; fixed ten-bin ECE=0.213942); Tier 2 estimator-coverage "
+    "evidence is unavailable. This is informational and does not establish predictive "
+    "validity, representativeness, causality, production calibration, a decision-grade "
+    "model, or an optimal threshold."
+)
+
+
+def calibration_evidence_disclosure() -> str:
+    """Return the bounded, informational OPT-037 available-tier disclosure."""
+    return _CALIBRATION_EVIDENCE
+
 
 def quantitative_disclosure(result: QuantAuditResult) -> str | None:
     """Return the mandatory presentation gate when the read-only audit is blocking."""
@@ -64,6 +78,15 @@ def audit_resolved_inputs(
 ) -> QuantAuditResult:
     """Audit already-resolved scenarios without mutating or simulating them."""
     issues: list[QuantAuditIssue] = []
+    issues.append(QuantAuditIssue(
+        code="calibration_evidence_availability",
+        level=AuditLevel.INFO,
+        message=_CALIBRATION_EVIDENCE,
+        evidence=(
+            "OPT-037 Tier0=available; Tier1 n=104,families=15,"
+            "brier=0.20942146996839234,ece10=0.2139422480962178; Tier2=unavailable"
+        ),
+    ))
     revenue_band = config.risk_quant.company_revenue_band
     if revenue_band in _BELOW_FREQUENCY_SOURCE_POPULATION:
         issues.append(QuantAuditIssue(
