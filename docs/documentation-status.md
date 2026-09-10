@@ -10,7 +10,7 @@ step. They must not be interpreted as the current lifecycle state.
 ## Current authoritative state
 
 - [`optimizations/optimization-status.json`](optimizations/optimization-status.json) is the
-  machine-readable lifecycle authority: **36 closed, 0 open, 36 total**.
+  machine-readable lifecycle authority: **36 closed, 1 open, 37 total**.
 - [`optimizations/optimization-register.md`](optimizations/optimization-register.md) is the
   narrative authority for scope, owners, activation gates, and chronological outcomes.
 - [`project-priorities.md`](project-priorities.md) records current work sequencing.
@@ -18,7 +18,10 @@ step. They must not be interpreted as the current lifecycle state.
   is byte-identical historical evidence of the 2026-08-07 state; it is not a live derived
   checkpoint and is not expected to match the current lifecycle ledger.
 
-There are no open optimization items and no remaining execution priority. OPT-036 is
+OPT-037 is the sole open optimization and priority one. It is gated on a separately
+authorized aggregate-only lattice-lab fixture transfer and Tier-0 exact-oracle
+qualification; no lab evidence or calibration implementation was admitted with the
+lifecycle item. OPT-036 is
 closed at its bounded package-local scanner-extension and Java syntactic weak-RNG scope;
 it neither executes nor ingests the standalone PRNG lattice lab. No paid provider execution is currently authorized. OPT-010 is closed as not justified and not feasible at
 its evaluated scanner, data, verifier, and paired-evaluation scope. Its disabled and

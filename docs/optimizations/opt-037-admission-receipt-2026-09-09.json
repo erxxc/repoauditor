@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-037",
+  "objective": "Admit calibration evidence as separately gated work while correcting the proposal's evidence and statistical claim boundaries.",
+  "authorized_source": {
+    "repository": "repoauditor",
+    "proposal_commit": "fd179aeb25da1ff88c4070bd02159f8f40c1f66a",
+    "proposal_parent": "ec03d6699fd647b6d5f9f3ebca754832747d12d9",
+    "proposal_path": "docs/optimizations/opt-037-calibration-evidence.md"
+  },
+  "admission_contract": {
+    "current_summary": {"closed": 36, "open": 1, "total": 37},
+    "sole_open_item": "OPT-037",
+    "next_priority": 1,
+    "activation_gate": "Separately authorized aggregate-only lattice-lab fixture transfer and Tier-0 exact-oracle qualification",
+    "opt_036_state": "closed and historically immutable",
+    "lab_artifacts_transferred": 0,
+    "calibration_implementations": 0
+  },
+  "required_corrections": {
+    "phase_grid_counts": "Odd-bound coverage is 48/49 across 49 cells; bit-length coverage is 31/31 across scored cells in a 42-cell grid, with unscored states disclosed.",
+    "fixture_semantics": "A static aggregate fixture is bounded evidence ingestion, not a runtime dependency.",
+    "tier_1": "Require strict score-before-first-assessment chronology, compatible model, feature-schema and calibration identities, bin counts and uncertainty.",
+    "tier_2": "Distinguish predictive loss quantiles from confidence intervals for estimators; require an independent analytic or qualified numerical reference.",
+    "integrity_severity": "Unavailable calibration evidence remains informational unless later policy explicitly requires it."
+  },
+  "allowed_files": [
+    "docs/optimizations/opt-037-admission-receipt-2026-09-09.json",
+    "docs/optimizations/opt-037-calibration-evidence.md",
+    "docs/optimizations/optimization-status.json",
+    "docs/optimizations/optimization-register.md",
+    "docs/documentation-status.md",
+    "docs/project-priorities.md",
+    "docs/triage-accuracy-roadmap.md",
+    "tests/test_documentation_current_state.py",
+    "tests/test_optimization_status.py",
+    "tests/test_opt_036_scanner_extension_seam_requalification.py",
+    "tests/test_opt_037_admission.py",
+    "docs/optimizations/opt-037-admission-result-2026-09-09.json"
+  ],
+  "excluded": [
+    "lab artifact transfer",
+    "production-store access or mutation",
+    "simulation or calibration execution",
+    "assessments or labels",
+    "model training or rescoring",
+    "network or provider activity",
+    "branch integration, commits, pushes, or deployment",
+    "Tier-0 implementation",
+    "Tier-1 outcome analysis",
+    "Tier-2 execution",
+    "threshold, prior, methodology, or production-policy changes",
+    "predictive-validity or representativeness claims"
+  ],
+  "activity_ceilings": {
+    "network_reads": 0,
+    "uploads": 0,
+    "provider_calls": 0,
+    "tokens": 0,
+    "cost_usd": 0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "simulation_runs": 0,
+    "calibration_runs": 0,
+    "assessments": 0,
+    "labels": 0,
+    "training_runs": 0,
+    "rescoring_runs": 0,
+    "commits": 0,
+    "merges": 0,
+    "pushes": 0,
+    "deployments": 0
+  },
+  "required_statement": "I authorize the OPT-037 offline admission and calibration-evidence protocol correction described by opt-037-admission-receipt-2026-09-09.json, limited to importing the proposal from local unpushed commit fd179aeb25da1ff88c4070bd02159f8f40c1f66a; correcting its phase-grid counts, fixture-ingestion terminology, temporal and model-version requirements, reliability uncertainty boundary, predictive-versus-estimator interval distinction, analytic-reference scope, and informational audit severity; admitting OPT-037 as the sole open optimization after 36 closed items; historically reconciling the OPT-036 lifecycle bindings without editing immutable evidence; and producing one offline admission result, with exactly zero lab artifact transfer, production-store access or mutation, simulation, calibration execution, labels, training, network activity, provider use, branch integration, commits, pushes, or deployment. Tier-0 implementation, Tier-1 outcome analysis, Tier-2 design or execution, policy changes, and claims of predictive validity remain excluded."
+}

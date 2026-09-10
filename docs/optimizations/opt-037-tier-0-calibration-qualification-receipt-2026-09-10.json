@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-037",
+  "objective": "Qualify a pure calibration utility against the frozen aggregate exact-oracle fixture without integrating it into production analysis.",
+  "frozen_fixture": {
+    "path": "tests/fixtures/opt037-tier0-oracle-aggregate.json",
+    "sha256": "4e36b21c67925dc7ed26b645c93a9a31659bd1fcaa15b49f9661b6f3de805846",
+    "export_result_path": "docs/optimizations/opt-037-tier-0-oracle-fixture-result-2026-09-10.json",
+    "export_result_sha256": "d6f9195738a35a0d857337aa2fa0895bf431ae0174d673c8fac9898c734647fb"
+  },
+  "allowed_outputs": [
+    "src/repoauditor/analyze/calibration.py",
+    "tests/test_opt_037_tier_0_calibration.py",
+    "data/artifacts/opt037-tier0-calibration-qualification.json",
+    "docs/optimizations/opt-037-tier-0-calibration-qualification-receipt-2026-09-10.json",
+    "docs/optimizations/opt-037-tier-0-calibration-qualification-result-2026-09-10.json"
+  ],
+  "qualification_contract": {
+    "stdlib_only": true,
+    "production_api_integration": false,
+    "required_functions": [
+      "fixture validation", "ideal-hash probability", "recoverability regime", "two-sided Wilson interval", "coverage by model and regime", "fixed-bin reliability table"
+    ],
+    "expected_coverage": {
+      "nextint_odd": {"covered": 48, "eligible": 49},
+      "bit_length": {"covered": 31, "eligible_scored": 31, "grid_cells": 42}
+    },
+    "strict_validation": [
+      "schema and provenance", "count conservation", "finite numeric values", "exact models and grids", "classification consistency", "zero raw records"
+    ]
+  },
+  "excluded": [
+    "lab import or execution", "network or provider activity", "credentials", "production-store access or mutation", "simulation", "assessment or labels", "training or rescoring", "threshold selection", "prior or methodology changes", "policy or lifecycle changes", "Tier 1 or Tier 2", "memo or integrity integration", "RepoAuditor calibration or predictive-validity claims", "commits, pushes, or deployment"
+  ],
+  "required_statement": "I authorize the OPT-037 pure Tier-0 exact-oracle calibration qualification described by opt-037-tier-0-calibration-qualification-receipt-2026-09-10.json, limited to one new pure stdlib module src/repoauditor/analyze/calibration.py implementing validated ideal-hash unique-recovery probability, recoverability-regime classification, two-sided Wilson intervals, aggregate coverage by model and regime, and fixed-bin reliability tables; reading only the frozen tests/fixtures/opt037-tier0-oracle-aggregate.json; strict fixture schema, provenance, count-conservation, finite-number, model, grid, classification, and zero-raw-record validation; focused synthetic boundary and malformed-input tests plus exact reproduction of 48/49 odd-bound and 31/31 bit-length scored-cell coverage; one aggregate qualification artifact and result; and the correctly filtered offline non-live suite, with exactly zero lab imports or execution, network, providers, credentials, production-store access or mutation, simulation, assessments, labels, training, rescoring, threshold selection, prior or methodology changes, policy changes, lifecycle changes, commits, pushes, or deployment. Tier 1, Tier 2, memo integration, integrity-warning integration, claims about RepoAuditor calibration or predictive validity, and any unlisted file change remain excluded."
+}

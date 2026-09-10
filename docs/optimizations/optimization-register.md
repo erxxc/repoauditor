@@ -5,13 +5,14 @@ Status: authoritative post-MVP work list as of 2026-09-09. POC acceptance is com
 Current execution priorities
 
 OPT-035 publishes the canonical machine-readable lifecycle ledger at
-[`optimization-status.json`](optimization-status.json). It records 36 closed and zero open
-items. There is no remaining execution priority.
+[`optimization-status.json`](optimization-status.json). It records 36 closed and one open
+item. OPT-037 is the sole execution priority, gated first on a separately authorized,
+aggregate-only lattice-lab fixture transfer and Tier-0 exact-oracle qualification.
 The dated [`outstanding-work checkpoint`](outstanding-work-checkpoint-2026-08-07.json)
 is immutable historical evidence of the 2026-08-07 state; it is not a live derived view.
 The accepted POC Definition of Done remains complete.
 
-There are no open optimization items.
+OPT-037 is the sole open optimization item.
 
 OPT-001 through OPT-036 are closed at their approved scope. Optional
 expansion of a closed bounded scope must be proposed as new work rather than silently
@@ -954,3 +955,17 @@ VI. Deterministic scanner assurance and capability
       behavior is independently tested. The standalone PRNG lattice lab is not imported,
       executed, or ingested; findings remain unadjudicated candidates. Implemented
       offline — DoD impact: none.
+
+   P. OPT-037 — Calibration evidence — gated — owner: project governance / quantitative
+      assurance — source: the held
+      [`calibration-evidence proposal`](opt-037-calibration-evidence.md). Tier 0 proposes a
+      pure coverage utility qualified against a separately authorized, static aggregate
+      fixture exported from the exact-oracle PRNG lattice lab. Tier 1 may later add a
+      descriptive reliability table over temporally valid authoritative outcomes only when
+      the existing 40-label gate and compatible model, feature-schema, and calibration
+      identity hold. Tier 2 remains design-gated: predictive loss quantiles are not
+      estimator-confidence intervals, and only independently established analytic or
+      numerical references may support coverage evidence. Missing evidence is informational;
+      no tier licenses predictive-validity, representativeness, threshold, prior, or policy
+      claims. Lab transfer and every implementation tier require separate authorization —
+      DoD impact: none.

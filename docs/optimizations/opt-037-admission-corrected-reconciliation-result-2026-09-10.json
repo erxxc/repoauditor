@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "status": "completed",
+  "optimization": "OPT-037",
+  "receipt": {
+    "path": "docs/optimizations/opt-037-admission-corrected-reconciliation-receipt-2026-09-10.json",
+    "sha256": "ecd1513d3c3608b9544e478979a55d780179e90a2a5491140d88430073ecdc6b"
+  },
+  "reconciled_tests": {
+    "tests/test_outstanding_work_checkpoint.py": "6711361d89cd7e1d6eca79d0f8c2009dfa4965e6fe8f16b34ebf2c83083199b3",
+    "tests/test_opt_014_descriptive_scope_closure.py": "96a2e9f9f9913cb6c1821a8fec5bdb36c679683b011ba9164a6608ae02fcb95f",
+    "tests/test_opt_009_closure_result.py": "c75716f3c6c009d9b6312a7651f678645737a0a8d9b1480bb38952b341f86cc1",
+    "tests/test_opt_010_bounded_negative_feasibility_closure.py": "6138468ca6aa48f478428f052265048b376ee88a738832d9d3ee86e0e0a10bd4"
+  },
+  "lifecycle": {
+    "current_summary": {"closed": 36, "open": 1, "total": 37},
+    "current_priority": ["OPT-037"],
+    "historical_results_edited": 0,
+    "historical_receipts_edited": 0,
+    "opt_036_evidence_edited": 0
+  },
+  "validation": {
+    "focused_passed": 28,
+    "focused_failed": 0,
+    "focused_elapsed_seconds": 0.21,
+    "full_expression": "not live and not integration",
+    "full_passed": 1240,
+    "full_skipped": 2,
+    "full_deselected": 36,
+    "full_failed": 0,
+    "full_elapsed_seconds": 105.60,
+    "external_scanner_processes": 0
+  },
+  "activity": {
+    "network_reads": 0,
+    "uploads": 0,
+    "provider_calls": 0,
+    "tokens": 0,
+    "cost_usd": 0,
+    "credential_reads": 0,
+    "external_scanner_processes": 0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "simulation_runs": 0,
+    "calibration_runs": 0,
+    "assessments": 0,
+    "labels": 0,
+    "training_runs": 0,
+    "rescoring_runs": 0,
+    "branch_operations": 0,
+    "index_operations": 0,
+    "commits": 0,
+    "merges": 0,
+    "pushes": 0,
+    "deployments": 0
+  },
+  "interpretation": "The four closure-era tests now preserve their receipt-time lifecycle evidence while independently validating the current OPT-037 admission. No historical evidence or live system was changed."
+}

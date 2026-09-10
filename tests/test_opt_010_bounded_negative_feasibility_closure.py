@@ -19,12 +19,12 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def test_lifecycle_is_exactly_closed_with_no_remaining_priority():
+def test_opt010_remains_closed_while_current_lifecycle_advances_independently():
     ledger = _json(LEDGER)
     opt010 = next(item for item in ledger["items"] if item["id"] == "OPT-010")
 
-    assert ledger["summary"] == {"closed": 36, "open": 0, "total": 36}
-    assert [item for item in ledger["items"] if item["status"] == "open"] == []
+    assert ledger["summary"] == {"closed": 36, "open": 1, "total": 37}
+    assert [item["id"] for item in ledger["items"] if item["status"] == "open"] == ["OPT-037"]
     assert opt010 == {
         "id": "OPT-010",
         "title": "Agentic falsification",
