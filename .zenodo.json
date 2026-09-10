@@ -1,0 +1,41 @@
+{
+  "upload_type": "software",
+  "title": "RepoAuditor: evidence-bounded security review for acquired codebases",
+  "description": "<p>RepoAuditor is a security-review pipeline for acquired codebases. It combines deterministic scanners, bounded architecture and trust-boundary analysis, human-reviewed findings, quantitative evidence summaries, and separate engineering and leadership reports.</p><p><strong>Evidence boundary:</strong> scanner matches and model outputs are review candidates, not proof of exploitability, actionability, compromise, exhaustive coverage, or production readiness. The package-local weak-RNG detectors are syntactic candidate detectors and do not execute PRNG recovery.</p>",
+  "license": "MIT",
+  "access_right": "open",
+  "version": "0.1.0",
+  "language": "eng",
+  "keywords": [
+    "application security",
+    "software composition analysis",
+    "static analysis",
+    "code audit",
+    "vulnerability triage",
+    "security evidence",
+    "weak random number generation"
+  ],
+  "creators": [
+    { "name": "erxxc" }
+  ],
+  "related_identifiers": [
+    {
+      "relation": "isSourceOf",
+      "identifier": "https://github.com/erxxc/repoauditor",
+      "scheme": "url",
+      "resource_type": "software"
+    },
+    {
+      "relation": "isSupplementedBy",
+      "identifier": "10.5281/zenodo.22697185",
+      "scheme": "doi",
+      "resource_type": "software"
+    },
+    {
+      "relation": "isSupplementedBy",
+      "identifier": "https://github.com/erxxc/prng-lattice-lab",
+      "scheme": "url",
+      "resource_type": "software"
+    }
+  ]
+}

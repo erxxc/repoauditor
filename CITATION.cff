@@ -1,0 +1,32 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using these metadata."
+title: "RepoAuditor: evidence-bounded security review for acquired codebases"
+abstract: >-
+  A security-review pipeline for acquired codebases that combines deterministic scanners,
+  bounded architecture and trust-boundary analysis, human-reviewed findings, quantitative
+  evidence summaries, and separate engineering and leadership reports. Scanner matches and
+  model outputs are treated as review candidates rather than proof of exploitability.
+type: software
+authors:
+  - name: erxxc
+version: "0.1.0"
+date-released: "2026-09-10"
+repository-code: "https://github.com/erxxc/repoauditor"
+url: "https://github.com/erxxc/repoauditor"
+license: MIT
+keywords:
+  - application security
+  - software composition analysis
+  - static analysis
+  - code audit
+  - vulnerability triage
+  - security evidence
+  - weak random number generation
+references:
+  - type: software
+    title: "prng-lattice-lab"
+    doi: "10.5281/zenodo.22697185"
+    repository-code: "https://github.com/erxxc/prng-lattice-lab"
+    notes: >-
+      Independent research harness related to the bounded weak-RNG evidence boundary;
+      RepoAuditor does not import or execute it.
