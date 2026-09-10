@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-037",
+  "objective": "Calculate aggregate descriptive reliability over the readiness-qualified Tier-1 cohort without selecting a threshold or changing production behavior.",
+  "readiness_binding": {
+    "eligible_identities": 104,
+    "positive_identities": 24,
+    "negative_identities": 80,
+    "evaluation_families": 15,
+    "compatibility_digest": "310fa764b46b714535c982d3cf1383435cade02e0d005b9f29c484ad3d0cf070"
+  },
+  "calculation": {
+    "bins": [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
+    "bin_outputs": ["count", "mean_predicted_probability", "observed_actionable_fraction", "two_sided_95_percent_wilson_interval"],
+    "aggregate_outputs": ["brier_score", "fixed_bin_expected_calibration_error"]
+  },
+  "allowed_outputs": [
+    "src/repoauditor/analyze/calibration_reliability.py",
+    "tests/test_opt_037_tier_1_reliability.py",
+    "data/artifacts/opt037-tier1-reliability.json",
+    "docs/optimizations/opt-037-tier-1-reliability-receipt-2026-09-10.json",
+    "docs/optimizations/opt-037-tier-1-reliability-result-2026-09-10.json"
+  ],
+  "disclosure": "aggregate metrics and ten aggregate bin rows only",
+  "excluded": [
+    "identity-level disclosure or source rendering",
+    "store mutation or schema migration",
+    "lattice-lab import, execution, or new artifact transfer",
+    "simulation, fitting, training, rescoring, or threshold selection",
+    "policy, lifecycle, Tier-2, OPT-038, plugin, network, provider, credential, git, or deployment activity"
+  ],
+  "required_statement": "I authorize the OPT-037 Tier-1 offline descriptive reliability calculation described by opt-037-tier-1-reliability-receipt-2026-09-10.json, limited to the readiness-qualified 104 temporally valid, authoritative, compatible, identity-deduplicated outcomes across 15 evaluation families; one fixed ten-bin reliability table over actionability probabilities from 0.0 through 1.0 containing only bin counts, mean predicted probability, observed actionable fraction, and two-sided 95% Wilson intervals; aggregate Brier score and fixed-bin expected calibration error; strict reproduction of the frozen compatibility digest and readiness gates; one pure helper, focused synthetic and malformed-input tests, aggregate artifact and descriptive result; and production-store before-and-after hashing, with exactly zero identity-level disclosure, source rendering, store mutations, schema migrations, lattice-lab imports or execution, simulation, fitting, training, rescoring, threshold selection or recommendation, policy or lifecycle changes, network access, provider calls, credentials, commits, pushes, merges, or deployment. Predictive-validity, representativeness, causal, optimal-threshold, and production-calibration claims; Tier 2; memo integration; OPT-037 closure; OPT-038 admission; and weak-RNG Python plugin activity remain excluded."
+}

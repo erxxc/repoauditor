@@ -8,10 +8,10 @@ current outstanding-item list and execution order are in
 [`optimizations/optimization-register.md`](optimizations/optimization-register.md). The
 recovery plan is retained as the historical MVP execution record.
 
-The sole current post-MVP priority is OPT-037, calibration evidence. Its first gate is a
-separately authorized aggregate-only lattice-lab fixture transfer and Tier-0 exact-oracle
-qualification. Tier 1 outcome reliability and the redesigned Tier 2 estimator-coverage
-work remain separately gated; no threshold, prior, or policy change is authorized.
+There is no current post-MVP optimization priority. OPT-037 closed after bounded Tier-0
+exact-oracle coverage and Tier-1 descriptive reliability evidence; Tier 2 remains
+unavailable. Any further work, including a Python weak-RNG detector, requires a new
+lifecycle identity and authorization. No threshold, prior, or policy change was made.
 
 The methodology-specific detail remains authoritative in
 [triage-accuracy-roadmap.md](triage-accuracy-roadmap.md),

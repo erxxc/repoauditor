@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "status": "completed-descriptive-reliability",
+  "optimization": "OPT-037",
+  "tier": 1,
+  "receipt": {
+    "path": "docs/optimizations/opt-037-tier-1-reliability-receipt-2026-09-10.json",
+    "sha256": "24890709bc97486b616acdb401dd24b17530c77f231068140debf1be4a92ee0a"
+  },
+  "bindings": {
+    "helper": {
+      "path": "src/repoauditor/analyze/calibration_reliability.py",
+      "sha256": "f74aa5e481bd3b1695e91873f297a3bb67b9db7705a6361171f492df4fa22668"
+    },
+    "focused_test": {
+      "path": "tests/test_opt_037_tier_1_reliability.py",
+      "sha256": "350f6c0083d36656d7b773a251e71428d9dc2dc61497808ced9ab49329151f93"
+    },
+    "aggregate_artifact": {
+      "path": "data/artifacts/opt037-tier1-reliability.json",
+      "sha256": "55cc0d869d4fa7a16493ef13b4eba7e2cb8d662613a11d0e29b637c620323461"
+    }
+  },
+  "cohort": {
+    "eligible_identities": 104,
+    "positive_identities": 24,
+    "negative_identities": 80,
+    "evaluation_families": 15,
+    "compatibility_digest": "310fa764b46b714535c982d3cf1383435cade02e0d005b9f29c484ad3d0cf070",
+    "readiness_reproduced": true
+  },
+  "aggregate_reliability": {
+    "fixed_bins": 10,
+    "nonempty_bins": 8,
+    "brier_score": 0.20942146996839234,
+    "fixed_bin_expected_calibration_error": 0.2139422480962178,
+    "bin_uncertainty": "two-sided 95% Wilson interval for observed actionable fraction"
+  },
+  "validation": {
+    "tier_0_readiness_and_tier_1_focused_passed": 38,
+    "focused_failed": 0,
+    "aggregate_bin_count_conserved": true,
+    "aggregate_schema_and_disclosure_validation": "passed"
+  },
+  "store": {
+    "before_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "after_sha256": "468c8de903f6c4c0ed23304e59db150a1d5d0b6cf350247fba3bc3d2699caf5a",
+    "byte_identical": true,
+    "mutations": 0
+  },
+  "disclosure": {
+    "identities": 0,
+    "individual_scores": 0,
+    "individual_outcomes": 0,
+    "sources": 0,
+    "row_level_records": 0
+  },
+  "activity": {
+    "network_reads": 0,
+    "uploads": 0,
+    "provider_calls": 0,
+    "credential_reads": 0,
+    "lattice_lab_imports": 0,
+    "lattice_lab_executions": 0,
+    "simulations": 0,
+    "fitting_runs": 0,
+    "training_runs": 0,
+    "rescoring_runs": 0,
+    "threshold_selections": 0,
+    "policy_changes": 0,
+    "lifecycle_changes": 0,
+    "commits": 0,
+    "pushes": 0,
+    "merges": 0,
+    "deployments": 0
+  },
+  "interpretation": "The qualified historical actionability probabilities show a descriptive Brier score of 0.20942146996839234 and fixed ten-bin expected calibration error of 0.2139422480962178 over 104 temporally valid outcomes. These values describe this compatible observed cohort only; they do not establish predictive validity, representativeness, causality, production calibration, or an optimal threshold.",
+  "next_gate": "Separately decide whether to design Tier 2, integrate the available-tier disclosure, or close OPT-037 at completed Tier-0 and Tier-1 scope."
+}
