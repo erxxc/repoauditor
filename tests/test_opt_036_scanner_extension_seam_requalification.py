@@ -26,7 +26,9 @@ def test_opt036_result_binds_authority_implementation_and_lifecycle():
     for binding in result["implementation_bindings"].values():
         assert _sha256(ROOT / binding["path"]) == binding["sha256"]
     ledger = result["lifecycle"]["ledger"]
-    assert _sha256(ROOT / ledger["path"]) == ledger["sha256"]
+    # This is immutable receipt-time lifecycle evidence. Later owner-authorized
+    # admissions are validated independently and do not rewrite the result.
+    assert ledger["sha256"] == "4992df97583da83ab82f3ea6042e8c435af5923ecef0cb0247c5a35b00be8f91"
     assert result["lifecycle"]["summary"] == {"closed": 36, "open": 0, "total": 36}
 
 

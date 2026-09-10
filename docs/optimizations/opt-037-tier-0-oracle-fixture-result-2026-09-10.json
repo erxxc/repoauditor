@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "status": "completed",
+  "optimization": "OPT-037",
+  "receipt": {
+    "path": "docs/optimizations/opt-037-tier-0-oracle-fixture-receipt-2026-09-10.json",
+    "sha256": "cba744a988022ddd44f230fc3f3584d9caa9386a068a0a495e780b8d83acad0e"
+  },
+  "source": {
+    "lab_commit": "c248eea5c2bd25b7dfcf077049a060ac6aa435d2",
+    "lab_tree": "9c956842beb0366a404a8dad084661d961ef8c00",
+    "lab_version": "0.2.0",
+    "runtime": {"python": "3.12.13", "numpy": "2.5.2", "fpylll": "0.6.4"},
+    "seed": 0,
+    "trials_per_cell": 200,
+    "temporary_aggregate_database_sha256": "a69c33561e2a01752082e804c75d8f912ba9f1d02e66313dd9f468c2e7c65fcb"
+  },
+  "fixture": {
+    "path": "tests/fixtures/opt037-tier0-oracle-aggregate.json",
+    "sha256": "4e36b21c67925dc7ed26b645c93a9a31659bd1fcaa15b49f9661b6f3de805846",
+    "bytes": 45338,
+    "cells": 91,
+    "raw_trial_records": 0
+  },
+  "aggregate_counts": {
+    "nextint_odd": {
+      "grid_cells": 49,
+      "requested_trials": 9800,
+      "scored_trials": 5800,
+      "unique": 5322,
+      "ambiguous": 478,
+      "unrecovered": 0,
+      "underdetermined": 4000,
+      "infeasible": 0,
+      "rejected_windows": 0
+    },
+    "bit_length": {
+      "grid_cells": 42,
+      "requested_trials": 8400,
+      "scored_trials": 3137,
+      "unique": 3137,
+      "ambiguous": 0,
+      "unrecovered": 0,
+      "underdetermined": 3706,
+      "infeasible": 1557,
+      "rejected_windows": 0
+    }
+  },
+  "independent_coverage_verification": {
+    "method": "Independent ideal-hash probability and two-sided 95% Wilson implementation over the exported aggregate counts",
+    "nextint_odd": {"covered_cells": 48, "eligible_cells": 49, "passed": true},
+    "bit_length": {"covered_cells": 31, "eligible_scored_cells": 31, "grid_cells": 42, "passed": true}
+  },
+  "boundaries": {
+    "repoauditor_imported_lab_package": false,
+    "repoauditor_executed_fixture": false,
+    "jvm_executed": false,
+    "demonstration_artifacts": 0,
+    "tier_0_utility_implemented": false,
+    "lifecycle_changed": false
+  },
+  "activity": {
+    "network_reads": 0,
+    "uploads": 0,
+    "provider_calls": 0,
+    "tokens": 0,
+    "cost_usd": 0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "assessments": 0,
+    "labels": 0,
+    "training_runs": 0,
+    "rescoring_runs": 0,
+    "policy_changes": 0,
+    "lifecycle_changes": 0,
+    "commits": 0,
+    "pushes": 0,
+    "deployments": 0
+  },
+  "interpretation": "The aggregate exact-oracle fixture is available for a separately authorized Tier-0 utility qualification. It is synthetic solver evidence and makes no claim about RepoAuditor outcomes, calibration, priors, predictive validity, thresholds, or policy."
+}

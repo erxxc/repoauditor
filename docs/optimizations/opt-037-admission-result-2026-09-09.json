@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "status": "completed",
+  "optimization": "OPT-037",
+  "receipt": {
+    "path": "docs/optimizations/opt-037-admission-receipt-2026-09-09.json",
+    "sha256": "edf0b3e6115c2d907b89552b2b03036921a8c3ec91ab9d24a3a42649293963af"
+  },
+  "source_proposal": {
+    "commit": "fd179aeb25da1ff88c4070bd02159f8f40c1f66a",
+    "parent": "ec03d6699fd647b6d5f9f3ebca754832747d12d9",
+    "corrected_path": "docs/optimizations/opt-037-calibration-evidence.md",
+    "corrected_sha256": "e8ac1a78551593a52e1be7ff8ae8184589165340a6aad6dd9861c02870545c59"
+  },
+  "lifecycle": {
+    "status_path": "docs/optimizations/optimization-status.json",
+    "status_sha256": "77dc875a25b33b8484ef55d8c912527c1dc3041f42b76dad72c0f785ca81e6e8",
+    "summary": {"closed": 36, "open": 1, "total": 37},
+    "sole_open_item": "OPT-037",
+    "next_priority": 1,
+    "opt_036_historical_ledger_sha256": "4992df97583da83ab82f3ea6042e8c435af5923ecef0cb0247c5a35b00be8f91"
+  },
+  "corrected_boundaries": {
+    "odd_bound_grid": {"cells": 49, "covered": 48, "misses": 1, "miss_location": "analytic edge"},
+    "bit_length_grid": {"cells": 42, "scored_covered": 31, "scored_total": 31},
+    "fixture_is_bounded_evidence_ingestion": true,
+    "tier_1_requires_temporal_and_score_identity_compatibility": true,
+    "tier_1_requires_bin_counts_and_uncertainty": true,
+    "predictive_quantiles_are_not_estimator_confidence_intervals": true,
+    "nonanalytic_exceedance_requires_independent_numerical_oracle": true,
+    "unavailable_evidence_severity": "informational"
+  },
+  "validation": {
+    "focused_expression": "tests/test_opt_037_admission.py tests/test_documentation_current_state.py tests/test_optimization_status.py tests/test_opt_036_scanner_extension_seam_requalification.py",
+    "passed": 11,
+    "failed": 0,
+    "elapsed_seconds": 0.10,
+    "full_suite_executed": false,
+    "deferred_historical_current-ledger_tests": [
+      "tests/test_outstanding_work_checkpoint.py",
+      "tests/test_opt_014_descriptive_scope_closure.py",
+      "tests/test_opt_009_closure_result.py",
+      "tests/test_opt_010_bounded_negative_feasibility_closure.py"
+    ],
+    "deferred_reason": "The admission authorized historical lifecycle reconciliation only for the OPT-036 binding; the four retained tests require separate authorization before they may distinguish receipt-time lifecycle from current state."
+  },
+  "activity": {
+    "network_reads": 0,
+    "uploads": 0,
+    "provider_calls": 0,
+    "tokens": 0,
+    "cost_usd": 0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "simulation_runs": 0,
+    "calibration_runs": 0,
+    "assessments": 0,
+    "labels": 0,
+    "training_runs": 0,
+    "rescoring_runs": 0,
+    "commits": 0,
+    "merges": 0,
+    "pushes": 0,
+    "deployments": 0
+  },
+  "interpretation": "OPT-037 is admitted but wholly execution-gated. No lattice-lab evidence was transferred and no calibration, simulation, outcome analysis, threshold, prior, methodology, policy, or predictive-validity claim was produced."
+}

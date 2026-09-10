@@ -27,8 +27,8 @@ def test_outstanding_checkpoint_closes_poc_dod_and_lists_every_open_opt():
     assert checkpoint["poc_definition_of_done"]["outstanding_acceptance_items"] == []
     assert recorded == ["OPT-009", "OPT-014", "OPT-010"]
     assert checkpoint["optimization_summary"] == {"closed": 32, "open": 3, "total": 35}
-    assert status["summary"] == {"closed": 36, "open": 0, "total": 36}
-    assert current_open == []
+    assert status["summary"] == {"closed": 36, "open": 1, "total": 37}
+    assert current_open == ["OPT-037"]
     assert checkpoint["tuning_hold"]["active"] is True
 
 

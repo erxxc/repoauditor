@@ -1,5 +1,6 @@
 # repoauditor — the entire data tree is local state, never committed.
 /data/
+.envrc
 
 # Python
 __pycache__/

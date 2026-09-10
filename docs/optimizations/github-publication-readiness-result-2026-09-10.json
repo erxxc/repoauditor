@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "status": "completed-ready-for-review",
+  "receipt": {
+    "path": "docs/optimizations/github-publication-readiness-receipt-2026-09-10.json",
+    "sha256": "09afc531b03c694cc4e9cc5f13f504e0b7164804b238e6da4dcf46c8046e681f"
+  },
+  "tier_1_readiness": {
+    "receipt_sha256": "8ffaab7f217b643a062d15def546abe51826d565b93a59170d69b8e1ff847f36",
+    "result_sha256": "ce6e86530979bec7bf0e0958fa4cfadac313e94ed0d1648324134842a5b06ae8",
+    "helper_sha256": "a82a792cb8329a7a2f7eb04f10864da4e0f9fb0da37eb7f99cc82aa783712643",
+    "focused_test_sha256": "c114e14522504cc66473d8a4b1ab7329ea3bc5e57363b3cdf2b8346abdb16e86",
+    "eligible_identities": 104,
+    "evaluation_families": 15,
+    "ready": true,
+    "row_level_disclosures": 0
+  },
+  "publication_controls": {
+    "root_mit_license_preserved": true,
+    "security_policy_added": true,
+    "codeowners_added": true,
+    "pull_request_template_added": true,
+    "dependabot_configuration_added": true,
+    "third_party_fixture_boundary_documented": true,
+    "envrc_ignored": true,
+    "all_workflow_actions_sha_pinned": true,
+    "workflow_triggers_changed": false,
+    "workflow_permissions_changed": false,
+    "workflow_secret_boundaries_changed": false
+  },
+  "validation": {
+    "focused_tests": {
+      "passed": 16,
+      "failed": 0
+    },
+    "compatibility_recheck": {
+      "passed": 5,
+      "failed": 0
+    },
+    "offline_non_live_suite": {
+      "expression": "not integration and not live",
+      "passed": 1274,
+      "skipped": 2,
+      "deselected": 36,
+      "failed": 0
+    },
+    "gitleaks_history": {
+      "commits_scanned": 181,
+      "bytes_scanned": 5577283,
+      "leaks_found": 0,
+      "redacted": true
+    },
+    "diff_check": "passed"
+  },
+  "activity": {
+    "repository_visibility_changes": 0,
+    "github_settings_changes": 0,
+    "provider_calls": 0,
+    "credential_disclosures": 0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "simulations": 0,
+    "calibration_calculations": 0,
+    "assessments": 0,
+    "labels": 0,
+    "training_runs": 0,
+    "rescoring_runs": 0,
+    "deployments": 0,
+    "merges": 0
+  },
+  "deferred_visibility_gate": [
+    "owner acceptance of public author identity and retained local-path history",
+    "repository visibility change",
+    "private vulnerability reporting activation",
+    "dependency alerts and automated security fixes activation",
+    "main branch protection and required-check configuration"
+  ],
+  "interpretation": "The bounded pull-request content is ready for review. This result does not authorize or represent a repository visibility change, GitHub settings change, merge, or deployment."
+}

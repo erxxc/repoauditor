@@ -41,9 +41,10 @@ jobs:
       REPOAUDITOR_LLM: live
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
+      # actions/cache/restore@v4 is executed from the immutable v4 commit pinned below.
       - name: Restore trusted pinned public snapshots
         id: corpus-cache
         if: >-
@@ -61,7 +62,7 @@ jobs:
             )
           ) ||
           github.event.schedule == '47 6 1 * *'
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: |
             tests/fixtures/independent_*/snapshot
@@ -117,10 +118,10 @@ jobs:
           python tests/fixtures/audit_corpus_readiness.py
           --require-cve-positive-materialized
           --output corpus-readiness.json
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
         with:
           enable-cache: true
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: "3.12"
       - run: uv sync --frozen --dev
@@ -128,7 +129,7 @@ jobs:
         if: >-
           github.event_name == 'workflow_dispatch' &&
           inputs.scope == 'cve-positive-aiohttp-continuation'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: live-cve-positive-30383181253
           path: retained-aiohttp-baseline
@@ -227,7 +228,7 @@ jobs:
             inputs.scope == 'cve-positive-aiohttp' ||
             inputs.scope == 'cve-positive-aiohttp-continuation'
           )
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: manufactured-detection-sentinels-${{ github.run_id }}
           path: manufactured-detection-sentinels.json
@@ -246,7 +247,7 @@ jobs:
           always() &&
           github.event_name == 'workflow_dispatch' &&
           inputs.scope == 'xml-detection-sentinels'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: manufactured-xml-detection-sentinels-${{ github.run_id }}
           path: manufactured-xml-detection-sentinels.json
@@ -297,7 +298,7 @@ jobs:
             ) ||
             github.event.schedule == '47 6 1 * *'
           )
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: live-corpus-${{ github.run_id }}
           path: |
@@ -369,7 +370,7 @@ jobs:
             inputs.scope == 'cve-positive-aiohttp' ||
             inputs.scope == 'cve-positive-aiohttp-continuation'
           )
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: live-cve-positive-${{ github.run_id }}
           path: |
@@ -381,7 +382,7 @@ jobs:
           if-no-files-found: warn
       - name: Retain manufactured-control evidence
         if: always() && hashFiles('manufactured-sentinels.json') != ''
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: manufactured-sentinels-${{ github.run_id }}
           path: manufactured-sentinels.json

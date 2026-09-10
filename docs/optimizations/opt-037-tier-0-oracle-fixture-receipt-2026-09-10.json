@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "optimization": "OPT-037",
+  "objective": "Regenerate and export an outcome-free aggregate exact-oracle fixture without importing or executing the lab inside RepoAuditor.",
+  "frozen_lab_source": {
+    "commit": "c248eea5c2bd25b7dfcf077049a060ac6aa435d2",
+    "tree": "9c956842beb0366a404a8dad084661d961ef8c00",
+    "lab_version": "0.2.0",
+    "sweep_grid_sha256": "d059fb0d0594422d96e429bf04d5b143b054091420eb5c82d0f762ac672eb32e",
+    "calibration_reference_sha256": "6b10b940d46f6a94c842cebdcf1d8c63920867ed19bb3cbb54f30d8c72a91465"
+  },
+  "generation": {
+    "isolated": true,
+    "seed": 0,
+    "trials_per_cell": 200,
+    "models": {
+      "nextint_odd": {"bits_axis": [2, 4, 8, 12, 16, 20, 24], "observations_axis": [2, 3, 4, 6, 8, 12, 16], "cells": 49},
+      "bit_length": {"bits_axis": [2, 4, 8, 12, 16, 20, 24], "observations_axis": [8, 16, 24, 32, 48, 64], "cells": 42}
+    },
+    "jvm_execution": false,
+    "network": false,
+    "retry": false
+  },
+  "fixture_boundary": {
+    "aggregate_cells_only": true,
+    "permitted": [
+      "model and grid parameters", "requested and scored counts", "unique, ambiguous, unrecovered, underdetermined, infeasible, and rejected-window counts", "realized leak summaries", "source and provenance digests"
+    ],
+    "forbidden": [
+      "raw states", "non-public seeds", "token observations", "predictions", "source excerpts", "identity-level trials", "JVM artifacts", "demonstration artifacts"
+    ]
+  },
+  "expected_verification": {
+    "nextint_odd": {"covered_cells": 48, "eligible_cells": 49},
+    "bit_length": {"covered_cells": 31, "eligible_scored_cells": 31, "grid_cells": 42}
+  },
+  "repoauditor_boundary": {
+    "lab_package_imported": false,
+    "fixture_executed": false,
+    "tier_0_utility_implemented": false,
+    "lifecycle_changed": false
+  },
+  "required_statement": "I authorize the OPT-037 Tier-0 outcome-free aggregate oracle-fixture generation and export described by opt-037-tier-0-oracle-fixture-receipt-2026-09-10.json, limited to isolated offline execution of the lattice-lab solver tree at exact merge c248eea5c2bd25b7dfcf077049a060ac6aa435d2; deterministic regeneration with seed 0 and 200 trials per cell of only the frozen 49-cell nextInt-odd and 42-cell bit-length phase grids; export into RepoAuditor of one canonical aggregate JSON fixture containing only model and grid parameters, requested and scored trial counts, unique, ambiguous, unrecovered, underdetermined, infeasible and rejected-window counts, realized-leak summaries, and source/provenance digests; independent verification of the expected 48/49 and 31/31 scored-cell coverage summaries; and one export result, with exactly zero raw states, seeds beyond the public fixed seed, token observations, predictions, source excerpts, identity-level trials, JVM execution, demonstration artifacts, network activity, provider calls, production-store access or mutation, calibration implementation, assessments, labels, training, rescoring, policy changes, lifecycle changes, commits, pushes, or deployment. RepoAuditor must not import the lab package or execute the fixture, and Tier-0 utility implementation remains separately authorized."
+}

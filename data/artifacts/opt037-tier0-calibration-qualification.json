@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "qualification": "OPT-037 Tier-0 exact-oracle calibration utility",
+  "fixture_sha256": "4e36b21c67925dc7ed26b645c93a9a31659bd1fcaa15b49f9661b6f3de805846",
+  "utility_sha256": "8895f36896ac56669b477b770ef73e1f9bdf0cddbe4121ed9cf86df43e234df6",
+  "coverage": {
+    "nextint_odd": {
+      "covered": 48,
+      "eligible": 49,
+      "by_regime": {
+        "underdetermined": {"covered": 20, "eligible": 20},
+        "edge": {"covered": 3, "eligible": 4},
+        "overdetermined": {"covered": 25, "eligible": 25}
+      }
+    },
+    "bit_length": {
+      "covered": 31,
+      "eligible": 31,
+      "grid_cells": 42,
+      "by_regime": {
+        "overdetermined": {"covered": 31, "eligible": 31}
+      }
+    }
+  },
+  "reliability": [
+    {"bin_low": 0.0, "bin_high": 0.2, "cells": 20, "trials": 4000, "mean_predicted": 0.0, "mean_observed": 0.0},
+    {"bin_low": 0.2, "bin_high": 0.4, "cells": 4, "trials": 800, "mean_predicted": 0.36562582988091374, "mean_observed": 0.40249999999999997},
+    {"bin_low": 0.8, "bin_high": 1.0, "cells": 56, "trials": 8137, "mean_predicted": 0.9945620908760054, "mean_observed": 1.0}
+  ],
+  "validation": {
+    "aggregate_cells": 91,
+    "raw_trial_records": 0,
+    "fixture_contract": "passed",
+    "count_conservation": "passed",
+    "finite_numbers": "passed",
+    "exact_models_and_grids": "passed",
+    "classification_consistency": "passed",
+    "provenance": "passed"
+  },
+  "claim_boundary": "This qualifies only the pure coverage machinery against a synthetic exact oracle. It does not calibrate RepoAuditor outcomes, triage scores, risk priors, predictive intervals, thresholds, or policy."
+}

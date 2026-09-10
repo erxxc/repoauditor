@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "status": "completed",
+  "optimization": "OPT-037",
+  "receipt": {
+    "path": "docs/optimizations/opt-037-tier-0-calibration-qualification-receipt-2026-09-10.json",
+    "sha256": "0bc67e279c2f28eeef4d57fc31d0cd4d8a72fcece6d3e503b4323254e44e0f40"
+  },
+  "bindings": {
+    "fixture": {"path": "tests/fixtures/opt037-tier0-oracle-aggregate.json", "sha256": "4e36b21c67925dc7ed26b645c93a9a31659bd1fcaa15b49f9661b6f3de805846"},
+    "utility": {"path": "src/repoauditor/analyze/calibration.py", "sha256": "8895f36896ac56669b477b770ef73e1f9bdf0cddbe4121ed9cf86df43e234df6"},
+    "focused_test": {"path": "tests/test_opt_037_tier_0_calibration.py", "sha256": "bc0bac04638fb046c668472a2b3327ed8771cc592031f78e5754bbd901ddf7fe"},
+    "artifact": {"path": "data/artifacts/opt037-tier0-calibration-qualification.json", "sha256": "9407e80f76724a2b74ea4adb0e75d1e8a29cdb9456cf0ea80d583793ae966a42"}
+  },
+  "qualification": {
+    "fixture_schema_and_provenance": "passed",
+    "count_conservation": "passed",
+    "finite_numeric_validation": "passed",
+    "exact_models_and_grids": "passed",
+    "classification_consistency": "passed",
+    "unknown_and_raw_field_rejection": "passed",
+    "nextint_odd_coverage": {"covered": 48, "eligible": 49},
+    "bit_length_coverage": {"covered": 31, "eligible_scored": 31, "grid_cells": 42},
+    "single_miss_location": "nextint_odd analytic edge",
+    "production_api_integrated": false
+  },
+  "validation": {
+    "focused_passed": 18,
+    "focused_failed": 0,
+    "focused_elapsed_seconds": 0.10,
+    "full_expression": "not live and not integration",
+    "full_passed": 1258,
+    "full_skipped": 2,
+    "full_deselected": 36,
+    "full_failed": 0,
+    "full_elapsed_seconds": 101.18
+  },
+  "activity": {
+    "lab_imports": 0,
+    "lab_executions": 0,
+    "network_reads": 0,
+    "uploads": 0,
+    "provider_calls": 0,
+    "tokens": 0,
+    "cost_usd": 0,
+    "credential_reads": 0,
+    "production_store_reads": 0,
+    "production_store_mutations": 0,
+    "simulation_runs": 0,
+    "assessments": 0,
+    "labels": 0,
+    "training_runs": 0,
+    "rescoring_runs": 0,
+    "threshold_selections": 0,
+    "prior_changes": 0,
+    "methodology_changes": 0,
+    "policy_changes": 0,
+    "lifecycle_changes": 0,
+    "commits": 0,
+    "pushes": 0,
+    "deployments": 0
+  },
+  "interpretation": "Tier 0 qualifies only the pure statistical coverage machinery against the frozen synthetic exact oracle. It does not establish calibration or predictive validity for RepoAuditor outcomes, triage scores, risk priors, predictive intervals, thresholds, or production policy. Tier 1 and Tier 2 remain separately gated."
+}

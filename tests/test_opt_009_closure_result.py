@@ -38,11 +38,7 @@ def test_opt009_closure_result_matches_canonical_lifecycle():
     opt009 = next(item for item in ledger["items"] if item["id"] == "OPT-009")
 
     assert payload["lifecycle"]["summary"] == {"closed": 33, "open": 2, "total": 35}
-    assert ledger["summary"] in (
-        {"closed": 34, "open": 1, "total": 35},
-        {"closed": 35, "open": 0, "total": 35},
-        {"closed": 36, "open": 0, "total": 36},
-    )
+    assert ledger["summary"] == {"closed": 36, "open": 1, "total": 37}
     assert opt009 == {
         "id": "OPT-009",
         "title": "Novelty prioritization",
@@ -50,7 +46,7 @@ def test_opt009_closure_result_matches_canonical_lifecycle():
         "gate": "none",
         "next_priority": None,
     }
-    assert [item["id"] for item in open_items] in (["OPT-010"], [])
+    assert [item["id"] for item in open_items] == ["OPT-037"]
 
 
 def test_opt009_closure_result_preserves_checkpoint_and_store():
