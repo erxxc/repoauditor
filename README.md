@@ -1,5 +1,7 @@
 # repoauditor
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22697400.svg)](https://doi.org/10.5281/zenodo.22697400)
+
 `repoauditor` reviews an unfamiliar codebase for security risks. It creates a read-only
 snapshot, maps the application, combines AI-assisted review with established security
 scanners, challenges likely false positives, pauses for human decisions when evidence is
@@ -15,8 +17,12 @@ for the design and [`CLAUDE.md`](CLAUDE.md) for the project’s architectural ru
 ## Citation and archival metadata
 
 Citation metadata is provided in [`CITATION.cff`](CITATION.cff), with Zenodo-specific
-release metadata in [`.zenodo.json`](.zenodo.json). The planned first archival release is
-`v0.1.0`; its bounded scope and publication steps are documented in
+release metadata in [`.zenodo.json`](.zenodo.json). `v0.1.0` is archived on Zenodo:
+
+- **Concept DOI** (always resolves to the latest version): [10.5281/zenodo.22697400](https://doi.org/10.5281/zenodo.22697400)
+- **v0.1.0 DOI** (this exact release, for reproducibility): [10.5281/zenodo.22697401](https://doi.org/10.5281/zenodo.22697401)
+
+Its bounded scope and publication steps are documented in
 [`docs/releases/v0.1.0.md`](docs/releases/v0.1.0.md) and
 [`docs/zenodo-release-checklist.md`](docs/zenodo-release-checklist.md). The related PRNG
 Lattice Lab is independent evidence and is not imported or executed by RepoAuditor.

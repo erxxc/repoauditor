@@ -14,6 +14,13 @@ date-released: "2026-09-10"
 repository-code: "https://github.com/erxxc/repoauditor"
 url: "https://github.com/erxxc/repoauditor"
 license: MIT
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.22697401
+    description: "The version-specific DOI for v0.1.0, as archived on Zenodo."
+  - type: doi
+    value: 10.5281/zenodo.22697400
+    description: "The concept DOI, which always resolves to the latest version."
 keywords:
   - application security
   - software composition analysis
