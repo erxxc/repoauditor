@@ -13,15 +13,15 @@ dependencies = [
     "pydantic>=2.13.5",
     "pyyaml>=6.0.3",
     "gitpython>=3.1.62",
-    "anthropic>=1.4.0",
+    "anthropic>=1.7.0",
     # triage/ + analyze/risk_quant.py. Classical ML + numerics only — no deep
     # learning (a CLAUDE.md constraint): scikit-learn, XGBoost, NumPy, SciPy,
     # matplotlib, and shap for feature attribution.
-    "scikit-learn>=1.9.0",
+    "scikit-learn>=1.9.1",
     "xgboost>=3.4.1",
     "numpy>=2.5.3",
     "scipy>=1.18.1",
-    "matplotlib>=3.11.1",
+    "matplotlib>=3.11.2",
     "shap>=0.52.0",
     # shap pulls in numba; floor it so the resolver picks a modern wheel rather than
     # backtracking to an ancient build that only supports Python <3.10.
@@ -32,8 +32,8 @@ dependencies = [
     # languages with no wired grammar fall back to lexical indexing (logged, never a gap).
     # 0.26.0 corrupts TypeScript node coordinates and can segfault while walking a
     # valid Juice Shop source file; 0.25.2 is verified against that pinned corpus.
-    "tree-sitter>=0.25,<0.26",
-    "tree-sitter-language-pack>=1.13",
+    "tree-sitter>=0.26.0,<0.27",
+    "tree-sitter-language-pack>=1.20.0",
 ]
 
 [project.scripts]
