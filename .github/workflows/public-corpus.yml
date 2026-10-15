@@ -38,7 +38,7 @@ jobs:
             tests/fixtures/acquisition_cve_*/snapshot
           key: public-corpus-v2-${{ runner.os }}-${{ hashFiles('tests/fixtures/materialize_public_corpus.py', 'tests/fixtures/independent_*/expected_findings.json', 'tests/fixtures/anchor_owasp_*/expected_findings.json', 'tests/fixtures/cve_positive_acquisition_cohort.json') }}
 
-      - uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
         with:
           enable-cache: true
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
@@ -92,7 +92,7 @@ jobs:
 
       - name: Upload integrity-test result
         if: always() && hashFiles('public-corpus-results.xml') != ''
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: public-corpus-integrity-${{ github.run_id }}
           path: |
