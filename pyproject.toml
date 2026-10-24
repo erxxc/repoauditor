@@ -12,7 +12,7 @@ dependencies = [
     "httpx>=0.28.1",
     "pydantic>=2.13.5",
     "pyyaml>=6.0.3",
-    "gitpython>=3.1.62",
+    "gitpython>=3.2.1",
     "anthropic>=1.4.0",
     # triage/ + analyze/risk_quant.py. Classical ML + numerics only — no deep
     # learning (a CLAUDE.md constraint): scikit-learn, XGBoost, NumPy, SciPy,
