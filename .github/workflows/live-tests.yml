@@ -118,10 +118,10 @@ jobs:
           python tests/fixtures/audit_corpus_readiness.py
           --require-cve-positive-materialized
           --output corpus-readiness.json
-      - uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
         with:
           enable-cache: true
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"
       - run: uv sync --frozen --dev
@@ -129,7 +129,7 @@ jobs:
         if: >-
           github.event_name == 'workflow_dispatch' &&
           inputs.scope == 'cve-positive-aiohttp-continuation'
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: live-cve-positive-30383181253
           path: retained-aiohttp-baseline
@@ -228,7 +228,7 @@ jobs:
             inputs.scope == 'cve-positive-aiohttp' ||
             inputs.scope == 'cve-positive-aiohttp-continuation'
           )
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: manufactured-detection-sentinels-${{ github.run_id }}
           path: manufactured-detection-sentinels.json
@@ -247,7 +247,7 @@ jobs:
           always() &&
           github.event_name == 'workflow_dispatch' &&
           inputs.scope == 'xml-detection-sentinels'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: manufactured-xml-detection-sentinels-${{ github.run_id }}
           path: manufactured-xml-detection-sentinels.json
@@ -298,7 +298,7 @@ jobs:
             ) ||
             github.event.schedule == '47 6 1 * *'
           )
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: live-corpus-${{ github.run_id }}
           path: |
@@ -370,7 +370,7 @@ jobs:
             inputs.scope == 'cve-positive-aiohttp' ||
             inputs.scope == 'cve-positive-aiohttp-continuation'
           )
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: live-cve-positive-${{ github.run_id }}
           path: |
@@ -382,7 +382,7 @@ jobs:
           if-no-files-found: warn
       - name: Retain manufactured-control evidence
         if: always() && hashFiles('manufactured-sentinels.json') != ''
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: manufactured-sentinels-${{ github.run_id }}
           path: manufactured-sentinels.json
